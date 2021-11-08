@@ -22,10 +22,13 @@ pub struct LdtkPlugin;
 
 impl Plugin for LdtkPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(TilemapPlugin);
+        app.add_plugin(TilemapPlugin)
+            .add_asset::<LdtkAsset>()
+            .init_asset_loader::<LdtkLoader>();
     }
 }
 
+#[derive(Copy, Clone, Debug, Default)]
 pub struct LdtkLoader;
 
 impl AssetLoader for LdtkLoader {

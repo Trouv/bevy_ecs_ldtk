@@ -9,4 +9,6 @@ edition = "2021"
 [dependencies]
 bevy_ecs_tilemap = { git = "https://github.com/StarArawn/bevy_ecs_tilemap", branch = "bevy-track" }
 bevy = { git = "https://github.com/bevyengine/bevy", branch = "main" }
-ldtk_rust = { version = "0.5" }
+ldtk_rust = "0.5"
+anyhow = "1.0"
+serde_json = "1.0"

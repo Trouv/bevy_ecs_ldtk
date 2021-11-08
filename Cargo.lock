@@ -312,9 +312,11 @@ dependencies = [
 name = "bevy_ecs_ldtk"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "bevy",
  "bevy_ecs_tilemap",
  "ldtk_rust",
+ "serde_json",
 ]
 
 [[package]]

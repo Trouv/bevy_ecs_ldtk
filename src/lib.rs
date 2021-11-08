@@ -38,9 +38,21 @@ impl AssetLoader for LdtkLoader {
         load_context: &'a mut LoadContext,
     ) -> BoxedFuture<'a, anyhow::Result<()>> {
         Box::pin(async move {
-            let project: Project = serde_json::from_slice(bytes)?;
+            let mut project: Project = serde_json::from_slice(bytes)?;
+
+            if project.external_levels {
+                project.load_external_levels(format!(
+                    "assets/{}",
+                    load_context
+                        .path()
+                        .to_str()
+                        .expect("ldtk path should be valid unicode")
+                ));
+            }
             let ldtk_asset = LdtkAsset { project };
-            // TODO: Support load external level files
+
+            let parent_path = load_context.path().parent();
+
             load_context.set_default_asset(LoadedAsset::new(ldtk_asset));
             Ok(())
         })

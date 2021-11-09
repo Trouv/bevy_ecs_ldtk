@@ -87,7 +87,6 @@ async fn load_external_level_with_context<'a>(
     load_context: &LoadContext<'a>,
     level_rel_path: &Path,
 ) -> anyhow::Result<Level> {
-    // questionable unwrap
     let asset_path = load_context.path().parent().unwrap().join(level_rel_path);
     let level_bytes = load_context.read_asset_bytes(asset_path).await?;
 

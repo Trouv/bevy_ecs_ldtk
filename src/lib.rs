@@ -5,7 +5,12 @@ use bevy::{
     utils::BoxedFuture,
 };
 use bevy_ecs_tilemap::prelude::*;
-use ldtk_rust::Project;
+use futures::{
+    executor::block_on,
+    stream::{self, StreamExt},
+};
+use ldtk_rust::{Level, Project};
+use std::path::Path;
 
 pub struct LevelIdentifier {
     pub identifier: String,
@@ -41,17 +46,12 @@ impl AssetLoader for LdtkLoader {
             let mut project: Project = serde_json::from_slice(bytes)?;
 
             if project.external_levels {
-                project.load_external_levels(format!(
-                    "assets/{}",
-                    load_context
-                        .path()
-                        .to_str()
-                        .expect("ldtk path should be valid unicode")
+                block_on(load_external_levels_with_context(
+                    load_context,
+                    &mut project,
                 ));
             }
             let ldtk_asset = LdtkAsset { project };
-
-            let parent_path = load_context.path().parent();
 
             load_context.set_default_asset(LoadedAsset::new(ldtk_asset));
             Ok(())
@@ -61,4 +61,35 @@ impl AssetLoader for LdtkLoader {
     fn extensions(&self) -> &[&str] {
         &["ldtk"]
     }
+}
+
+async fn load_external_levels_with_context<'a>(
+    load_context: &mut LoadContext<'a>,
+    project: &mut Project,
+) {
+    if project.external_levels {
+        let level_rel_paths: Vec<&Path> = project
+            .levels
+            .iter()
+            .map(|l| Path::new(l.external_rel_path.as_ref().expect("missing level")))
+            .collect();
+
+        project.levels = stream::iter(level_rel_paths)
+            .map(|p| load_external_level_with_context(load_context, p))
+            .buffered(10)
+            .map(|l| l.expect("Error reading level"))
+            .collect()
+            .await;
+    }
+}
+
+async fn load_external_level_with_context<'a>(
+    load_context: &LoadContext<'a>,
+    level_rel_path: &Path,
+) -> anyhow::Result<Level> {
+    // questionable unwrap
+    let asset_path = load_context.path().parent().unwrap().join(level_rel_path);
+    let level_bytes = load_context.read_asset_bytes(asset_path).await?;
+
+    Ok(serde_json::from_slice(&level_bytes)?)
 }

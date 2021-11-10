@@ -51,9 +51,25 @@ impl AssetLoader for LdtkLoader {
                     &mut project,
                 ));
             }
-            let ldtk_asset = LdtkAsset { project };
 
-            load_context.set_default_asset(LoadedAsset::new(ldtk_asset));
+            let tileset_rel_paths = project
+                .defs
+                .tilesets
+                .iter()
+                .map(|t| {
+                    load_context
+                        .path()
+                        .parent()
+                        .unwrap()
+                        .join(Path::new(&t.rel_path))
+                        .into()
+                })
+                .collect();
+
+            let ldtk_asset = LdtkAsset { project };
+            load_context.set_default_asset(
+                LoadedAsset::new(ldtk_asset).with_dependencies(tileset_rel_paths),
+            );
             Ok(())
         })
     }

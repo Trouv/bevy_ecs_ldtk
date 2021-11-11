@@ -14,8 +14,11 @@ use std::path::Path;
 
 mod systems;
 
-pub struct LevelIdentifier {
-    pub identifier: String,
+#[derive(Clone, Eq, PartialEq, Debug, Component)]
+pub enum LevelSelection {
+    Identifier(String),
+    Index(usize),
+    Uid(i64),
 }
 
 #[derive(TypeUuid)]
@@ -26,6 +29,14 @@ pub struct LdtkAsset {
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Hash)]
 pub struct LdtkPlugin;
+
+pub struct LdtkMapBundle {
+    pub ldtk_handle: Handle<LdtkAsset>,
+    pub level_selection: LevelSelection,
+    pub map: Map,
+    pub transform: Transform,
+    pub global_transform: GlobalTransform,
+}
 
 impl Plugin for LdtkPlugin {
     fn build(&self, app: &mut App) {

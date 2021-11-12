@@ -1,11 +1,11 @@
 # bevy_ecs_ldtk
-An ECS-friendly ldtk plugin for [bevy](https://github.com/bevy-engine/bevy).
+An ECS-friendly ldtk plugin for [bevy](https://github.com/bevyengine/bevy).
 Uses [bevy_ecs_tilemap](https://github.com/StarArawn/bevy_ecs_tilemap) as a base.
 Not released yet, still in development.
 
 ![screenshot](repo/screenshot.png)
 
-bevy_ecs_tilemap once supported ldtk loading, but this was removed to keep the plugin small and focused (StarArawn/bevy_ecs_tilemap#84).
+bevy_ecs_tilemap once supported ldtk loading, but this was removed to keep the plugin small and focused (see: StarArawn/bevy_ecs_tilemap#84 ) 
 This plugin aims to be a more complete solution to ldtk in bevy, with the following goals.
 - [ ] Supports all layer types
   - [x] tile layers

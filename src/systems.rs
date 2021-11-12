@@ -1,4 +1,5 @@
 use crate::*;
+
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 use ldtk_rust::{TileInstance, TilesetDefinition};
@@ -38,7 +39,9 @@ const CHUNK_SIZE: ChunkSize = ChunkSize(32, 32);
 
 pub fn process_loaded_ldtk(
     mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
     asset_server: Res<AssetServer>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
     mut ldtk_events: EventReader<AssetEvent<LdtkAsset>>,
     mut ldtk_map_query: Query<(Entity, &Handle<LdtkAsset>, &LevelSelection, &mut Map)>,
     ldtk_assets: Res<Assets<LdtkAsset>>,
@@ -148,6 +151,28 @@ pub fn process_loaded_ldtk(
 
                             let texture_handle =
                                 ldtk_asset.tileset_map.get(&tileset_definition.uid).unwrap();
+
+                            let material_handle =
+                                materials.add(ColorMaterial::texture(texture_handle.clone_weak()));
+
+                            let layer_bundle =
+                                layer_builder.build(&mut commands, &mut meshes, material_handle);
+
+                            let transform = Transform::from_xyz(
+                                0.0,
+                                -level.px_hei as f32,
+                                layer_bundle.layer.settings.layer_id as f32,
+                            );
+                            map.add_layer(
+                                &mut commands,
+                                layer_bundle.layer.settings.layer_id,
+                                layer_entity,
+                            );
+                            commands.entity(layer_entity).insert_bundle(LayerBundle {
+                                layer: layer_bundle.layer,
+                                transform,
+                                ..layer_bundle
+                            });
                         }
 
                         for cell in &layer_instance.int_grid_csv {}

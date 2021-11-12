@@ -1,7 +1,8 @@
 use crate::*;
 use bevy::prelude::*;
-use ldtk_ruse::TileInstance;
+use ldtk_rust::{TileInstance, TilesetDefinition};
 use serde_json::Value;
+use std::collections::HashMap;
 
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug, Default, Hash, Component)]
 pub struct LdtkIntGridCell(i64);
@@ -31,6 +32,8 @@ pub struct LdtkEntityTile {
     pub src_rect: Rect<i64>,
     pub tileset_uid: i64,
 }
+
+const CHUNK_SIZE: ChunkSize = ChunkSize(32, 32);
 
 pub fn process_loaded_ldtk(
     mut commands: Commands,
@@ -76,6 +79,15 @@ pub fn process_loaded_ldtk(
             //TODO: despawn changed levels
 
             let ldtk_asset = ldtk_assets.get(ldtk_handle).unwrap();
+
+            let tileset_definition_map: HashMap<i64, &TilesetDefinition> = ldtk_asset
+                .project
+                .defs
+                .tilesets
+                .iter()
+                .map(|t| (t.uid, t))
+                .collect();
+
             for (_, level) in
                 ldtk_asset.project.levels.iter().enumerate().filter(
                     |(i, l)| match level_selection {
@@ -86,13 +98,41 @@ pub fn process_loaded_ldtk(
                 )
             {
                 if let Some(layer_instances) = &level.layer_instances {
-                    for layer_instance in layer_instances.into_iter().rev() {
-                        for tile in layer_instance.auto_layer_tiles {}
-                        for tile in layer_instance.grid_tiles {}
+                    for (layer_z, layer_instance) in layer_instances.into_iter().rev().enumerate() {
+                        if let Some(tileset_uid) = layer_instance.tileset_def_uid {
+                            let map_size = MapSize(
+                                (layer_instance.c_wid as f32 / CHUNK_SIZE.0 as f32).ceil() as u32,
+                                (layer_instance.c_hei as f32 / CHUNK_SIZE.1 as f32).ceil() as u32,
+                            );
 
-                        for cell in layer_instance.int_grid_csv {}
+                            let tileset_definition =
+                                tileset_definition_map.get(&tileset_uid).unwrap();
+                            let mut settings = LayerSettings::new(
+                                map_size,
+                                CHUNK_SIZE,
+                                TileSize(
+                                    tileset_definition.tile_grid_size as f32,
+                                    tileset_definition.tile_grid_size as f32,
+                                ),
+                                TextureSize(
+                                    tileset_definition.px_wid as f32,
+                                    tileset_definition.px_hei as f32,
+                                ),
+                            );
+                            let (mut layer_builder, layer_entity) = LayerBuilder::<TileBundle>::new(
+                                &mut commands,
+                                settings,
+                                map.id,
+                                layer_z as u16,
+                                None,
+                            );
+                            for tile in &layer_instance.auto_layer_tiles {}
+                            for tile in &layer_instance.grid_tiles {}
+                        }
 
-                        for entity_instance in layer_instance.entity_instances {}
+                        for cell in &layer_instance.int_grid_csv {}
+
+                        for entity_instance in &layer_instance.entity_instances {}
                     }
                 }
             }

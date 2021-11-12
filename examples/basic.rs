@@ -1,36 +1,25 @@
 use bevy::prelude::*;
+use bevy::render::texture::FilterMode;
 use bevy_ecs_ldtk::*;
+use bevy_ecs_tilemap::*;
 use serde_json;
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(LdtkPlugin)
-        .init_resource::<State>()
         .add_startup_system(setup)
-        .add_system(print_on_load)
         .run();
 }
 
-#[derive(Default)]
-struct State {
-    handle: Handle<LdtkAsset>,
-    printed: bool,
-}
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 
-fn setup(mut state: ResMut<State>, asset_server: Res<AssetServer>) {
-    state.handle = asset_server.load("levels.ldtk");
-}
-
-fn print_on_load(mut state: ResMut<State>, ldtk_assets: ResMut<Assets<LdtkAsset>>) {
-    let ldtk_asset = ldtk_assets.get(&state.handle);
-    if state.printed || ldtk_asset.is_none() {
-        return;
-    }
-
-    println!(
-        "ldtk asset loaded: {}",
-        serde_json::to_string(&ldtk_asset.unwrap().project).unwrap()
-    );
-    state.printed = true;
+    let ldtk_handle = asset_server.load("levels.ldtk");
+    let map_entity = commands.spawn().id();
+    commands.entity(map_entity).insert_bundle(LdtkMapBundle {
+        ldtk_handle,
+        map: Map::new(0u16, map_entity),
+        ..Default::default()
+    });
 }

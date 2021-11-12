@@ -40,7 +40,6 @@ const CHUNK_SIZE: ChunkSize = ChunkSize(32, 32);
 pub fn process_loaded_ldtk(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
-    asset_server: Res<AssetServer>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut ldtk_events: EventReader<AssetEvent<LdtkAsset>>,
     mut ldtk_map_query: Query<(Entity, &Handle<LdtkAsset>, &LevelSelection, &mut Map)>,
@@ -83,101 +82,111 @@ pub fn process_loaded_ldtk(
         {
             //TODO: despawn changed levels
 
-            let ldtk_asset = ldtk_assets.get(ldtk_handle).unwrap();
+            if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
+                let tileset_definition_map: HashMap<i64, &TilesetDefinition> = ldtk_asset
+                    .project
+                    .defs
+                    .tilesets
+                    .iter()
+                    .map(|t| (t.uid, t))
+                    .collect();
 
-            let tileset_definition_map: HashMap<i64, &TilesetDefinition> = ldtk_asset
-                .project
-                .defs
-                .tilesets
-                .iter()
-                .map(|t| (t.uid, t))
-                .collect();
-
-            for (_, level) in
-                ldtk_asset.project.levels.iter().enumerate().filter(
-                    |(i, l)| match level_selection {
+                for (_, level) in ldtk_asset
+                    .project
+                    .levels
+                    .iter()
+                    .enumerate()
+                    .filter(|(i, l)| match level_selection {
                         LevelSelection::Identifier(s) => *s == l.identifier,
                         LevelSelection::Index(j) => j == i,
                         LevelSelection::Uid(u) => *u == l.uid,
-                    },
-                )
-            {
-                if let Some(layer_instances) = &level.layer_instances {
-                    for (layer_z, layer_instance) in layer_instances.into_iter().rev().enumerate() {
-                        if let Some(tileset_uid) = layer_instance.tileset_def_uid {
-                            let map_size = MapSize(
-                                (layer_instance.c_wid as f32 / CHUNK_SIZE.0 as f32).ceil() as u32,
-                                (layer_instance.c_hei as f32 / CHUNK_SIZE.1 as f32).ceil() as u32,
-                            );
-
-                            let tileset_definition =
-                                tileset_definition_map.get(&tileset_uid).unwrap();
-                            let settings = LayerSettings::new(
-                                map_size,
-                                CHUNK_SIZE,
-                                TileSize(
-                                    tileset_definition.tile_grid_size as f32,
-                                    tileset_definition.tile_grid_size as f32,
-                                ),
-                                TextureSize(
-                                    tileset_definition.px_wid as f32,
-                                    tileset_definition.px_hei as f32,
-                                ),
-                            );
-                            let (mut layer_builder, layer_entity) = LayerBuilder::<TileBundle>::new(
-                                &mut commands,
-                                settings,
-                                map.id,
-                                layer_z as u16,
-                                None,
-                            );
-
-                            for tile in &layer_instance.auto_layer_tiles {
-                                add_tile_to_layer(
-                                    tile,
-                                    &mut layer_builder,
-                                    &tileset_definition,
-                                    layer_instance.c_hei,
+                    })
+                {
+                    if let Some(layer_instances) = &level.layer_instances {
+                        for (layer_z, layer_instance) in
+                            layer_instances.into_iter().rev().enumerate()
+                        {
+                            if let Some(tileset_uid) = layer_instance.tileset_def_uid {
+                                let map_size = MapSize(
+                                    (layer_instance.c_wid as f32 / CHUNK_SIZE.0 as f32).ceil()
+                                        as u32,
+                                    (layer_instance.c_hei as f32 / CHUNK_SIZE.1 as f32).ceil()
+                                        as u32,
                                 );
-                            }
-                            for tile in &layer_instance.grid_tiles {
-                                add_tile_to_layer(
-                                    tile,
-                                    &mut layer_builder,
-                                    &tileset_definition,
-                                    layer_instance.c_hei,
+
+                                let tileset_definition =
+                                    tileset_definition_map.get(&tileset_uid).unwrap();
+                                let settings = LayerSettings::new(
+                                    map_size,
+                                    CHUNK_SIZE,
+                                    TileSize(
+                                        tileset_definition.tile_grid_size as f32,
+                                        tileset_definition.tile_grid_size as f32,
+                                    ),
+                                    TextureSize(
+                                        tileset_definition.px_wid as f32,
+                                        tileset_definition.px_hei as f32,
+                                    ),
                                 );
+                                let (mut layer_builder, layer_entity) =
+                                    LayerBuilder::<TileBundle>::new(
+                                        &mut commands,
+                                        settings,
+                                        map.id,
+                                        layer_z as u16,
+                                        None,
+                                    );
+
+                                for tile in &layer_instance.auto_layer_tiles {
+                                    add_tile_to_layer(
+                                        tile,
+                                        &mut layer_builder,
+                                        &tileset_definition,
+                                        layer_instance.c_hei,
+                                    );
+                                }
+                                for tile in &layer_instance.grid_tiles {
+                                    add_tile_to_layer(
+                                        tile,
+                                        &mut layer_builder,
+                                        &tileset_definition,
+                                        layer_instance.c_hei,
+                                    );
+                                }
+
+                                let texture_handle =
+                                    ldtk_asset.tileset_map.get(&tileset_definition.uid).unwrap();
+
+                                let material_handle = materials
+                                    .add(ColorMaterial::texture(texture_handle.clone_weak()));
+
+                                let layer_bundle = layer_builder.build(
+                                    &mut commands,
+                                    &mut meshes,
+                                    material_handle,
+                                );
+
+                                let transform = Transform::from_xyz(
+                                    0.0,
+                                    -level.px_hei as f32,
+                                    layer_bundle.layer.settings.layer_id as f32,
+                                );
+                                map.add_layer(
+                                    &mut commands,
+                                    layer_bundle.layer.settings.layer_id,
+                                    layer_entity,
+                                );
+                                commands.entity(layer_entity).insert_bundle(LayerBundle {
+                                    layer: layer_bundle.layer,
+                                    transform,
+                                    ..layer_bundle
+                                });
                             }
 
-                            let texture_handle =
-                                ldtk_asset.tileset_map.get(&tileset_definition.uid).unwrap();
+                            for cell in &layer_instance.int_grid_csv {}
 
-                            let material_handle =
-                                materials.add(ColorMaterial::texture(texture_handle.clone_weak()));
-
-                            let layer_bundle =
-                                layer_builder.build(&mut commands, &mut meshes, material_handle);
-
-                            let transform = Transform::from_xyz(
-                                0.0,
-                                -level.px_hei as f32,
-                                layer_bundle.layer.settings.layer_id as f32,
-                            );
-                            map.add_layer(
-                                &mut commands,
-                                layer_bundle.layer.settings.layer_id,
-                                layer_entity,
-                            );
-                            commands.entity(layer_entity).insert_bundle(LayerBundle {
-                                layer: layer_bundle.layer,
-                                transform,
-                                ..layer_bundle
-                            });
+                            for entity_instance in &layer_instance.entity_instances {}
                         }
-
-                        for cell in &layer_instance.int_grid_csv {}
-
-                        for entity_instance in &layer_instance.entity_instances {}
                     }
                 }
             }
@@ -197,7 +206,7 @@ fn add_tile_to_layer(
     );
 
     let tileset_x = tile.src[0] / tileset_definition.tile_grid_size;
-    let tileset_y = tile.src[0] / tileset_definition.tile_grid_size;
+    let tileset_y = tile.src[1] / tileset_definition.tile_grid_size;
 
     layer_builder
         .set_tile(

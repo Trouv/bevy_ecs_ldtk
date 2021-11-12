@@ -21,6 +21,12 @@ pub enum LevelSelection {
     Uid(i64),
 }
 
+impl Default for LevelSelection {
+    fn default() -> Self {
+        LevelSelection::Index(0)
+    }
+}
+
 #[derive(TypeUuid)]
 #[uuid = "ecfb87b7-9cd9-4970-8482-f2f68b770d31"]
 pub struct LdtkAsset {
@@ -31,6 +37,7 @@ pub struct LdtkAsset {
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Hash)]
 pub struct LdtkPlugin;
 
+#[derive(Clone, Default, Bundle)]
 pub struct LdtkMapBundle {
     pub ldtk_handle: Handle<LdtkAsset>,
     pub level_selection: LevelSelection,
@@ -43,7 +50,8 @@ impl Plugin for LdtkPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(TilemapPlugin)
             .add_asset::<LdtkAsset>()
-            .init_asset_loader::<LdtkLoader>();
+            .init_asset_loader::<LdtkLoader>()
+            .add_system(systems::process_loaded_ldtk);
     }
 }
 

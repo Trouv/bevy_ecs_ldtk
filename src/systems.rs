@@ -1,5 +1,6 @@
 use crate::*;
 use bevy::prelude::*;
+use bevy_ecs_tilemap::prelude::*;
 use ldtk_rust::{TileInstance, TilesetDefinition};
 use serde_json::Value;
 use std::collections::HashMap;
@@ -37,6 +38,7 @@ const CHUNK_SIZE: ChunkSize = ChunkSize(32, 32);
 
 pub fn process_loaded_ldtk(
     mut commands: Commands,
+    asset_server: Res<AssetServer>,
     mut ldtk_events: EventReader<AssetEvent<LdtkAsset>>,
     mut ldtk_map_query: Query<(Entity, &Handle<LdtkAsset>, &LevelSelection, &mut Map)>,
     ldtk_assets: Res<Assets<LdtkAsset>>,
@@ -107,7 +109,7 @@ pub fn process_loaded_ldtk(
 
                             let tileset_definition =
                                 tileset_definition_map.get(&tileset_uid).unwrap();
-                            let mut settings = LayerSettings::new(
+                            let settings = LayerSettings::new(
                                 map_size,
                                 CHUNK_SIZE,
                                 TileSize(
@@ -126,8 +128,26 @@ pub fn process_loaded_ldtk(
                                 layer_z as u16,
                                 None,
                             );
-                            for tile in &layer_instance.auto_layer_tiles {}
-                            for tile in &layer_instance.grid_tiles {}
+
+                            for tile in &layer_instance.auto_layer_tiles {
+                                add_tile_to_layer(
+                                    tile,
+                                    &mut layer_builder,
+                                    &tileset_definition,
+                                    layer_instance.c_hei,
+                                );
+                            }
+                            for tile in &layer_instance.grid_tiles {
+                                add_tile_to_layer(
+                                    tile,
+                                    &mut layer_builder,
+                                    &tileset_definition,
+                                    layer_instance.c_hei,
+                                );
+                            }
+
+                            let texture_handle =
+                                ldtk_asset.tileset_map.get(&tileset_definition.uid).unwrap();
                         }
 
                         for cell in &layer_instance.int_grid_csv {}
@@ -140,4 +160,28 @@ pub fn process_loaded_ldtk(
     }
 }
 
-fn add_tile_to_layer(tile: &TileInstance, layer: &mut LayerBuilder<TileBundle>) {}
+fn add_tile_to_layer(
+    tile: &TileInstance,
+    layer_builder: &mut LayerBuilder<TileBundle>,
+    tileset_definition: &TilesetDefinition,
+    layer_height_in_tiles: i64,
+) {
+    let tile_pos = TilePos(
+        (tile.px[0] / tileset_definition.tile_grid_size) as u32,
+        layer_height_in_tiles as u32 - (tile.px[1] / tileset_definition.tile_grid_size) as u32 - 1,
+    );
+
+    let tileset_x = tile.src[0] / tileset_definition.tile_grid_size;
+    let tileset_y = tile.src[0] / tileset_definition.tile_grid_size;
+
+    layer_builder
+        .set_tile(
+            tile_pos,
+            Tile {
+                texture_index: (tileset_y * tileset_definition.c_wid + tileset_x) as u16,
+                ..Default::default()
+            }
+            .into(),
+        )
+        .unwrap();
+}

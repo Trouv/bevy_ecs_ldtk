@@ -1,5 +1,5 @@
 use bevy::{
-    asset::{AssetLoader, LoadContext, LoadedAsset},
+    asset::{AssetLoader, AssetPath, LoadContext, LoadedAsset},
     prelude::*,
     reflect::TypeUuid,
     utils::BoxedFuture,
@@ -10,7 +10,7 @@ use futures::{
     stream::{self, StreamExt},
 };
 use ldtk_rust::{Level, Project};
-use std::path::Path;
+use std::{collections::HashMap, path::Path};
 
 mod systems;
 
@@ -25,6 +25,7 @@ pub enum LevelSelection {
 #[uuid = "ecfb87b7-9cd9-4970-8482-f2f68b770d31"]
 pub struct LdtkAsset {
     pub project: Project,
+    pub tileset_map: HashMap<i64, Handle<Texture>>,
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Hash)]
@@ -65,21 +66,24 @@ impl AssetLoader for LdtkLoader {
                 ));
             }
 
-            let tileset_rel_paths = project
-                .defs
-                .tilesets
-                .iter()
-                .map(|t| {
-                    load_context
-                        .path()
-                        .parent()
-                        .unwrap()
-                        .join(Path::new(&t.rel_path))
-                        .into()
-                })
-                .collect();
+            let mut tileset_rel_paths = Vec::new();
+            let mut tileset_map = HashMap::new();
+            for tileset in &project.defs.tilesets {
+                let asset_path: AssetPath = load_context
+                    .path()
+                    .parent()
+                    .unwrap()
+                    .join(Path::new(&tileset.rel_path))
+                    .into();
+                tileset_rel_paths.push(asset_path.clone());
 
-            let ldtk_asset = LdtkAsset { project };
+                tileset_map.insert(tileset.uid, load_context.get_handle(asset_path));
+            }
+
+            let ldtk_asset = LdtkAsset {
+                project,
+                tileset_map,
+            };
             load_context.set_default_asset(
                 LoadedAsset::new(ldtk_asset).with_dependencies(tileset_rel_paths),
             );

@@ -1,5 +1,6 @@
 use crate::*;
 use bevy::prelude::*;
+use ldtk_ruse::TileInstance;
 use serde_json::Value;
 
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug, Default, Hash, Component)]
@@ -68,7 +69,7 @@ pub fn process_loaded_ldtk(
     }
 
     for changed_ldtk in changed_ldtks.iter() {
-        for (entity, ldtk_handle, level_selection, map) in ldtk_map_query
+        for (entity, ldtk_handle, level_selection, mut map) in ldtk_map_query
             .iter_mut()
             .filter(|(_, l, _, _)| changed_ldtk == *l)
         {
@@ -85,11 +86,18 @@ pub fn process_loaded_ldtk(
                 )
             {
                 if let Some(layer_instances) = &level.layer_instances {
-                    for layer_instance in layer_instances {
-                        //TODO: spawn layers
+                    for layer_instance in layer_instances.into_iter().rev() {
+                        for tile in layer_instance.auto_layer_tiles {}
+                        for tile in layer_instance.grid_tiles {}
+
+                        for cell in layer_instance.int_grid_csv {}
+
+                        for entity_instance in layer_instance.entity_instances {}
                     }
                 }
             }
         }
     }
 }
+
+fn add_tile_to_layer(tile: &TileInstance, layer: &mut LayerBuilder<TileBundle>) {}

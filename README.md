@@ -5,7 +5,7 @@ Not released yet, still in development.
 
 ![screenshot](repo/screenshot.png)
 
-bevy_ecs_tilemap once supported ldtk loading, but this was removed to keep the plugin small and focused (see: StarArawn/bevy_ecs_tilemap#84 ) 
+bevy_ecs_tilemap once supported ldtk loading, but this was removed to keep the plugin small and focused (see: https://github.com/StarArawn/bevy_ecs_tilemap/issues/84)
 This plugin aims to be a more complete solution to ldtk in bevy, with the following goals.
 - [ ] Supports all layer types
   - [x] tile layers

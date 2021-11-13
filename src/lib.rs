@@ -17,7 +17,7 @@ impl Default for LevelSelection {
     }
 }
 
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Hash)]
+#[derive(Copy, Clone, Debug, Default)]
 pub struct LdtkPlugin;
 
 #[derive(Clone, Default, Bundle)]

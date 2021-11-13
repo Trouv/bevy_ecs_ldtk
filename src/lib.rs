@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 
 mod assets;
+mod ldtk;
 mod systems;
 
 #[derive(Clone, Eq, PartialEq, Debug, Component)]

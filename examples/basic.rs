@@ -15,6 +15,8 @@ fn main() {
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 
+    asset_server.watch_for_changes().unwrap();
+
     let ldtk_handle = asset_server.load("levels.ldtk");
     let map_entity = commands.spawn().id();
     commands.entity(map_entity).insert_bundle(LdtkMapBundle {

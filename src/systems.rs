@@ -44,6 +44,8 @@ pub fn process_loaded_ldtk(
     mut ldtk_events: EventReader<AssetEvent<LdtkAsset>>,
     mut ldtk_map_query: Query<(Entity, &Handle<LdtkAsset>, &LevelSelection, &mut Map)>,
     ldtk_assets: Res<Assets<LdtkAsset>>,
+    layer_query: Query<&Layer>,
+    chunk_query: Query<&Chunk>,
     new_ldtks: Query<&Handle<LdtkAsset>, Added<Handle<LdtkAsset>>>,
 ) {
     // This function uses code from the bevy_ecs_tilemap ldtk example
@@ -80,9 +82,34 @@ pub fn process_loaded_ldtk(
             .iter_mut()
             .filter(|(_, l, _, _)| changed_ldtk == *l)
         {
-            //TODO: despawn changed levels
-
             if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
+                for (layer_id, layer_entity) in map.get_layers() {
+                    if let Ok(layer) = layer_query.get(layer_entity) {
+                        for x in 0..layer.get_layer_size_in_tiles().0 {
+                            for y in 0..layer.get_layer_size_in_tiles().1 {
+                                let tile_pos = TilePos(x, y);
+                                let chunk_pos = ChunkPos(
+                                    tile_pos.0 / layer.settings.chunk_size.0,
+                                    tile_pos.1 / layer.settings.chunk_size.1,
+                                );
+                                if let Some(chunk_entity) = layer.get_chunk(chunk_pos) {
+                                    if let Ok(chunk) = chunk_query.get(chunk_entity) {
+                                        let chunk_tile_pos = chunk.to_chunk_pos(tile_pos);
+                                        if let Some(tile) = chunk.get_tile_entity(chunk_tile_pos) {
+                                            commands.entity(tile).despawn_recursive();
+                                        }
+                                    }
+
+                                    commands.entity(chunk_entity).despawn_recursive();
+                                }
+                            }
+                        }
+
+                        map.remove_layer(&mut commands, layer_id);
+                    }
+                }
+
+                //TODO: despawn changed levels
                 let tileset_definition_map: HashMap<i64, &TilesetDefinition> = ldtk_asset
                     .project
                     .defs

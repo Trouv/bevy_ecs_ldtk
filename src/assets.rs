@@ -4,12 +4,20 @@ use bevy::{
     reflect::TypeUuid,
     utils::BoxedFuture,
 };
-use futures::{
-    executor::block_on,
-    stream::{self, StreamExt},
-};
 use ldtk_rust::{Level, Project};
 use std::{collections::HashMap, path::Path};
+
+fn ldtk_path_to_asset_path<'a, 'b>(
+    load_context: &LoadContext<'a>,
+    rel_path: &String,
+) -> AssetPath<'b> {
+    load_context
+        .path()
+        .parent()
+        .unwrap()
+        .join(Path::new(rel_path))
+        .into()
+}
 
 #[derive(TypeUuid)]
 #[uuid = "ecfb87b7-9cd9-4970-8482-f2f68b770d31"]
@@ -36,12 +44,7 @@ impl AssetLoader for LdtkLoader {
             if project.external_levels {
                 for level in &project.levels {
                     if let Some(external_rel_path) = &level.external_rel_path {
-                        let asset_path: AssetPath = load_context
-                            .path()
-                            .parent()
-                            .unwrap()
-                            .join(Path::new(&external_rel_path))
-                            .into();
+                        let asset_path = ldtk_path_to_asset_path(load_context, &external_rel_path);
 
                         external_level_paths.push(asset_path.clone());
                         external_level_handles.push(load_context.get_handle(asset_path));
@@ -52,14 +55,9 @@ impl AssetLoader for LdtkLoader {
             let mut tileset_rel_paths = Vec::new();
             let mut tileset_map = HashMap::new();
             for tileset in &project.defs.tilesets {
-                let asset_path: AssetPath = load_context
-                    .path()
-                    .parent()
-                    .unwrap()
-                    .join(Path::new(&tileset.rel_path))
-                    .into();
-                tileset_rel_paths.push(asset_path.clone());
+                let asset_path = ldtk_path_to_asset_path(load_context, &tileset.rel_path);
 
+                tileset_rel_paths.push(asset_path.clone());
                 tileset_map.insert(tileset.uid, load_context.get_handle(asset_path));
             }
 

@@ -16,6 +16,7 @@ use std::{collections::HashMap, path::Path};
 pub struct LdtkAsset {
     pub project: Project,
     pub tileset_map: HashMap<i64, Handle<Texture>>,
+    pub external_level_handles: Vec<Handle<LdtkLevel>>,
 }
 
 #[derive(Copy, Clone, Debug, Default)]
@@ -28,13 +29,24 @@ impl AssetLoader for LdtkLoader {
         load_context: &'a mut LoadContext,
     ) -> BoxedFuture<'a, anyhow::Result<()>> {
         Box::pin(async move {
-            let mut project: Project = serde_json::from_slice(bytes)?;
+            let project: Project = serde_json::from_slice(bytes)?;
 
+            let mut external_level_paths = Vec::new();
+            let mut external_level_handles = Vec::new();
             if project.external_levels {
-                block_on(load_external_levels_with_context(
-                    load_context,
-                    &mut project,
-                ));
+                for level in &project.levels {
+                    if let Some(external_rel_path) = &level.external_rel_path {
+                        let asset_path: AssetPath = load_context
+                            .path()
+                            .parent()
+                            .unwrap()
+                            .join(Path::new(&external_rel_path))
+                            .into();
+
+                        external_level_paths.push(asset_path.clone());
+                        external_level_handles.push(load_context.get_handle(asset_path));
+                    }
+                }
             }
 
             let mut tileset_rel_paths = Vec::new();
@@ -54,9 +66,12 @@ impl AssetLoader for LdtkLoader {
             let ldtk_asset = LdtkAsset {
                 project,
                 tileset_map,
+                external_level_handles,
             };
             load_context.set_default_asset(
-                LoadedAsset::new(ldtk_asset).with_dependencies(tileset_rel_paths),
+                LoadedAsset::new(ldtk_asset)
+                    .with_dependencies(tileset_rel_paths)
+                    .with_dependencies(external_level_paths),
             );
             Ok(())
         })
@@ -65,36 +80,6 @@ impl AssetLoader for LdtkLoader {
     fn extensions(&self) -> &[&str] {
         &["ldtk"]
     }
-}
-
-async fn load_external_levels_with_context<'a>(
-    load_context: &mut LoadContext<'a>,
-    project: &mut Project,
-) {
-    if project.external_levels {
-        let level_rel_paths: Vec<&Path> = project
-            .levels
-            .iter()
-            .map(|l| Path::new(l.external_rel_path.as_ref().expect("missing level")))
-            .collect();
-
-        project.levels = stream::iter(level_rel_paths)
-            .map(|p| load_external_level_with_context(load_context, p))
-            .buffered(10)
-            .map(|l| l.expect("Error reading level"))
-            .collect()
-            .await;
-    }
-}
-
-async fn load_external_level_with_context<'a>(
-    load_context: &LoadContext<'a>,
-    level_rel_path: &Path,
-) -> anyhow::Result<Level> {
-    let asset_path = load_context.path().parent().unwrap().join(level_rel_path);
-    let level_bytes = load_context.read_asset_bytes(asset_path).await?;
-
-    Ok(serde_json::from_slice(&level_bytes)?)
 }
 
 #[derive(TypeUuid)]

@@ -35,7 +35,7 @@ impl Plugin for LdtkPlugin {
         app.add_plugin(TilemapPlugin)
             .add_asset::<assets::LdtkAsset>()
             .init_asset_loader::<assets::LdtkLoader>()
-            .add_asset::<assets::LdtkLevel>()
+            .add_asset::<assets::LdtkExternalLevel>()
             .init_asset_loader::<assets::LdtkLevelLoader>()
             .add_system(systems::process_external_levels)
             .add_system(systems::process_loaded_ldtk);

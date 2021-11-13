@@ -24,7 +24,7 @@ fn ldtk_path_to_asset_path<'a, 'b>(
 pub struct LdtkAsset {
     pub project: LdtkJson,
     pub tileset_map: HashMap<i64, Handle<Texture>>,
-    pub external_level_handles: Vec<Handle<LdtkLevel>>,
+    pub external_levels: Vec<Handle<LdtkExternalLevel>>,
 }
 
 #[derive(Copy, Clone, Debug, Default)]
@@ -64,7 +64,7 @@ impl AssetLoader for LdtkLoader {
             let ldtk_asset = LdtkAsset {
                 project,
                 tileset_map,
-                external_level_handles,
+                external_levels: external_level_handles,
             };
             load_context.set_default_asset(
                 LoadedAsset::new(ldtk_asset)
@@ -82,7 +82,7 @@ impl AssetLoader for LdtkLoader {
 
 #[derive(TypeUuid)]
 #[uuid = "5448469b-2134-44f5-a86c-a7b829f70a0c"]
-pub struct LdtkLevel {
+pub struct LdtkExternalLevel {
     pub level: Level,
 }
 
@@ -96,7 +96,7 @@ impl AssetLoader for LdtkLevelLoader {
         load_context: &'a mut LoadContext,
     ) -> BoxedFuture<'a, anyhow::Result<()>> {
         Box::pin(async move {
-            let ldtk_level = LdtkLevel {
+            let ldtk_level = LdtkExternalLevel {
                 level: serde_json::from_slice(&bytes)?,
             };
             load_context.set_default_asset(LoadedAsset::new(ldtk_level));

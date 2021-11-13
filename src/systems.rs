@@ -1,5 +1,5 @@
 use crate::{
-    assets::{LdtkAsset, LdtkLevel},
+    assets::{LdtkAsset, LdtkExternalLevel},
     ldtk::{TileInstance, TilesetDefinition},
     LevelSelection,
 };
@@ -41,13 +41,13 @@ pub struct LdtkEntityTile {
 const CHUNK_SIZE: ChunkSize = ChunkSize(32, 32);
 
 pub fn process_external_levels(
-    mut level_events: EventReader<AssetEvent<LdtkLevel>>,
-    level_assets: Res<Assets<LdtkLevel>>,
+    mut level_events: EventReader<AssetEvent<LdtkExternalLevel>>,
+    level_assets: Res<Assets<LdtkExternalLevel>>,
     mut ldtk_assets: ResMut<Assets<LdtkAsset>>,
 ) {
     for event in level_events.iter() {
         // creation and deletion events should be handled by the ldtk asset events
-        let mut changed_levels = Vec::<Handle<LdtkLevel>>::new();
+        let mut changed_levels = Vec::<Handle<LdtkExternalLevel>>::new();
         match event {
             AssetEvent::Created { handle } => {
                 info!("External Level added!");
@@ -64,7 +64,7 @@ pub fn process_external_levels(
         for level_handle in changed_levels {
             for (ldtk_handle, ldtk_asset) in ldtk_assets.iter() {
                 for (i, _) in ldtk_asset
-                    .external_level_handles
+                    .external_levels
                     .iter()
                     .enumerate()
                     .filter(|(_, h)| **h == level_handle)

@@ -1,8 +1,6 @@
 use bevy::prelude::*;
-use bevy::render::texture::FilterMode;
 use bevy_ecs_ldtk::*;
 use bevy_ecs_tilemap::*;
-use serde_json;
 
 fn main() {
     App::new()

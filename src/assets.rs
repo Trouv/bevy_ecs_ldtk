@@ -1,10 +1,10 @@
+use crate::ldtk::{LdtkJson, Level};
 use bevy::{
     asset::{AssetLoader, AssetPath, LoadContext, LoadedAsset},
     prelude::*,
     reflect::TypeUuid,
     utils::BoxedFuture,
 };
-use ldtk_rust::{Level, Project};
 use std::{collections::HashMap, path::Path};
 
 fn ldtk_path_to_asset_path<'a, 'b>(
@@ -22,7 +22,7 @@ fn ldtk_path_to_asset_path<'a, 'b>(
 #[derive(TypeUuid)]
 #[uuid = "ecfb87b7-9cd9-4970-8482-f2f68b770d31"]
 pub struct LdtkAsset {
-    pub project: Project,
+    pub project: LdtkJson,
     pub tileset_map: HashMap<i64, Handle<Texture>>,
     pub external_level_handles: Vec<Handle<LdtkLevel>>,
 }
@@ -37,7 +37,7 @@ impl AssetLoader for LdtkLoader {
         load_context: &'a mut LoadContext,
     ) -> BoxedFuture<'a, anyhow::Result<()>> {
         Box::pin(async move {
-            let project: Project = serde_json::from_slice(bytes)?;
+            let project: LdtkJson = serde_json::from_slice(bytes)?;
 
             let mut external_level_paths = Vec::new();
             let mut external_level_handles = Vec::new();

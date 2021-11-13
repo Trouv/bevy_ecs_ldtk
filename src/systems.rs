@@ -1,11 +1,11 @@
 use crate::{
     assets::{LdtkAsset, LdtkLevel},
+    ldtk::{TileInstance, TilesetDefinition},
     LevelSelection,
 };
 
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
-use ldtk_rust::{Level, TileInstance, TilesetDefinition};
 use serde_json::Value;
 use std::collections::HashMap;
 

@@ -20,6 +20,12 @@ This plugin aims to be a more complete solution to ldtk in bevy, with the follow
     - [ ] fields accessible from components on new entities
     - [ ] low-boilerplate solution for spawning bundles from particular entity identifiers automatically
 - [ ] hot-reloading for ldtk and its dependencies
+  - [x] hot-reloading for tile layers
+  - [x] hot-reloading for auto tile layers
+  - [ ] hot-reloading for intgrid layers
+  - [ ] hot-reloading for entity layers
+  - [x] hot-reloading for tilesets
+  - [ ] hot-reloading for external levels (see #1)
 - [x] support for external levels
 - [ ] support for optionally loading level-neighbors
 

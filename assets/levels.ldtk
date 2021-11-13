@@ -469,7 +469,7 @@
 					"layerDefUid": 16,
 					"pxOffsetX": 0,
 					"pxOffsetY": 0,
-					"visible": false,
+					"visible": true,
 					"optionalRules": [],
 					"intGrid": [],
 					"intGridCsv": [],

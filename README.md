@@ -25,7 +25,7 @@ This plugin aims to be a more complete solution to ldtk in bevy, with the follow
   - [ ] hot-reloading for intgrid layers
   - [ ] hot-reloading for entity layers
   - [x] hot-reloading for tilesets
-  - [ ] hot-reloading for external levels (see #1)
+  - [ ] hot-reloading for external levels (see: https://github.com/Trouv/bevy_ecs_ldtk/issues/1)
 - [x] support for external levels
 - [ ] support for optionally loading level-neighbors
 

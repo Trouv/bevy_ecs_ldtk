@@ -12,6 +12,7 @@ use futures::{
 use ldtk_rust::{Level, Project};
 use std::{collections::HashMap, path::Path};
 
+mod assets;
 mod systems;
 
 #[derive(Clone, Eq, PartialEq, Debug, Component)]
@@ -51,6 +52,8 @@ impl Plugin for LdtkPlugin {
         app.add_plugin(TilemapPlugin)
             .add_asset::<LdtkAsset>()
             .init_asset_loader::<LdtkLoader>()
+            .add_asset::<assets::LdtkLevel>()
+            .init_asset_loader::<assets::LdtkLevelLoader>()
             .add_system(systems::process_loaded_ldtk);
     }
 }

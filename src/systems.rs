@@ -1,8 +1,11 @@
-use crate::{assets::LdtkAsset, LevelSelection};
+use crate::{
+    assets::{LdtkAsset, LdtkLevel},
+    LevelSelection,
+};
 
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
-use ldtk_rust::{TileInstance, TilesetDefinition};
+use ldtk_rust::{Level, TileInstance, TilesetDefinition};
 use serde_json::Value;
 use std::collections::HashMap;
 
@@ -36,6 +39,52 @@ pub struct LdtkEntityTile {
 }
 
 const CHUNK_SIZE: ChunkSize = ChunkSize(32, 32);
+
+pub fn process_external_levels(
+    mut level_events: EventReader<AssetEvent<LdtkLevel>>,
+    level_assets: Res<Assets<LdtkLevel>>,
+    mut ldtk_assets: ResMut<Assets<LdtkAsset>>,
+) {
+    for event in level_events.iter() {
+        // creation and deletion events should be handled by the ldtk asset events
+        let mut changed_levels = Vec::<Handle<LdtkLevel>>::new();
+        match event {
+            AssetEvent::Created { handle } => {
+                info!("External Level added!");
+                changed_levels.push(handle.clone());
+            }
+            AssetEvent::Modified { handle } => {
+                info!("External Level changed!");
+                changed_levels.push(handle.clone());
+            }
+            _ => (),
+        }
+
+        let mut levels_to_update = Vec::new();
+        for level_handle in changed_levels {
+            for (ldtk_handle, ldtk_asset) in ldtk_assets.iter() {
+                for (i, _) in ldtk_asset
+                    .external_level_handles
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, h)| **h == level_handle)
+                {
+                    levels_to_update.push((ldtk_handle, level_handle.clone(), i));
+                }
+            }
+        }
+
+        for (ldtk_handle, level_handle, level_index) in levels_to_update {
+            if let Some(level) = level_assets.get(level_handle) {
+                if let Some(ldtk_asset) = ldtk_assets.get_mut(ldtk_handle) {
+                    if let Some(ldtk_level) = ldtk_asset.project.levels.get_mut(level_index) {
+                        //ldtk_level.layer_instances = level.level.layer_instances.unwrap()clone();
+                    }
+                }
+            }
+        }
+    }
+}
 
 pub fn process_loaded_ldtk(
     mut commands: Commands,

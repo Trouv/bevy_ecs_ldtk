@@ -37,6 +37,7 @@ impl Plugin for LdtkPlugin {
             .init_asset_loader::<assets::LdtkLoader>()
             .add_asset::<assets::LdtkLevel>()
             .init_asset_loader::<assets::LdtkLevelLoader>()
+            .add_system(systems::process_external_levels)
             .add_system(systems::process_loaded_ldtk);
     }
 }

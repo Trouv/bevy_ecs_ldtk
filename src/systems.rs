@@ -78,7 +78,7 @@ pub fn process_external_levels(
             if let Some(level) = level_assets.get(level_handle) {
                 if let Some(ldtk_asset) = ldtk_assets.get_mut(ldtk_handle) {
                     if let Some(ldtk_level) = ldtk_asset.project.levels.get_mut(level_index) {
-                        //ldtk_level.layer_instances = level.level.layer_instances.unwrap()clone();
+                        *ldtk_level = level.level.clone();
                     }
                 }
             }

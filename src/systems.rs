@@ -62,7 +62,7 @@ pub fn process_loaded_ldtk(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut ldtk_events: EventReader<AssetEvent<LdtkAsset>>,
-    mut ldtk_map_query: Query<(Entity, &Handle<LdtkAsset>, &LevelSelection, &mut Map)>,
+    mut ldtk_map_query: Query<(&Handle<LdtkAsset>, &LevelSelection, &mut Map)>,
     ldtk_assets: Res<Assets<LdtkAsset>>,
     layer_query: Query<&Layer>,
     chunk_query: Query<&Chunk>,
@@ -98,9 +98,9 @@ pub fn process_loaded_ldtk(
     }
 
     for changed_ldtk in changed_ldtks.iter() {
-        for (entity, ldtk_handle, level_selection, mut map) in ldtk_map_query
+        for (ldtk_handle, level_selection, mut map) in ldtk_map_query
             .iter_mut()
-            .filter(|(_, l, _, _)| changed_ldtk == *l)
+            .filter(|(l, _, _)| changed_ldtk == *l)
         {
             if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
                 for (layer_id, layer_entity) in map.get_layers() {
@@ -129,7 +129,6 @@ pub fn process_loaded_ldtk(
                     }
                 }
 
-                //TODO: despawn changed levels
                 let tileset_definition_map: HashMap<i64, &TilesetDefinition> = ldtk_asset
                     .project
                     .defs
@@ -197,7 +196,6 @@ pub fn process_loaded_ldtk(
                                         layer_z as u16,
                                         None,
                                         tile_pos_to_tile_maker(
-                                            layer_instance.c_wid,
                                             layer_instance.c_hei,
                                             (*tileset_definition).clone(),
                                             grid_tiles,
@@ -249,7 +247,6 @@ pub fn process_loaded_ldtk(
                                             layer_z as u16,
                                             None,
                                             tile_pos_to_entity_maker(
-                                                layer_instance.c_wid,
                                                 layer_instance.c_hei,
                                                 layer_instance.entity_instances.clone(),
                                             ),
@@ -259,7 +256,6 @@ pub fn process_loaded_ldtk(
                             };
 
                             map.add_layer(&mut commands, layer_z as u16, layer_entity);
-                            for entity_instance in &layer_instance.entity_instances {}
                         }
                     }
                 }
@@ -269,7 +265,6 @@ pub fn process_loaded_ldtk(
 }
 
 fn tile_pos_to_tile_maker(
-    layer_width_in_tiles: i64,
     layer_height_in_tiles: i64,
     tileset_definition: TilesetDefinition,
     grid_tiles: Vec<TileInstance>,
@@ -308,7 +303,6 @@ fn tile_pos_to_tile_maker(
 }
 
 fn tile_pos_to_entity_maker(
-    layer_width_in_tiles: i64,
     layer_height_in_tiles: i64,
     entity_instances: Vec<EntityInstance>,
 ) -> impl FnMut(TilePos) -> Option<EntityInstanceBundle> {

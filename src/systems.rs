@@ -325,7 +325,7 @@ fn tile_pos_to_entity_maker(
                 entity_instance: entity_instance.clone(),
                 tile_bundle: TileBundle {
                     tile: Tile {
-                        visible: true,
+                        visible: false,
                         ..Default::default()
                     },
                     ..Default::default()
@@ -360,7 +360,7 @@ fn tile_pos_to_int_grid_maker(
                 int_grid_cell: IntGridCell { value: *x },
                 tile_bundle: TileBundle {
                     tile: Tile {
-                        visible: true,
+                        visible: false,
                         ..Default::default()
                     },
                     ..Default::default()

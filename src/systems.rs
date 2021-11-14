@@ -240,7 +240,7 @@ pub fn process_loaded_ldtk(
                                             ),
                                         )
                                     } else {
-                                        LayerBuilder::<IntGridCellBundle>::new_batch(
+                                        LayerBuilder::<EntityInstanceBundle>::new_batch(
                                             &mut commands,
                                             settings,
                                             &mut meshes,
@@ -248,10 +248,10 @@ pub fn process_loaded_ldtk(
                                             map.id,
                                             layer_z as u16,
                                             None,
-                                            tile_pos_to_int_grid_maker(
+                                            tile_pos_to_entity_maker(
                                                 layer_instance.c_wid,
                                                 layer_instance.c_hei,
-                                                layer_instance.int_grid_csv.clone(),
+                                                layer_instance.entity_instances.clone(),
                                             ),
                                         )
                                     }
@@ -302,6 +302,41 @@ fn tile_pos_to_tile_maker(
                     ..Default::default()
                 })
             }
+            None => None,
+        }
+    }
+}
+
+fn tile_pos_to_entity_maker(
+    layer_width_in_tiles: i64,
+    layer_height_in_tiles: i64,
+    entity_instances: Vec<EntityInstance>,
+) -> impl FnMut(TilePos) -> Option<EntityInstanceBundle> {
+    let entity_instance_map: HashMap<TilePos, EntityInstance> = entity_instances
+        .into_iter()
+        .map(|e| {
+            (
+                TilePos(
+                    e.grid[0] as u32,
+                    (layer_height_in_tiles - e.grid[1]) as u32 - 1,
+                ),
+                e,
+            )
+        })
+        .collect();
+
+    move |tile_pos: TilePos| -> Option<EntityInstanceBundle> {
+        match entity_instance_map.get(&tile_pos) {
+            Some(entity_instance) => Some(EntityInstanceBundle {
+                entity_instance: entity_instance.clone(),
+                tile_bundle: TileBundle {
+                    tile: Tile {
+                        visible: true,
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                },
+            }),
             None => None,
         }
     }

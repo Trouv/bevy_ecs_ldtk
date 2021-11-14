@@ -24,3 +24,20 @@ impl TileBundleTrait for IntGridCellBundle {
         &mut self.tile_bundle.parent
     }
 }
+
+#[derive(Clone, Default, Bundle)]
+pub struct EntityInstanceBundle {
+    pub entity_instance: EntityInstance,
+    #[bundle]
+    pub tile_bundle: TileBundle,
+}
+
+impl TileBundleTrait for EntityInstanceBundle {
+    fn get_tile_pos_mut(&mut self) -> &mut TilePos {
+        &mut self.tile_bundle.position
+    }
+
+    fn get_tile_parent(&mut self) -> &mut TileParent {
+        &mut self.tile_bundle.parent
+    }
+}

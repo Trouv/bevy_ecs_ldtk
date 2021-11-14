@@ -919,7 +919,7 @@ pub struct TileInstance {
     pub t: i64,
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, bevy::prelude::Component, Default)]
 pub struct EntityInstance {
     /// Grid-based coordinates (`[x,y]` format)
     #[serde(rename = "__grid")]

@@ -13,7 +13,7 @@ This plugin aims to be a more complete solution to ldtk in bevy, with the follow
     - rendered with bevy_ecs_tilemap
   - [x] auto tile layers
     - rendered with bevy_ecs_tilemap
-  - [ ] intgrid layers
+  - [x] intgrid layers
     - intgrid values accessible as components on tiles
   - [ ] entity layers
     - new entities spawned at the correct location for users to flesh out in their own systems
@@ -22,7 +22,7 @@ This plugin aims to be a more complete solution to ldtk in bevy, with the follow
 - [ ] hot-reloading for ldtk and its dependencies
   - [x] hot-reloading for tile layers
   - [x] hot-reloading for auto tile layers
-  - [ ] hot-reloading for intgrid layers
+  - [x] hot-reloading for intgrid layers
   - [ ] hot-reloading for entity layers
   - [x] hot-reloading for tilesets
   - [ ] hot-reloading for external levels (see: https://github.com/Trouv/bevy_ecs_ldtk/issues/1)

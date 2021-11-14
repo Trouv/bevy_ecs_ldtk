@@ -278,8 +278,7 @@ pub fn process_loaded_ldtk(
                                         .unwrap();
                                 }
 
-                                let material_handle =
-                                    materials.add(ColorMaterial::color(Color::WHITE));
+                                let material_handle = materials.add(ColorMaterial::default());
 
                                 let layer_bundle = layer_builder.build(
                                     &mut commands,

@@ -247,60 +247,30 @@ pub fn process_loaded_ldtk(
                                     ),
                                     TextureSize(0., 0.),
                                 );
-                                let (mut layer_builder, layer_entity) =
-                                    LayerBuilder::<IntGridCellBundle>::new(
-                                        &mut commands,
-                                        settings,
-                                        map.id,
-                                        layer_z as u16,
-                                        None,
-                                    );
-
-                                for (i, cell) in layer_instance
-                                    .int_grid_csv
-                                    .iter()
-                                    .enumerate()
-                                    .filter(|(_, c)| **c != 0)
-                                {
-                                    let x = i as u32 % layer_instance.c_wid as u32;
-                                    let y = layer_instance.c_hei as u32
-                                        - ((i as u32 - x) / layer_instance.c_wid as u32)
-                                        - 1;
-
-                                    layer_builder
-                                        .set_tile(
-                                            TilePos(x, y),
-                                            IntGridCellBundle {
-                                                int_grid_cell: IntGridCell(*cell),
-                                                ..Default::default()
-                                            },
-                                        )
-                                        .unwrap();
-                                }
 
                                 let material_handle = materials.add(ColorMaterial::default());
 
-                                let layer_bundle = layer_builder.build(
+                                let layer_entity = LayerBuilder::<IntGridCellBundle>::new_batch(
                                     &mut commands,
+                                    settings,
                                     &mut meshes,
                                     material_handle,
+                                    map.id,
+                                    layer_z as u16,
+                                    None,
+                                    tile_pos_to_int_grid_maker(
+                                        layer_instance.c_wid,
+                                        layer_instance.c_hei,
+                                        layer_instance.int_grid_csv.clone(),
+                                    ),
                                 );
 
-                                let transform = Transform::from_xyz(
-                                    0.0,
-                                    -level.px_hei as f32,
-                                    layer_bundle.layer.settings.layer_id as f32,
-                                );
-                                map.add_layer(
-                                    &mut commands,
-                                    layer_bundle.layer.settings.layer_id,
-                                    layer_entity,
-                                );
-                                commands.entity(layer_entity).insert_bundle(LayerBundle {
-                                    layer: layer_bundle.layer,
-                                    transform,
-                                    ..layer_bundle
-                                });
+                                let transform =
+                                    Transform::from_xyz(0.0, -level.px_hei as f32, layer_z as f32);
+
+                                commands.entity(layer_entity).insert(transform);
+
+                                map.add_layer(&mut commands, layer_z as u16, layer_entity);
                             }
 
                             for entity_instance in &layer_instance.entity_instances {}
@@ -336,4 +306,39 @@ fn add_tile_to_layer(
             .into(),
         )
         .unwrap();
+}
+
+fn tile_pos_to_int_grid_maker(
+    layer_width_in_tiles: i64,
+    layer_height_in_tiles: i64,
+    int_grid_csv: Vec<i64>,
+) -> impl FnMut(TilePos) -> Option<IntGridCellBundle> {
+    move |tile_pos: TilePos| -> Option<IntGridCellBundle> {
+        let ldtk_x = tile_pos.0 as i64;
+        let ldtk_y = layer_height_in_tiles - tile_pos.1 as i64 - 1;
+
+        if ldtk_y < 0
+            || ldtk_y >= layer_height_in_tiles
+            || ldtk_x < 0
+            || ldtk_x >= layer_width_in_tiles
+        {
+            return None;
+        }
+
+        let csv_index = (ldtk_y * layer_width_in_tiles + ldtk_x) as usize;
+
+        match int_grid_csv.get(csv_index) {
+            Some(x) if *x != 0 => Some(IntGridCellBundle {
+                int_grid_cell: IntGridCell(*x),
+                tile_bundle: TileBundle {
+                    tile: Tile {
+                        visible: true,
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                },
+            }),
+            _ => None,
+        }
+    }
 }

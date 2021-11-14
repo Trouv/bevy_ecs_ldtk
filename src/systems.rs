@@ -1,42 +1,13 @@
 use crate::{
     assets::{LdtkAsset, LdtkExternalLevel},
+    components::*,
     ldtk::{TileInstance, TilesetDefinition},
     LevelSelection,
 };
 
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
-use serde_json::Value;
 use std::collections::HashMap;
-
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug, Default, Hash, Component)]
-pub struct LdtkIntGridCell(i64);
-
-#[derive(Clone, PartialEq, Debug, Default, Component)]
-pub struct LdtkEntity {
-    pub grid: IVec2,
-    pub identifier: String,
-    pub pivot: Vec2,
-    pub tile: Option<LdtkEntityTile>,
-    pub def_uid: i64,
-    pub field_instances: Vec<LdtkField>,
-    pub height: i64,
-    pub px: IVec2,
-    pub width: i64,
-}
-
-#[derive(Clone, Eq, PartialEq, Debug, Default)]
-pub struct LdtkField {
-    pub identifier: String,
-    pub value: Option<Value>,
-    pub def_uid: i64,
-}
-
-#[derive(Clone, PartialEq, Debug, Default)]
-pub struct LdtkEntityTile {
-    pub src_rect: Rect<i64>,
-    pub tileset_uid: i64,
-}
 
 const CHUNK_SIZE: ChunkSize = ChunkSize(32, 32);
 
@@ -259,7 +230,79 @@ pub fn process_loaded_ldtk(
                                 });
                             }
 
-                            for cell in &layer_instance.int_grid_csv {}
+                            if !layer_instance.int_grid_csv.is_empty() {
+                                let map_size = MapSize(
+                                    (layer_instance.c_wid as f32 / CHUNK_SIZE.0 as f32).ceil()
+                                        as u32,
+                                    (layer_instance.c_hei as f32 / CHUNK_SIZE.1 as f32).ceil()
+                                        as u32,
+                                );
+
+                                let settings = LayerSettings::new(
+                                    map_size,
+                                    CHUNK_SIZE,
+                                    TileSize(
+                                        layer_instance.grid_size as f32,
+                                        layer_instance.grid_size as f32,
+                                    ),
+                                    TextureSize(0., 0.),
+                                );
+                                let (mut layer_builder, layer_entity) =
+                                    LayerBuilder::<IntGridCellBundle>::new(
+                                        &mut commands,
+                                        settings,
+                                        map.id,
+                                        layer_z as u16,
+                                        None,
+                                    );
+
+                                for (i, cell) in layer_instance
+                                    .int_grid_csv
+                                    .iter()
+                                    .enumerate()
+                                    .filter(|(_, c)| **c != 0)
+                                {
+                                    let x = i as u32 % layer_instance.c_wid as u32;
+                                    let y = layer_instance.c_hei as u32
+                                        - ((i as u32 - x) / layer_instance.c_wid as u32)
+                                        - 1;
+
+                                    layer_builder
+                                        .set_tile(
+                                            TilePos(x, y),
+                                            IntGridCellBundle {
+                                                int_grid_cell: IntGridCell(*cell),
+                                                ..Default::default()
+                                            },
+                                        )
+                                        .unwrap();
+                                }
+
+                                let material_handle =
+                                    materials.add(ColorMaterial::color(Color::WHITE));
+
+                                let layer_bundle = layer_builder.build(
+                                    &mut commands,
+                                    &mut meshes,
+                                    material_handle,
+                                );
+
+                                let transform = Transform::from_xyz(
+                                    0.0,
+                                    -level.px_hei as f32,
+                                    layer_bundle.layer.settings.layer_id as f32,
+                                );
+                                map.add_layer(
+                                    &mut commands,
+                                    layer_bundle.layer.settings.layer_id,
+                                    layer_entity,
+                                );
+                                commands.entity(layer_entity).insert_bundle(LayerBundle {
+                                    layer: layer_bundle.layer,
+                                    transform,
+                                    ..layer_bundle
+                                });
+                            }
 
                             for entity_instance in &layer_instance.entity_instances {}
                         }

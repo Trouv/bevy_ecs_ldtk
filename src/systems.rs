@@ -175,31 +175,6 @@ pub fn process_loaded_ldtk(
                                         tileset_definition.px_hei as f32,
                                     ),
                                 );
-                                let (mut layer_builder, layer_entity) =
-                                    LayerBuilder::<TileBundle>::new(
-                                        &mut commands,
-                                        settings,
-                                        map.id,
-                                        layer_z as u16,
-                                        None,
-                                    );
-
-                                for tile in &layer_instance.auto_layer_tiles {
-                                    add_tile_to_layer(
-                                        tile,
-                                        &mut layer_builder,
-                                        &tileset_definition,
-                                        layer_instance.c_hei,
-                                    );
-                                }
-                                for tile in &layer_instance.grid_tiles {
-                                    add_tile_to_layer(
-                                        tile,
-                                        &mut layer_builder,
-                                        &tileset_definition,
-                                        layer_instance.c_hei,
-                                    );
-                                }
 
                                 let texture_handle =
                                     ldtk_asset.tileset_map.get(&tileset_definition.uid).unwrap();
@@ -207,27 +182,26 @@ pub fn process_loaded_ldtk(
                                 let material_handle = materials
                                     .add(ColorMaterial::texture(texture_handle.clone_weak()));
 
-                                let layer_bundle = layer_builder.build(
+                                let mut grid_tiles = layer_instance.grid_tiles.clone();
+                                grid_tiles.extend(layer_instance.auto_layer_tiles.clone());
+
+                                let layer_entity = LayerBuilder::<TileBundle>::new_batch(
                                     &mut commands,
+                                    settings,
                                     &mut meshes,
                                     material_handle,
+                                    map.id,
+                                    layer_z as u16,
+                                    None,
+                                    tile_pos_to_tile_maker(
+                                        layer_instance.c_wid,
+                                        layer_instance.c_hei,
+                                        (*tileset_definition).clone(),
+                                        grid_tiles,
+                                    ),
                                 );
 
-                                let transform = Transform::from_xyz(
-                                    0.0,
-                                    -level.px_hei as f32,
-                                    layer_bundle.layer.settings.layer_id as f32,
-                                );
-                                map.add_layer(
-                                    &mut commands,
-                                    layer_bundle.layer.settings.layer_id,
-                                    layer_entity,
-                                );
-                                commands.entity(layer_entity).insert_bundle(LayerBundle {
-                                    layer: layer_bundle.layer,
-                                    transform,
-                                    ..layer_bundle
-                                });
+                                map.add_layer(&mut commands, layer_z as u16, layer_entity);
                             }
 
                             if !layer_instance.int_grid_csv.is_empty() {
@@ -265,11 +239,6 @@ pub fn process_loaded_ldtk(
                                     ),
                                 );
 
-                                let transform =
-                                    Transform::from_xyz(0.0, -level.px_hei as f32, layer_z as f32);
-
-                                commands.entity(layer_entity).insert(transform);
-
                                 map.add_layer(&mut commands, layer_z as u16, layer_entity);
                             }
 
@@ -306,6 +275,45 @@ fn add_tile_to_layer(
             .into(),
         )
         .unwrap();
+}
+
+fn tile_pos_to_tile_maker(
+    layer_width_in_tiles: i64,
+    layer_height_in_tiles: i64,
+    tileset_definition: TilesetDefinition,
+    grid_tiles: Vec<TileInstance>,
+) -> impl FnMut(TilePos) -> Option<TileBundle> {
+    let grid_tile_map: HashMap<TilePos, TileInstance> = grid_tiles
+        .into_iter()
+        .map(|t| {
+            (
+                TilePos(
+                    (t.px[0] / tileset_definition.tile_grid_size) as u32,
+                    layer_height_in_tiles as u32
+                        - (t.px[1] / tileset_definition.tile_grid_size) as u32
+                        - 1,
+                ),
+                t,
+            )
+        })
+        .collect();
+
+    move |tile_pos: TilePos| -> Option<TileBundle> {
+        match grid_tile_map.get(&tile_pos) {
+            Some(tile_instance) => {
+                let tileset_x = tile_instance.src[0] / tileset_definition.tile_grid_size;
+                let tileset_y = tile_instance.src[1] / tileset_definition.tile_grid_size;
+                Some(TileBundle {
+                    tile: Tile {
+                        texture_index: (tileset_y * tileset_definition.c_wid + tileset_x) as u16,
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                })
+            }
+            None => None,
+        }
+    }
 }
 
 fn tile_pos_to_int_grid_maker(

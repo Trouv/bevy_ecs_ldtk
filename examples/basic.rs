@@ -30,6 +30,6 @@ fn process_walls(
     int_grid_query: Query<(Entity, &IntGridCell, &TilePos), Added<IntGridCell>>,
 ) {
     for (entity, cell, transform) in int_grid_query.iter() {
-        commands.entity(entity).insert(Tile::default());
+        //commands.entity(entity).insert(Tile::default());
     }
 }

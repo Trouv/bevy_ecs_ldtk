@@ -27,8 +27,6 @@ This plugin aims to be a more complete solution to ldtk in bevy, with the follow
   - [x] hot-reloading for tilesets
   - [ ] hot-reloading for external levels (see: https://github.com/Trouv/bevy_ecs_ldtk/issues/1)
 - [ ] derive macros for registering bundles to spawn for specific intgrid-layer and entity-layer values
-- [ ] "transform" feature for automatically applying transforms to EntityInstances and IntGridCells
-  - [ ] Options for updating transforms from TilePos, or the other way around
 - [ ] support for optionally loading level-neighbors
 
 Once most of these goals are met, and bevy has reached 0.6, this crate will have its first release.

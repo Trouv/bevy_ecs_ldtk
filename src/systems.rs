@@ -241,37 +241,21 @@ pub fn process_loaded_ldtk(
                                             let material_handle =
                                                 materials.add(ColorMaterial::default());
 
-                                            if !layer_instance.int_grid_csv.is_empty() {
-                                                LayerBuilder::<IntGridCellBundle>::new_batch(
-                                                    &mut commands,
-                                                    settings,
-                                                    &mut meshes,
-                                                    material_handle,
-                                                    map.id,
-                                                    layer_z as u16,
-                                                    None,
-                                                    tile_pos_to_int_grid_maker(
-                                                        layer_instance.c_wid,
-                                                        layer_instance.c_hei,
-                                                        layer_instance.int_grid_csv.clone(),
-                                                        invisible_tile,
-                                                    ),
-                                                )
-                                            } else {
-                                                LayerBuilder::<EntityInstanceBundle>::new_batch(
-                                                    &mut commands,
-                                                    settings,
-                                                    &mut meshes,
-                                                    material_handle,
-                                                    map.id,
-                                                    layer_z as u16,
-                                                    None,
-                                                    tile_pos_to_entity_maker(
-                                                        layer_instance.c_hei,
-                                                        layer_instance.entity_instances.clone(),
-                                                    ),
-                                                )
-                                            }
+                                            LayerBuilder::<IntGridCellBundle>::new_batch(
+                                                &mut commands,
+                                                settings,
+                                                &mut meshes,
+                                                material_handle,
+                                                map.id,
+                                                layer_z as u16,
+                                                None,
+                                                tile_pos_to_int_grid_maker(
+                                                    layer_instance.c_wid,
+                                                    layer_instance.c_hei,
+                                                    layer_instance.int_grid_csv.clone(),
+                                                    invisible_tile,
+                                                ),
+                                            )
                                         }
                                     };
 

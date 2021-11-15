@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 
-pub use crate::ldtk::EntityInstance;
+pub use crate::{bundler::EntityInstanceBundler, ldtk::EntityInstance};
 
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug, Default, Hash, Component)]
 pub struct IntGridCell {
@@ -25,10 +25,21 @@ impl TileBundleTrait for IntGridCellBundle {
     }
 }
 
-#[derive(Clone, Bundle)]
+#[derive(Clone, Bundle, Default)]
 pub struct EntityInstanceBundle {
     pub entity_instance: EntityInstance,
-    pub parent: Parent,
     pub transform: Transform,
     pub global_transform: GlobalTransform,
+}
+
+pub struct DefaultBundler;
+
+impl EntityInstanceBundler for DefaultBundler {
+    type Bundle = EntityInstanceBundle;
+    fn bundle(&self, entity_instance: EntityInstance) -> EntityInstanceBundle {
+        EntityInstanceBundle {
+            entity_instance,
+            ..Default::default()
+        }
+    }
 }

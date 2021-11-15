@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 
 mod assets;
+pub mod bundler;
 pub mod components;
 pub mod ldtk;
 mod systems;

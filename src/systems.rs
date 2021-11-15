@@ -192,16 +192,34 @@ pub fn process_loaded_ldtk(
                                         grid_tiles,
                                     );
 
-                                    LayerBuilder::<TileBundle>::new_batch(
-                                        &mut commands,
-                                        settings,
-                                        &mut meshes,
-                                        material_handle,
-                                        map.id,
-                                        layer_z as u16,
-                                        None,
-                                        tile_pos_to_tile_bundle_maker(tile_maker),
-                                    )
+                                    if layer_instance.int_grid_csv.is_empty() {
+                                        LayerBuilder::<TileBundle>::new_batch(
+                                            &mut commands,
+                                            settings,
+                                            &mut meshes,
+                                            material_handle,
+                                            map.id,
+                                            layer_z as u16,
+                                            None,
+                                            tile_pos_to_tile_bundle_maker(tile_maker),
+                                        )
+                                    } else {
+                                        LayerBuilder::<IntGridCellBundle>::new_batch(
+                                            &mut commands,
+                                            settings,
+                                            &mut meshes,
+                                            material_handle,
+                                            map.id,
+                                            layer_z as u16,
+                                            None,
+                                            tile_pos_to_int_grid_maker(
+                                                layer_instance.c_wid,
+                                                layer_instance.c_hei,
+                                                layer_instance.int_grid_csv.clone(),
+                                                tile_maker,
+                                            ),
+                                        )
+                                    }
                                 }
                                 _ => {
                                     let map_size = MapSize(

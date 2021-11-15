@@ -9,7 +9,7 @@
 		"url": "https://ldtk.io"
 	},
 	"jsonVersion": "0.9.3",
-	"nextUid": 33,
+	"nextUid": 37,
 	"worldLayout": "LinearHorizontal",
 	"worldGridWidth": 256,
 	"worldGridHeight": 256,
@@ -782,7 +782,7 @@
 						0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0
 					],
 					"autoLayerTiles": [],
-					"seed": 9594717,
+					"seed": 647928,
 					"overrideTilesetUid": null,
 					"gridTiles": [],
 					"entityInstances": []

@@ -186,6 +186,11 @@ pub fn process_loaded_ldtk(
 
                                     let mut grid_tiles = layer_instance.grid_tiles.clone();
                                     grid_tiles.extend(layer_instance.auto_layer_tiles.clone());
+                                    let tile_maker = tile_pos_to_tile_maker(
+                                        layer_instance.c_hei,
+                                        (*tileset_definition).clone(),
+                                        grid_tiles,
+                                    );
 
                                     LayerBuilder::<TileBundle>::new_batch(
                                         &mut commands,
@@ -195,11 +200,7 @@ pub fn process_loaded_ldtk(
                                         map.id,
                                         layer_z as u16,
                                         None,
-                                        tile_pos_to_tile_maker(
-                                            layer_instance.c_hei,
-                                            (*tileset_definition).clone(),
-                                            grid_tiles,
-                                        ),
+                                        tile_pos_to_tile_bundle_maker(tile_maker),
                                     )
                                 }
                                 _ => {
@@ -235,6 +236,7 @@ pub fn process_loaded_ldtk(
                                                 layer_instance.c_wid,
                                                 layer_instance.c_hei,
                                                 layer_instance.int_grid_csv.clone(),
+                                                invisible_tile,
                                             ),
                                         )
                                     } else {
@@ -264,11 +266,18 @@ pub fn process_loaded_ldtk(
     }
 }
 
+fn invisible_tile(_: TilePos) -> Option<Tile> {
+    Some(Tile {
+        visible: false,
+        ..Default::default()
+    })
+}
+
 fn tile_pos_to_tile_maker(
     layer_height_in_tiles: i64,
     tileset_definition: TilesetDefinition,
     grid_tiles: Vec<TileInstance>,
-) -> impl FnMut(TilePos) -> Option<TileBundle> {
+) -> impl FnMut(TilePos) -> Option<Tile> {
     let grid_tile_map: HashMap<TilePos, TileInstance> = grid_tiles
         .into_iter()
         .map(|t| {
@@ -284,19 +293,30 @@ fn tile_pos_to_tile_maker(
         })
         .collect();
 
-    move |tile_pos: TilePos| -> Option<TileBundle> {
+    move |tile_pos: TilePos| -> Option<Tile> {
         match grid_tile_map.get(&tile_pos) {
             Some(tile_instance) => {
                 let tileset_x = tile_instance.src[0] / tileset_definition.tile_grid_size;
                 let tileset_y = tile_instance.src[1] / tileset_definition.tile_grid_size;
-                Some(TileBundle {
-                    tile: Tile {
-                        texture_index: (tileset_y * tileset_definition.c_wid + tileset_x) as u16,
-                        ..Default::default()
-                    },
+                Some(Tile {
+                    texture_index: (tileset_y * tileset_definition.c_wid + tileset_x) as u16,
                     ..Default::default()
                 })
             }
+            None => None,
+        }
+    }
+}
+
+fn tile_pos_to_tile_bundle_maker(
+    mut tile_maker: impl FnMut(TilePos) -> Option<Tile>,
+) -> impl FnMut(TilePos) -> Option<TileBundle> {
+    move |tile_pos: TilePos| -> Option<TileBundle> {
+        match tile_maker(tile_pos) {
+            Some(tile) => Some(TileBundle {
+                tile,
+                ..Default::default()
+            }),
             None => None,
         }
     }
@@ -340,6 +360,7 @@ fn tile_pos_to_int_grid_maker(
     layer_width_in_tiles: i64,
     layer_height_in_tiles: i64,
     int_grid_csv: Vec<i64>,
+    mut tile_maker: impl FnMut(TilePos) -> Option<Tile>,
 ) -> impl FnMut(TilePos) -> Option<IntGridCellBundle> {
     move |tile_pos: TilePos| -> Option<IntGridCellBundle> {
         let ldtk_x = tile_pos.0 as i64;
@@ -356,16 +377,16 @@ fn tile_pos_to_int_grid_maker(
         let csv_index = (ldtk_y * layer_width_in_tiles + ldtk_x) as usize;
 
         match int_grid_csv.get(csv_index) {
-            Some(x) if *x != 0 => Some(IntGridCellBundle {
-                int_grid_cell: IntGridCell { value: *x },
-                tile_bundle: TileBundle {
-                    tile: Tile {
-                        visible: false,
+            Some(x) if *x != 0 => match tile_maker(tile_pos) {
+                Some(tile) => Some(IntGridCellBundle {
+                    int_grid_cell: IntGridCell { value: *x },
+                    tile_bundle: TileBundle {
+                        tile,
                         ..Default::default()
                     },
-                    ..Default::default()
-                },
-            }),
+                }),
+                None => None,
+            },
             _ => None,
         }
     }

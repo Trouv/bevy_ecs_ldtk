@@ -1,7 +1,7 @@
 use crate::{
     assets::{LdtkAsset, LdtkExternalLevel},
     components::*,
-    ldtk::{TileInstance, TilesetDefinition, Type},
+    ldtk::{EntityDefinition, TileInstance, TilesetDefinition, Type},
     LevelSelection,
 };
 
@@ -62,7 +62,13 @@ pub fn process_loaded_ldtk(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut ldtk_events: EventReader<AssetEvent<LdtkAsset>>,
-    mut ldtk_map_query: Query<(Entity, &Handle<LdtkAsset>, &LevelSelection, &mut Map)>,
+    mut ldtk_map_query: Query<(
+        Entity,
+        &Handle<LdtkAsset>,
+        &LevelSelection,
+        &mut Map,
+        Option<&Children>,
+    )>,
     ldtk_assets: Res<Assets<LdtkAsset>>,
     layer_query: Query<&Layer>,
     chunk_query: Query<&Chunk>,
@@ -98,9 +104,9 @@ pub fn process_loaded_ldtk(
     }
 
     for changed_ldtk in changed_ldtks.iter() {
-        for (ldtk_entity, ldtk_handle, level_selection, mut map) in ldtk_map_query
+        for (ldtk_entity, ldtk_handle, level_selection, mut map, children) in ldtk_map_query
             .iter_mut()
-            .filter(|(_, l, _, _)| changed_ldtk == *l)
+            .filter(|(_, l, _, _, _)| changed_ldtk == *l)
         {
             if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
                 for (layer_id, layer_entity) in map.get_layers() {
@@ -128,6 +134,11 @@ pub fn process_loaded_ldtk(
                         map.remove_layer(&mut commands, layer_id);
                     }
                 }
+                if let Some(children) = children {
+                    for child in children.iter() {
+                        commands.entity(*child).despawn_recursive();
+                    }
+                }
 
                 let tileset_definition_map: HashMap<i64, &TilesetDefinition> = ldtk_asset
                     .project
@@ -135,6 +146,14 @@ pub fn process_loaded_ldtk(
                     .tilesets
                     .iter()
                     .map(|t| (t.uid, t))
+                    .collect();
+
+                let entity_definition_map: HashMap<i64, &EntityDefinition> = ldtk_asset
+                    .project
+                    .defs
+                    .entities
+                    .iter()
+                    .map(|e| (e.uid, e))
                     .collect();
 
                 for (_, level) in ldtk_asset
@@ -159,16 +178,33 @@ pub fn process_loaded_ldtk(
                                         .clone()
                                         .into_iter()
                                         .map(|e| {
-                                            let transform_x = e.px[0] as f32;
-                                            let transform_y = (level.px_hei - e.px[1]) as f32;
+                                            let pivot_point_x = e.px[0] as f32;
+                                            let pivot_point_y = (level.px_hei - e.px[1]) as f32;
+
+                                            let pivot_x = 0.5 - e.pivot[0] as f32;
+                                            let pivot_y = e.pivot[1] as f32 - 0.5;
+
+                                            let offset_x = e.width as f32 * pivot_x;
+                                            let offset_y = e.height as f32 * pivot_y;
+
+                                            let translation_x = pivot_point_x + offset_x;
+                                            let translation_y = pivot_point_y + offset_y;
+
+                                            let entity_definition =
+                                                entity_definition_map.get(&e.def_uid).unwrap();
+                                            let scale_x =
+                                                e.width as f32 / entity_definition.width as f32;
+                                            let scale_y =
+                                                e.height as f32 / entity_definition.height as f32;
                                             EntityInstanceBundle {
                                                 entity_instance: e.clone(),
                                                 parent: Parent(ldtk_entity),
                                                 transform: Transform::from_xyz(
-                                                    transform_x,
-                                                    transform_y,
+                                                    translation_x,
+                                                    translation_y,
                                                     layer_z as f32,
-                                                ),
+                                                )
+                                                .with_scale(Vec3::new(scale_x, scale_y, 1.)),
                                                 global_transform: GlobalTransform::default(),
                                             }
                                         })

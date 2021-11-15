@@ -62,7 +62,7 @@ pub fn process_loaded_ldtk(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut ldtk_events: EventReader<AssetEvent<LdtkAsset>>,
-    mut ldtk_map_query: Query<(&Handle<LdtkAsset>, &LevelSelection, &mut Map)>,
+    mut ldtk_map_query: Query<(Entity, &Handle<LdtkAsset>, &LevelSelection, &mut Map)>,
     ldtk_assets: Res<Assets<LdtkAsset>>,
     layer_query: Query<&Layer>,
     chunk_query: Query<&Chunk>,
@@ -98,9 +98,9 @@ pub fn process_loaded_ldtk(
     }
 
     for changed_ldtk in changed_ldtks.iter() {
-        for (ldtk_handle, level_selection, mut map) in ldtk_map_query
+        for (ldtk_entity, ldtk_handle, level_selection, mut map) in ldtk_map_query
             .iter_mut()
-            .filter(|(l, _, _)| changed_ldtk == *l)
+            .filter(|(_, l, _, _)| changed_ldtk == *l)
         {
             if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
                 for (layer_id, layer_entity) in map.get_layers() {
@@ -153,7 +153,29 @@ pub fn process_loaded_ldtk(
                             layer_instances.into_iter().rev().enumerate()
                         {
                             match layer_instance.layer_instance_type {
-                                Type::Entities => (),
+                                Type::Entities => {
+                                    let bundles: Vec<EntityInstanceBundle> = layer_instance
+                                        .entity_instances
+                                        .clone()
+                                        .into_iter()
+                                        .map(|e| {
+                                            let transform_x = e.px[0] as f32;
+                                            let transform_y = (level.px_hei - e.px[1]) as f32;
+                                            EntityInstanceBundle {
+                                                entity_instance: e.clone(),
+                                                parent: Parent(ldtk_entity),
+                                                transform: Transform::from_xyz(
+                                                    transform_x,
+                                                    transform_y,
+                                                    layer_z as f32,
+                                                ),
+                                                global_transform: GlobalTransform::default(),
+                                            }
+                                        })
+                                        .collect();
+
+                                    commands.spawn_batch(bundles);
+                                }
                                 _ => {
                                     let map_size = MapSize(
                                         (layer_instance.c_wid as f32 / CHUNK_SIZE.0 as f32).ceil()
@@ -207,7 +229,7 @@ pub fn process_loaded_ldtk(
                                                         map.id,
                                                         layer_z as u16,
                                                         None,
-                                                        tile_pos_to_int_grid_maker(
+                                                        tile_pos_to_int_grid_bundle_maker(
                                                             layer_instance.c_wid,
                                                             layer_instance.c_hei,
                                                             layer_instance.int_grid_csv.clone(),
@@ -249,7 +271,7 @@ pub fn process_loaded_ldtk(
                                                 map.id,
                                                 layer_z as u16,
                                                 None,
-                                                tile_pos_to_int_grid_maker(
+                                                tile_pos_to_int_grid_bundle_maker(
                                                     layer_instance.c_wid,
                                                     layer_instance.c_hei,
                                                     layer_instance.int_grid_csv.clone(),
@@ -326,41 +348,7 @@ fn tile_pos_to_tile_bundle_maker(
     }
 }
 
-fn tile_pos_to_entity_maker(
-    layer_height_in_tiles: i64,
-    entity_instances: Vec<EntityInstance>,
-) -> impl FnMut(TilePos) -> Option<EntityInstanceBundle> {
-    let entity_instance_map: HashMap<TilePos, EntityInstance> = entity_instances
-        .into_iter()
-        .map(|e| {
-            (
-                TilePos(
-                    e.grid[0] as u32,
-                    (layer_height_in_tiles - e.grid[1]) as u32 - 1,
-                ),
-                e,
-            )
-        })
-        .collect();
-
-    move |tile_pos: TilePos| -> Option<EntityInstanceBundle> {
-        match entity_instance_map.get(&tile_pos) {
-            Some(entity_instance) => Some(EntityInstanceBundle {
-                entity_instance: entity_instance.clone(),
-                tile_bundle: TileBundle {
-                    tile: Tile {
-                        visible: false,
-                        ..Default::default()
-                    },
-                    ..Default::default()
-                },
-            }),
-            None => None,
-        }
-    }
-}
-
-fn tile_pos_to_int_grid_maker(
+fn tile_pos_to_int_grid_bundle_maker(
     layer_width_in_tiles: i64,
     layer_height_in_tiles: i64,
     int_grid_csv: Vec<i64>,

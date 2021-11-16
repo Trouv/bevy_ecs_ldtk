@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_ecs_ldtk::{components::*, *};
+use bevy_ecs_ldtk::{bundler::Bundler, components::*, *};
 use bevy_ecs_tilemap::*;
 
 fn main() {
@@ -7,7 +7,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(LdtkPlugin)
         .add_startup_system(setup)
-        .add_system(make_entities_white)
+        .add_bundle::<PlayerBundle>("Willo")
         .run();
 }
 
@@ -27,19 +27,23 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
 }
 
-fn make_entities_white(
-    mut commands: Commands,
-    spawned_entities: Query<(Entity, &Transform, &EntityInstance), Added<EntityInstance>>,
-    asset_server: Res<AssetServer>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-) {
-    for (entity, transform, entity_instance) in spawned_entities.iter() {
-        if entity_instance.identifier == "Willo" {
-            commands.entity(entity).insert_bundle(SpriteBundle {
-                transform: transform.clone(),
+#[derive(Clone, Default, Bundle)]
+struct PlayerBundle {
+    #[bundle]
+    sprite_bundle: SpriteBundle,
+}
+
+impl Bundler for PlayerBundle {
+    fn bundle(
+        _: &EntityInstance,
+        asset_server: &Res<AssetServer>,
+        materials: &mut ResMut<Assets<ColorMaterial>>,
+    ) -> Self {
+        PlayerBundle {
+            sprite_bundle: SpriteBundle {
                 material: materials.add(asset_server.load("player.png").into()),
                 ..Default::default()
-            });
+            },
         }
     }
 }

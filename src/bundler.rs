@@ -3,7 +3,11 @@ use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::{collections::HashMap, marker::PhantomData};
 
 pub trait Bundler: Bundle {
-    fn bundle(entity_instance: EntityInstance) -> Self;
+    fn bundle(
+        entity_instance: &EntityInstance,
+        asset_server: &Res<AssetServer>,
+        materials: &mut ResMut<Assets<ColorMaterial>>,
+    ) -> Self;
 }
 
 pub trait AddBundle {
@@ -39,7 +43,9 @@ pub trait BundleEntryTrait {
     fn bundle<'w, 's, 'a>(
         &self,
         commands: &'a mut Commands<'w, 's>,
-        entity_instance: EntityInstance,
+        entity_instance: &EntityInstance,
+        asset_server: &Res<AssetServer>,
+        materials: &mut ResMut<Assets<ColorMaterial>>,
     ) -> EntityCommands<'w, 's, 'a>;
 }
 
@@ -47,8 +53,10 @@ impl<B: Bundler> BundleEntryTrait for BundleEntry<B> {
     fn bundle<'w, 's, 'a>(
         &self,
         commands: &'a mut Commands<'w, 's>,
-        entity_instance: EntityInstance,
+        entity_instance: &EntityInstance,
+        asset_server: &Res<AssetServer>,
+        materials: &mut ResMut<Assets<ColorMaterial>>,
     ) -> EntityCommands<'w, 's, 'a> {
-        commands.spawn_bundle(B::bundle(entity_instance))
+        commands.spawn_bundle(B::bundle(entity_instance, asset_server, materials))
     }
 }

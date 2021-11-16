@@ -74,6 +74,7 @@ pub fn process_loaded_ldtk(
     layer_query: Query<&Layer>,
     chunk_query: Query<&Chunk>,
     new_ldtks: Query<&Handle<LdtkAsset>, Added<Handle<LdtkAsset>>>,
+    asset_server: Res<AssetServer>,
     bundle_map: NonSend<BundleMap>,
 ) {
     // This function uses code from the bevy_ecs_tilemap ldtk example
@@ -210,8 +211,12 @@ pub fn process_loaded_ldtk(
                                             None => commands.spawn_bundle(EntityInstanceBundle {
                                                 entity_instance: entity_instance.clone(),
                                             }),
-                                            Some(bundler) => bundler
-                                                .bundle(&mut commands, entity_instance.clone()),
+                                            Some(bundler) => bundler.bundle(
+                                                &mut commands,
+                                                &entity_instance,
+                                                &asset_server,
+                                                &mut materials,
+                                            ),
                                         };
 
                                         entity_commands

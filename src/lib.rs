@@ -36,6 +36,7 @@ pub struct LdtkMapBundle {
 impl Plugin for LdtkPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(TilemapPlugin)
+            .init_non_send_resource::<bundler::BundleMap>()
             .add_asset::<assets::LdtkAsset>()
             .init_asset_loader::<assets::LdtkLoader>()
             .add_asset::<assets::LdtkExternalLevel>()

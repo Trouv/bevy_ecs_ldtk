@@ -16,11 +16,11 @@ impl AddBundle for App {
             bundler: PhantomData,
         });
         match self.world.get_non_send_resource_mut::<BundleMap>() {
-            Some(entries) => {
+            Some(mut entries) => {
                 entries.insert(identifier.to_string(), new_entry);
             }
             None => {
-                let bundle_map = BundleMap::new();
+                let mut bundle_map = BundleMap::new();
                 bundle_map.insert(identifier.to_string(), new_entry);
                 self.world.insert_non_send::<BundleMap>(bundle_map);
             }

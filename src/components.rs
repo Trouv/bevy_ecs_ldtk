@@ -28,6 +28,4 @@ impl TileBundleTrait for IntGridCellBundle {
 #[derive(Clone, Bundle, Default)]
 pub struct EntityInstanceBundle {
     pub entity_instance: EntityInstance,
-    pub transform: Transform,
-    pub global_transform: GlobalTransform,
 }

@@ -1,5 +1,6 @@
 use crate::{
     assets::{LdtkAsset, LdtkExternalLevel},
+    bundler::BundleMap,
     components::*,
     ldtk::{EntityDefinition, TileInstance, TilesetDefinition, Type},
     LevelSelection,
@@ -73,6 +74,7 @@ pub fn process_loaded_ldtk(
     layer_query: Query<&Layer>,
     chunk_query: Query<&Chunk>,
     new_ldtks: Query<&Handle<LdtkAsset>, Added<Handle<LdtkAsset>>>,
+    bundle_map: NonSend<BundleMap>,
 ) {
     // This function uses code from the bevy_ecs_tilemap ldtk example
     // https://github.com/StarArawn/bevy_ecs_tilemap/blob/main/examples/ldtk/ldtk.rs
@@ -173,44 +175,45 @@ pub fn process_loaded_ldtk(
                         {
                             match layer_instance.layer_instance_type {
                                 Type::Entities => {
-                                    let bundles: Vec<EntityInstanceBundle> = layer_instance
-                                        .entity_instances
-                                        .clone()
-                                        .into_iter()
-                                        .map(|e| {
-                                            let pivot_point_x = e.px[0] as f32;
-                                            let pivot_point_y = (level.px_hei - e.px[1]) as f32;
+                                    for entity_instance in &layer_instance.entity_instances {
+                                        let pivot_point_x = entity_instance.px[0] as f32;
+                                        let pivot_point_y =
+                                            (level.px_hei - entity_instance.px[1]) as f32;
 
-                                            let pivot_x = 0.5 - e.pivot[0] as f32;
-                                            let pivot_y = e.pivot[1] as f32 - 0.5;
+                                        let pivot_x = 0.5 - entity_instance.pivot[0] as f32;
+                                        let pivot_y = entity_instance.pivot[1] as f32 - 0.5;
 
-                                            let offset_x = e.width as f32 * pivot_x;
-                                            let offset_y = e.height as f32 * pivot_y;
+                                        let offset_x = entity_instance.width as f32 * pivot_x;
+                                        let offset_y = entity_instance.height as f32 * pivot_y;
 
-                                            let translation_x = pivot_point_x + offset_x;
-                                            let translation_y = pivot_point_y + offset_y;
+                                        let translation_x = pivot_point_x + offset_x;
+                                        let translation_y = pivot_point_y + offset_y;
 
-                                            let entity_definition =
-                                                entity_definition_map.get(&e.def_uid).unwrap();
-                                            let scale_x =
-                                                e.width as f32 / entity_definition.width as f32;
-                                            let scale_y =
-                                                e.height as f32 / entity_definition.height as f32;
-                                            EntityInstanceBundle {
-                                                entity_instance: e.clone(),
-                                                parent: Parent(ldtk_entity),
-                                                transform: Transform::from_xyz(
-                                                    translation_x,
-                                                    translation_y,
-                                                    layer_z as f32,
-                                                )
-                                                .with_scale(Vec3::new(scale_x, scale_y, 1.)),
-                                                global_transform: GlobalTransform::default(),
-                                            }
-                                        })
-                                        .collect();
+                                        let entity_definition = entity_definition_map
+                                            .get(&entity_instance.def_uid)
+                                            .unwrap();
+                                        let scale_x = entity_instance.width as f32
+                                            / entity_definition.width as f32;
+                                        let scale_y = entity_instance.height as f32
+                                            / entity_definition.height as f32;
 
-                                    commands.spawn_batch(bundles);
+                                        let transform = Transform::from_xyz(
+                                            translation_x,
+                                            translation_y,
+                                            layer_z as f32,
+                                        )
+                                        .with_scale(Vec3::new(scale_x, scale_y, 1.));
+
+                                        let bundle = EntityInstanceBundle {
+                                            entity_instance: entity_instance.clone(),
+                                        };
+
+                                        commands
+                                            .spawn_bundle(bundle)
+                                            .insert(transform)
+                                            .insert(GlobalTransform::default())
+                                            .insert(Parent(ldtk_entity));
+                                    }
                                 }
                                 _ => {
                                     let map_size = MapSize(

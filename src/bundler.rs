@@ -1,5 +1,5 @@
 use crate::ldtk::EntityInstance;
-use bevy::prelude::*;
+use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::{collections::HashMap, marker::PhantomData};
 
 pub trait Bundler: Bundle {
@@ -36,11 +36,19 @@ pub struct BundleEntry<B: Bundler> {
 }
 
 pub trait BundleEntryTrait {
-    fn bundle(&self, entity_instance: EntityInstance);
+    fn bundle<'w, 's, 'a>(
+        &self,
+        commands: &'a mut Commands<'w, 's>,
+        entity_instance: EntityInstance,
+    ) -> EntityCommands<'w, 's, 'a>;
 }
 
 impl<B: Bundler> BundleEntryTrait for BundleEntry<B> {
-    fn bundle(&self, entity_instance: EntityInstance) {
-        B::bundle(entity_instance);
+    fn bundle<'w, 's, 'a>(
+        &self,
+        commands: &'a mut Commands<'w, 's>,
+        entity_instance: EntityInstance,
+    ) -> EntityCommands<'w, 's, 'a> {
+        commands.spawn_bundle(B::bundle(entity_instance))
     }
 }

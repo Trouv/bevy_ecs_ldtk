@@ -204,12 +204,17 @@ pub fn process_loaded_ldtk(
                                         )
                                         .with_scale(Vec3::new(scale_x, scale_y, 1.));
 
-                                        let bundle = EntityInstanceBundle {
-                                            entity_instance: entity_instance.clone(),
+                                        let mut entity_commands = match bundle_map
+                                            .get(&entity_instance.identifier)
+                                        {
+                                            None => commands.spawn_bundle(EntityInstanceBundle {
+                                                entity_instance: entity_instance.clone(),
+                                            }),
+                                            Some(bundler) => bundler
+                                                .bundle(&mut commands, entity_instance.clone()),
                                         };
 
-                                        commands
-                                            .spawn_bundle(bundle)
+                                        entity_commands
                                             .insert(transform)
                                             .insert(GlobalTransform::default())
                                             .insert(Parent(ldtk_entity));

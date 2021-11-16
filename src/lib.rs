@@ -6,6 +6,7 @@ pub mod bundler;
 pub mod components;
 pub mod ldtk;
 mod systems;
+pub use bundler::AddBundle;
 
 #[derive(Clone, Eq, PartialEq, Debug, Component)]
 pub enum LevelSelection {

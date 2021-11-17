@@ -38,6 +38,7 @@ impl Bundler for PlayerBundle {
         _: &EntityInstance,
         asset_server: &Res<AssetServer>,
         materials: &mut ResMut<Assets<ColorMaterial>>,
+        _: &mut ResMut<Assets<TextureAtlas>>,
     ) -> Self {
         PlayerBundle {
             sprite_bundle: SpriteBundle {

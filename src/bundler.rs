@@ -7,6 +7,7 @@ pub trait Bundler: Bundle {
         entity_instance: &EntityInstance,
         asset_server: &Res<AssetServer>,
         materials: &mut ResMut<Assets<ColorMaterial>>,
+        texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
     ) -> Self;
 }
 
@@ -46,6 +47,7 @@ pub trait BundleEntryTrait {
         entity_instance: &EntityInstance,
         asset_server: &Res<AssetServer>,
         materials: &mut ResMut<Assets<ColorMaterial>>,
+        texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
     ) -> EntityCommands<'w, 's, 'a>;
 }
 
@@ -56,7 +58,13 @@ impl<B: Bundler> BundleEntryTrait for BundleEntry<B> {
         entity_instance: &EntityInstance,
         asset_server: &Res<AssetServer>,
         materials: &mut ResMut<Assets<ColorMaterial>>,
+        texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
     ) -> EntityCommands<'w, 's, 'a> {
-        commands.spawn_bundle(B::bundle(entity_instance, asset_server, materials))
+        commands.spawn_bundle(B::bundle(
+            entity_instance,
+            asset_server,
+            materials,
+            texture_atlases,
+        ))
     }
 }

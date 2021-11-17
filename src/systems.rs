@@ -62,6 +62,7 @@ pub fn process_loaded_ldtk(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     mut ldtk_events: EventReader<AssetEvent<LdtkAsset>>,
     mut ldtk_map_query: Query<(
         Entity,
@@ -216,6 +217,7 @@ pub fn process_loaded_ldtk(
                                                 &entity_instance,
                                                 &asset_server,
                                                 &mut materials,
+                                                &mut texture_atlases,
                                             ),
                                         };
 

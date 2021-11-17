@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_ecs_ldtk::{bundler::Bundler, components::*, *};
+use bevy_ecs_ldtk::{bundler::LdtkEntity, components::*, *};
 use bevy_ecs_tilemap::*;
 
 fn main() {
@@ -7,7 +7,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(LdtkPlugin)
         .add_startup_system(setup)
-        .add_bundle::<PlayerBundle>("Willo")
+        .add_ldtk_entity::<PlayerBundle>("Willo")
         .run();
 }
 
@@ -33,8 +33,8 @@ struct PlayerBundle {
     sprite_bundle: SpriteBundle,
 }
 
-impl Bundler for PlayerBundle {
-    fn bundle(
+impl LdtkEntity for PlayerBundle {
+    fn from_instance(
         _: &EntityInstance,
         asset_server: &Res<AssetServer>,
         materials: &mut ResMut<Assets<ColorMaterial>>,

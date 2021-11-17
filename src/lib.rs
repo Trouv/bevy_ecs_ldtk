@@ -6,7 +6,7 @@ pub mod bundler;
 pub mod components;
 pub mod ldtk;
 mod systems;
-pub use bundler::AddBundle;
+pub use bundler::AddLdtkObjects;
 
 #[derive(Clone, Eq, PartialEq, Debug, Component)]
 pub enum LevelSelection {
@@ -36,7 +36,7 @@ pub struct LdtkMapBundle {
 impl Plugin for LdtkPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(TilemapPlugin)
-            .init_non_send_resource::<bundler::BundleMap>()
+            .init_non_send_resource::<bundler::LdtkEntityMap>()
             .add_asset::<assets::LdtkAsset>()
             .init_asset_loader::<assets::LdtkLoader>()
             .add_asset::<assets::LdtkExternalLevel>()

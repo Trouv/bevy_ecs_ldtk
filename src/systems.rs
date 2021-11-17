@@ -1,6 +1,6 @@
 use crate::{
     assets::{LdtkAsset, LdtkExternalLevel},
-    bundler::BundleMap,
+    bundler::LdtkEntityMap,
     components::*,
     ldtk::{EntityDefinition, TileInstance, TilesetDefinition, Type},
     LevelSelection,
@@ -76,7 +76,7 @@ pub fn process_loaded_ldtk(
     chunk_query: Query<&Chunk>,
     new_ldtks: Query<&Handle<LdtkAsset>, Added<Handle<LdtkAsset>>>,
     asset_server: Res<AssetServer>,
-    bundle_map: NonSend<BundleMap>,
+    bundle_map: NonSend<LdtkEntityMap>,
 ) {
     // This function uses code from the bevy_ecs_tilemap ldtk example
     // https://github.com/StarArawn/bevy_ecs_tilemap/blob/main/examples/ldtk/ldtk.rs
@@ -212,7 +212,7 @@ pub fn process_loaded_ldtk(
                                             None => commands.spawn_bundle(EntityInstanceBundle {
                                                 entity_instance: entity_instance.clone(),
                                             }),
-                                            Some(bundler) => bundler.bundle(
+                                            Some(ldtk_entity) => ldtk_entity.evaluate(
                                                 &mut commands,
                                                 &entity_instance,
                                                 &asset_server,

@@ -8,6 +8,9 @@ pub mod ldtk;
 mod systems;
 pub use bundler::AddLdtkObjects;
 
+#[cfg(feature = "derive")]
+pub use bevy_ecs_ldtk_derive::*;
+
 #[derive(Clone, Eq, PartialEq, Debug, Component)]
 pub enum LevelSelection {
     Identifier(String),

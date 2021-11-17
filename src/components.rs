@@ -1,7 +1,6 @@
+pub use crate::ldtk::EntityInstance;
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
-
-pub use crate::ldtk::EntityInstance;
 
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug, Default, Hash, Component)]
 pub struct IntGridCell {

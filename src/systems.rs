@@ -212,13 +212,14 @@ pub fn process_loaded_ldtk(
                                             None => commands.spawn_bundle(EntityInstanceBundle {
                                                 entity_instance: entity_instance.clone(),
                                             }),
-                                            Some(ldtk_entity) => ldtk_entity.evaluate(
-                                                &mut commands,
-                                                &entity_instance,
-                                                &asset_server,
-                                                &mut materials,
-                                                &mut texture_atlases,
-                                            ),
+                                            Some(phantom_ldtk_entity) => phantom_ldtk_entity
+                                                .evaluate(
+                                                    &mut commands,
+                                                    &entity_instance,
+                                                    &asset_server,
+                                                    &mut materials,
+                                                    &mut texture_atlases,
+                                                ),
                                         };
 
                                         entity_commands

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
-use bevy_ecs_ldtk::{app::LdtkEntity, components::*, *};
-use bevy_ecs_tilemap::*;
+use bevy_ecs_ldtk::prelude::*;
+use bevy_ecs_tilemap::prelude::*;
 
 fn main() {
     App::new()

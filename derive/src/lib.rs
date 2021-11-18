@@ -73,10 +73,10 @@ fn expand_ldtk_entity_derive(ast: &syn::DeriveInput) -> TokenStream {
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
     let gen = quote! {
-        impl #impl_generics LdtkEntity for #struct_name #ty_generics #where_clause {
+        impl #impl_generics bevy_ecs_ldtk::prelude::LdtkEntity for #struct_name #ty_generics #where_clause {
             fn from_instance(
-                entity_instance: &EntityInstance,
-                tileset_map: &std::collections::HashMap<i64, Handle<Texture>>,
+                entity_instance: &bevy_ecs_ldtk::prelude::EntityInstance,
+                tileset_map: &bevy_ecs_ldtk::prelude::TilesetMap,
                 asset_server: &Res<AssetServer>,
                 materials: &mut ResMut<Assets<ColorMaterial>>,
                 texture_atlases: &mut ResMut<Assets<TextureAtlas>>,

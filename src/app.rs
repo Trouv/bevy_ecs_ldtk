@@ -1,11 +1,11 @@
-use crate::ldtk::EntityInstance;
+use crate::{assets::TilesetMap, ldtk::EntityInstance};
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::{collections::HashMap, marker::PhantomData};
 
 pub trait LdtkEntity: Bundle {
     fn from_instance(
         entity_instance: &EntityInstance,
-        tileset_map: &HashMap<i64, Handle<Texture>>,
+        tileset_map: &TilesetMap,
         asset_server: &Res<AssetServer>,
         materials: &mut ResMut<Assets<ColorMaterial>>,
         texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
@@ -46,7 +46,7 @@ pub trait PhantomLdtkEntityTrait {
         &self,
         commands: &'a mut Commands<'w, 's>,
         entity_instance: &EntityInstance,
-        tileset_map: &HashMap<i64, Handle<Texture>>,
+        tileset_map: &TilesetMap,
         asset_server: &Res<AssetServer>,
         materials: &mut ResMut<Assets<ColorMaterial>>,
         texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
@@ -58,7 +58,7 @@ impl<B: LdtkEntity> PhantomLdtkEntityTrait for PhantomLdtkEntity<B> {
         &self,
         commands: &'a mut Commands<'w, 's>,
         entity_instance: &EntityInstance,
-        tileset_map: &HashMap<i64, Handle<Texture>>,
+        tileset_map: &TilesetMap,
         asset_server: &Res<AssetServer>,
         materials: &mut ResMut<Assets<ColorMaterial>>,
         texture_atlases: &mut ResMut<Assets<TextureAtlas>>,

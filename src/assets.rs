@@ -19,11 +19,13 @@ fn ldtk_path_to_asset_path<'a, 'b>(
         .into()
 }
 
+pub type TilesetMap = HashMap<i64, Handle<Texture>>;
+
 #[derive(TypeUuid)]
 #[uuid = "ecfb87b7-9cd9-4970-8482-f2f68b770d31"]
 pub struct LdtkAsset {
     pub project: LdtkJson,
-    pub tileset_map: HashMap<i64, Handle<Texture>>,
+    pub tileset_map: TilesetMap,
     pub external_levels: Vec<Handle<LdtkExternalLevel>>,
 }
 

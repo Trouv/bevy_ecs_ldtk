@@ -1,2 +1,4 @@
 /target
-/derive/target
+*/target
+Session.vim
+*/Session.vim

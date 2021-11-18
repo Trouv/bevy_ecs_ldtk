@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_ecs_ldtk::{bundler::LdtkEntity, components::*, *};
+use bevy_ecs_ldtk::{app::LdtkEntity, components::*, *};
 use bevy_ecs_tilemap::*;
 
 fn main() {

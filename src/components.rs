@@ -28,3 +28,25 @@ impl TileBundleTrait for IntGridCellBundle {
 pub struct EntityInstanceBundle {
     pub entity_instance: EntityInstance,
 }
+
+#[derive(Clone, Eq, PartialEq, Debug, Component)]
+pub enum LevelSelection {
+    Identifier(String),
+    Index(usize),
+    Uid(i64),
+}
+
+impl Default for LevelSelection {
+    fn default() -> Self {
+        LevelSelection::Index(0)
+    }
+}
+
+#[derive(Clone, Default, Bundle)]
+pub struct LdtkMapBundle {
+    pub ldtk_handle: Handle<crate::assets::LdtkAsset>,
+    pub level_selection: LevelSelection,
+    pub map: Map,
+    pub transform: Transform,
+    pub global_transform: GlobalTransform,
+}

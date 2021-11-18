@@ -1,9 +1,8 @@
 use crate::{
+    app::LdtkEntityMap,
     assets::{LdtkAsset, LdtkExternalLevel},
-    bundler::LdtkEntityMap,
     components::*,
     ldtk::{EntityDefinition, TileInstance, TilesetDefinition, Type},
-    LevelSelection,
 };
 
 use bevy::prelude::*;

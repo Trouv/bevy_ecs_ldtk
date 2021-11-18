@@ -51,8 +51,79 @@ pub fn expand_sprite_bundle_attribute(
                     ..Default::default()
                 },
             }
-        }
+        },
         _ => panic!("#[sprite_bundle...] attribute should take the form #[sprite_bundle(\"asset/path.png\")] or #[sprite_bundle]"),
+    }
+}
+
+pub fn expand_sprite_sheet_bundle_attribute(
+    attribute: &syn::Attribute,
+    field_name: &syn::Ident,
+    field_type: &syn::Type,
+) -> TokenStream {
+    // check the type
+    match field_type {
+        syn::Type::Path(syn::TypePath { path: syn::Path { segments, .. }, .. }) => {
+            if let Some(last) = segments.last() {
+                if last.ident.to_string() != "SpriteSheetBundle".to_string() {
+                    panic!("#[sprite_sheet_bundle...] attribute should apply to a field of type bevy::prelude::SpriteSheetBundle")
+                }
+            }
+        },
+        _ => panic!("#[sprite_sheet_bundle...] attribute should apply to a field of type bevy::prelude::SpriteSheetBundle")
+    }
+
+    match attribute
+        .parse_meta()
+        .expect("Cannot parse #[sprite_sheet_bundle...] attribute")
+    {
+        syn::Meta::List(syn::MetaList { nested, .. }) if nested.len() == 6 => {
+            let mut nested_iter = nested.iter();
+
+            let asset_path = &match nested_iter.next() {
+                Some(syn::NestedMeta::Lit(syn::Lit::Str(asset))) => asset.value(),
+                _ => panic!("First argument of #[sprite_sheet_bundle(...)] should be a string")
+            };
+            let tile_width = match nested_iter.next() {
+                Some(syn::NestedMeta::Lit(syn::Lit::Float(asset))) => asset.base10_digits(),
+                _ => panic!("Second argument of #[sprite_sheet_bundle(...)] should be a float")
+            };
+            let tile_height = match nested_iter.next() {
+                Some(syn::NestedMeta::Lit(syn::Lit::Float(asset))) => asset.base10_digits(),
+                _ => panic!("Third argument of #[sprite_sheet_bundle(...)] should be a float")
+            };
+            let num_columns = match nested_iter.next() {
+                Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_digits(),
+                _ => panic!("Fourth argument of #[sprite_sheet_bundle(...)] should be an int")
+            };
+            let num_rows = match nested_iter.next() {
+                Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_digits(),
+                _ => panic!("Fifth argument of #[sprite_sheet_bundle(...)] should be an int")
+            };
+            let index = match nested_iter.next() {
+                Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_digits(),
+                _ => panic!("Sixth argument of #[sprite_sheet_bundle(...)] should be an int")
+            };
+
+
+            quote! {
+                #field_name: bevy::prelude::SpriteSheetBundle {
+                    texture_atlas: texture_atlases.add(
+                        bevy::prelude::TextureAtlas::from_grid(
+                            asset_server.load(#asset_path).into(),
+                            bevy::prelude::Vec2::new(#tile_width, #tile_height),
+                            #num_rows, #num_columns,
+                        )
+                    ),
+                    texture_atlas_sprite: bevy::prelude::TextureAtlasSprite {
+                        index: #index,
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                },
+            }
+        },
+        _ => panic!("#[sprite_sheet_bundle...] attribute should take the form #[sprite_sheet_bundle(\"asset/path.png\", tile_width, tile_height, num_columns, num_rows, index)]"),
     }
 }
 

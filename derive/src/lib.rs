@@ -5,7 +5,10 @@ use syn;
 
 mod attributes;
 
-#[proc_macro_derive(LdtkEntity, attributes(sprite_bundle, entity_instance))]
+#[proc_macro_derive(
+    LdtkEntity,
+    attributes(sprite_bundle, entity_instance, sprite_sheet_bundle)
+)]
 pub fn ldtk_entity_derive(input: TokenStream) -> TokenStream {
     let ast = syn::parse(input).unwrap();
 

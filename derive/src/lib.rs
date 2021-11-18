@@ -5,7 +5,7 @@ use syn;
 
 mod attributes;
 
-#[proc_macro_derive(LdtkEntity, attributes(sprite_bundle))]
+#[proc_macro_derive(LdtkEntity, attributes(sprite_bundle, entity_instance))]
 pub fn ldtk_entity_derive(input: TokenStream) -> TokenStream {
     let ast = syn::parse(input).unwrap();
 
@@ -13,6 +13,7 @@ pub fn ldtk_entity_derive(input: TokenStream) -> TokenStream {
 }
 
 static SPRITE_BUNDLE_ATTRIBUTE_NAME: &str = "sprite_bundle";
+static ENTITY_INSTANCE_ATTRIBUTE_NAME: &str = "entity_instance";
 
 fn expand_ldtk_entity_derive(ast: &syn::DeriveInput) -> TokenStream {
     let struct_name = &ast.ident;
@@ -36,6 +37,16 @@ fn expand_ldtk_entity_derive(ast: &syn::DeriveInput) -> TokenStream {
             .find(|a| *a.path.get_ident().as_ref().unwrap() == SPRITE_BUNDLE_ATTRIBUTE_NAME);
         if let Some(attribute) = sprite_bundle {
             field_constructions.push(attributes::expand_sprite_bundle_attribute(
+                attribute, field_name, field_type,
+            ));
+        }
+
+        let entity_instance = field
+            .attrs
+            .iter()
+            .find(|a| *a.path.get_ident().as_ref().unwrap() == ENTITY_INSTANCE_ATTRIBUTE_NAME);
+        if let Some(attribute) = entity_instance {
+            field_constructions.push(attributes::expand_entity_instance_attribute(
                 attribute, field_name, field_type,
             ));
         }

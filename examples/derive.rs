@@ -49,6 +49,8 @@ struct TableBundle {
     #[sprite_bundle]
     sprite_bundle: SpriteBundle,
     table: TableComponent,
+    #[entity_instance]
+    entity_instance: EntityInstance,
 }
 
 #[derive(Clone, Default, Component)]

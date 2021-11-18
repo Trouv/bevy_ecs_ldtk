@@ -85,23 +85,23 @@ pub fn expand_sprite_sheet_bundle_attribute(
                 _ => panic!("First argument of #[sprite_sheet_bundle(...)] should be a string")
             };
             let tile_width = match nested_iter.next() {
-                Some(syn::NestedMeta::Lit(syn::Lit::Float(asset))) => asset.base10_digits(),
+                Some(syn::NestedMeta::Lit(syn::Lit::Float(asset))) => asset.base10_parse::<f32>().unwrap(),
                 _ => panic!("Second argument of #[sprite_sheet_bundle(...)] should be a float")
             };
             let tile_height = match nested_iter.next() {
-                Some(syn::NestedMeta::Lit(syn::Lit::Float(asset))) => asset.base10_digits(),
+                Some(syn::NestedMeta::Lit(syn::Lit::Float(asset))) => asset.base10_parse::<f32>().unwrap(),
                 _ => panic!("Third argument of #[sprite_sheet_bundle(...)] should be a float")
             };
             let num_columns = match nested_iter.next() {
-                Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_digits(),
+                Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_parse::<usize>().unwrap(),
                 _ => panic!("Fourth argument of #[sprite_sheet_bundle(...)] should be an int")
             };
             let num_rows = match nested_iter.next() {
-                Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_digits(),
+                Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_parse::<usize>().unwrap(),
                 _ => panic!("Fifth argument of #[sprite_sheet_bundle(...)] should be an int")
             };
             let index = match nested_iter.next() {
-                Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_digits(),
+                Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_parse::<u32>().unwrap(),
                 _ => panic!("Sixth argument of #[sprite_sheet_bundle(...)] should be an int")
             };
 
@@ -112,10 +112,10 @@ pub fn expand_sprite_sheet_bundle_attribute(
                         bevy::prelude::TextureAtlas::from_grid(
                             asset_server.load(#asset_path).into(),
                             bevy::prelude::Vec2::new(#tile_width, #tile_height),
-                            #num_rows, #num_columns,
+                            #num_columns, #num_rows,
                         )
                     ),
-                    texture_atlas_sprite: bevy::prelude::TextureAtlasSprite {
+                    sprite: bevy::prelude::TextureAtlasSprite {
                         index: #index,
                         ..Default::default()
                     },

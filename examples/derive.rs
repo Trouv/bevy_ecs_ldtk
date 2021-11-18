@@ -59,7 +59,7 @@ pub struct SBlock;
 #[derive(Clone, Default, Bundle, LdtkEntity)]
 struct SBlockBundle {
     #[bundle]
-    #[sprite_bundle]
-    sprite_bundle: SpriteBundle,
+    #[sprite_sheet_bundle("input_blocks.png", 32., 32., 2, 4, 4)]
+    sprite_sheet_bundle: SpriteSheetBundle,
     s_block: SBlock,
 }

@@ -17,6 +17,7 @@ pub fn ldtk_entity_derive(input: TokenStream) -> TokenStream {
 
 static SPRITE_BUNDLE_ATTRIBUTE_NAME: &str = "sprite_bundle";
 static ENTITY_INSTANCE_ATTRIBUTE_NAME: &str = "entity_instance";
+static SPRITE_SHEET_BUNDLE_ATTRIBUTE_NAME: &str = "sprite_sheet_bundle";
 
 fn expand_ldtk_entity_derive(ast: &syn::DeriveInput) -> TokenStream {
     let struct_name = &ast.ident;
@@ -50,6 +51,16 @@ fn expand_ldtk_entity_derive(ast: &syn::DeriveInput) -> TokenStream {
             .find(|a| *a.path.get_ident().as_ref().unwrap() == ENTITY_INSTANCE_ATTRIBUTE_NAME);
         if let Some(attribute) = entity_instance {
             field_constructions.push(attributes::expand_entity_instance_attribute(
+                attribute, field_name, field_type,
+            ));
+        }
+
+        let sprite_sheet_bundle = field
+            .attrs
+            .iter()
+            .find(|a| *a.path.get_ident().as_ref().unwrap() == SPRITE_SHEET_BUNDLE_ATTRIBUTE_NAME);
+        if let Some(attribute) = sprite_sheet_bundle {
+            field_constructions.push(attributes::expand_sprite_sheet_bundle_attribute(
                 attribute, field_name, field_type,
             ));
         }

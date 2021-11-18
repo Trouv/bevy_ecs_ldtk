@@ -105,7 +105,6 @@ pub fn expand_sprite_sheet_bundle_attribute(
                 _ => panic!("Sixth argument of #[sprite_sheet_bundle(...)] should be an int")
             };
 
-
             quote! {
                 #field_name: bevy::prelude::SpriteSheetBundle {
                     texture_atlas: texture_atlases.add(
@@ -123,7 +122,76 @@ pub fn expand_sprite_sheet_bundle_attribute(
                 },
             }
         },
-        _ => panic!("#[sprite_sheet_bundle...] attribute should take the form #[sprite_sheet_bundle(\"asset/path.png\", tile_width, tile_height, columns, rows, index)]"),
+        syn::Meta::List(syn::MetaList { nested, .. }) if nested.len() == 2 => {
+            let mut nested_iter = nested.iter();
+
+            let columns = match nested_iter.next() {
+                Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_parse::<usize>().unwrap(),
+                _ => panic!("First argument of #[sprite_sheet_bundle(columns, rows)] should be an int")
+            };
+            let rows = match nested_iter.next() {
+                Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_parse::<usize>().unwrap(),
+                _ => panic!("Second argument of #[sprite_sheet_bundle(columns, rows)] should be an int")
+            };
+
+            quote! {
+                #field_name: bevy::prelude::SpriteSheetBundle {
+                    texture_atlas: texture_atlases.add(
+                        bevy::prelude::TextureAtlas::from_grid(
+                            tileset_map.get(
+                                &entity_instance
+                                    .tile
+                                    .clone()
+                                    .expect("#[sprite_sheet_bundle(columns, rows)] attribute expected EntityInstance to have a tile defined")
+                                    .tileset_uid
+                            ).expect("EntityInstance's tileset should be in the tileset_map")
+                            .clone(),
+                            bevy::prelude::Vec2::new(
+                                entity_instance
+                                    .tile
+                                    .clone()
+                                    .expect("#[sprite_sheet_bundle(columns, rows)] attribute expected EntityInstance to have a tile defined")
+                                    .src_rect[2] as f32,
+                                entity_instance
+                                    .tile
+                                    .clone()
+                                    .expect("#[sprite_sheet_bundle(columns, rows)] attribute expected EntityInstance to have a tile defined")
+                                    .src_rect[3] as f32,
+                            ),
+                            #columns, #rows,
+                        )
+                    ),
+                    sprite: bevy::prelude::TextureAtlasSprite {
+                        index: (entity_instance
+                                    .tile
+                                    .clone()
+                                    .expect("#[sprite_sheet_bundle(columns, rows)] attribute expected EntityInstance to have a tile defined")
+                                    .src_rect[1] 
+                                / entity_instance
+                                    .tile
+                                    .clone()
+                                    .expect("#[sprite_sheet_bundle(columns, rows)] attribute expected EntityInstance to have a tile defined")
+                                    .src_rect[3]
+                                ) as u32
+                                * #columns as u32
+                                + (entity_instance
+                                    .tile
+                                    .clone()
+                                    .expect("#[sprite_sheet_bundle(columns, rows)] attribute expected EntityInstance to have a tile defined")
+                                    .src_rect[0]
+                                / entity_instance
+                                    .tile
+                                    .clone()
+                                    .expect("#[sprite_sheet_bundle(columns, rows)] attribute expected EntityInstance to have a tile defined")
+                                    .src_rect[2]
+                                ) as u32,
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                },
+            }
+        },
+        _ => panic!("#[sprite_sheet_bundle...] attribute should take the form #[sprite_sheet_bundle(\"asset/path.png\", tile_width, tile_height, columns, rows, index)] or #[sprite_sheet_bundle(columns, rows)]"),
     }
 }
 

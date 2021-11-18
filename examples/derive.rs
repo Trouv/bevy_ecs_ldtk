@@ -10,6 +10,7 @@ fn main() {
         .add_ldtk_entity::<PlayerBundle>("Willo")
         .add_ldtk_entity::<TableBundle>("Table")
         .add_ldtk_entity::<SBlockBundle>("S")
+        .add_ldtk_entity::<WBlockBundle>("W")
         .run();
 }
 
@@ -62,4 +63,15 @@ struct SBlockBundle {
     #[sprite_sheet_bundle("input_blocks.png", 32., 32., 2, 4, 4)]
     sprite_sheet_bundle: SpriteSheetBundle,
     s_block: SBlock,
+}
+
+#[derive(Clone, Default, Component)]
+pub struct WBlock;
+
+#[derive(Clone, Default, Bundle, LdtkEntity)]
+struct WBlockBundle {
+    #[bundle]
+    #[sprite_sheet_bundle(2, 4)]
+    sprite_sheet_bundle: SpriteSheetBundle,
+    w_block: WBlock,
 }

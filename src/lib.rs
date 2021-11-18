@@ -1,7 +1,9 @@
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 
+#[cfg(feature = "app")]
 pub mod app;
+
 pub mod assets;
 pub mod components;
 pub mod ldtk;
@@ -29,7 +31,6 @@ pub mod plugin {
 
 pub mod prelude {
     pub use crate::{
-        app::{AddLdtkObjects, LdtkEntity},
         assets::{LdtkAsset, LdtkExternalLevel, TilesetMap},
         components::{
             EntityInstance, EntityInstanceBundle, IntGridCell, IntGridCellBundle, LdtkMapBundle,
@@ -38,6 +39,9 @@ pub mod prelude {
         ldtk,
         plugin::LdtkPlugin,
     };
+
+    #[cfg(feature = "app")]
+    pub use crate::app::{AddLdtkObjects, LdtkEntity};
 
     #[cfg(feature = "derive")]
     pub use bevy_ecs_ldtk_derive::*;

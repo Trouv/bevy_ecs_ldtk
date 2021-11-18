@@ -3,6 +3,8 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn;
 
+mod attributes;
+
 #[proc_macro_derive(LdtkEntity, attributes(sprite_bundle))]
 pub fn ldtk_entity_derive(input: TokenStream) -> TokenStream {
     let ast = syn::parse(input).unwrap();
@@ -33,22 +35,9 @@ fn expand_ldtk_entity_derive(ast: &syn::DeriveInput) -> TokenStream {
             .iter()
             .find(|a| *a.path.get_ident().as_ref().unwrap() == SPRITE_BUNDLE_ATTRIBUTE_NAME);
         if let Some(attribute) = sprite_bundle {
-            match attribute.parse_meta().unwrap() {
-                syn::Meta::List(syn::MetaList { nested, .. }) => match nested.first().unwrap() {
-                    syn::NestedMeta::Lit(syn::Lit::Str(asset)) => {
-                        let asset_path = &asset.value();
-
-                        field_constructions.push(quote! {
-                            #field_name: SpriteBundle {
-                                material: materials.add(asset_server.load(#asset_path).into()),
-                                ..Default::default()
-                            },
-                        })
-                    }
-                    _ => panic!("Expected asset path as the first argument of sprite_bundle"),
-                },
-                _ => panic!("Expected arguments with sprite_bundle attribute"),
-            }
+            field_constructions.push(attributes::quote_sprite_bundle_attribute(
+                attribute, field_name,
+            ));
         } else {
             field_constructions.push(quote! {
                 #field_name: #field_type::default(),

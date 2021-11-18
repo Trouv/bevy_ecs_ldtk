@@ -36,7 +36,7 @@ fn expand_ldtk_entity_derive(ast: &syn::DeriveInput) -> TokenStream {
             .find(|a| *a.path.get_ident().as_ref().unwrap() == SPRITE_BUNDLE_ATTRIBUTE_NAME);
         if let Some(attribute) = sprite_bundle {
             field_constructions.push(attributes::expand_sprite_bundle_attribute(
-                attribute, field_name,
+                attribute, field_name, field_type,
             ));
         }
     }

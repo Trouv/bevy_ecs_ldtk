@@ -9,6 +9,7 @@ fn main() {
         .add_startup_system(setup)
         .add_ldtk_entity::<PlayerBundle>("Willo")
         .add_ldtk_entity::<TableBundle>("Table")
+        .add_ldtk_entity::<SBlockBundle>("S")
         .run();
 }
 
@@ -48,4 +49,15 @@ struct TableBundle {
     #[sprite_bundle]
     sprite_bundle: SpriteBundle,
     table: TableComponent,
+}
+
+#[derive(Clone, Default, Component)]
+pub struct SBlock;
+
+#[derive(Clone, Default, Bundle, LdtkEntity)]
+struct SBlockBundle {
+    #[bundle]
+    #[sprite_bundle]
+    sprite_bundle: SpriteBundle,
+    s_block: SBlock,
 }

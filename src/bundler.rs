@@ -5,6 +5,7 @@ use std::{collections::HashMap, marker::PhantomData};
 pub trait LdtkEntity: Bundle {
     fn from_instance(
         entity_instance: &EntityInstance,
+        tileset_map: &HashMap<i64, Handle<Texture>>,
         asset_server: &Res<AssetServer>,
         materials: &mut ResMut<Assets<ColorMaterial>>,
         texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
@@ -45,6 +46,7 @@ pub trait PhantomLdtkEntityTrait {
         &self,
         commands: &'a mut Commands<'w, 's>,
         entity_instance: &EntityInstance,
+        tileset_map: &HashMap<i64, Handle<Texture>>,
         asset_server: &Res<AssetServer>,
         materials: &mut ResMut<Assets<ColorMaterial>>,
         texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
@@ -56,12 +58,14 @@ impl<B: LdtkEntity> PhantomLdtkEntityTrait for PhantomLdtkEntity<B> {
         &self,
         commands: &'a mut Commands<'w, 's>,
         entity_instance: &EntityInstance,
+        tileset_map: &HashMap<i64, Handle<Texture>>,
         asset_server: &Res<AssetServer>,
         materials: &mut ResMut<Assets<ColorMaterial>>,
         texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
     ) -> EntityCommands<'w, 's, 'a> {
         commands.spawn_bundle(B::from_instance(
             entity_instance,
+            tileset_map,
             asset_server,
             materials,
             texture_atlases,

@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_ecs_ldtk::{bundler::LdtkEntity, components::*, *};
 use bevy_ecs_tilemap::*;
+use std::collections::HashMap;
 
 fn main() {
     App::new()
@@ -36,6 +37,7 @@ struct PlayerBundle {
 impl LdtkEntity for PlayerBundle {
     fn from_instance(
         _: &EntityInstance,
+        tileset_map: &HashMap<i64, Handle<Texture>>,
         asset_server: &Res<AssetServer>,
         materials: &mut ResMut<Assets<ColorMaterial>>,
         _: &mut ResMut<Assets<TextureAtlas>>,

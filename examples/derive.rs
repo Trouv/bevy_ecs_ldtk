@@ -8,6 +8,7 @@ fn main() {
         .add_plugin(LdtkPlugin)
         .add_startup_system(setup)
         .add_ldtk_entity::<PlayerBundle>("Willo")
+        .add_ldtk_entity::<TableBundle>("Table")
         .run();
 }
 
@@ -36,4 +37,15 @@ struct PlayerBundle {
     #[sprite_bundle("player.png")]
     sprite_bundle: SpriteBundle,
     player: PlayerComponent,
+}
+
+#[derive(Clone, Default, Component)]
+pub struct TableComponent;
+
+#[derive(Clone, Default, Bundle, LdtkEntity)]
+struct TableBundle {
+    #[bundle]
+    #[sprite_bundle]
+    sprite_bundle: SpriteBundle,
+    table: TableComponent,
 }

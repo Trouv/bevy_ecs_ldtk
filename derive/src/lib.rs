@@ -35,15 +35,14 @@ fn expand_ldtk_entity_derive(ast: &syn::DeriveInput) -> TokenStream {
             .iter()
             .find(|a| *a.path.get_ident().as_ref().unwrap() == SPRITE_BUNDLE_ATTRIBUTE_NAME);
         if let Some(attribute) = sprite_bundle {
-            field_constructions.push(attributes::quote_sprite_bundle_attribute(
+            field_constructions.push(attributes::expand_sprite_bundle_attribute(
                 attribute, field_name,
             ));
-        } else {
-            field_constructions.push(quote! {
-                #field_name: #field_type::default(),
-            })
         }
     }
+    field_constructions.push(quote! {
+        ..Default::default()
+    });
 
     let generics = &ast.generics;
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
@@ -51,10 +50,11 @@ fn expand_ldtk_entity_derive(ast: &syn::DeriveInput) -> TokenStream {
     let gen = quote! {
         impl #impl_generics LdtkEntity for #struct_name #ty_generics #where_clause {
             fn from_instance(
-                _: &EntityInstance,
+                entity_instance: &EntityInstance,
+                tileset_map: &std::collections::HashMap<i64, Handle<Texture>>,
                 asset_server: &Res<AssetServer>,
                 materials: &mut ResMut<Assets<ColorMaterial>>,
-                _: &mut ResMut<Assets<TextureAtlas>>,
+                texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
             ) -> Self {
                 Self {
                     #(#field_constructions)*

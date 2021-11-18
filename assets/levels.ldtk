@@ -331,7 +331,7 @@
 			"width": 160,
 			"height": 160,
 			"resizableX": false,
-			"resizableY": false,
+			"resizableY": true,
 			"keepAspectRatio": false,
 			"fillOpacity": 1,
 			"lineOpacity": 1,

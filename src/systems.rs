@@ -216,6 +216,7 @@ pub fn process_loaded_ldtk(
                                                 .evaluate(
                                                     &mut commands,
                                                     &entity_instance,
+                                                    &ldtk_asset.tileset_map,
                                                     &asset_server,
                                                     &mut materials,
                                                     &mut texture_atlases,

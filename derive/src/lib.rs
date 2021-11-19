@@ -7,7 +7,7 @@ mod attributes;
 
 #[proc_macro_derive(
     LdtkEntity,
-    attributes(sprite_bundle, entity_instance, sprite_sheet_bundle)
+    attributes(sprite_bundle, entity_instance, sprite_sheet_bundle, ldtk_entity)
 )]
 pub fn ldtk_entity_derive(input: TokenStream) -> TokenStream {
     let ast = syn::parse(input).unwrap();
@@ -16,8 +16,9 @@ pub fn ldtk_entity_derive(input: TokenStream) -> TokenStream {
 }
 
 static SPRITE_BUNDLE_ATTRIBUTE_NAME: &str = "sprite_bundle";
-static ENTITY_INSTANCE_ATTRIBUTE_NAME: &str = "entity_instance";
 static SPRITE_SHEET_BUNDLE_ATTRIBUTE_NAME: &str = "sprite_sheet_bundle";
+static ENTITY_INSTANCE_ATTRIBUTE_NAME: &str = "entity_instance";
+static LDTK_ENTITY_ATTRIBUTE_NAME: &str = "ldtk_entity";
 
 fn expand_ldtk_entity_derive(ast: &syn::DeriveInput) -> TokenStream {
     let struct_name = &ast.ident;
@@ -45,6 +46,16 @@ fn expand_ldtk_entity_derive(ast: &syn::DeriveInput) -> TokenStream {
             ));
         }
 
+        let sprite_sheet_bundle = field
+            .attrs
+            .iter()
+            .find(|a| *a.path.get_ident().as_ref().unwrap() == SPRITE_SHEET_BUNDLE_ATTRIBUTE_NAME);
+        if let Some(attribute) = sprite_sheet_bundle {
+            field_constructions.push(attributes::expand_sprite_sheet_bundle_attribute(
+                attribute, field_name, field_type,
+            ));
+        }
+
         let entity_instance = field
             .attrs
             .iter()
@@ -55,12 +66,12 @@ fn expand_ldtk_entity_derive(ast: &syn::DeriveInput) -> TokenStream {
             ));
         }
 
-        let sprite_sheet_bundle = field
+        let ldtk_entity = field
             .attrs
             .iter()
-            .find(|a| *a.path.get_ident().as_ref().unwrap() == SPRITE_SHEET_BUNDLE_ATTRIBUTE_NAME);
-        if let Some(attribute) = sprite_sheet_bundle {
-            field_constructions.push(attributes::expand_sprite_sheet_bundle_attribute(
+            .find(|a| *a.path.get_ident().as_ref().unwrap() == LDTK_ENTITY_ATTRIBUTE_NAME);
+        if let Some(attribute) = ldtk_entity {
+            field_constructions.push(attributes::expand_ldtk_entity_attribute(
                 attribute, field_name, field_type,
             ));
         }

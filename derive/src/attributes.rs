@@ -198,3 +198,21 @@ pub fn expand_entity_instance_attribute(
         _ => panic!("#[entity_instance] attribute should take the form #[entity_instance]"),
     }
 }
+
+pub fn expand_ldtk_entity_attribute(
+    attribute: &syn::Attribute,
+    field_name: &syn::Ident,
+    field_type: &syn::Type,
+) -> TokenStream {
+    match attribute
+        .parse_meta()
+        .expect("Cannot parse #[ldtk_entity] attribute")
+    {
+        syn::Meta::Path(_) => {
+            quote! {
+                #field_name: #field_type::from_instance(entity_instance, tileset_map, asset_server, materials, texture_atlases),
+            }
+        }
+        _ => panic!("#[ldtk_entity] attribute should take the form #[ldtk_entity]"),
+    }
+}

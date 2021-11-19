@@ -54,6 +54,13 @@ struct TableBundle {
     entity_instance: EntityInstance,
 }
 
+#[derive(Clone, Default, Bundle, LdtkEntity)]
+struct BlockBundle {
+    #[bundle]
+    #[sprite_sheet_bundle(2, 4)]
+    sprite_sheet_bundle: SpriteSheetBundle,
+}
+
 #[derive(Clone, Default, Component)]
 pub struct SBlock;
 
@@ -70,8 +77,8 @@ pub struct WBlock;
 
 #[derive(Clone, Default, Bundle, LdtkEntity)]
 struct WBlockBundle {
+    #[ldtk_entity]
     #[bundle]
-    #[sprite_sheet_bundle(2, 4)]
-    sprite_sheet_bundle: SpriteSheetBundle,
+    block_bundle: BlockBundle,
     w_block: WBlock,
 }

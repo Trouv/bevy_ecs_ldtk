@@ -96,11 +96,31 @@ use std::{collections::HashMap, marker::PhantomData};
 /// `#[entity_instance]` indicates that an `EntityInstance` component should be created as a clone
 /// of the LDtk `EntityInstance` that is causing it to spawn in the first place.
 /// ```
-/// #[derive(Bundle, LDtkEntity)]
+/// #[derive(Bundle, LdtkEntity)]
 /// pub struct GoalPost {
 ///     completed: Completed,
 ///     #[entity_instance]
 ///     extra_info: EntityInstance,
+/// }
+/// ```
+///
+/// `#[ldtk_entity]` indicates that a nested bundle that implements `LdtkEntity` should be created
+/// with `LdtkEntity::from_instance`, allowing for nested LdtkEntities.
+/// ```
+/// #[derive(Bundle, LdtkEntity)]
+/// pub struct Weapon {
+///     damage: Damage,
+///     #[sprite_bundle]
+///     #[bundle]
+///     sprite: SpriteBundle,
+/// }
+///
+/// #[derive(Bundle, LdtkEntity)]
+/// pub struct Dagger {
+///     #[ldtk_entity]
+///     #[bundle]
+///     weapon_bundle: Weapon,
+///     bleed_damage: BleedDamage,
 /// }
 /// ```
 pub trait LdtkEntity: Bundle {
@@ -113,7 +133,7 @@ pub trait LdtkEntity: Bundle {
     /// registered to the app.
     ///
     /// Note: whether or not the entity is registered to the app, the plugin will insert `Transform`,
-    /// `GlobalTransform`, and `Parent` components to the entity *after* the entity is spawned.
+    /// `GlobalTransform`, and `Parent` components to the entity **after** the entity is spawned.
     /// So, any custom implementations of these components within this trait will be overwritten.
     fn from_instance(
         entity_instance: &EntityInstance,

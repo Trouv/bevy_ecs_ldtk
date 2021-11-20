@@ -248,7 +248,7 @@ impl LdtkEntity for SpriteBundle {
 }
 
 pub trait RegisterLdtkObjects {
-    fn register_ldtk_entity<B: LdtkEntity>(&mut self, identifier: &str) -> &mut App;
+    fn register_ldtk_entity<B: LdtkEntity>(&mut self, identifier: &str) -> &mut Self;
 }
 
 impl RegisterLdtkObjects for App {

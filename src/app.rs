@@ -12,9 +12,11 @@ use std::{collections::HashMap, marker::PhantomData};
 ///
 /// *Requires the "app" feature, which is enabled by default*
 ///
+/// *Derive macro requires the "derive" feature, which is **not** enabled by default*
+///
 /// ## Derive macro usage
 /// Using `#[derive(LdtkEntity)]` on a `Bundle` struct will allow the type to be registered to the
-/// app via `app.register_ldtk_entity`:
+/// app via `app.register_ldtk_entity()`:
 /// ```
 /// use bevy::prelude::*;
 /// use bevy_ecs_ldtk::prelude::*;
@@ -41,8 +43,8 @@ use std::{collections::HashMap, marker::PhantomData};
 /// implementations.
 /// However, this behavior can be overriden with some field attribute macros...
 ///
-/// `#[sprite_bundle...]` indicates that a `SpriteBundle` field should be created with an actual
-/// material/image.
+/// ### `#[sprite_bundle...]`
+/// Indicates that a `SpriteBundle` field should be created with an actual material/image.
 /// There are two forms for this attribute:
 /// - `#[sprite_bundle("path/to/asset.png")]` will create the field using the image at the provided
 /// path in the assets folder.
@@ -66,8 +68,9 @@ use std::{collections::HashMap, marker::PhantomData};
 /// }
 /// ```
 ///
-/// `#[sprite_sheet_bundle...]`, similarly to `#[sprite_sheet]`, indicates that a
-/// `SpriteSheetBundle` field should be created with an actual material/image.
+/// ### `#[sprite_sheet_bundle...]`
+/// Similarly to `#[sprite_sheet]`, indicates that a `SpriteSheetBundle` field should be created
+/// with an actual material/image.
 /// There are two forms for this attribute:
 /// - `#[sprite_sheet_bundle("path/to/asset.png", tile_width, tile_height, columns, rows, index)]`
 /// will create the field using all of the information provided.
@@ -93,8 +96,9 @@ use std::{collections::HashMap, marker::PhantomData};
 /// }
 /// ```
 ///
-/// `#[entity_instance]` indicates that an `EntityInstance` component should be created as a clone
-/// of the LDtk `EntityInstance` that is causing it to spawn in the first place.
+/// ### `#[entity_instance]`
+/// Indicates that an `EntityInstance` component should be created as a clone of the LDtk
+/// `EntityInstance` that is causing it to spawn in the first place.
 /// ```
 /// #[derive(Bundle, LdtkEntity)]
 /// pub struct GoalPost {
@@ -104,8 +108,9 @@ use std::{collections::HashMap, marker::PhantomData};
 /// }
 /// ```
 ///
-/// `#[ldtk_entity]` indicates that a nested bundle that implements `LdtkEntity` should be created
-/// with `LdtkEntity::from_instance`, allowing for nested LdtkEntities.
+/// ### `#[ldtk_entity]`
+/// Indicates that a nested bundle that implements `LdtkEntity` should be created with
+/// `LdtkEntity::from_instance`, allowing for nested `LdtkEntitie`s.
 /// ```
 /// #[derive(Bundle, LdtkEntity)]
 /// pub struct Weapon {
@@ -124,8 +129,9 @@ use std::{collections::HashMap, marker::PhantomData};
 /// }
 /// ```
 ///
-/// `#[from_entity_instance]` indicates that a component or bundle that implements
-/// `From<&EntityInstance>` should be created using that conversion.
+/// ### `#[from_entity_instance]`
+/// Indicates that a component or bundle that implements `From<&EntityInstance>` should be created
+/// using that conversion.
 /// This allows for more modular component construction, and for different structs that contain the
 /// same component to have different constructions of that component, without having to `impl
 /// LdtkEntity` for both of them.

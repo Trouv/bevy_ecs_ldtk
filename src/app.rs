@@ -84,7 +84,7 @@ use std::{collections::HashMap, marker::PhantomData};
 /// ```
 ///
 /// ### `#[sprite_sheet_bundle...]`
-/// Similarly to `#[sprite_sheet]`, indicates that a `SpriteSheetBundle` field should be created
+/// Similar to `#[sprite_bundle...]`, indicates that a `SpriteSheetBundle` field should be created
 /// with an actual material/image.
 /// There are two forms for this attribute:
 /// - `#[sprite_sheet_bundle("path/to/asset.png", tile_width, tile_height, columns, rows, index)]`

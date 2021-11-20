@@ -2,7 +2,80 @@ use crate::{assets::TilesetMap, ldtk::EntityInstance};
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::{collections::HashMap, marker::PhantomData};
 
+/// Provides a constructor to a bevy `Bundle` which can be used for spawning entities from an LDtk
+/// file.
+/// After implementing this trait on a bundle, you can register it to spawn automatically for a
+/// given identifier via `app.register_ldtk_entity()`.
+///
+/// For common use cases, you'll want to use derive-macro `#[derive(LdtkEntity)]`, but you can also
+/// provide a custom implementation.
+///
+/// *Requires the "app" feature, which is enabled by default*
+///
+/// ## Derive macro usage
+/// Using `#[derive(LdtkEntity)]` on a `Bundle` struct will allow the type to be registered to the
+/// app via `app.register_ldtk_entity`:
+/// ```
+/// use bevy::prelude::*;
+/// use bevy_ecs_ldtk::prelude::*;
+///
+/// fn main() {
+///     App::new()
+///         .add_plugin(LdtkPlugin)
+///         .register_ldtk_entity::<MyBundle>("my_entity_identifier")
+///         // add other systems, plugins, resources...
+///         .run()
+/// }
+///
+/// #[derive(Bundle, LdtkEntity)]
+/// pub struct MyBundle {
+///     a: ComponentA,
+///     b: ComponentB,
+///     c: ComponentC,
+/// }
+/// ```
+/// Now, when loading your ldtk file, any entities with the entity identifier
+/// "my_entity_identifier" will be spawned as `MyBundle`s.
+///
+/// By default, each component or nested bundle in the bundle will be created using their `Default`
+/// implementations.
+/// However, this behavior can be overriden with some field attribute macros...
+///
+/// `#[sprite_bundle...]` indicates that a `SpriteBundle` field should be created with an actual
+/// material/image.
+/// There are two forms for this attribute:
+/// - `#[sprite_bundle("path/to/asset.png")]` will create the field using the image at the provided
+/// path in the assets folder.
+/// - `#[sprite_bundle]` will create the field using its Editor Visual image in LDtk, if it has one.
+/// ```
+/// #[derive(Bundle, LdtkEntity)]
+/// pub struct Gem {
+///     #[sprite_bundle("textures/gem.png")]
+///     #[bundle]
+///     sprite_bundle: SpriteBundle,
+///     other: OtherComponent,
+/// }
+///
+/// #[derive(Bundle, LdtkEntity)]
+/// pub struct Player {
+///     player: PlayerComponent,
+///     #[sprite_bundle] // Uses the Editor Visual sprite in LDtk
+///     #[bundle]
+///     sprite_bundle: SpriteBundle,
+/// }
+/// ```
 pub trait LdtkEntity: Bundle {
+    /// The constructor used by the plugin when spawning entities from an LDtk file.
+    /// Has access to resources/assets most commonly used for spawning 2d objects.
+    /// If you need access to more of the World, you can create a system that queries for
+    /// `Added<EntityInstance>`, and flesh out the entity from there, instead of implementing this
+    /// trait.
+    /// This is because the plugin spawns an entity with an `EntityInstance` component if it's not
+    /// registered to the app.
+    ///
+    /// Note: whether or not the entity is registered to the app, the plugin will insert `Transform`,
+    /// `GlobalTransform`, and `Parent` components to the entity *after* the entity is spawned.
+    /// So, any custom implementations of these components within this trait will be overwritten.
     fn from_instance(
         entity_instance: &EntityInstance,
         tileset_map: &TilesetMap,
@@ -44,12 +117,12 @@ impl LdtkEntity for SpriteBundle {
     }
 }
 
-pub trait AddLdtkObjects {
-    fn add_ldtk_entity<B: LdtkEntity>(&mut self, identifier: &str) -> &mut App;
+pub trait RegisterLdtkObjects {
+    fn register_ldtk_entity<B: LdtkEntity>(&mut self, identifier: &str) -> &mut App;
 }
 
-impl AddLdtkObjects for App {
-    fn add_ldtk_entity<B: LdtkEntity>(&mut self, identifier: &str) -> &mut App {
+impl RegisterLdtkObjects for App {
+    fn register_ldtk_entity<B: LdtkEntity>(&mut self, identifier: &str) -> &mut App {
         let new_entry = Box::new(PhantomLdtkEntity::<B> {
             ldtk_entity: PhantomData,
         });

@@ -7,10 +7,10 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(LdtkPlugin)
         .add_startup_system(setup)
-        .add_ldtk_entity::<PlayerBundle>("Willo")
-        .add_ldtk_entity::<TableBundle>("Table")
-        .add_ldtk_entity::<SBlockBundle>("S")
-        .add_ldtk_entity::<WBlockBundle>("W")
+        .register_ldtk_entity::<PlayerBundle>("Willo")
+        .register_ldtk_entity::<TableBundle>("Table")
+        .register_ldtk_entity::<SBlockBundle>("S")
+        .register_ldtk_entity::<WBlockBundle>("W")
         .run();
 }
 

@@ -53,15 +53,42 @@ use std::{collections::HashMap, marker::PhantomData};
 ///     #[sprite_bundle("textures/gem.png")]
 ///     #[bundle]
 ///     sprite_bundle: SpriteBundle,
-///     other: OtherComponent,
+///     sellable: Sellable,
 /// }
 ///
 /// #[derive(Bundle, LdtkEntity)]
 /// pub struct Player {
 ///     player: PlayerComponent,
+///     health: Health,
 ///     #[sprite_bundle] // Uses the Editor Visual sprite in LDtk
 ///     #[bundle]
 ///     sprite_bundle: SpriteBundle,
+/// }
+/// ```
+///
+/// `#[sprite_sheet_bundle...]`, similarly to `#[sprite_sheet]`, indicates that a
+/// `SpriteSheetBundle` field should be created with an actual material/image.
+/// There are two forms for this attribute:
+/// - `#[sprite_sheet_bundle("path/to/asset.png", tile_width, tile_height, columns, rows, index)]`
+/// will create the field using all of the information provided.
+/// Similar to using `TextureAtlas::from_grid()`.
+/// - `#[sprite_sheet_bundle(columns, rows)]` will create the field mostly using information from
+/// the LDtk Editor visual, if it has one.
+/// ```
+/// #[derive(Bundle, LdtkEntity)]
+/// pub struct Sword {
+///     #[bundle]
+///     #[sprite_sheet_bundle("weapons.png", 32.0, 32.0, 4, 5, 17)]
+///     sprite_sheet: SpriteSheetBundle,
+///     damage: Damage,
+/// }
+///
+/// #[derive(Bundle, LdtkEntity)]
+/// pub struct Dagger {
+///     #[bundle]
+///     #[sprite_sheet_bundle(4, 5)]
+///     sprite_sheet: SpriteSheetBundle,
+///     damage: Damage,
 /// }
 /// ```
 pub trait LdtkEntity: Bundle {

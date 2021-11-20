@@ -127,32 +127,36 @@ pub fn expand_sprite_sheet_bundle_attribute(
 
             quote! {
                 #field_name: {
-                    let tile = entity_instance
-                        .tile
-                        .clone()
-                        .expect("#[sprite_sheet_bundle(columns, rows)] attribute expected EntityInstance to have a tile defined");
-
-                    bevy::prelude::SpriteSheetBundle {
-                        texture_atlas: texture_atlases.add(
-                            bevy::prelude::TextureAtlas::from_grid(
-                                tileset_map.get(
-                                    &tile.tileset_uid
-                                ).expect("EntityInstance's tileset should be in the tileset_map")
-                                .clone(),
-                                bevy::prelude::Vec2::new(
-                                    tile.src_rect[2] as f32,
-                                    tile.src_rect[3] as f32,
-                                ),
-                                #columns, #rows,
-                            )
-                        ),
-                        sprite: bevy::prelude::TextureAtlasSprite {
-                            index: (tile.src_rect[1] / tile.src_rect[3]) as u32
-                                    * #columns as u32
-                                    + (tile.src_rect[0] / tile.src_rect[2]) as u32,
-                            ..Default::default()
-                        },
-                        ..Default::default()
+                    match entity_instance.tile.as_ref() {
+                        Some(tile) => match tileset_map.get(&tile.tileset_uid) {
+                            Some(tileset) => bevy::prelude::SpriteSheetBundle {
+                                    texture_atlas: texture_atlases.add(
+                                        bevy::prelude::TextureAtlas::from_grid(
+                                            tileset.clone(),
+                                            bevy::prelude::Vec2::new(
+                                                tile.src_rect[2] as f32,
+                                                tile.src_rect[3] as f32,
+                                            ),
+                                            #columns, #rows,
+                                        )
+                                    ),
+                                    sprite: bevy::prelude::TextureAtlasSprite {
+                                        index: (tile.src_rect[1] / tile.src_rect[3]) as u32
+                                                * #columns as u32
+                                                + (tile.src_rect[0] / tile.src_rect[2]) as u32,
+                                        ..Default::default()
+                                    },
+                                    ..Default::default()
+                                },
+                                None => {
+                                    warn!("EntityInstance's tileset should be in the TilesetMap");
+                                    bevy::prelude::SpriteSheetBundle::default()
+                                }
+                            }
+                        None => {
+                            warn!("#[sprite_sheet_bundle(columns, rows)] attribute expected EntityInstance to have a tile defined");
+                            bevy::prelude::SpriteSheetBundle::default()
+                        }
                     }
                 },
             }

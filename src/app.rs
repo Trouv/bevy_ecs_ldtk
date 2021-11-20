@@ -85,10 +85,22 @@ use std::{collections::HashMap, marker::PhantomData};
 ///
 /// #[derive(Bundle, LdtkEntity)]
 /// pub struct Dagger {
+///     damage: Damage,
+///     bleed_damage: BleedDamage,
 ///     #[bundle]
 ///     #[sprite_sheet_bundle(4, 5)]
 ///     sprite_sheet: SpriteSheetBundle,
-///     damage: Damage,
+/// }
+/// ```
+///
+/// `#[entity_instance]` indicates that an `EntityInstance` component should be created as a clone
+/// of the LDtk `EntityInstance` that is causing it to spawn in the first place.
+/// ```
+/// #[derive(Bundle, LDtkEntity)]
+/// pub struct GoalPost {
+///     completed: Completed,
+///     #[entity_instance]
+///     extra_info: EntityInstance,
 /// }
 /// ```
 pub trait LdtkEntity: Bundle {

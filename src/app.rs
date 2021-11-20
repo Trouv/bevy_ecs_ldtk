@@ -123,6 +123,36 @@ use std::{collections::HashMap, marker::PhantomData};
 ///     bleed_damage: BleedDamage,
 /// }
 /// ```
+///
+/// `#[from_entity_instance]` indicates that a component or bundle that implements
+/// `From<&EntityInstance>` should be created using that conversion.
+/// This allows for more modular component construction, and for different structs that contain the
+/// same component to have different constructions of that component, without having to `impl
+/// LdtkEntity` for both of them.
+/// ```
+/// impl From<&EntityInstance> for Sellable {
+///     fn from(entity_instance: &EntityInstance) -> Sellable {
+///         let sell_value = match entity_instance.identifier.as_str() {
+///             "gem" => 1000,
+///             "nickel" => 5,
+///             _ => 10,
+///         };
+///
+///         Sellable {
+///             value: sell_value,
+///         }
+///     }
+/// }
+///
+/// #[derive(Bundle, LdtkEntity)]
+/// pub struct NickelBundle {
+///     #[sprite_bundle]
+///     #[bundle]
+///     sprite: SpriteBundle,
+///     #[from_entity_instance]
+///     sellable: Sellable,
+/// }
+/// ```
 pub trait LdtkEntity: Bundle {
     /// The constructor used by the plugin when spawning entities from an LDtk file.
     /// Has access to resources/assets most commonly used for spawning 2d objects.

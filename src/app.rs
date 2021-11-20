@@ -17,17 +17,24 @@ use std::{collections::HashMap, marker::PhantomData};
 /// ## Derive macro usage
 /// Using `#[derive(LdtkEntity)]` on a `Bundle` struct will allow the type to be registered to the
 /// app via `app.register_ldtk_entity()`:
-/// ```
+/// ```no_run
 /// use bevy::prelude::*;
 /// use bevy_ecs_ldtk::prelude::*;
 ///
 /// fn main() {
-///     App::new()
+///     App::empty()
 ///         .add_plugin(LdtkPlugin)
 ///         .register_ldtk_entity::<MyBundle>("my_entity_identifier")
 ///         // add other systems, plugins, resources...
-///         .run()
+///         .run();
 /// }
+///
+/// # #[derive(Component, Default)]
+/// # struct ComponentA;
+/// # #[derive(Component, Default)]
+/// # struct ComponentB;
+/// # #[derive(Component, Default)]
+/// # struct ComponentC;
 ///
 /// #[derive(Bundle, LdtkEntity)]
 /// pub struct MyBundle {
@@ -50,6 +57,14 @@ use std::{collections::HashMap, marker::PhantomData};
 /// path in the assets folder.
 /// - `#[sprite_bundle]` will create the field using its Editor Visual image in LDtk, if it has one.
 /// ```
+/// # use bevy::prelude::*;
+/// # use bevy_ecs_ldtk::prelude::*;
+/// # #[derive(Component, Default)]
+/// # struct Sellable;
+/// # #[derive(Component, Default)]
+/// # struct PlayerComponent;
+/// # #[derive(Component, Default)]
+/// # struct Health;
 /// #[derive(Bundle, LdtkEntity)]
 /// pub struct Gem {
 ///     #[sprite_bundle("textures/gem.png")]
@@ -78,6 +93,12 @@ use std::{collections::HashMap, marker::PhantomData};
 /// - `#[sprite_sheet_bundle(columns, rows)]` will create the field mostly using information from
 /// the LDtk Editor visual, if it has one.
 /// ```
+/// # use bevy::prelude::*;
+/// # use bevy_ecs_ldtk::prelude::*;
+/// # #[derive(Component, Default)]
+/// # struct Damage;
+/// # #[derive(Component, Default)]
+/// # struct BleedDamage;
 /// #[derive(Bundle, LdtkEntity)]
 /// pub struct Sword {
 ///     #[bundle]
@@ -100,6 +121,10 @@ use std::{collections::HashMap, marker::PhantomData};
 /// Indicates that an `EntityInstance` component should be created as a clone of the LDtk
 /// `EntityInstance` that is causing it to spawn in the first place.
 /// ```
+/// # use bevy::prelude::*;
+/// # use bevy_ecs_ldtk::prelude::*;
+/// # #[derive(Component, Default)]
+/// # struct Completed;
 /// #[derive(Bundle, LdtkEntity)]
 /// pub struct GoalPost {
 ///     completed: Completed,
@@ -112,6 +137,12 @@ use std::{collections::HashMap, marker::PhantomData};
 /// Indicates that a nested bundle that implements `LdtkEntity` should be created with
 /// `LdtkEntity::from_instance`, allowing for nested `LdtkEntitie`s.
 /// ```
+/// # use bevy::prelude::*;
+/// # use bevy_ecs_ldtk::prelude::*;
+/// # #[derive(Component, Default)]
+/// # struct Damage;
+/// # #[derive(Component, Default)]
+/// # struct BleedDamage;
 /// #[derive(Bundle, LdtkEntity)]
 /// pub struct Weapon {
 ///     damage: Damage,
@@ -136,6 +167,10 @@ use std::{collections::HashMap, marker::PhantomData};
 /// same component to have different constructions of that component, without having to `impl
 /// LdtkEntity` for both of them.
 /// ```
+/// # use bevy::prelude::*;
+/// # use bevy_ecs_ldtk::prelude::*;
+/// # #[derive(Component, Default)]
+/// # struct Sellable { value: i32 }
 /// impl From<&EntityInstance> for Sellable {
 ///     fn from(entity_instance: &EntityInstance) -> Sellable {
 ///         let sell_value = match entity_instance.identifier.as_str() {

@@ -51,6 +51,7 @@ fn expand_ldtk_entity_derive(ast: &syn::DeriveInput) -> TokenStream {
             field_constructions.push(attributes::expand_sprite_bundle_attribute(
                 attribute, field_name, field_type,
             ));
+            continue;
         }
 
         let sprite_sheet_bundle = field
@@ -61,6 +62,7 @@ fn expand_ldtk_entity_derive(ast: &syn::DeriveInput) -> TokenStream {
             field_constructions.push(attributes::expand_sprite_sheet_bundle_attribute(
                 attribute, field_name, field_type,
             ));
+            continue;
         }
 
         let entity_instance = field
@@ -71,6 +73,7 @@ fn expand_ldtk_entity_derive(ast: &syn::DeriveInput) -> TokenStream {
             field_constructions.push(attributes::expand_entity_instance_attribute(
                 attribute, field_name, field_type,
             ));
+            continue;
         }
 
         let ldtk_entity = field
@@ -81,6 +84,7 @@ fn expand_ldtk_entity_derive(ast: &syn::DeriveInput) -> TokenStream {
             field_constructions.push(attributes::expand_ldtk_entity_attribute(
                 attribute, field_name, field_type,
             ));
+            continue;
         }
 
         let from_entity_instance = field
@@ -91,11 +95,13 @@ fn expand_ldtk_entity_derive(ast: &syn::DeriveInput) -> TokenStream {
             field_constructions.push(attributes::expand_from_entity_instance_attribute(
                 attribute, field_name, field_type,
             ));
+            continue;
         }
+
+        field_constructions.push(quote! {
+            #field_name: #field_type::default(),
+        });
     }
-    field_constructions.push(quote! {
-        ..Default::default()
-    });
 
     let generics = &ast.generics;
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();

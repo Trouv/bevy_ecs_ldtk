@@ -309,6 +309,7 @@ impl RegisterLdtkObjects for App {
     }
 }
 
+/// Used by [RegisterLdtkObjects] to associate Ldtk entity identifiers with [LdtkEntity]s.
 pub type LdtkEntityMap = HashMap<String, Box<dyn PhantomLdtkEntityTrait>>;
 
 pub struct PhantomLdtkEntity<B: LdtkEntity> {

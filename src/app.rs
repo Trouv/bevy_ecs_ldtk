@@ -20,16 +20,22 @@ impl LdtkEntity for SpriteBundle {
         materials: &mut ResMut<Assets<ColorMaterial>>,
         _: &mut ResMut<Assets<TextureAtlas>>,
     ) -> Self {
-        let tileset = tileset_map
-            .get(
-                &entity_instance
-                    .tile
-                    .as_ref()
-                    .expect("#[sprite_bundle] attribute expected the EntityInstance to have a tile defined.")
-                    .tileset_uid,
-            )
-            .expect("EntityInstance's tileset should be in the tileset_map")
-            .clone();
+        let tileset_uid = match entity_instance.tile.as_ref() {
+            Some(tile) => tile.tileset_uid,
+            None => {
+                warn!("#[sprite_bundle] attribute expected the EntityInstance to have a tile defined.");
+                return SpriteBundle::default();
+            }
+        };
+
+        let tileset = match tileset_map.get(&tileset_uid) {
+            Some(tileset) => tileset.clone(),
+            None => {
+                warn!("EntityInstance's tileset should be in the TilesetMap");
+                return SpriteBundle::default();
+            }
+        }
+        .clone();
 
         let material = materials.add(tileset.into());
         SpriteBundle {

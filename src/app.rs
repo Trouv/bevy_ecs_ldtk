@@ -2,10 +2,10 @@ use crate::{assets::TilesetMap, ldtk::EntityInstance};
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::{collections::HashMap, marker::PhantomData};
 
-/// Provides a constructor to a bevy `Bundle` which can be used for spawning entities from an LDtk
+/// Provides a constructor to a bevy [Bundle] which can be used for spawning entities from an LDtk
 /// file.
 /// After implementing this trait on a bundle, you can register it to spawn automatically for a
-/// given identifier via `app.register_ldtk_entity()`.
+/// given identifier via [app.register_ldtk_entity()](RegisterLdtkObjects::register_ldtk_entity).
 ///
 /// For common use cases, you'll want to use derive-macro `#[derive(LdtkEntity)]`, but you can also
 /// provide a custom implementation.
@@ -15,8 +15,8 @@ use std::{collections::HashMap, marker::PhantomData};
 /// *Derive macro requires the "derive" feature, which is **not** enabled by default*
 ///
 /// ## Derive macro usage
-/// Using `#[derive(LdtkEntity)]` on a `Bundle` struct will allow the type to be registered to the
-/// app via `app.register_ldtk_entity()`:
+/// Using `#[derive(LdtkEntity)]` on a [Bundle] struct will allow the type to be registered to the
+/// app via [app.register_ldtk_entity()](RegisterLdtkObjects::register_ldtk_entity):
 /// ```no_run
 /// use bevy::prelude::*;
 /// use bevy_ecs_ldtk::prelude::*;
@@ -46,12 +46,12 @@ use std::{collections::HashMap, marker::PhantomData};
 /// Now, when loading your ldtk file, any entities with the entity identifier
 /// "my_entity_identifier" will be spawned as `MyBundle`s.
 ///
-/// By default, each component or nested bundle in the bundle will be created using their `Default`
+/// By default, each component or nested bundle in the bundle will be created using their [Default]
 /// implementations.
 /// However, this behavior can be overriden with some field attribute macros...
 ///
 /// ### `#[sprite_bundle...]`
-/// Indicates that a `SpriteBundle` field should be created with an actual material/image.
+/// Indicates that a [SpriteBundle] field should be created with an actual material/image.
 /// There are two forms for this attribute:
 /// - `#[sprite_bundle("path/to/asset.png")]` will create the field using the image at the provided
 /// path in the assets folder.
@@ -84,12 +84,12 @@ use std::{collections::HashMap, marker::PhantomData};
 /// ```
 ///
 /// ### `#[sprite_sheet_bundle...]`
-/// Similar to `#[sprite_bundle...]`, indicates that a `SpriteSheetBundle` field should be created
+/// Similar to `#[sprite_bundle...]`, indicates that a [SpriteSheetBundle] field should be created
 /// with an actual material/image.
 /// There are two forms for this attribute:
 /// - `#[sprite_sheet_bundle("path/to/asset.png", tile_width, tile_height, columns, rows, index)]`
 /// will create the field using all of the information provided.
-/// Similar to using `TextureAtlas::from_grid()`.
+/// Similar to using [TextureAtlas::from_grid()].
 /// - `#[sprite_sheet_bundle(columns, rows)]` will create the field mostly using information from
 /// the LDtk Editor visual, if it has one.
 /// ```
@@ -118,8 +118,8 @@ use std::{collections::HashMap, marker::PhantomData};
 /// ```
 ///
 /// ### `#[entity_instance]`
-/// Indicates that an `EntityInstance` component should be created as a clone of the LDtk
-/// `EntityInstance` that is causing it to spawn in the first place.
+/// Indicates that an [EntityInstance] component should be created as a clone of the LDtk
+/// [EntityInstance] that is causing it to spawn in the first place.
 /// ```
 /// # use bevy::prelude::*;
 /// # use bevy_ecs_ldtk::prelude::*;
@@ -134,8 +134,8 @@ use std::{collections::HashMap, marker::PhantomData};
 /// ```
 ///
 /// ### `#[ldtk_entity]`
-/// Indicates that a nested bundle that implements `LdtkEntity` should be created with
-/// `LdtkEntity::from_instance`, allowing for nested `LdtkEntitie`s.
+/// Indicates that a nested bundle that implements [LdtkEntity] should be created with
+/// [LdtkEntity::from_instance], allowing for nested [LdtkEntity]s.
 /// ```
 /// # use bevy::prelude::*;
 /// # use bevy_ecs_ldtk::prelude::*;
@@ -161,11 +161,11 @@ use std::{collections::HashMap, marker::PhantomData};
 /// ```
 ///
 /// ### `#[from_entity_instance]`
-/// Indicates that a component or bundle that implements `From<&EntityInstance>` should be created
+/// Indicates that a component or bundle that implements [From<&EntityInstance>] should be created
 /// using that conversion.
-/// This allows for more modular component construction, and for different structs that contain the
-/// same component to have different constructions of that component, without having to `impl
-/// LdtkEntity` for both of them.
+/// This allows for more modular and custom component construction, and for different structs that
+/// contain the same component to have different constructions of that component, without having to
+/// `impl LdtkEntity` for both of them.
 /// ```
 /// # use bevy::prelude::*;
 /// # use bevy_ecs_ldtk::prelude::*;
@@ -198,13 +198,13 @@ pub trait LdtkEntity: Bundle {
     /// The constructor used by the plugin when spawning entities from an LDtk file.
     /// Has access to resources/assets most commonly used for spawning 2d objects.
     /// If you need access to more of the World, you can create a system that queries for
-    /// `Added<EntityInstance>`, and flesh out the entity from there, instead of implementing this
+    /// [Added<EntityInstance>], and flesh out the entity from there, instead of implementing this
     /// trait.
-    /// This is because the plugin spawns an entity with an `EntityInstance` component if it's not
+    /// This is because the plugin spawns an entity with an [EntityInstance] component if it's not
     /// registered to the app.
     ///
-    /// Note: whether or not the entity is registered to the app, the plugin will insert `Transform`,
-    /// `GlobalTransform`, and `Parent` components to the entity **after** the entity is spawned.
+    /// Note: whether or not the entity is registered to the app, the plugin will insert [Transform],
+    /// [GlobalTransform], and [Parent] components to the entity **after** the entity is spawned.
     /// So, any custom implementations of these components within this trait will be overwritten.
     fn from_instance(
         entity_instance: &EntityInstance,

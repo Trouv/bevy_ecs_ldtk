@@ -10,6 +10,9 @@ use std::{collections::HashMap, marker::PhantomData};
 /// For common use cases, you'll want to use derive-macro `#[derive(LdtkEntity)]`, but you can also
 /// provide a custom implementation.
 ///
+/// If there is an entity in the LDtk file that is NOT registered, an entity will be spawned with
+/// an [EntityInstance] component, allowing you to flesh it out in your own system.
+///
 /// *Requires the "app" feature, which is enabled by default*
 ///
 /// *Derive macro requires the "derive" feature, which is **not** enabled by default*
@@ -35,7 +38,6 @@ use std::{collections::HashMap, marker::PhantomData};
 /// # struct ComponentB;
 /// # #[derive(Component, Default)]
 /// # struct ComponentC;
-///
 /// #[derive(Bundle, LdtkEntity)]
 /// pub struct MyBundle {
 ///     a: ComponentA,
@@ -198,7 +200,7 @@ pub trait LdtkEntity: Bundle {
     /// The constructor used by the plugin when spawning entities from an LDtk file.
     /// Has access to resources/assets most commonly used for spawning 2d objects.
     /// If you need access to more of the World, you can create a system that queries for
-    /// [Added<EntityInstance>], and flesh out the entity from there, instead of implementing this
+    /// `Added<EntityInstance>`, and flesh out the entity from there, instead of implementing this
     /// trait.
     /// This is because the plugin spawns an entity with an [EntityInstance] component if it's not
     /// registered to the app.
@@ -247,7 +249,44 @@ impl LdtkEntity for SpriteBundle {
     }
 }
 
+/// Provides the [.register_ldtk_entity()](RegisterLdtkObjects::register_ldtk_entity) function to
+/// bevy's [App].
+///
+/// Not intended for custom implmentations on your own types, but you're still welcome to do so.
+///
+/// *Requires the "app" feature which is enabled by default*
 pub trait RegisterLdtkObjects {
+    /// Registers [LdtkEntity] types to be spawned for a given Entity identifier in an LDtk file.
+    ///
+    /// This example lets the plugin know that it should spawn a MyBundle when it encounters a
+    /// "my_entity_identifier" entity in an LDtk file.
+    /// ```no_run
+    /// use bevy::prelude::*;
+    /// use bevy_ecs_ldtk::prelude::*;
+    ///
+    /// fn main() {
+    ///     App::empty()
+    ///         .add_plugin(LdtkPlugin)
+    ///         .register_ldtk_entity::<MyBundle>("my_entity_identifier")
+    ///         // add other systems, plugins, resources...
+    ///         .run();
+    /// }
+    ///
+    /// # #[derive(Component, Default)]
+    /// # struct ComponentA;
+    /// # #[derive(Component, Default)]
+    /// # struct ComponentB;
+    /// # #[derive(Component, Default)]
+    /// # struct ComponentC;
+    /// #[derive(Bundle, LdtkEntity)]
+    /// pub struct MyBundle {
+    ///     a: ComponentA,
+    ///     b: ComponentB,
+    ///     c: ComponentC,
+    /// }
+    /// ```
+    ///
+    /// You can find more details on the `#[derive(LdtkEntity)]` macro at [LdtkEntity].
     fn register_ldtk_entity<B: LdtkEntity>(&mut self, identifier: &str) -> &mut Self;
 }
 

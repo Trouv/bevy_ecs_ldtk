@@ -14,7 +14,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-/// This file is a JSON schema of files created by LDtk level editor (https://ldtk.io).
+/// This file is a JSON schema of files created by LDtk level editor <https://ldtk.io>.
 ///
 /// This is the root of any Project JSON file. It contains:  - the project settings, - an
 /// array of levels, - a group of definitions (that can probably be safely ignored for most

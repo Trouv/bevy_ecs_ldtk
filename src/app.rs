@@ -1,3 +1,6 @@
+//! Contains types and traits for hooking into the ldtk loading process via bevy's [App].
+//!
+//! *Requires the "app" feature, which is enabled by default*
 use crate::{assets::TilesetMap, ldtk::EntityInstance};
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::{collections::HashMap, marker::PhantomData};
@@ -15,7 +18,7 @@ use std::{collections::HashMap, marker::PhantomData};
 ///
 /// *Requires the "app" feature, which is enabled by default*
 ///
-/// *Derive macro requires the "derive" feature, which is **not** enabled by default*
+/// *Derive macro requires the "derive" feature, which is also enabled by default*
 ///
 /// ## Derive macro usage
 /// Using `#[derive(LdtkEntity)]` on a [Bundle] struct will allow the type to be registered to the
@@ -254,7 +257,7 @@ impl LdtkEntity for SpriteBundle {
 ///
 /// Not intended for custom implmentations on your own types, but you're still welcome to do so.
 ///
-/// *Requires the "app" feature which is enabled by default*
+/// *Requires the "app" feature, which is enabled by default*
 pub trait RegisterLdtkObjects {
     /// Registers [LdtkEntity] types to be spawned for a given Entity identifier in an LDtk file.
     ///

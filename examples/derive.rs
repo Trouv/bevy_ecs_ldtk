@@ -54,11 +54,26 @@ struct TableBundle {
     entity_instance: EntityInstance,
 }
 
+#[derive(Clone, Default, Component)]
+struct Block {
+    identifier: String,
+}
+
+impl From<&EntityInstance> for Block {
+    fn from(entity_instance: &EntityInstance) -> Block {
+        Block {
+            identifier: entity_instance.identifier.clone(),
+        }
+    }
+}
+
 #[derive(Clone, Default, Bundle, LdtkEntity)]
 struct BlockBundle {
     #[bundle]
     #[sprite_sheet_bundle(2, 4)]
     sprite_sheet_bundle: SpriteSheetBundle,
+    #[from_entity_instance]
+    block: Block,
 }
 
 #[derive(Clone, Default, Component)]

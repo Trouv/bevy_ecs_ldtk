@@ -211,3 +211,23 @@ pub fn expand_ldtk_entity_attribute(
         _ => panic!("#[ldtk_entity] attribute should take the form #[ldtk_entity]"),
     }
 }
+
+pub fn expand_from_entity_instance_attribute(
+    attribute: &syn::Attribute,
+    field_name: &syn::Ident,
+    field_type: &syn::Type,
+) -> TokenStream {
+    match attribute
+        .parse_meta()
+        .expect("Cannot parse #[from_entity_instance] attribute")
+    {
+        syn::Meta::Path(_) => {
+            quote! {
+                #field_name: #field_type::from(entity_instance),
+            }
+        }
+        _ => {
+            panic!("#[from_entity_instance] attribute should take the form #[from_entity_instance]")
+        }
+    }
+}

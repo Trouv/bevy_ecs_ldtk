@@ -40,16 +40,7 @@ pub fn expand_sprite_bundle_attribute(
         },
         syn::Meta::Path(_) => {
             quote! {
-            #field_name: bevy::prelude::SpriteBundle {
-                    material: materials.add(
-                            tileset_map.get(&entity_instance
-                                .tile.clone()
-                                .expect("#[sprite_bundle] attribute expected the EntityInstance to have a tile defined.")
-                                .tileset_uid
-                            ).expect("EntityInstance's tileset should be in the tileset_map").clone().into()
-                        ),
-                    ..Default::default()
-                },
+                #field_name: #field_type::from_instance(entity_instance, tileset_map, asset_server, materials, texture_atlases),
             }
         },
         _ => panic!("#[sprite_bundle...] attribute should take the form #[sprite_bundle(\"asset/path.png\")] or #[sprite_bundle]"),

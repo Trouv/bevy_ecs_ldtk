@@ -12,6 +12,33 @@ pub trait LdtkEntity: Bundle {
     ) -> Self;
 }
 
+impl LdtkEntity for SpriteBundle {
+    fn from_instance(
+        entity_instance: &EntityInstance,
+        tileset_map: &TilesetMap,
+        _: &Res<AssetServer>,
+        materials: &mut ResMut<Assets<ColorMaterial>>,
+        _: &mut ResMut<Assets<TextureAtlas>>,
+    ) -> Self {
+        let tileset = tileset_map
+            .get(
+                &entity_instance
+                    .tile
+                    .as_ref()
+                    .expect("#[sprite_bundle] attribute expected the EntityInstance to have a tile defined.")
+                    .tileset_uid,
+            )
+            .expect("EntityInstance's tileset should be in the tileset_map")
+            .clone();
+
+        let material = materials.add(tileset.into());
+        SpriteBundle {
+            material,
+            ..Default::default()
+        }
+    }
+}
+
 pub trait AddLdtkObjects {
     fn add_ldtk_entity<B: LdtkEntity>(&mut self, identifier: &str) -> &mut App;
 }

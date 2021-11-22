@@ -3,6 +3,8 @@ An ECS-friendly ldtk plugin for [bevy](https://github.com/bevyengine/bevy).
 Uses [bevy_ecs_tilemap](https://github.com/StarArawn/bevy_ecs_tilemap) as a base.
 Not released yet, still in development.
 
+bevy_ecs_tilemap once supported ldtk loading, but this was removed to keep the plugin small and focused (see: https://github.com/StarArawn/bevy_ecs_tilemap/issues/84). This plugin aims to be a more complete solution to ldtk in bevy.
+
 ![screenshot](repo/screenshot.png)
 
 In addition to drawing tile/autotile layers, this crate provides
@@ -25,21 +27,19 @@ fn main() {
 pub struct MyBundle {
     a: ComponentA,
     b: ComponentB,
-    c: ComponentC,
     #[sprite_bundle]
     sprite_bundle: SpriteBundle,
 }
 ```
+
+There are other attributes available to `#[derive(LdtkEntity)]`, see the documentation for more details.
 
 Or, if you need more control, you can either `impl LdtkEntity` for your bundle,
 or just create a system that queries for `Added<EntityInstance>` and flesh out
 the entity from there.
 Similar options are available for adding components to IntGrid cells.
 
-## Goals
-bevy_ecs_tilemap once supported ldtk loading, but this was removed to keep the plugin small and focused (see: https://github.com/StarArawn/bevy_ecs_tilemap/issues/84).
-
-This plugin aims to be a more complete solution to ldtk in bevy, with the following goals.
+### Goals
 - [x] Supports all layer types
   - [x] tile layers
     - rendered with bevy_ecs_tilemap

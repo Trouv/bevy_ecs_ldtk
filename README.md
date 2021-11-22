@@ -5,6 +5,38 @@ Not released yet, still in development.
 
 ![screenshot](repo/screenshot.png)
 
+In addition to drawing tile/autotile layers, this crate provides
+`App::register_ldtk_entity()` and `#[derive(LdtkEntity)]` for conveniently
+spawning your bundles for particular Entity identifiers in an ldtk file:
+
+```rust
+use bevy::prelude::*;
+use bevy_ecs_ldtk::prelude::*;
+
+fn main() {
+    App::empty()
+        .add_plugin(LdtkPlugin)
+        .register_ldtk_entity::<MyBundle>("my_entity_identifier")
+        // add other systems, plugins, resources...
+        .run();
+}
+
+#[derive(Bundle, LdtkEntity)]
+pub struct MyBundle {
+    a: ComponentA,
+    b: ComponentB,
+    c: ComponentC,
+    #[sprite_bundle]
+    sprite_bundle: SpriteBundle,
+}
+```
+
+Or, if you need more control, you can either `impl LdtkEntity` for your bundle,
+or just create a system that queries for `Added<EntityInstance>` and flesh out
+the entity from there.
+Similar options are available for adding components to IntGrid cells.
+
+## Goals
 bevy_ecs_tilemap once supported ldtk loading, but this was removed to keep the plugin small and focused (see: https://github.com/StarArawn/bevy_ecs_tilemap/issues/84).
 
 This plugin aims to be a more complete solution to ldtk in bevy, with the following goals.
@@ -27,6 +59,8 @@ This plugin aims to be a more complete solution to ldtk in bevy, with the follow
   - [x] hot-reloading for tilesets
   - [ ] hot-reloading for external levels (see: https://github.com/Trouv/bevy_ecs_ldtk/issues/1)
 - [ ] derive macros for registering bundles to spawn for specific intgrid-layer and entity-layer values
+  - [x] derive macros for entities
+  - [ ] derive macros for intgrid
 - [ ] support for optionally loading level-neighbors
 
 Once most of these goals are met, and bevy has reached 0.6, this crate will have its first release.

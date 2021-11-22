@@ -214,9 +214,9 @@ pub trait LdtkEntity: Bundle {
     fn from_instance(
         entity_instance: &EntityInstance,
         tileset_map: &TilesetMap,
-        asset_server: &Res<AssetServer>,
-        materials: &mut ResMut<Assets<ColorMaterial>>,
-        texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
+        asset_server: &AssetServer,
+        materials: &mut Assets<ColorMaterial>,
+        texture_atlases: &mut Assets<TextureAtlas>,
     ) -> Self;
 }
 
@@ -224,9 +224,9 @@ impl LdtkEntity for SpriteBundle {
     fn from_instance(
         entity_instance: &EntityInstance,
         tileset_map: &TilesetMap,
-        _: &Res<AssetServer>,
-        materials: &mut ResMut<Assets<ColorMaterial>>,
-        _: &mut ResMut<Assets<TextureAtlas>>,
+        _: &AssetServer,
+        materials: &mut Assets<ColorMaterial>,
+        _: &mut Assets<TextureAtlas>,
     ) -> Self {
         let tile = match entity_instance.tile.as_ref() {
             Some(tile) => tile,
@@ -325,9 +325,9 @@ pub trait PhantomLdtkEntityTrait {
         commands: &'a mut Commands<'w, 's>,
         entity_instance: &EntityInstance,
         tileset_map: &TilesetMap,
-        asset_server: &Res<AssetServer>,
-        materials: &mut ResMut<Assets<ColorMaterial>>,
-        texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
+        asset_server: &AssetServer,
+        materials: &mut Assets<ColorMaterial>,
+        texture_atlases: &mut Assets<TextureAtlas>,
     ) -> EntityCommands<'w, 's, 'a>;
 }
 
@@ -337,9 +337,9 @@ impl<B: LdtkEntity> PhantomLdtkEntityTrait for PhantomLdtkEntity<B> {
         commands: &'a mut Commands<'w, 's>,
         entity_instance: &EntityInstance,
         tileset_map: &TilesetMap,
-        asset_server: &Res<AssetServer>,
-        materials: &mut ResMut<Assets<ColorMaterial>>,
-        texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
+        asset_server: &AssetServer,
+        materials: &mut Assets<ColorMaterial>,
+        texture_atlases: &mut Assets<TextureAtlas>,
     ) -> EntityCommands<'w, 's, 'a> {
         commands.spawn_bundle(B::from_instance(
             entity_instance,

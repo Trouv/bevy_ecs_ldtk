@@ -111,9 +111,9 @@ fn expand_ldtk_entity_derive(ast: &syn::DeriveInput) -> TokenStream {
             fn from_instance(
                 entity_instance: &bevy_ecs_ldtk::prelude::EntityInstance,
                 tileset_map: &bevy_ecs_ldtk::prelude::TilesetMap,
-                asset_server: &Res<AssetServer>,
-                materials: &mut ResMut<Assets<ColorMaterial>>,
-                texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
+                asset_server: &bevy::prelude::AssetServer,
+                materials: &mut bevy::prelude::Assets<bevy::prelude::ColorMaterial>,
+                texture_atlases: &mut bevy::prelude::Assets<bevy::prelude::TextureAtlas>,
             ) -> Self {
                 Self {
                     #(#field_constructions)*

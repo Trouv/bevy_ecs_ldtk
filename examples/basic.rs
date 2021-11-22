@@ -37,9 +37,9 @@ impl LdtkEntity for PlayerBundle {
     fn from_instance(
         _: &EntityInstance,
         _: &TilesetMap,
-        asset_server: &Res<AssetServer>,
-        materials: &mut ResMut<Assets<ColorMaterial>>,
-        _: &mut ResMut<Assets<TextureAtlas>>,
+        asset_server: &AssetServer,
+        materials: &mut Assets<ColorMaterial>,
+        _: &mut Assets<TextureAtlas>,
     ) -> Self {
         PlayerBundle {
             sprite_bundle: SpriteBundle {

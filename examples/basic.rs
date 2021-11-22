@@ -34,7 +34,7 @@ struct PlayerBundle {
 }
 
 impl LdtkEntity for PlayerBundle {
-    fn from_instance(
+    fn bundle_entity(
         _: &EntityInstance,
         _: &TilesetMap,
         asset_server: &AssetServer,

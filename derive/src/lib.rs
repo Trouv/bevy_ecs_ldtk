@@ -108,7 +108,7 @@ fn expand_ldtk_entity_derive(ast: &syn::DeriveInput) -> TokenStream {
 
     let gen = quote! {
         impl #impl_generics bevy_ecs_ldtk::prelude::LdtkEntity for #struct_name #ty_generics #where_clause {
-            fn from_instance(
+            fn bundle_entity(
                 entity_instance: &bevy_ecs_ldtk::prelude::EntityInstance,
                 tileset_map: &bevy_ecs_ldtk::prelude::TilesetMap,
                 asset_server: &bevy::prelude::AssetServer,

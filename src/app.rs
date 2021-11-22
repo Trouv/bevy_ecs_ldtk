@@ -140,7 +140,7 @@ use std::{collections::HashMap, marker::PhantomData};
 ///
 /// ### `#[ldtk_entity]`
 /// Indicates that a nested bundle that implements [LdtkEntity] should be created with
-/// [LdtkEntity::from_instance], allowing for nested [LdtkEntity]s.
+/// [LdtkEntity::bundle_entity], allowing for nested [LdtkEntity]s.
 /// ```
 /// # use bevy::prelude::*;
 /// # use bevy_ecs_ldtk::prelude::*;
@@ -211,7 +211,7 @@ pub trait LdtkEntity: Bundle {
     /// Note: whether or not the entity is registered to the app, the plugin will insert [Transform],
     /// [GlobalTransform], and [Parent] components to the entity **after** the entity is spawned.
     /// So, any custom implementations of these components within this trait will be overwritten.
-    fn from_instance(
+    fn bundle_entity(
         entity_instance: &EntityInstance,
         tileset_map: &TilesetMap,
         asset_server: &AssetServer,
@@ -221,7 +221,7 @@ pub trait LdtkEntity: Bundle {
 }
 
 impl LdtkEntity for SpriteBundle {
-    fn from_instance(
+    fn bundle_entity(
         entity_instance: &EntityInstance,
         tileset_map: &TilesetMap,
         _: &AssetServer,
@@ -341,7 +341,7 @@ impl<B: LdtkEntity> PhantomLdtkEntityTrait for PhantomLdtkEntity<B> {
         materials: &mut Assets<ColorMaterial>,
         texture_atlases: &mut Assets<TextureAtlas>,
     ) -> EntityCommands<'w, 's, 'a> {
-        commands.spawn_bundle(B::from_instance(
+        commands.spawn_bundle(B::bundle_entity(
             entity_instance,
             tileset_map,
             asset_server,

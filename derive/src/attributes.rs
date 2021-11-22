@@ -40,7 +40,7 @@ pub fn expand_sprite_bundle_attribute(
         },
         syn::Meta::Path(_) => {
             quote! {
-                #field_name: #field_type::from_instance(entity_instance, tileset_map, asset_server, materials, texture_atlases),
+                #field_name: #field_type::bundle_entity(entity_instance, tileset_map, asset_server, materials, texture_atlases),
             }
         },
         _ => panic!("#[sprite_bundle...] attribute should take the form #[sprite_bundle(\"asset/path.png\")] or #[sprite_bundle]"),
@@ -205,7 +205,7 @@ pub fn expand_ldtk_entity_attribute(
     {
         syn::Meta::Path(_) => {
             quote! {
-                #field_name: #field_type::from_instance(entity_instance, tileset_map, asset_server, materials, texture_atlases),
+                #field_name: #field_type::bundle_entity(entity_instance, tileset_map, asset_server, materials, texture_atlases),
             }
         }
         _ => panic!("#[ldtk_entity] attribute should take the form #[ldtk_entity]"),

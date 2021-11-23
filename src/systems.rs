@@ -143,7 +143,7 @@ pub fn process_loaded_ldtk(
                     }
                 }
 
-                let tileset_definition_map: HashMap<i64, &TilesetDefinition> = ldtk_asset
+                let tileset_definition_map: HashMap<i32, &TilesetDefinition> = ldtk_asset
                     .project
                     .defs
                     .tilesets
@@ -151,7 +151,7 @@ pub fn process_loaded_ldtk(
                     .map(|t| (t.uid, t))
                     .collect();
 
-                let entity_definition_map: HashMap<i64, &EntityDefinition> = ldtk_asset
+                let entity_definition_map: HashMap<i32, &EntityDefinition> = ldtk_asset
                     .project
                     .defs
                     .entities
@@ -352,7 +352,7 @@ fn invisible_tile(_: TilePos) -> Option<Tile> {
 }
 
 fn tile_pos_to_tile_maker(
-    layer_height_in_tiles: i64,
+    layer_height_in_tiles: i32,
     tileset_definition: TilesetDefinition,
     grid_tiles: Vec<TileInstance>,
 ) -> impl FnMut(TilePos) -> Option<Tile> {
@@ -401,14 +401,14 @@ fn tile_pos_to_tile_bundle_maker(
 }
 
 fn tile_pos_to_int_grid_bundle_maker(
-    layer_width_in_tiles: i64,
-    layer_height_in_tiles: i64,
-    int_grid_csv: Vec<i64>,
+    layer_width_in_tiles: i32,
+    layer_height_in_tiles: i32,
+    int_grid_csv: Vec<i32>,
     mut tile_maker: impl FnMut(TilePos) -> Option<Tile>,
 ) -> impl FnMut(TilePos) -> Option<IntGridCellBundle> {
     move |tile_pos: TilePos| -> Option<IntGridCellBundle> {
-        let ldtk_x = tile_pos.0 as i64;
-        let ldtk_y = layer_height_in_tiles - tile_pos.1 as i64 - 1;
+        let ldtk_x = tile_pos.0 as i32;
+        let ldtk_y = layer_height_in_tiles - tile_pos.1 as i32 - 1;
 
         if ldtk_y < 0
             || ldtk_y >= layer_height_in_tiles

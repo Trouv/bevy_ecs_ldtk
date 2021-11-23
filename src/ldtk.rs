@@ -23,7 +23,7 @@ use std::collections::HashMap;
 pub struct LdtkJson {
     /// Number of backup files to keep, if the `backupOnSave` is TRUE
     #[serde(rename = "backupLimit")]
-    pub backup_limit: i64,
+    pub backup_limit: i32,
 
     /// If TRUE, an extra copy of the project will be created in a sub folder, when saving.
     #[serde(rename = "backupOnSave")]
@@ -35,7 +35,7 @@ pub struct LdtkJson {
 
     /// Default grid size for new layers
     #[serde(rename = "defaultGridSize")]
-    pub default_grid_size: i64,
+    pub default_grid_size: i32,
 
     /// Default background color of levels
     #[serde(rename = "defaultLevelBgColor")]
@@ -43,19 +43,19 @@ pub struct LdtkJson {
 
     /// Default new level height
     #[serde(rename = "defaultLevelHeight")]
-    pub default_level_height: i64,
+    pub default_level_height: i32,
 
     /// Default new level width
     #[serde(rename = "defaultLevelWidth")]
-    pub default_level_width: i64,
+    pub default_level_width: i32,
 
     /// Default X pivot (0 to 1) for new entities
     #[serde(rename = "defaultPivotX")]
-    pub default_pivot_x: f64,
+    pub default_pivot_x: f32,
 
     /// Default Y pivot (0 to 1) for new entities
     #[serde(rename = "defaultPivotY")]
-    pub default_pivot_y: f64,
+    pub default_pivot_y: f32,
 
     /// A structure containing all the definitions of this project
     #[serde(rename = "defs")]
@@ -107,7 +107,7 @@ pub struct LdtkJson {
 
     /// Next Unique integer ID available
     #[serde(rename = "nextUid")]
-    pub next_uid: i64,
+    pub next_uid: i32,
 
     /// File naming pattern for exported PNGs
     #[serde(rename = "pngFilePattern")]
@@ -115,11 +115,11 @@ pub struct LdtkJson {
 
     /// Height of the world grid in pixels.
     #[serde(rename = "worldGridHeight")]
-    pub world_grid_height: i64,
+    pub world_grid_height: i32,
 
     /// Width of the world grid in pixels.
     #[serde(rename = "worldGridWidth")]
-    pub world_grid_width: i64,
+    pub world_grid_width: i32,
 
     /// An enum that describes how levels are organized in this project (ie. linearly or in a 2D
     /// space). Possible values: `Free`, `GridVania`, `LinearHorizontal`, `LinearVertical`
@@ -174,11 +174,11 @@ pub struct EntityDefinition {
     pub field_defs: Vec<FieldDefinition>,
 
     #[serde(rename = "fillOpacity")]
-    pub fill_opacity: f64,
+    pub fill_opacity: f32,
 
     /// Pixel height
     #[serde(rename = "height")]
-    pub height: i64,
+    pub height: i32,
 
     #[serde(rename = "hollow")]
     pub hollow: bool,
@@ -202,19 +202,19 @@ pub struct EntityDefinition {
     pub limit_scope: LimitScope,
 
     #[serde(rename = "lineOpacity")]
-    pub line_opacity: f64,
+    pub line_opacity: f32,
 
     /// Max instances count
     #[serde(rename = "maxCount")]
-    pub max_count: i64,
+    pub max_count: i32,
 
     /// Pivot X coordinate (from 0 to 1.0)
     #[serde(rename = "pivotX")]
-    pub pivot_x: f64,
+    pub pivot_x: f32,
 
     /// Pivot Y coordinate (from 0 to 1.0)
     #[serde(rename = "pivotY")]
-    pub pivot_y: f64,
+    pub pivot_y: f32,
 
     /// Possible values: `Rectangle`, `Ellipse`, `Tile`, `Cross`
     #[serde(rename = "renderMode")]
@@ -238,7 +238,7 @@ pub struct EntityDefinition {
 
     /// Tile ID used for optional tile display
     #[serde(rename = "tileId")]
-    pub tile_id: Option<i64>,
+    pub tile_id: Option<i32>,
 
     /// Possible values: `Cover`, `FitInside`, `Repeat`, `Stretch`
     #[serde(rename = "tileRenderMode")]
@@ -246,15 +246,15 @@ pub struct EntityDefinition {
 
     /// Tileset ID used for optional tile display
     #[serde(rename = "tilesetId")]
-    pub tileset_id: Option<i64>,
+    pub tileset_id: Option<i32>,
 
     /// Unique Int identifier
     #[serde(rename = "uid")]
-    pub uid: i64,
+    pub uid: i32,
 
     /// Pixel width
     #[serde(rename = "width")]
-    pub width: i64,
+    pub width: i32,
 }
 
 /// This section is mostly only intended for the LDtk editor app itself. You can safely
@@ -273,11 +273,11 @@ pub struct FieldDefinition {
 
     /// Array max length
     #[serde(rename = "arrayMaxLength")]
-    pub array_max_length: Option<i64>,
+    pub array_max_length: Option<i32>,
 
     /// Array min length
     #[serde(rename = "arrayMinLength")]
-    pub array_min_length: Option<i64>,
+    pub array_min_length: Option<i32>,
 
     /// TRUE if the value can be null. For arrays, TRUE means it can contain null values
     /// (exception: array of Points can't have null values).
@@ -313,11 +313,11 @@ pub struct FieldDefinition {
 
     /// Max limit for value, if applicable
     #[serde(rename = "max")]
-    pub max: Option<f64>,
+    pub max: Option<f32>,
 
     /// Min limit for value, if applicable
     #[serde(rename = "min")]
-    pub min: Option<f64>,
+    pub min: Option<f32>,
 
     /// Optional regular expression that needs to be matched to accept values. Expected format:
     /// `/some_reg_ex/g`, with optional "i" flag.
@@ -335,7 +335,7 @@ pub struct FieldDefinition {
 
     /// Unique Int identifier
     #[serde(rename = "uid")]
-    pub uid: i64,
+    pub uid: i32,
 }
 
 #[derive(Eq, PartialEq, Debug, Default, Clone, Serialize, Deserialize)]
@@ -349,7 +349,7 @@ pub struct EnumDefinition {
 
     /// Tileset UID if provided
     #[serde(rename = "iconTilesetUid")]
-    pub icon_tileset_uid: Option<i64>,
+    pub icon_tileset_uid: Option<i32>,
 
     /// Unique String identifier
     #[serde(rename = "identifier")]
@@ -357,7 +357,7 @@ pub struct EnumDefinition {
 
     /// Unique Int identifier
     #[serde(rename = "uid")]
-    pub uid: i64,
+    pub uid: i32,
 
     /// All possible enum values, with their optional Tile infos.
     #[serde(rename = "values")]
@@ -369,11 +369,11 @@ pub struct EnumValueDefinition {
     /// An array of 4 Int values that refers to the tile in the tileset image: `[ x, y, width,
     /// height ]`
     #[serde(rename = "__tileSrcRect")]
-    pub tile_src_rect: Option<Vec<i64>>,
+    pub tile_src_rect: Option<Vec<i32>>,
 
     /// Optional color
     #[serde(rename = "color")]
-    pub color: i64,
+    pub color: i32,
 
     /// Enum value
     #[serde(rename = "id")]
@@ -381,7 +381,7 @@ pub struct EnumValueDefinition {
 
     /// The optional ID of the tile
     #[serde(rename = "tileId")]
-    pub tile_id: Option<i64>,
+    pub tile_id: Option<i32>,
 }
 
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
@@ -395,17 +395,17 @@ pub struct LayerDefinition {
     pub auto_rule_groups: Vec<AutoLayerRuleGroup>,
 
     #[serde(rename = "autoSourceLayerDefUid")]
-    pub auto_source_layer_def_uid: Option<i64>,
+    pub auto_source_layer_def_uid: Option<i32>,
 
     /// Reference to the Tileset UID being used by this auto-layer rules. WARNING: some layer
     /// *instances* might use a different tileset. So most of the time, you should probably use
     /// the `__tilesetDefUid` value from layer instances.
     #[serde(rename = "autoTilesetDefUid")]
-    pub auto_tileset_def_uid: Option<i64>,
+    pub auto_tileset_def_uid: Option<i32>,
 
     /// Opacity of the layer (0 to 1.0)
     #[serde(rename = "displayOpacity")]
-    pub display_opacity: f64,
+    pub display_opacity: f32,
 
     /// An array of tags to forbid some Entities in this layer
     #[serde(rename = "excludedTags")]
@@ -413,7 +413,7 @@ pub struct LayerDefinition {
 
     /// Width and height of the grid in pixels
     #[serde(rename = "gridSize")]
-    pub grid_size: i64,
+    pub grid_size: i32,
 
     /// Unique String identifier
     #[serde(rename = "identifier")]
@@ -427,12 +427,12 @@ pub struct LayerDefinition {
     /// X offset of the layer, in pixels (IMPORTANT: this should be added to the `LayerInstance`
     /// optional offset)
     #[serde(rename = "pxOffsetX")]
-    pub px_offset_x: i64,
+    pub px_offset_x: i32,
 
     /// Y offset of the layer, in pixels (IMPORTANT: this should be added to the `LayerInstance`
     /// optional offset)
     #[serde(rename = "pxOffsetY")]
-    pub px_offset_y: i64,
+    pub px_offset_y: i32,
 
     /// An array of tags to filter Entities that can be added to this layer
     #[serde(rename = "requiredTags")]
@@ -441,18 +441,18 @@ pub struct LayerDefinition {
     /// If the tiles are smaller or larger than the layer grid, the pivot value will be used to
     /// position the tile relatively its grid cell.
     #[serde(rename = "tilePivotX")]
-    pub tile_pivot_x: f64,
+    pub tile_pivot_x: f32,
 
     /// If the tiles are smaller or larger than the layer grid, the pivot value will be used to
     /// position the tile relatively its grid cell.
     #[serde(rename = "tilePivotY")]
-    pub tile_pivot_y: f64,
+    pub tile_pivot_y: f32,
 
     /// Reference to the Tileset UID being used by this Tile layer. WARNING: some layer
     /// *instances* might use a different tileset. So most of the time, you should probably use
     /// the `__tilesetDefUid` value from layer instances.
     #[serde(rename = "tilesetDefUid")]
-    pub tileset_def_uid: Option<i64>,
+    pub tileset_def_uid: Option<i32>,
 
     /// Type of the layer as Haxe Enum Possible values: `IntGrid`, `Entities`, `Tiles`,
     /// `AutoLayer`
@@ -461,7 +461,7 @@ pub struct LayerDefinition {
 
     /// Unique Int identifier
     #[serde(rename = "uid")]
-    pub uid: i64,
+    pub uid: i32,
 }
 
 #[derive(PartialEq, Debug, Default, Clone, Serialize, Deserialize)]
@@ -482,7 +482,7 @@ pub struct AutoLayerRuleGroup {
     pub rules: Vec<AutoLayerRuleDefinition>,
 
     #[serde(rename = "uid")]
-    pub uid: i64,
+    pub uid: i32,
 }
 
 /// This complex section isn't meant to be used by game devs at all, as these rules are
@@ -501,7 +501,7 @@ pub struct AutoLayerRuleDefinition {
 
     /// Chances for this rule to be applied (0 to 1)
     #[serde(rename = "chance")]
-    pub chance: f64,
+    pub chance: f32,
 
     /// Checker mode Possible values: `None`, `Horizontal`, `Vertical`
     #[serde(rename = "checker")]
@@ -517,40 +517,40 @@ pub struct AutoLayerRuleDefinition {
 
     /// Default IntGrid value when checking cells outside of level bounds
     #[serde(rename = "outOfBoundsValue")]
-    pub out_of_bounds_value: Option<i64>,
+    pub out_of_bounds_value: Option<i32>,
 
     /// Rule pattern (size x size)
     #[serde(rename = "pattern")]
-    pub pattern: Vec<i64>,
+    pub pattern: Vec<i32>,
 
     /// If TRUE, enable Perlin filtering to only apply rule on specific random area
     #[serde(rename = "perlinActive")]
     pub perlin_active: bool,
 
     #[serde(rename = "perlinOctaves")]
-    pub perlin_octaves: f64,
+    pub perlin_octaves: f32,
 
     #[serde(rename = "perlinScale")]
-    pub perlin_scale: f64,
+    pub perlin_scale: f32,
 
     #[serde(rename = "perlinSeed")]
-    pub perlin_seed: f64,
+    pub perlin_seed: f32,
 
     /// X pivot of a tile stamp (0-1)
     #[serde(rename = "pivotX")]
-    pub pivot_x: f64,
+    pub pivot_x: f32,
 
     /// Y pivot of a tile stamp (0-1)
     #[serde(rename = "pivotY")]
-    pub pivot_y: f64,
+    pub pivot_y: f32,
 
     /// Pattern width & height. Should only be 1,3,5 or 7.
     #[serde(rename = "size")]
-    pub size: i64,
+    pub size: i32,
 
     /// Array of all the tile IDs. They are used randomly or as stamps, based on `tileMode` value.
     #[serde(rename = "tileIds")]
-    pub tile_ids: Vec<i64>,
+    pub tile_ids: Vec<i32>,
 
     /// Defines how tileIds array is used Possible values: `Single`, `Stamp`
     #[serde(rename = "tileMode")]
@@ -558,15 +558,15 @@ pub struct AutoLayerRuleDefinition {
 
     /// Unique Int identifier
     #[serde(rename = "uid")]
-    pub uid: i64,
+    pub uid: i32,
 
     /// X cell coord modulo
     #[serde(rename = "xModulo")]
-    pub x_modulo: i64,
+    pub x_modulo: i32,
 
     /// Y cell coord modulo
     #[serde(rename = "yModulo")]
-    pub y_modulo: i64,
+    pub y_modulo: i32,
 }
 
 /// IntGrid value definition
@@ -581,7 +581,7 @@ pub struct IntGridValueDefinition {
 
     /// The IntGrid value itself
     #[serde(rename = "value")]
-    pub value: i64,
+    pub value: i32,
 }
 
 /// The `Tileset` definition is the most important part among project definitions. It
@@ -591,11 +591,11 @@ pub struct IntGridValueDefinition {
 pub struct TilesetDefinition {
     /// Grid-based height
     #[serde(rename = "__cHei")]
-    pub c_hei: i64,
+    pub c_hei: i32,
 
     /// Grid-based width
     #[serde(rename = "__cWid")]
-    pub c_wid: i64,
+    pub c_wid: i32,
 
     /// The following data is used internally for various optimizations. It's always synced with
     /// source image changes.
@@ -617,15 +617,15 @@ pub struct TilesetDefinition {
 
     /// Distance in pixels from image borders
     #[serde(rename = "padding")]
-    pub padding: i64,
+    pub padding: i32,
 
     /// Image height in pixels
     #[serde(rename = "pxHei")]
-    pub px_hei: i64,
+    pub px_hei: i32,
 
     /// Image width in pixels
     #[serde(rename = "pxWid")]
-    pub px_wid: i64,
+    pub px_wid: i32,
 
     /// Path to the source file, relative to the current project JSON file
     #[serde(rename = "relPath")]
@@ -637,18 +637,18 @@ pub struct TilesetDefinition {
 
     /// Space in pixels between all tiles
     #[serde(rename = "spacing")]
-    pub spacing: i64,
+    pub spacing: i32,
 
     /// Optional Enum definition UID used for this tileset meta-data
     #[serde(rename = "tagsSourceEnumUid")]
-    pub tags_source_enum_uid: Option<i64>,
+    pub tags_source_enum_uid: Option<i32>,
 
     #[serde(rename = "tileGridSize")]
-    pub tile_grid_size: i64,
+    pub tile_grid_size: i32,
 
     /// Unique Intidentifier
     #[serde(rename = "uid")]
-    pub uid: i64,
+    pub uid: i32,
 }
 
 /// This section contains all the level data. It can be found in 2 distinct forms, depending
@@ -683,11 +683,11 @@ pub struct Level {
 
     /// Background image X pivot (0-1)
     #[serde(rename = "bgPivotX")]
-    pub bg_pivot_x: f64,
+    pub bg_pivot_x: f32,
 
     /// Background image Y pivot (0-1)
     #[serde(rename = "bgPivotY")]
-    pub bg_pivot_y: f64,
+    pub bg_pivot_y: f32,
 
     /// An enum defining the way the background image (if any) is positioned on the level. See
     /// `__bgPos` for resulting position info. Possible values: &lt;`null`&gt;, `Unscaled`,
@@ -720,15 +720,15 @@ pub struct Level {
 
     /// Height of the level in pixels
     #[serde(rename = "pxHei")]
-    pub px_hei: i64,
+    pub px_hei: i32,
 
     /// Width of the level in pixels
     #[serde(rename = "pxWid")]
-    pub px_wid: i64,
+    pub px_wid: i32,
 
     /// Unique Int identifier
     #[serde(rename = "uid")]
-    pub uid: i64,
+    pub uid: i32,
 
     /// If TRUE, the level identifier will always automatically use the naming pattern as defined
     /// in `Project.levelNamePattern`. Becomes FALSE if the identifier is manually modified by
@@ -738,11 +738,11 @@ pub struct Level {
 
     /// World X coordinate in pixels
     #[serde(rename = "worldX")]
-    pub world_x: i64,
+    pub world_x: i32,
 
     /// World Y coordinate in pixels
     #[serde(rename = "worldY")]
-    pub world_y: i64,
+    pub world_y: i32,
 }
 
 /// Level background image position info
@@ -752,17 +752,17 @@ pub struct LevelBackgroundPosition {
     /// background image. This cropping happens when original is larger than the level bounds.
     /// Array format: `[ cropX, cropY, cropWidth, cropHeight ]`
     #[serde(rename = "cropRect")]
-    pub crop_rect: Vec<f64>,
+    pub crop_rect: Vec<f32>,
 
     /// An array containing the `[scaleX,scaleY]` values of the **cropped** background image,
     /// depending on `bgPos` option.
     #[serde(rename = "scale")]
-    pub scale: Vec<f64>,
+    pub scale: Vec<f32>,
 
     /// An array containing the `[x,y]` pixel coordinates of the top-left corner of the
     /// **cropped** background image, depending on `bgPos` option.
     #[serde(rename = "topLeftPx")]
-    pub top_left_px: Vec<i64>,
+    pub top_left_px: Vec<i32>,
 }
 
 #[derive(Eq, PartialEq, Debug, Default, Clone, Serialize, Deserialize)]
@@ -782,7 +782,7 @@ pub struct FieldInstance {
 
     /// Reference of the **Field definition** UID
     #[serde(rename = "defUid")]
-    pub def_uid: i64,
+    pub def_uid: i32,
 
     /// Editor internal raw values
     #[serde(rename = "realEditorValues")]
@@ -793,15 +793,15 @@ pub struct FieldInstance {
 pub struct LayerInstance {
     /// Grid-based height
     #[serde(rename = "__cHei")]
-    pub c_hei: i64,
+    pub c_hei: i32,
 
     /// Grid-based width
     #[serde(rename = "__cWid")]
-    pub c_wid: i64,
+    pub c_wid: i32,
 
     /// Grid size
     #[serde(rename = "__gridSize")]
-    pub grid_size: i64,
+    pub grid_size: i32,
 
     /// Layer definition identifier
     #[serde(rename = "__identifier")]
@@ -809,19 +809,19 @@ pub struct LayerInstance {
 
     /// Layer opacity as Float [0-1]
     #[serde(rename = "__opacity")]
-    pub opacity: f64,
+    pub opacity: f32,
 
     /// Total layer X pixel offset, including both instance and definition offsets.
     #[serde(rename = "__pxTotalOffsetX")]
-    pub px_total_offset_x: i64,
+    pub px_total_offset_x: i32,
 
     /// Total layer Y pixel offset, including both instance and definition offsets.
     #[serde(rename = "__pxTotalOffsetY")]
-    pub px_total_offset_y: i64,
+    pub px_total_offset_y: i32,
 
     /// The definition UID of corresponding Tileset, if any.
     #[serde(rename = "__tilesetDefUid")]
-    pub tileset_def_uid: Option<i64>,
+    pub tileset_def_uid: Option<i32>,
 
     /// The relative path to corresponding Tileset, if any.
     #[serde(rename = "__tilesetRelPath")]
@@ -853,38 +853,38 @@ pub struct LayerInstance {
     /// (ie. first row from left to right, followed by second row, etc). `0` means "empty cell"
     /// and IntGrid values start at 1. This array size is `__cWid` x `__cHei` cells.
     #[serde(rename = "intGridCsv")]
-    pub int_grid_csv: Vec<i64>,
+    pub int_grid_csv: Vec<i32>,
 
     /// Reference the Layer definition UID
     #[serde(rename = "layerDefUid")]
-    pub layer_def_uid: i64,
+    pub layer_def_uid: i32,
 
     /// Reference to the UID of the level containing this layer instance
     #[serde(rename = "levelId")]
-    pub level_id: i64,
+    pub level_id: i32,
 
     /// An Array containing the UIDs of optional rules that were enabled in this specific layer
     /// instance.
     #[serde(rename = "optionalRules")]
-    pub optional_rules: Vec<i64>,
+    pub optional_rules: Vec<i32>,
 
     /// This layer can use another tileset by overriding the tileset UID here.
     #[serde(rename = "overrideTilesetUid")]
-    pub override_tileset_uid: Option<i64>,
+    pub override_tileset_uid: Option<i32>,
 
     /// X offset in pixels to render this layer, usually 0 (IMPORTANT: this should be added to
     /// the `LayerDef` optional offset, see `__pxTotalOffsetX`)
     #[serde(rename = "pxOffsetX")]
-    pub px_offset_x: i64,
+    pub px_offset_x: i32,
 
     /// Y offset in pixels to render this layer, usually 0 (IMPORTANT: this should be added to
     /// the `LayerDef` optional offset, see `__pxTotalOffsetY`)
     #[serde(rename = "pxOffsetY")]
-    pub px_offset_y: i64,
+    pub px_offset_y: i32,
 
     /// Random seed used for Auto-Layers rendering
     #[serde(rename = "seed")]
-    pub seed: i64,
+    pub seed: i32,
 
     /// Layer instance visibility
     #[serde(rename = "visible")]
@@ -897,33 +897,33 @@ pub struct TileInstance {
     /// Internal data used by the editor.<br/>  For auto-layer tiles: `[ruleId, coordId]`.<br/>
     /// For tile-layer tiles: `[coordId]`.
     #[serde(rename = "d")]
-    pub d: Vec<i64>,
+    pub d: Vec<i32>,
 
     /// "Flip bits", a 2-bits integer to represent the mirror transformations of the tile.<br/>
     /// - Bit 0 = X flip<br/>   - Bit 1 = Y flip<br/>   Examples: f=0 (no flip), f=1 (X flip
     /// only), f=2 (Y flip only), f=3 (both flips)
     #[serde(rename = "f")]
-    pub f: i64,
+    pub f: i32,
 
     /// Pixel coordinates of the tile in the **layer** (`[x,y]` format). Don't forget optional
     /// layer offsets, if they exist!
     #[serde(rename = "px")]
-    pub px: Vec<i64>,
+    pub px: Vec<i32>,
 
     /// Pixel coordinates of the tile in the **tileset** (`[x,y]` format)
     #[serde(rename = "src")]
-    pub src: Vec<i64>,
+    pub src: Vec<i32>,
 
     /// The *Tile ID* in the corresponding tileset.
     #[serde(rename = "t")]
-    pub t: i64,
+    pub t: i32,
 }
 
 #[derive(PartialEq, Debug, Default, Clone, Serialize, Deserialize, bevy::prelude::Component)]
 pub struct EntityInstance {
     /// Grid-based coordinates (`[x,y]` format)
     #[serde(rename = "__grid")]
-    pub grid: Vec<i64>,
+    pub grid: Vec<i32>,
 
     /// Entity definition identifier
     #[serde(rename = "__identifier")]
@@ -931,7 +931,7 @@ pub struct EntityInstance {
 
     /// Pivot coordinates  (`[x,y]` format, values are from 0 to 1) of the Entity
     #[serde(rename = "__pivot")]
-    pub pivot: Vec<f64>,
+    pub pivot: Vec<f32>,
 
     /// Optional Tile used to display this entity (it could either be the default Entity tile, or
     /// some tile provided by a field value, like an Enum).
@@ -940,7 +940,7 @@ pub struct EntityInstance {
 
     /// Reference of the **Entity definition** UID
     #[serde(rename = "defUid")]
-    pub def_uid: i64,
+    pub def_uid: i32,
 
     /// An array of all custom fields and their values.
     #[serde(rename = "fieldInstances")]
@@ -949,17 +949,17 @@ pub struct EntityInstance {
     /// Entity height in pixels. For non-resizable entities, it will be the same as Entity
     /// definition.
     #[serde(rename = "height")]
-    pub height: i64,
+    pub height: i32,
 
     /// Pixel coordinates (`[x,y]` format) in current level coordinate space. Don't forget
     /// optional layer offsets, if they exist!
     #[serde(rename = "px")]
-    pub px: Vec<i64>,
+    pub px: Vec<i32>,
 
     /// Entity width in pixels. For non-resizable entities, it will be the same as Entity
     /// definition.
     #[serde(rename = "width")]
-    pub width: i64,
+    pub width: i32,
 }
 
 /// Tile data in an Entity instance
@@ -968,11 +968,11 @@ pub struct EntityInstanceTile {
     /// An array of 4 Int values that refers to the tile in the tileset image: `[ x, y, width,
     /// height ]`
     #[serde(rename = "srcRect")]
-    pub src_rect: Vec<i64>,
+    pub src_rect: Vec<i32>,
 
     /// Tileset ID
     #[serde(rename = "tilesetUid")]
-    pub tileset_uid: i64,
+    pub tileset_uid: i32,
 }
 
 /// IntGrid value instance
@@ -980,11 +980,11 @@ pub struct EntityInstanceTile {
 pub struct IntGridValueInstance {
     /// Coordinate ID in the layer grid
     #[serde(rename = "coordId")]
-    pub coord_id: i64,
+    pub coord_id: i32,
 
     /// IntGrid value
     #[serde(rename = "v")]
-    pub v: i64,
+    pub v: i32,
 }
 
 /// Nearby level info
@@ -996,7 +996,7 @@ pub struct NeighbourLevel {
     pub dir: String,
 
     #[serde(rename = "levelUid")]
-    pub level_uid: i64,
+    pub level_uid: i32,
 }
 
 /// Possible values: `Hidden`, `ValueOnly`, `NameAndValue`, `EntityTile`, `Points`,

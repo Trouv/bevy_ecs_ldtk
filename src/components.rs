@@ -4,7 +4,7 @@ use bevy_ecs_tilemap::prelude::*;
 
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug, Default, Hash, Component)]
 pub struct IntGridCell {
-    pub value: i64,
+    pub value: i32,
 }
 
 #[derive(Clone, Default, Bundle)]
@@ -33,7 +33,7 @@ pub struct EntityInstanceBundle {
 pub enum LevelSelection {
     Identifier(String),
     Index(usize),
-    Uid(i64),
+    Uid(i32),
 }
 
 impl Default for LevelSelection {

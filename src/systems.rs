@@ -177,33 +177,12 @@ pub fn process_loaded_ldtk(
                             match layer_instance.layer_instance_type {
                                 Type::Entities => {
                                     for entity_instance in &layer_instance.entity_instances {
-                                        let pivot_point_x = entity_instance.px[0] as f32;
-                                        let pivot_point_y =
-                                            (level.px_hei - entity_instance.px[1]) as f32;
-
-                                        let pivot_x = 0.5 - entity_instance.pivot[0] as f32;
-                                        let pivot_y = entity_instance.pivot[1] as f32 - 0.5;
-
-                                        let offset_x = entity_instance.width as f32 * pivot_x;
-                                        let offset_y = entity_instance.height as f32 * pivot_y;
-
-                                        let translation_x = pivot_point_x + offset_x;
-                                        let translation_y = pivot_point_y + offset_y;
-
-                                        let entity_definition = entity_definition_map
-                                            .get(&entity_instance.def_uid)
-                                            .unwrap();
-                                        let scale_x = entity_instance.width as f32
-                                            / entity_definition.width as f32;
-                                        let scale_y = entity_instance.height as f32
-                                            / entity_definition.height as f32;
-
-                                        let transform = Transform::from_xyz(
-                                            translation_x,
-                                            translation_y,
-                                            layer_z as f32,
-                                        )
-                                        .with_scale(Vec3::new(scale_x, scale_y, 1.));
+                                        let transform = calculate_transform_from_entity_instance(
+                                            entity_instance,
+                                            &entity_definition_map,
+                                            level.px_hei,
+                                            layer_z,
+                                        );
 
                                         let mut entity_commands = match bundle_map
                                             .get(&entity_instance.identifier)
@@ -434,4 +413,45 @@ fn tile_pos_to_int_grid_bundle_maker(
             _ => None,
         }
     }
+}
+
+fn calculate_transform_from_ldtk_info(
+    location: IVec2,
+    pivot: Vec2,
+    def_size: IVec2,
+    size: IVec2,
+    level_height: i32,
+    layer_z: usize,
+) -> Transform {
+    let pivot_point = Vec2::new(location.x as f32, (level_height - location.y) as f32);
+
+    let adjusted_pivot = Vec2::new(0.5 - pivot.x, pivot.y - 0.5);
+
+    let offset = size.as_vec2() * adjusted_pivot;
+
+    let translation = pivot_point + offset;
+
+    let scale = size.as_vec2() / def_size.as_vec2();
+
+    Transform::from_xyz(translation.x, translation.y, layer_z as f32)
+        .with_scale(Vec3::new(scale.x, scale.y, 1.))
+}
+
+fn calculate_transform_from_entity_instance(
+    entity_instance: &EntityInstance,
+    entity_definition_map: &HashMap<i32, &EntityDefinition>,
+    level_height: i32,
+    layer_z: usize,
+) -> Transform {
+    let entity_definition = entity_definition_map.get(&entity_instance.def_uid).unwrap();
+
+    let location = IVec2::from_slice(entity_instance.px.as_slice());
+
+    let pivot = Vec2::from_slice(entity_instance.pivot.as_slice());
+
+    let def_size = IVec2::new(entity_definition.width, entity_definition.height);
+
+    let size = IVec2::new(entity_instance.width, entity_instance.height);
+
+    calculate_transform_from_ldtk_info(location, pivot, def_size, size, level_height, layer_z)
 }

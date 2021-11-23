@@ -3,7 +3,7 @@
 version = 3
 
 [[package]]
-name = "bevy_ecs_ldtk_derive"
+name = "bevy_ecs_ldtk_macros"
 version = "0.1.0"
 dependencies = [
  "proc-macro2",

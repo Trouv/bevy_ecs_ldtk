@@ -44,5 +44,5 @@ pub mod prelude {
     pub use crate::app::{LdtkEntity, RegisterLdtkObjects};
 
     #[cfg(feature = "derive")]
-    pub use bevy_ecs_ldtk_derive::*;
+    pub use bevy_ecs_ldtk_macros::*;
 }

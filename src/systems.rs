@@ -355,8 +355,16 @@ fn tile_pos_to_tile_maker(
             Some(tile_instance) => {
                 let tileset_x = tile_instance.src[0] / tileset_definition.tile_grid_size;
                 let tileset_y = tile_instance.src[1] / tileset_definition.tile_grid_size;
+                let (flip_x, flip_y) = match tile_instance.f {
+                    1 => (true, false),
+                    2 => (false, true),
+                    3 => (true, true),
+                    _ => (false, false),
+                };
                 Some(Tile {
                     texture_index: (tileset_y * tileset_definition.c_wid + tileset_x) as u16,
+                    flip_x,
+                    flip_y,
                     ..Default::default()
                 })
             }

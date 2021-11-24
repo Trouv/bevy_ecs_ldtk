@@ -10,18 +10,6 @@ pub struct IntGridCell {
 #[derive(Clone, Default, Bundle)]
 pub struct IntGridCellBundle {
     pub int_grid_cell: IntGridCell,
-    #[bundle]
-    pub tile_bundle: TileBundle,
-}
-
-impl TileBundleTrait for IntGridCellBundle {
-    fn get_tile_pos_mut(&mut self) -> &mut TilePos {
-        &mut self.tile_bundle.position
-    }
-
-    fn get_tile_parent(&mut self) -> &mut TileParent {
-        &mut self.tile_bundle.parent
-    }
 }
 
 #[derive(Clone, Bundle, Default)]

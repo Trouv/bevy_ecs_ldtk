@@ -2,7 +2,7 @@ use crate::{
     app::LdtkEntityMap,
     assets::{LdtkAsset, LdtkExternalLevel},
     components::*,
-    ldtk::{EntityDefinition, TileInstance, TilesetDefinition, Type},
+    ldtk::{EntityDefinition, LayerInstance, TileInstance, TilesetDefinition, Type},
 };
 
 use bevy::prelude::*;
@@ -57,6 +57,12 @@ pub fn process_external_levels(
     }
 }
 
+pub struct IntGridLayerToProcess {
+    map_id: u16,
+    layer_id: u16,
+    layer_instance: LayerInstance,
+}
+
 pub fn process_loaded_ldtk(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -76,7 +82,7 @@ pub fn process_loaded_ldtk(
     new_ldtks: Query<&Handle<LdtkAsset>, Added<Handle<LdtkAsset>>>,
     asset_server: Res<AssetServer>,
     bundle_map: NonSend<LdtkEntityMap>,
-) {
+) -> Vec<IntGridLayerToProcess> {
     // This function uses code from the bevy_ecs_tilemap ldtk example
     // https://github.com/StarArawn/bevy_ecs_tilemap/blob/main/examples/ldtk/ldtk.rs
     let mut changed_ldtks = Vec::<Handle<LdtkAsset>>::new();
@@ -105,6 +111,8 @@ pub fn process_loaded_ldtk(
     for new_ldtk_handle in new_ldtks.iter() {
         changed_ldtks.push(new_ldtk_handle.clone());
     }
+
+    let mut int_grid_layers = Vec::new();
 
     for changed_ldtk in changed_ldtks.iter() {
         for (ldtk_entity, ldtk_handle, level_selection, mut map, children) in ldtk_map_query
@@ -250,35 +258,16 @@ pub fn process_loaded_ldtk(
                                                 grid_tiles,
                                             );
 
-                                            match layer_instance.layer_instance_type {
-                                                Type::IntGrid => {
-                                                    LayerBuilder::<IntGridCellBundle>::new_batch(
-                                                        &mut commands,
-                                                        settings,
-                                                        &mut meshes,
-                                                        material_handle,
-                                                        map.id,
-                                                        layer_z as u16,
-                                                        None,
-                                                        tile_pos_to_int_grid_bundle_maker(
-                                                            layer_instance.c_wid,
-                                                            layer_instance.c_hei,
-                                                            layer_instance.int_grid_csv.clone(),
-                                                            tile_maker,
-                                                        ),
-                                                    )
-                                                }
-                                                _ => LayerBuilder::<TileBundle>::new_batch(
-                                                    &mut commands,
-                                                    settings,
-                                                    &mut meshes,
-                                                    material_handle,
-                                                    map.id,
-                                                    layer_z as u16,
-                                                    None,
-                                                    tile_pos_to_tile_bundle_maker(tile_maker),
-                                                ),
-                                            }
+                                            LayerBuilder::<TileBundle>::new_batch(
+                                                &mut commands,
+                                                settings,
+                                                &mut meshes,
+                                                material_handle,
+                                                map.id,
+                                                layer_z as u16,
+                                                None,
+                                                tile_pos_to_tile_bundle_maker(tile_maker),
+                                            )
                                         }
                                         _ => {
                                             let settings = LayerSettings::new(
@@ -294,7 +283,7 @@ pub fn process_loaded_ldtk(
                                             let material_handle =
                                                 materials.add(ColorMaterial::default());
 
-                                            LayerBuilder::<IntGridCellBundle>::new_batch(
+                                            LayerBuilder::<TileBundle>::new_batch(
                                                 &mut commands,
                                                 settings,
                                                 &mut meshes,
@@ -302,15 +291,18 @@ pub fn process_loaded_ldtk(
                                                 map.id,
                                                 layer_z as u16,
                                                 None,
-                                                tile_pos_to_int_grid_bundle_maker(
-                                                    layer_instance.c_wid,
-                                                    layer_instance.c_hei,
-                                                    layer_instance.int_grid_csv.clone(),
-                                                    invisible_tile,
-                                                ),
+                                                tile_pos_to_tile_bundle_maker(invisible_tile),
                                             )
                                         }
                                     };
+
+                                    if layer_instance.layer_instance_type == Type::IntGrid {
+                                        int_grid_layers.push(IntGridLayerToProcess {
+                                            map_id: map.id,
+                                            layer_id: layer_z as u16,
+                                            layer_instance: layer_instance.clone(),
+                                        });
+                                    }
 
                                     map.add_layer(&mut commands, layer_z as u16, layer_entity);
                                 }
@@ -321,6 +313,8 @@ pub fn process_loaded_ldtk(
             }
         }
     }
+
+    int_grid_layers
 }
 
 fn invisible_tile(_: TilePos) -> Option<Tile> {
@@ -387,39 +381,27 @@ fn tile_pos_to_tile_bundle_maker(
     }
 }
 
-fn tile_pos_to_int_grid_bundle_maker(
-    layer_width_in_tiles: i32,
+fn tile_pos_to_int_grid_cell_bundle(
+    tile_pos: TilePos,
+    int_grid_csv: &Vec<i32>,
     layer_height_in_tiles: i32,
-    int_grid_csv: Vec<i32>,
-    mut tile_maker: impl FnMut(TilePos) -> Option<Tile>,
-) -> impl FnMut(TilePos) -> Option<IntGridCellBundle> {
-    move |tile_pos: TilePos| -> Option<IntGridCellBundle> {
-        let ldtk_x = tile_pos.0 as i32;
-        let ldtk_y = layer_height_in_tiles - tile_pos.1 as i32 - 1;
+    layer_width_in_tiles: i32,
+) -> Option<IntGridCellBundle> {
+    let ldtk_x = tile_pos.0 as i32;
+    let ldtk_y = layer_height_in_tiles - tile_pos.1 as i32 - 1;
 
-        if ldtk_y < 0
-            || ldtk_y >= layer_height_in_tiles
-            || ldtk_x < 0
-            || ldtk_x >= layer_width_in_tiles
-        {
-            return None;
-        }
+    if ldtk_y < 0 || ldtk_y >= layer_height_in_tiles || ldtk_x < 0 || ldtk_x >= layer_width_in_tiles
+    {
+        return None;
+    }
 
-        let csv_index = (ldtk_y * layer_width_in_tiles + ldtk_x) as usize;
+    let csv_index = (ldtk_y * layer_width_in_tiles + ldtk_x) as usize;
 
-        match int_grid_csv.get(csv_index) {
-            Some(x) if *x != 0 => match tile_maker(tile_pos) {
-                Some(tile) => Some(IntGridCellBundle {
-                    int_grid_cell: IntGridCell { value: *x },
-                    tile_bundle: TileBundle {
-                        tile,
-                        ..Default::default()
-                    },
-                }),
-                None => None,
-            },
-            _ => None,
-        }
+    match int_grid_csv.get(csv_index) {
+        Some(x) if *x != 0 => Some(IntGridCellBundle {
+            int_grid_cell: IntGridCell { value: *x },
+        }),
+        _ => None,
     }
 }
 

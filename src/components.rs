@@ -1,4 +1,4 @@
-pub use crate::ldtk::EntityInstance;
+pub use crate::ldtk::{EntityInstance, Level};
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 
@@ -27,6 +27,16 @@ pub enum LevelSelection {
 impl Default for LevelSelection {
     fn default() -> Self {
         LevelSelection::Index(0)
+    }
+}
+
+impl LevelSelection {
+    pub fn is_match(&self, index: &usize, level: &Level) -> bool {
+        match self {
+            LevelSelection::Identifier(s) => *s == level.identifier,
+            LevelSelection::Index(i) => *i == *index,
+            LevelSelection::Uid(u) => *u == level.uid,
+        }
     }
 }
 

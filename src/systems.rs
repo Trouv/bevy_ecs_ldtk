@@ -64,7 +64,7 @@ pub fn process_loaded_ldtk(
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     ldtk_assets: Res<Assets<LdtkAsset>>,
-    bundle_map: NonSend<LdtkEntityMap>,
+    ldtk_entity_map: NonSend<LdtkEntityMap>,
     ldtk_events: EventReader<AssetEvent<LdtkAsset>>,
     new_ldtks: Query<&Handle<LdtkAsset>, Added<Handle<LdtkAsset>>>,
     mut ldtk_map_query: Query<(
@@ -125,7 +125,7 @@ pub fn process_loaded_ldtk(
                         &mut materials,
                         &mut texture_atlases,
                         &mut meshes,
-                        &bundle_map,
+                        &ldtk_entity_map,
                         &entity_definition_map,
                         &ldtk_asset.tileset_map,
                         &tileset_definition_map,
@@ -220,7 +220,7 @@ fn spawn_level(
     materials: &mut Assets<ColorMaterial>,
     texture_atlases: &mut Assets<TextureAtlas>,
     meshes: &mut ResMut<Assets<Mesh>>,
-    bundle_map: &LdtkEntityMap,
+    ldtk_entity_map: &LdtkEntityMap,
     entity_definition_map: &HashMap<i32, &EntityDefinition>,
     tileset_map: &TilesetMap,
     tileset_definition_map: &HashMap<i32, &TilesetDefinition>,
@@ -239,20 +239,20 @@ fn spawn_level(
                             layer_z,
                         );
 
-                        let mut entity_commands = match bundle_map.get(&entity_instance.identifier)
-                        {
-                            None => commands.spawn_bundle(EntityInstanceBundle {
-                                entity_instance: entity_instance.clone(),
-                            }),
-                            Some(phantom_ldtk_entity) => phantom_ldtk_entity.evaluate(
-                                commands,
-                                &entity_instance,
-                                &tileset_map,
-                                &asset_server,
-                                materials,
-                                texture_atlases,
-                            ),
-                        };
+                        let mut entity_commands =
+                            match ldtk_entity_map.get(&entity_instance.identifier) {
+                                None => commands.spawn_bundle(EntityInstanceBundle {
+                                    entity_instance: entity_instance.clone(),
+                                }),
+                                Some(phantom_ldtk_entity) => phantom_ldtk_entity.evaluate(
+                                    commands,
+                                    &entity_instance,
+                                    &tileset_map,
+                                    &asset_server,
+                                    materials,
+                                    texture_atlases,
+                                ),
+                            };
 
                         entity_commands
                             .insert(transform)

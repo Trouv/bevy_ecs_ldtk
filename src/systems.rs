@@ -123,36 +123,13 @@ pub fn process_loaded_ldtk(
             .filter(|(_, l, _, _, _)| changed_ldtk == *l)
         {
             if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
-                for (layer_id, layer_entity) in map.get_layers() {
-                    if let Ok(layer) = layer_query.get(layer_entity) {
-                        for x in 0..layer.get_layer_size_in_tiles().0 {
-                            for y in 0..layer.get_layer_size_in_tiles().1 {
-                                let tile_pos = TilePos(x, y);
-                                let chunk_pos = ChunkPos(
-                                    tile_pos.0 / layer.settings.chunk_size.0,
-                                    tile_pos.1 / layer.settings.chunk_size.1,
-                                );
-                                if let Some(chunk_entity) = layer.get_chunk(chunk_pos) {
-                                    if let Ok(chunk) = chunk_query.get(chunk_entity) {
-                                        let chunk_tile_pos = chunk.to_chunk_pos(tile_pos);
-                                        if let Some(tile) = chunk.get_tile_entity(chunk_tile_pos) {
-                                            commands.entity(tile).despawn_recursive();
-                                        }
-                                    }
-
-                                    commands.entity(chunk_entity).despawn_recursive();
-                                }
-                            }
-                        }
-
-                        map.remove_layer(&mut commands, layer_id);
-                    }
-                }
-                if let Some(children) = children {
-                    for child in children.iter() {
-                        commands.entity(*child).despawn_recursive();
-                    }
-                }
+                clear_map(
+                    &mut commands,
+                    &mut map,
+                    &children,
+                    &layer_query,
+                    &chunk_query,
+                );
 
                 let tileset_definition_map: HashMap<i32, &TilesetDefinition> = ldtk_asset
                     .project
@@ -412,6 +389,45 @@ pub fn process_loaded_ldtk(
                     }
                 }
             }
+        }
+    }
+}
+
+fn clear_map(
+    commands: &mut Commands,
+    map: &mut Map,
+    map_children: &Option<&Children>,
+    layer_query: &Query<&Layer>,
+    chunk_query: &Query<&Chunk>,
+) {
+    for (layer_id, layer_entity) in map.get_layers() {
+        if let Ok(layer) = layer_query.get(layer_entity) {
+            for x in 0..layer.get_layer_size_in_tiles().0 {
+                for y in 0..layer.get_layer_size_in_tiles().1 {
+                    let tile_pos = TilePos(x, y);
+                    let chunk_pos = ChunkPos(
+                        tile_pos.0 / layer.settings.chunk_size.0,
+                        tile_pos.1 / layer.settings.chunk_size.1,
+                    );
+                    if let Some(chunk_entity) = layer.get_chunk(chunk_pos) {
+                        if let Ok(chunk) = chunk_query.get(chunk_entity) {
+                            let chunk_tile_pos = chunk.to_chunk_pos(tile_pos);
+                            if let Some(tile) = chunk.get_tile_entity(chunk_tile_pos) {
+                                commands.entity(tile).despawn_recursive();
+                            }
+                        }
+
+                        commands.entity(chunk_entity).despawn_recursive();
+                    }
+                }
+            }
+
+            map.remove_layer(commands, layer_id);
+        }
+    }
+    if let Some(children) = map_children {
+        for child in children.iter() {
+            commands.entity(*child).despawn_recursive();
         }
     }
 }

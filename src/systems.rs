@@ -2,7 +2,7 @@ use crate::{
     app::LdtkEntityMap,
     assets::{LdtkAsset, LdtkExternalLevel},
     components::*,
-    ldtk::{EntityDefinition, LayerInstance, TileInstance, TilesetDefinition, Type},
+    ldtk::{EntityDefinition, TileInstance, TilesetDefinition, Type},
 };
 
 use bevy::prelude::*;
@@ -57,29 +57,13 @@ pub fn process_external_levels(
     }
 }
 
-pub fn process_loaded_ldtk(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+fn determine_changed_ldtks(
     mut ldtk_events: EventReader<AssetEvent<LdtkAsset>>,
-    mut ldtk_map_query: Query<(
-        Entity,
-        &Handle<LdtkAsset>,
-        &LevelSelection,
-        &mut Map,
-        Option<&Children>,
-    )>,
-    ldtk_assets: Res<Assets<LdtkAsset>>,
-    layer_query: Query<&Layer>,
-    chunk_query: Query<&Chunk>,
     new_ldtks: Query<&Handle<LdtkAsset>, Added<Handle<LdtkAsset>>>,
-    asset_server: Res<AssetServer>,
-    bundle_map: NonSend<LdtkEntityMap>,
-) {
+) -> Vec<Handle<LdtkAsset>> {
     // This function uses code from the bevy_ecs_tilemap ldtk example
     // https://github.com/StarArawn/bevy_ecs_tilemap/blob/main/examples/ldtk/ldtk.rs
-    let mut changed_ldtks = Vec::<Handle<LdtkAsset>>::new();
+    let mut changed_ldtks = Vec::new();
     for event in ldtk_events.iter() {
         match event {
             AssetEvent::Created { handle } => {
@@ -105,6 +89,33 @@ pub fn process_loaded_ldtk(
     for new_ldtk_handle in new_ldtks.iter() {
         changed_ldtks.push(new_ldtk_handle.clone());
     }
+
+    changed_ldtks
+}
+
+pub fn process_loaded_ldtk(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    ldtk_assets: Res<Assets<LdtkAsset>>,
+    bundle_map: NonSend<LdtkEntityMap>,
+    ldtk_events: EventReader<AssetEvent<LdtkAsset>>,
+    new_ldtks: Query<&Handle<LdtkAsset>, Added<Handle<LdtkAsset>>>,
+    mut ldtk_map_query: Query<(
+        Entity,
+        &Handle<LdtkAsset>,
+        &LevelSelection,
+        &mut Map,
+        Option<&Children>,
+    )>,
+    layer_query: Query<&Layer>,
+    chunk_query: Query<&Chunk>,
+) {
+    // This function uses code from the bevy_ecs_tilemap ldtk example
+    // https://github.com/StarArawn/bevy_ecs_tilemap/blob/main/examples/ldtk/ldtk.rs
+    let changed_ldtks = determine_changed_ldtks(ldtk_events, new_ldtks);
 
     for changed_ldtk in changed_ldtks.iter() {
         for (ldtk_entity, ldtk_handle, level_selection, mut map, children) in ldtk_map_query
@@ -405,13 +416,6 @@ pub fn process_loaded_ldtk(
     }
 }
 
-fn invisible_tile(_: TilePos) -> Option<Tile> {
-    Some(Tile {
-        visible: false,
-        ..Default::default()
-    })
-}
-
 fn tile_pos_to_tile_maker(
     layer_height_in_tiles: i32,
     tileset_definition: TilesetDefinition,
@@ -466,30 +470,6 @@ fn tile_pos_to_tile_bundle_maker(
             }),
             None => None,
         }
-    }
-}
-
-fn tile_pos_to_int_grid_cell_bundle(
-    tile_pos: TilePos,
-    int_grid_csv: &Vec<i32>,
-    layer_height_in_tiles: i32,
-    layer_width_in_tiles: i32,
-) -> Option<IntGridCellBundle> {
-    let ldtk_x = tile_pos.0 as i32;
-    let ldtk_y = layer_height_in_tiles - tile_pos.1 as i32 - 1;
-
-    if ldtk_y < 0 || ldtk_y >= layer_height_in_tiles || ldtk_x < 0 || ldtk_x >= layer_width_in_tiles
-    {
-        return None;
-    }
-
-    let csv_index = (ldtk_y * layer_width_in_tiles + ldtk_x) as usize;
-
-    match int_grid_csv.get(csv_index) {
-        Some(x) if *x != 0 => Some(IntGridCellBundle {
-            int_grid_cell: IntGridCell { value: *x },
-        }),
-        _ => None,
     }
 }
 

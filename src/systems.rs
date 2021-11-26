@@ -57,7 +57,44 @@ pub fn process_external_levels(
     }
 }
 
-pub fn process_loaded_ldtk(
+pub fn determine_changed_ldtks(
+    mut ldtk_events: EventReader<AssetEvent<LdtkAsset>>,
+    new_ldtks: Query<&Handle<LdtkAsset>, Added<Handle<LdtkAsset>>>,
+) -> Vec<Handle<LdtkAsset>> {
+    // This function uses code from the bevy_ecs_tilemap ldtk example
+    // https://github.com/StarArawn/bevy_ecs_tilemap/blob/main/examples/ldtk/ldtk.rs
+    let mut changed_ldtks = Vec::new();
+    for event in ldtk_events.iter() {
+        match event {
+            AssetEvent::Created { handle } => {
+                info!("Ldtk added!");
+                changed_ldtks.push(handle.clone());
+            }
+            AssetEvent::Modified { handle } => {
+                info!("Ldtk changed!");
+                changed_ldtks.push(handle.clone());
+            }
+            AssetEvent::Removed { handle } => {
+                info!("Ldtk removed!");
+                // if mesh was modified and removed in the same update, ignore the modification
+                // events are ordered so future modification events are ok
+                changed_ldtks = changed_ldtks
+                    .into_iter()
+                    .filter(|changed_handle| changed_handle == handle)
+                    .collect();
+            }
+        }
+    }
+
+    for new_ldtk_handle in new_ldtks.iter() {
+        changed_ldtks.push(new_ldtk_handle.clone());
+    }
+
+    changed_ldtks
+}
+
+pub fn process_changed_ldtks(
+    In(changed_ldtks): In<Vec<Handle<LdtkAsset>>>,
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -65,8 +102,6 @@ pub fn process_loaded_ldtk(
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     ldtk_assets: Res<Assets<LdtkAsset>>,
     ldtk_entity_map: NonSend<LdtkEntityMap>,
-    ldtk_events: EventReader<AssetEvent<LdtkAsset>>,
-    new_ldtks: Query<&Handle<LdtkAsset>, Added<Handle<LdtkAsset>>>,
     mut ldtk_map_query: Query<(
         Entity,
         &Handle<LdtkAsset>,
@@ -79,7 +114,6 @@ pub fn process_loaded_ldtk(
 ) {
     // This function uses code from the bevy_ecs_tilemap ldtk example
     // https://github.com/StarArawn/bevy_ecs_tilemap/blob/main/examples/ldtk/ldtk.rs
-    let changed_ldtks = determine_changed_ldtks(ldtk_events, new_ldtks);
 
     for changed_ldtk in changed_ldtks.iter() {
         for (ldtk_entity, ldtk_handle, level_selection, mut map, children) in ldtk_map_query
@@ -136,42 +170,6 @@ pub fn process_loaded_ldtk(
             }
         }
     }
-}
-
-fn determine_changed_ldtks(
-    mut ldtk_events: EventReader<AssetEvent<LdtkAsset>>,
-    new_ldtks: Query<&Handle<LdtkAsset>, Added<Handle<LdtkAsset>>>,
-) -> Vec<Handle<LdtkAsset>> {
-    // This function uses code from the bevy_ecs_tilemap ldtk example
-    // https://github.com/StarArawn/bevy_ecs_tilemap/blob/main/examples/ldtk/ldtk.rs
-    let mut changed_ldtks = Vec::new();
-    for event in ldtk_events.iter() {
-        match event {
-            AssetEvent::Created { handle } => {
-                info!("Ldtk added!");
-                changed_ldtks.push(handle.clone());
-            }
-            AssetEvent::Modified { handle } => {
-                info!("Ldtk changed!");
-                changed_ldtks.push(handle.clone());
-            }
-            AssetEvent::Removed { handle } => {
-                info!("Ldtk removed!");
-                // if mesh was modified and removed in the same update, ignore the modification
-                // events are ordered so future modification events are ok
-                changed_ldtks = changed_ldtks
-                    .into_iter()
-                    .filter(|changed_handle| changed_handle == handle)
-                    .collect();
-            }
-        }
-    }
-
-    for new_ldtk_handle in new_ldtks.iter() {
-        changed_ldtks.push(new_ldtk_handle.clone());
-    }
-
-    changed_ldtks
 }
 
 fn clear_map(

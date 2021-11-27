@@ -326,7 +326,7 @@ fn spawn_level(
                             Some(tileset_definition) => {
                                 let tile_maker = tile_pos_to_tile_maker(
                                     layer_instance.c_hei,
-                                    (*tileset_definition).clone(),
+                                    tileset_definition,
                                     grid_tiles,
                                 );
 
@@ -378,10 +378,9 @@ fn spawn_level(
                     } else {
                         let tile_maker = tile_pos_to_tile_maker(
                             layer_instance.c_hei,
-                            (*tileset_definition.expect(
+                            tileset_definition.expect(
                                 "tileset definition should exist on non-IntGrid, non-Entity layers",
-                            ))
-                            .clone(),
+                            ),
                             grid_tiles,
                         );
                         LayerBuilder::<TileBundle>::new_batch(
@@ -424,9 +423,12 @@ fn tile_pos_to_invisible_tile(_: TilePos) -> Option<Tile> {
 
 fn tile_pos_to_tile_maker(
     layer_height_in_tiles: i32,
-    tileset_definition: TilesetDefinition,
+    tileset_definition: &TilesetDefinition,
     grid_tiles: Vec<TileInstance>,
 ) -> impl FnMut(TilePos) -> Option<Tile> {
+    let tile_grid_size = tileset_definition.tile_grid_size;
+    let tileset_width_in_tiles = tileset_definition.c_wid;
+
     let grid_tile_map: HashMap<TilePos, TileInstance> = grid_tiles
         .into_iter()
         .map(|t| {
@@ -445,8 +447,8 @@ fn tile_pos_to_tile_maker(
     move |tile_pos: TilePos| -> Option<Tile> {
         match grid_tile_map.get(&tile_pos) {
             Some(tile_instance) => {
-                let tileset_x = tile_instance.src[0] / tileset_definition.tile_grid_size;
-                let tileset_y = tile_instance.src[1] / tileset_definition.tile_grid_size;
+                let tileset_x = tile_instance.src[0] / tile_grid_size;
+                let tileset_y = tile_instance.src[1] / tile_grid_size;
                 let (flip_x, flip_y) = match tile_instance.f {
                     1 => (true, false),
                     2 => (false, true),
@@ -454,7 +456,7 @@ fn tile_pos_to_tile_maker(
                     _ => (false, false),
                 };
                 Some(Tile {
-                    texture_index: (tileset_y * tileset_definition.c_wid + tileset_x) as u16,
+                    texture_index: (tileset_y * tileset_width_in_tiles + tileset_x) as u16,
                     flip_x,
                     flip_y,
                     ..Default::default()

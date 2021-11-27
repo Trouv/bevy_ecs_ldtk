@@ -7,7 +7,7 @@ pub mod app;
 pub mod assets;
 pub mod components;
 pub mod ldtk;
-mod systems;
+pub mod systems;
 mod tile_makers;
 pub mod utils;
 

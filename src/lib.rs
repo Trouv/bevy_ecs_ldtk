@@ -8,6 +8,8 @@ pub mod assets;
 pub mod components;
 pub mod ldtk;
 mod systems;
+mod tile_makers;
+pub mod utils;
 
 pub mod plugin {
     use super::*;

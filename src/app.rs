@@ -1,4 +1,4 @@
-//! Contains types and traits for hooking into the ldtk loading process via bevy's [App].
+//! Types and traits for hooking into the ldtk loading process via bevy's [App].
 //!
 //! *Requires the "app" feature, which is enabled by default*
 use crate::{assets::TilesetMap, ldtk::EntityInstance};

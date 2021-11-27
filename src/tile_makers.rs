@@ -71,7 +71,7 @@ pub fn tile_pos_to_tile_bundle_if_int_grid_nonzero_maker(
         .map(|(i, v)| {
             (
                 int_grid_index_to_tile_pos(i, layer_width_in_tiles, layer_height_in_tiles),
-                *v == 0,
+                *v != 0,
             )
         })
         .collect();

@@ -1,5 +1,4 @@
-//! Contains functions used internally by the plugin, but some that may be useful to users have
-//! been exposed to the public api.
+//! Utility functions used internally by the plugin that have been exposed to the public api.
 
 #[allow(unused_imports)]
 use crate::components::*;

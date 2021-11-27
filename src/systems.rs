@@ -358,9 +358,9 @@ fn spawn_level(
                         {
                             let tile_pos = int_grid_index_to_tile_pos(
                                 i,
-                                layer_instance.c_wid,
-                                layer_instance.c_hei,
-                            );
+                                layer_instance.c_wid as u32,
+                                layer_instance.c_hei as u32,
+                            ).expect("int_grid_csv indices should be within the bounds of 0..(layer_widthd * layer_height)");
 
                             let tile_entity =
                                 layer_builder.get_tile_entity(commands, tile_pos).unwrap();

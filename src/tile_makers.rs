@@ -70,7 +70,9 @@ pub fn tile_pos_to_tile_bundle_if_int_grid_nonzero_maker(
         .enumerate()
         .map(|(i, v)| {
             (
-                int_grid_index_to_tile_pos(i, layer_width_in_tiles, layer_height_in_tiles),
+                int_grid_index_to_tile_pos(i, layer_width_in_tiles as u32, layer_height_in_tiles as u32).expect(
+                    "int_grid_csv indices should be within the bounds of 0..(layer_width * layer_height)",
+                ),
                 *v != 0,
             )
         })

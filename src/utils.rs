@@ -11,16 +11,36 @@ use std::collections::HashMap;
 
 /// The `int_grid_csv` field of a [LayerInstance] is a 1-dimensional [Vec<i32>].
 /// This function can map the indices of this [Vec] to a corresponding [TilePos].
+///
+/// Will return [None] if the resulting [TilePos] is out of the bounds implied by the width and
+/// height.
 pub fn int_grid_index_to_tile_pos(
     index: usize,
-    layer_width_in_tiles: i32,
-    layer_height_in_tiles: i32,
-) -> TilePos {
-    let tile_x = index as u32 % layer_width_in_tiles as u32;
-    let tile_y =
-        layer_height_in_tiles as u32 - ((index as u32 - tile_x) / layer_width_in_tiles as u32) - 1;
+    layer_width_in_tiles: u32,
+    layer_height_in_tiles: u32,
+) -> Option<TilePos> {
+    if layer_width_in_tiles * layer_height_in_tiles == 0 {
+        // Checking for potential n mod 0 and n / 0 issues
+        // Also it just doesn't make sense for either of these to be 0.
+        return None;
+    }
 
-    TilePos(tile_x, tile_y)
+    let tile_x = index as u32 % layer_width_in_tiles;
+
+    let inverted_y = (index as u32 - tile_x) / layer_width_in_tiles;
+
+    if layer_height_in_tiles > inverted_y {
+        // Checking for potential subtraction issues.
+        // We don't need to check index >= tile_x because tile_x is defined as index mod n where n
+        // is an unsigned int.
+        // This means tile_x == index where index < n, and tile_x < index where index >= n.
+
+        let tile_y = layer_height_in_tiles - inverted_y - 1;
+
+        Some(TilePos(tile_x, tile_y))
+    } else {
+        None
+    }
 }
 
 fn calculate_transform_from_ldtk_info(
@@ -106,4 +126,9 @@ pub fn set_all_tiles_with_func<T>(
             func(tile_pos).map(|t| layer_builder.set_tile(tile_pos, t).unwrap());
         }
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
 }

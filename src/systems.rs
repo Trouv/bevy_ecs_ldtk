@@ -259,66 +259,39 @@ fn spawn_level(
                     }
                 }
                 Type::IntGrid => {
-
                     let map_size = MapSize(
                         (layer_instance.c_wid as f32 / CHUNK_SIZE.0 as f32).ceil() as u32,
                         (layer_instance.c_hei as f32 / CHUNK_SIZE.1 as f32).ceil() as u32,
                     );
 
-                    let tileset_definition = layer_instance.tileset_def_uid.map(|u| tileset_definition_map.get(&u).unwrap());
+                    let tileset_definition = layer_instance
+                        .tileset_def_uid
+                        .map(|u| tileset_definition_map.get(&u).unwrap());
 
                     let settings = match tileset_definition {
-                        Some(tileset_definition) => {
-                            LayerSettings::new(
-                                map_size,
-                                CHUNK_SIZE,
-                                TileSize(
-                                    tileset_definition.tile_grid_size as f32,
-                                    tileset_definition.tile_grid_size as f32,
-                                ),
-                                TextureSize(
-                                    tileset_definition.px_wid as f32,
-                                    tileset_definition.px_hei as f32,
-                                ),
-                            )
-                        },
-                        None => {
-                             LayerSettings::new(
-                                map_size,
-                                CHUNK_SIZE,
-                                TileSize(
-                                    layer_instance.grid_size as f32,
-                                    layer_instance.grid_size as f32,
-                                ),
-                                TextureSize(0., 0.),
-                            )
-                        }
+                        Some(tileset_definition) => LayerSettings::new(
+                            map_size,
+                            CHUNK_SIZE,
+                            TileSize(
+                                tileset_definition.tile_grid_size as f32,
+                                tileset_definition.tile_grid_size as f32,
+                            ),
+                            TextureSize(
+                                tileset_definition.px_wid as f32,
+                                tileset_definition.px_hei as f32,
+                            ),
+                        ),
+                        None => LayerSettings::new(
+                            map_size,
+                            CHUNK_SIZE,
+                            TileSize(
+                                layer_instance.grid_size as f32,
+                                layer_instance.grid_size as f32,
+                            ),
+                            TextureSize(0., 0.),
+                        ),
                     };
 
-                    let tile_pos_to_tile_bundle = match layer_instance.tileset_def_uid {
-                        Some(tileset_uid) => {
-                            let tileset_definition =
-                                tileset_definition_map.get(&tileset_uid).unwrap();
-
-                            let texture_handle = tileset_map.get(&tileset_definition.uid).unwrap();
-
-                            let material_handle =
-                                materials.add(ColorMaterial::texture(texture_handle.clone_weak()));
-
-                            let mut grid_tiles = layer_instance.grid_tiles.clone();
-                            grid_tiles.extend(layer_instance.auto_layer_tiles.clone());
-                            let tile_maker = tile_pos_to_tile_maker(
-                                layer_instance.c_hei,
-                                (*tileset_definition).clone(),
-                                grid_tiles,
-                            );
-
-                            tile_pos_to_tile_bundle_maker(tile_maker)
-                        }
-                        None => {
-                            tile_pos_to_tile_bundle_if_int_grid_nonzero_maker(tile_pos_to_invisible_tile)
-                        }
-                    }
                     let (mut layer_builder, layer_entity) = LayerBuilder::<TileBundle>::new(
                         commands,
                         settings,
@@ -327,15 +300,70 @@ fn spawn_level(
                         None,
                     );
 
-                    for x in 0..layer_instance.c_wid {
-                        for y in 0..layer_instance.c_hei {
-                            let tile_pos = TilePos(x as u32, y as u32);
+                    let material_handle = match tileset_definition {
+                        Some(tileset_definition) => {
+                            let texture_handle = tileset_map.get(&tileset_definition.uid).unwrap();
 
-                            if let Some(tile_bundle) = tile_pos_to_tile_bundle(tile_pos) {
-                                layer_builder.set_tile(tile_pos, tile_bundle).unwrap();
-                            }
+                            materials.add(ColorMaterial::texture(texture_handle.clone_weak()))
+                        }
+                        None => materials.add(ColorMaterial::default()),
+                    };
+
+                    match tileset_definition {
+                        Some(tileset_definition) => {
+                            let mut grid_tiles = layer_instance.grid_tiles.clone();
+                            grid_tiles.extend(layer_instance.auto_layer_tiles.clone());
+                            let tile_maker = tile_pos_to_tile_maker(
+                                layer_instance.c_hei,
+                                (*tileset_definition).clone(),
+                                grid_tiles,
+                            );
+
+                            set_all_tiles_with_func(
+                                &mut layer_builder,
+                                tile_pos_to_tile_bundle_maker(tile_maker),
+                            );
+                        }
+                        None => {
+                            set_all_tiles_with_func(
+                                &mut layer_builder,
+                                tile_pos_to_tile_bundle_if_int_grid_nonzero_maker(
+                                    tile_pos_to_invisible_tile,
+                                    &layer_instance.int_grid_csv,
+                                    layer_instance.c_wid,
+                                    layer_instance.c_hei,
+                                ),
+                            );
                         }
                     }
+
+                    for (i, value) in layer_instance
+                        .int_grid_csv
+                        .iter()
+                        .enumerate()
+                        .filter(|(_, v)| **v != 0)
+                    {
+                        let tile_pos = int_grid_index_to_tile_pos(
+                            i,
+                            layer_instance.c_wid,
+                            layer_instance.c_hei,
+                        );
+
+                        let tile_entity =
+                            layer_builder.get_tile_entity(commands, tile_pos).unwrap();
+
+                        commands
+                            .entity(tile_entity)
+                            .insert_bundle(IntGridCellBundle {
+                                int_grid_cell: IntGridCell { value: *value },
+                            });
+                    }
+
+                    let layer_bundle = layer_builder.build(commands, meshes, material_handle);
+
+                    commands.entity(layer_entity).insert_bundle(layer_bundle);
+
+                    map.add_layer(commands, layer_z as u16, layer_entity);
                 }
                 _ => {
                     let map_size = MapSize(
@@ -510,17 +538,23 @@ fn spawn_level(
     }
 }
 
-fn int_grid_index_to_tile_pos(index: usize, layer_width_in_tiles: i32, layer_height_in_tiles: i32) -> TilePos {
+fn int_grid_index_to_tile_pos(
+    index: usize,
+    layer_width_in_tiles: i32,
+    layer_height_in_tiles: i32,
+) -> TilePos {
     let tile_x = index as u32 % layer_width_in_tiles as u32;
-    let tile_y = layer_height_in_tiles as u32
-    - ((index as u32 - tile_x) / layer_width_in_tiles as u32)
-    - 1;
+    let tile_y =
+        layer_height_in_tiles as u32 - ((index as u32 - tile_x) / layer_width_in_tiles as u32) - 1;
 
     TilePos(tile_x, tile_y)
 }
 
 fn tile_pos_to_invisible_tile(_: TilePos) -> Option<Tile> {
-    Some(Tile { visible: false, ..Default::default() })
+    Some(Tile {
+        visible: false,
+        ..Default::default()
+    })
 }
 
 fn tile_pos_to_tile_maker(
@@ -572,10 +606,22 @@ fn tile_pos_to_tile_bundle_if_int_grid_nonzero_maker(
     layer_width_in_tiles: i32,
     layer_height_in_tiles: i32,
 ) -> impl FnMut(TilePos) -> Option<TileBundle> {
-    let nonzero_map: HashMap<TilePos, bool> = int_grid_csv.iter().enumerate().map(|(i, v)| (int_grid_index_to_tile_pos(i, layer_width_in_tiles, layer_height_in_tiles), *v == 0)).collect();
+    let nonzero_map: HashMap<TilePos, bool> = int_grid_csv
+        .iter()
+        .enumerate()
+        .map(|(i, v)| {
+            (
+                int_grid_index_to_tile_pos(i, layer_width_in_tiles, layer_height_in_tiles),
+                *v == 0,
+            )
+        })
+        .collect();
     move |tile_pos: TilePos| -> Option<TileBundle> {
         if *nonzero_map.get(&tile_pos).unwrap() {
-            tile_maker(tile_pos).map(|tile| TileBundle { tile, ..Default::default() })
+            tile_maker(tile_pos).map(|tile| TileBundle {
+                tile,
+                ..Default::default()
+            })
         } else {
             None
         }
@@ -592,6 +638,27 @@ fn tile_pos_to_tile_bundle_maker(
                 ..Default::default()
             }),
             None => None,
+        }
+    }
+}
+
+/// Similar to LayerBuilder::new_batch, except it doesn't consume the LayerBuilder
+///
+/// This allows for more methods to be performed on the LayerBuilder before building it.
+/// However, the performance cons of using non-batch methods still apply here.
+fn set_all_tiles_with_func<T>(
+    layer_builder: &mut LayerBuilder<T>,
+    mut func: impl FnMut(TilePos) -> Option<T>,
+) where
+    T: TileBundleTrait,
+{
+    let map_size: Vec2 = layer_builder.settings.map_size.into();
+    let chunk_size: Vec2 = layer_builder.settings.map_size.into();
+    let map_size_in_tiles = (map_size * chunk_size).as_uvec2();
+    for x in 0..map_size_in_tiles.x {
+        for y in 0..map_size_in_tiles.y {
+            let tile_pos = TilePos(x, y);
+            func(tile_pos).map(|t| layer_builder.set_tile(tile_pos, t).unwrap());
         }
     }
 }

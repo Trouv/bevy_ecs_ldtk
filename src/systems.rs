@@ -258,6 +258,85 @@ fn spawn_level(
                             .insert(Parent(ldtk_entity));
                     }
                 }
+                Type::IntGrid => {
+
+                    let map_size = MapSize(
+                        (layer_instance.c_wid as f32 / CHUNK_SIZE.0 as f32).ceil() as u32,
+                        (layer_instance.c_hei as f32 / CHUNK_SIZE.1 as f32).ceil() as u32,
+                    );
+
+                    let tileset_definition = layer_instance.tileset_def_uid.map(|u| tileset_definition_map.get(&u).unwrap());
+
+                    let settings = match tileset_definition {
+                        Some(tileset_definition) => {
+                            LayerSettings::new(
+                                map_size,
+                                CHUNK_SIZE,
+                                TileSize(
+                                    tileset_definition.tile_grid_size as f32,
+                                    tileset_definition.tile_grid_size as f32,
+                                ),
+                                TextureSize(
+                                    tileset_definition.px_wid as f32,
+                                    tileset_definition.px_hei as f32,
+                                ),
+                            )
+                        },
+                        None => {
+                             LayerSettings::new(
+                                map_size,
+                                CHUNK_SIZE,
+                                TileSize(
+                                    layer_instance.grid_size as f32,
+                                    layer_instance.grid_size as f32,
+                                ),
+                                TextureSize(0., 0.),
+                            )
+                        }
+                    };
+
+                    let tile_pos_to_tile_bundle = match layer_instance.tileset_def_uid {
+                        Some(tileset_uid) => {
+                            let tileset_definition =
+                                tileset_definition_map.get(&tileset_uid).unwrap();
+
+                            let texture_handle = tileset_map.get(&tileset_definition.uid).unwrap();
+
+                            let material_handle =
+                                materials.add(ColorMaterial::texture(texture_handle.clone_weak()));
+
+                            let mut grid_tiles = layer_instance.grid_tiles.clone();
+                            grid_tiles.extend(layer_instance.auto_layer_tiles.clone());
+                            let tile_maker = tile_pos_to_tile_maker(
+                                layer_instance.c_hei,
+                                (*tileset_definition).clone(),
+                                grid_tiles,
+                            );
+
+                            tile_pos_to_tile_bundle_maker(tile_maker)
+                        }
+                        None => {
+                            tile_pos_to_tile_bundle_if_int_grid_nonzero_maker(tile_pos_to_invisible_tile)
+                        }
+                    }
+                    let (mut layer_builder, layer_entity) = LayerBuilder::<TileBundle>::new(
+                        commands,
+                        settings,
+                        map.id,
+                        layer_z as u16,
+                        None,
+                    );
+
+                    for x in 0..layer_instance.c_wid {
+                        for y in 0..layer_instance.c_hei {
+                            let tile_pos = TilePos(x as u32, y as u32);
+
+                            if let Some(tile_bundle) = tile_pos_to_tile_bundle(tile_pos) {
+                                layer_builder.set_tile(tile_pos, tile_bundle).unwrap();
+                            }
+                        }
+                    }
+                }
                 _ => {
                     let map_size = MapSize(
                         (layer_instance.c_wid as f32 / CHUNK_SIZE.0 as f32).ceil() as u32,
@@ -431,6 +510,19 @@ fn spawn_level(
     }
 }
 
+fn int_grid_index_to_tile_pos(index: usize, layer_width_in_tiles: i32, layer_height_in_tiles: i32) -> TilePos {
+    let tile_x = index as u32 % layer_width_in_tiles as u32;
+    let tile_y = layer_height_in_tiles as u32
+    - ((index as u32 - tile_x) / layer_width_in_tiles as u32)
+    - 1;
+
+    TilePos(tile_x, tile_y)
+}
+
+fn tile_pos_to_invisible_tile(_: TilePos) -> Option<Tile> {
+    Some(Tile { visible: false, ..Default::default() })
+}
+
 fn tile_pos_to_tile_maker(
     layer_height_in_tiles: i32,
     tileset_definition: TilesetDefinition,
@@ -470,6 +562,22 @@ fn tile_pos_to_tile_maker(
                 })
             }
             None => None,
+        }
+    }
+}
+
+fn tile_pos_to_tile_bundle_if_int_grid_nonzero_maker(
+    mut tile_maker: impl FnMut(TilePos) -> Option<Tile>,
+    int_grid_csv: &Vec<i32>,
+    layer_width_in_tiles: i32,
+    layer_height_in_tiles: i32,
+) -> impl FnMut(TilePos) -> Option<TileBundle> {
+    let nonzero_map: HashMap<TilePos, bool> = int_grid_csv.iter().enumerate().map(|(i, v)| (int_grid_index_to_tile_pos(i, layer_width_in_tiles, layer_height_in_tiles), *v == 0)).collect();
+    move |tile_pos: TilePos| -> Option<TileBundle> {
+        if *nonzero_map.get(&tile_pos).unwrap() {
+            tile_maker(tile_pos).map(|tile| TileBundle { tile, ..Default::default() })
+        } else {
+            None
         }
     }
 }

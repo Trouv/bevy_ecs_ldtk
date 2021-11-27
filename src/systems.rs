@@ -259,6 +259,11 @@ fn spawn_level(
                     }
                 }
                 _ => {
+                    // The remaining layers have a lot of shared code.
+                    // This is because:
+                    // 1. There is virtually no difference between AutoTile and Tile layers
+                    // 2. IntGrid layers can sometimes have AutoTile functionality
+
                     let map_size = MapSize(
                         (layer_instance.c_wid as f32 / CHUNK_SIZE.0 as f32).ceil() as u32,
                         (layer_instance.c_hei as f32 / CHUNK_SIZE.1 as f32).ceil() as u32,
@@ -305,6 +310,10 @@ fn spawn_level(
                     grid_tiles.extend(layer_instance.auto_layer_tiles.clone());
 
                     let layer_entity = if layer_instance.layer_instance_type == Type::IntGrid {
+                        // The current spawning of IntGrid layers doesn't allow using
+                        // LayerBuilder::new_batch().
+                        // So, the actual LayerBuilder usage diverges greatly here
+
                         let (mut layer_builder, layer_entity) = LayerBuilder::<TileBundle>::new(
                             commands,
                             settings,
@@ -473,13 +482,12 @@ fn tile_pos_to_tile_bundle_if_int_grid_nonzero_maker(
         })
         .collect();
     move |tile_pos: TilePos| -> Option<TileBundle> {
-        if *nonzero_map.get(&tile_pos).unwrap() {
-            tile_maker(tile_pos).map(|tile| TileBundle {
+        match nonzero_map.get(&tile_pos) {
+            Some(nonzero) if *nonzero => tile_maker(tile_pos).map(|tile| TileBundle {
                 tile,
                 ..Default::default()
-            })
-        } else {
-            None
+            }),
+            _ => None,
         }
     }
 }
@@ -509,7 +517,7 @@ fn set_all_tiles_with_func<T>(
     T: TileBundleTrait,
 {
     let map_size: Vec2 = layer_builder.settings.map_size.into();
-    let chunk_size: Vec2 = layer_builder.settings.map_size.into();
+    let chunk_size: Vec2 = layer_builder.settings.chunk_size.into();
     let map_size_in_tiles = (map_size * chunk_size).as_uvec2();
     for x in 0..map_size_in_tiles.x {
         for y in 0..map_size_in_tiles.y {

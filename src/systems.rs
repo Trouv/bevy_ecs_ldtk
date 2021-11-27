@@ -226,7 +226,7 @@ fn spawn_level(
     ldtk_entity: Entity,
 ) {
     if let Some(layer_instances) = &level.layer_instances {
-        for (layer_z, layer_instance) in layer_instances.into_iter().rev().enumerate() {
+        for (layer_id, layer_instance) in layer_instances.into_iter().rev().enumerate() {
             match layer_instance.layer_instance_type {
                 Type::Entities => {
                     for entity_instance in &layer_instance.entity_instances {
@@ -234,7 +234,7 @@ fn spawn_level(
                             entity_instance,
                             &entity_definition_map,
                             level.px_hei,
-                            layer_z,
+                            layer_id,
                         );
 
                         let mut entity_commands =
@@ -318,7 +318,7 @@ fn spawn_level(
                             commands,
                             settings,
                             map.id,
-                            layer_z as u16,
+                            layer_id as u16,
                             None,
                         );
 
@@ -390,13 +390,13 @@ fn spawn_level(
                             meshes,
                             material_handle,
                             map.id,
-                            layer_z as u16,
+                            layer_id as u16,
                             None,
                             tile_pos_to_tile_bundle_maker(tile_maker),
                         )
                     };
 
-                    map.add_layer(commands, layer_z as u16, layer_entity);
+                    map.add_layer(commands, layer_id as u16, layer_entity);
                 }
             }
         }
@@ -533,7 +533,7 @@ fn calculate_transform_from_ldtk_info(
     def_size: IVec2,
     size: IVec2,
     level_height: i32,
-    layer_z: usize,
+    layer_id: usize,
 ) -> Transform {
     let pivot_point = Vec2::new(location.x as f32, (level_height - location.y) as f32);
 
@@ -545,7 +545,7 @@ fn calculate_transform_from_ldtk_info(
 
     let scale = size.as_vec2() / def_size.as_vec2();
 
-    Transform::from_xyz(translation.x, translation.y, layer_z as f32)
+    Transform::from_xyz(translation.x, translation.y, layer_id as f32)
         .with_scale(Vec3::new(scale.x, scale.y, 1.))
 }
 
@@ -553,7 +553,7 @@ fn calculate_transform_from_entity_instance(
     entity_instance: &EntityInstance,
     entity_definition_map: &HashMap<i32, &EntityDefinition>,
     level_height: i32,
-    layer_z: usize,
+    layer_id: usize,
 ) -> Transform {
     let entity_definition = entity_definition_map.get(&entity_instance.def_uid).unwrap();
 
@@ -565,5 +565,5 @@ fn calculate_transform_from_entity_instance(
 
     let size = IVec2::new(entity_instance.width, entity_instance.height);
 
-    calculate_transform_from_ldtk_info(location, pivot, def_size, size, level_height, layer_z)
+    calculate_transform_from_ldtk_info(location, pivot, def_size, size, level_height, layer_id)
 }

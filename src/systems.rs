@@ -236,7 +236,7 @@ fn spawn_level(
                             entity_instance,
                             &entity_definition_map,
                             level.px_hei,
-                            layer_id,
+                            layer_id as f32,
                         );
 
                         let mut entity_commands =
@@ -368,7 +368,7 @@ fn spawn_level(
                             let transform = calculate_transform_from_tile_pos(
                                 tile_pos,
                                 layer_instance.grid_size,
-                                layer_id,
+                                layer_id as f32,
                             );
                             commands
                                 .entity(tile_entity)

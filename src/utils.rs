@@ -22,7 +22,7 @@ fn calculate_transform_from_ldtk_info(
     def_size: IVec2,
     size: IVec2,
     level_height: i32,
-    layer_id: usize,
+    z_value: f32,
 ) -> Transform {
     let pivot_point = Vec2::new(location.x as f32, (level_height - location.y) as f32);
 
@@ -34,7 +34,7 @@ fn calculate_transform_from_ldtk_info(
 
     let scale = size.as_vec2() / def_size.as_vec2();
 
-    Transform::from_xyz(translation.x, translation.y, layer_id as f32)
+    Transform::from_xyz(translation.x, translation.y, z_value)
         .with_scale(Vec3::new(scale.x, scale.y, 1.))
 }
 
@@ -42,7 +42,7 @@ pub fn calculate_transform_from_entity_instance(
     entity_instance: &EntityInstance,
     entity_definition_map: &HashMap<i32, &EntityDefinition>,
     level_height: i32,
-    layer_id: usize,
+    z_value: f32,
 ) -> Transform {
     let entity_definition = entity_definition_map.get(&entity_instance.def_uid).unwrap();
 
@@ -54,19 +54,19 @@ pub fn calculate_transform_from_entity_instance(
 
     let size = IVec2::new(entity_instance.width, entity_instance.height);
 
-    calculate_transform_from_ldtk_info(location, pivot, def_size, size, level_height, layer_id)
+    calculate_transform_from_ldtk_info(location, pivot, def_size, size, level_height, z_value)
 }
 
 pub fn calculate_transform_from_tile_pos(
     tile_pos: TilePos,
     tile_size: i32,
-    layer_id: usize,
+    z_value: f32,
 ) -> Transform {
     let tile_pos: UVec2 = tile_pos.into();
     let tile_size = Vec2::splat(tile_size as f32);
     let translation = tile_size * Vec2::splat(0.5) + tile_size * tile_pos.as_vec2();
 
-    Transform::from_xyz(translation.x, translation.y, layer_id as f32)
+    Transform::from_xyz(translation.x, translation.y, z_value)
 }
 
 /// Similar to LayerBuilder::new_batch, except it doesn't consume the LayerBuilder

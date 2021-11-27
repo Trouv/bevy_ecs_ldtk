@@ -32,7 +32,7 @@ pub fn int_grid_index_to_tile_pos(
     if layer_height_in_tiles > inverted_y {
         // Checking for potential subtraction issues.
         // We don't need to check index >= tile_x because tile_x is defined as index mod n where n
-        // is an unsigned int.
+        // is a natural number.
         // This means tile_x == index where index < n, and tile_x < index where index >= n.
 
         let tile_y = layer_height_in_tiles - inverted_y - 1;
@@ -131,4 +131,26 @@ pub fn set_all_tiles_with_func<T>(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_int_grid_index_to_tile_pos() {
+        assert_eq!(int_grid_index_to_tile_pos(3, 4, 5), Some(TilePos(3, 4)));
+
+        assert_eq!(int_grid_index_to_tile_pos(10, 5, 5), Some(TilePos(0, 2)));
+
+        assert_eq!(int_grid_index_to_tile_pos(49, 10, 5), Some(TilePos(9, 0)));
+
+        assert_eq!(int_grid_index_to_tile_pos(64, 100, 1), Some(TilePos(64, 0)));
+
+        assert_eq!(int_grid_index_to_tile_pos(35, 1, 100), Some(TilePos(0, 64)));
+    }
+
+    #[test]
+    fn test_int_grid_index_out_of_range() {
+        assert_eq!(int_grid_index_to_tile_pos(3, 0, 5), None);
+
+        assert_eq!(int_grid_index_to_tile_pos(3, 5, 0), None);
+
+        assert_eq!(int_grid_index_to_tile_pos(25, 5, 5), None);
+    }
 }

@@ -363,11 +363,19 @@ fn spawn_level(
                             let tile_entity =
                                 layer_builder.get_tile_entity(commands, tile_pos).unwrap();
 
+                            let transform = calculate_transform_from_tile_pos(
+                                tile_pos,
+                                layer_instance.grid_size,
+                                layer_id,
+                            );
                             commands
                                 .entity(tile_entity)
                                 .insert_bundle(IntGridCellBundle {
                                     int_grid_cell: IntGridCell { value: *value },
-                                });
+                                })
+                                .insert(transform)
+                                .insert(GlobalTransform::default())
+                                .insert(Parent(ldtk_entity));
                         }
 
                         let layer_bundle = layer_builder.build(commands, meshes, material_handle);
@@ -568,4 +576,16 @@ fn calculate_transform_from_entity_instance(
     let size = IVec2::new(entity_instance.width, entity_instance.height);
 
     calculate_transform_from_ldtk_info(location, pivot, def_size, size, level_height, layer_id)
+}
+
+fn calculate_transform_from_tile_pos(
+    tile_pos: TilePos,
+    tile_size: i32,
+    layer_id: usize,
+) -> Transform {
+    let tile_pos: UVec2 = tile_pos.into();
+    let tile_size = Vec2::splat(tile_size as f32);
+    let translation = tile_size * Vec2::splat(0.5) + tile_size * tile_pos.as_vec2();
+
+    Transform::from_xyz(translation.x, translation.y, layer_id as f32)
 }

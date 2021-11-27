@@ -1,9 +1,17 @@
-use crate::ldtk::{EntityDefinition, EntityInstance};
+//! Contains functions used internally by the plugin, but some that may be useful to users have
+//! been exposed to the public api.
+
+#[allow(unused_imports)]
+use crate::components::*;
+
+use crate::ldtk::*;
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 
 use std::collections::HashMap;
 
+/// The `int_grid_csv` field of a [LayerInstance] is a 1-dimensional [Vec<i32>].
+/// This function can map the indices of this [Vec] to a corresponding [TilePos].
 pub fn int_grid_index_to_tile_pos(
     index: usize,
     layer_width_in_tiles: i32,
@@ -38,6 +46,12 @@ fn calculate_transform_from_ldtk_info(
         .with_scale(Vec3::new(scale.x, scale.y, 1.))
 }
 
+/// Performs [EntityInstance] to [Transform] conversion
+///
+/// The `entity_definition_map` should be a map of [EntityDefinition] uids to [EntityDefinition]s.
+///
+/// Internally, this transform is used to place [EntityInstance]s, as children of the
+/// [LdtkMapBundle].
 pub fn calculate_transform_from_entity_instance(
     entity_instance: &EntityInstance,
     entity_definition_map: &HashMap<i32, &EntityDefinition>,
@@ -57,6 +71,11 @@ pub fn calculate_transform_from_entity_instance(
     calculate_transform_from_ldtk_info(location, pivot, def_size, size, level_height, z_value)
 }
 
+/// Performs [TilePos] to [Transform] conversion
+///
+/// Note that the resulting Transform will be as if `TilePos(0, 0)` is at `(0, 0, z_value)`.
+/// Internally, this transform is used to place [IntGridCell]s, as a
+/// children of the [LdtkMapBundle].
 pub fn calculate_transform_from_tile_pos(
     tile_pos: TilePos,
     tile_size: i32,
@@ -69,9 +88,9 @@ pub fn calculate_transform_from_tile_pos(
     Transform::from_xyz(translation.x, translation.y, z_value)
 }
 
-/// Similar to LayerBuilder::new_batch, except it doesn't consume the LayerBuilder
+/// Similar to [LayerBuilder::new_batch], except it doesn't consume the [LayerBuilder]
 ///
-/// This allows for more methods to be performed on the LayerBuilder before building it.
+/// This allows for more methods to be performed on the [LayerBuilder] before building it.
 /// However, the performance cons of using non-batch methods still apply here.
 pub fn set_all_tiles_with_func<T>(
     layer_builder: &mut LayerBuilder<T>,

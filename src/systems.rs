@@ -13,6 +13,10 @@ use std::collections::HashMap;
 
 const CHUNK_SIZE: ChunkSize = ChunkSize(32, 32);
 
+/// After external levels are loaded, this updates the corresponding [LdtkAsset]'s levels.
+///
+/// Note: this plugin currently doesn't support hot-reloading of external levels.
+/// See <https://github.com/Trouv/bevy_ecs_ldtk/issues/1> for details.
 pub fn process_external_levels(
     mut level_events: EventReader<AssetEvent<LdtkExternalLevel>>,
     level_assets: Res<Assets<LdtkExternalLevel>>,
@@ -59,6 +63,9 @@ pub fn process_external_levels(
     }
 }
 
+/// Reads [LdtkAsset] events, and determines which ldtk assets need to be re-processed as a result.
+///
+/// Meant to be used in a chain with [process_changed_ldtks].
 pub fn determine_changed_ldtks(
     mut ldtk_events: EventReader<AssetEvent<LdtkAsset>>,
     new_ldtks: Query<&Handle<LdtkAsset>, Added<Handle<LdtkAsset>>>,
@@ -95,6 +102,10 @@ pub fn determine_changed_ldtks(
     changed_ldtks
 }
 
+/// Performs all the spawning of levels, layers, chunks, bundles, entities, tiles, etc. when an
+/// [LdtkAsset] is loaded or changed.
+///
+/// Meant to be used in a chain with [determine_changed_ldtks]
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub fn process_changed_ldtks(
     In(changed_ldtks): In<Vec<Handle<LdtkAsset>>>,

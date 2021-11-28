@@ -1,27 +1,15 @@
-pub use crate::ldtk::EntityInstance;
+pub use crate::ldtk::{EntityInstance, Level};
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug, Default, Hash, Component)]
 pub struct IntGridCell {
-    pub value: i64,
+    pub value: i32,
 }
 
 #[derive(Clone, Default, Bundle)]
 pub struct IntGridCellBundle {
     pub int_grid_cell: IntGridCell,
-    #[bundle]
-    pub tile_bundle: TileBundle,
-}
-
-impl TileBundleTrait for IntGridCellBundle {
-    fn get_tile_pos_mut(&mut self) -> &mut TilePos {
-        &mut self.tile_bundle.position
-    }
-
-    fn get_tile_parent(&mut self) -> &mut TileParent {
-        &mut self.tile_bundle.parent
-    }
 }
 
 #[derive(Clone, Bundle, Default)]
@@ -33,12 +21,22 @@ pub struct EntityInstanceBundle {
 pub enum LevelSelection {
     Identifier(String),
     Index(usize),
-    Uid(i64),
+    Uid(i32),
 }
 
 impl Default for LevelSelection {
     fn default() -> Self {
         LevelSelection::Index(0)
+    }
+}
+
+impl LevelSelection {
+    pub fn is_match(&self, index: &usize, level: &Level) -> bool {
+        match self {
+            LevelSelection::Identifier(s) => *s == level.identifier,
+            LevelSelection::Index(i) => *i == *index,
+            LevelSelection::Uid(u) => *u == level.uid,
+        }
     }
 }
 

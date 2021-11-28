@@ -7,7 +7,9 @@ pub mod app;
 pub mod assets;
 pub mod components;
 pub mod ldtk;
-mod systems;
+pub mod systems;
+mod tile_makers;
+pub mod utils;
 
 pub mod plugin {
     use super::*;
@@ -24,7 +26,7 @@ pub mod plugin {
                 .add_asset::<assets::LdtkExternalLevel>()
                 .init_asset_loader::<assets::LdtkLevelLoader>()
                 .add_system(systems::process_external_levels)
-                .add_system(systems::process_loaded_ldtk);
+                .add_system(systems::determine_changed_ldtks.chain(systems::process_changed_ldtks));
         }
     }
 }

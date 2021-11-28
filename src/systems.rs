@@ -1,8 +1,12 @@
+//! System functions used by the plugin for processing ldtk files.
+
 use crate::{
     app::LdtkEntityMap,
-    assets::{LdtkAsset, LdtkExternalLevel},
+    assets::{LdtkAsset, LdtkExternalLevel, TilesetMap},
     components::*,
-    ldtk::{EntityDefinition, TileInstance, TilesetDefinition, Type},
+    ldtk::{EntityDefinition, TilesetDefinition, Type},
+    tile_makers::*,
+    utils::*,
 };
 
 use bevy::prelude::*;
@@ -11,6 +15,10 @@ use std::collections::HashMap;
 
 const CHUNK_SIZE: ChunkSize = ChunkSize(32, 32);
 
+/// After external levels are loaded, this updates the corresponding [LdtkAsset]'s levels.
+///
+/// Note: this plugin currently doesn't support hot-reloading of external levels.
+/// See <https://github.com/Trouv/bevy_ecs_ldtk/issues/1> for details.
 pub fn process_external_levels(
     mut level_events: EventReader<AssetEvent<LdtkExternalLevel>>,
     level_assets: Res<Assets<LdtkExternalLevel>>,
@@ -57,29 +65,16 @@ pub fn process_external_levels(
     }
 }
 
-pub fn process_loaded_ldtk(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+/// Reads [LdtkAsset] events, and determines which ldtk assets need to be re-processed as a result.
+///
+/// Meant to be used in a chain with [process_changed_ldtks].
+pub fn determine_changed_ldtks(
     mut ldtk_events: EventReader<AssetEvent<LdtkAsset>>,
-    mut ldtk_map_query: Query<(
-        Entity,
-        &Handle<LdtkAsset>,
-        &LevelSelection,
-        &mut Map,
-        Option<&Children>,
-    )>,
-    ldtk_assets: Res<Assets<LdtkAsset>>,
-    layer_query: Query<&Layer>,
-    chunk_query: Query<&Chunk>,
     new_ldtks: Query<&Handle<LdtkAsset>, Added<Handle<LdtkAsset>>>,
-    asset_server: Res<AssetServer>,
-    bundle_map: NonSend<LdtkEntityMap>,
-) {
+) -> Vec<Handle<LdtkAsset>> {
     // This function uses code from the bevy_ecs_tilemap ldtk example
     // https://github.com/StarArawn/bevy_ecs_tilemap/blob/main/examples/ldtk/ldtk.rs
-    let mut changed_ldtks = Vec::<Handle<LdtkAsset>>::new();
+    let mut changed_ldtks = Vec::new();
     for event in ldtk_events.iter() {
         match event {
             AssetEvent::Created { handle } => {
@@ -106,44 +101,51 @@ pub fn process_loaded_ldtk(
         changed_ldtks.push(new_ldtk_handle.clone());
     }
 
+    changed_ldtks
+}
+
+/// Performs all the spawning of levels, layers, chunks, bundles, entities, tiles, etc. when an
+/// [LdtkAsset] is loaded or changed.
+///
+/// Meant to be used in a chain with [determine_changed_ldtks]
+#[allow(clippy::too_many_arguments, clippy::type_complexity)]
+pub fn process_changed_ldtks(
+    In(changed_ldtks): In<Vec<Handle<LdtkAsset>>>,
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    ldtk_assets: Res<Assets<LdtkAsset>>,
+    ldtk_entity_map: NonSend<LdtkEntityMap>,
+    mut ldtk_map_query: Query<(
+        Entity,
+        &Handle<LdtkAsset>,
+        &LevelSelection,
+        &mut Map,
+        Option<&Children>,
+    )>,
+    layer_query: Query<&Layer>,
+    chunk_query: Query<&Chunk>,
+) {
+    // This function uses code from the bevy_ecs_tilemap ldtk example
+    // https://github.com/StarArawn/bevy_ecs_tilemap/blob/main/examples/ldtk/ldtk.rs
+
     for changed_ldtk in changed_ldtks.iter() {
         for (ldtk_entity, ldtk_handle, level_selection, mut map, children) in ldtk_map_query
             .iter_mut()
             .filter(|(_, l, _, _, _)| changed_ldtk == *l)
         {
             if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
-                for (layer_id, layer_entity) in map.get_layers() {
-                    if let Ok(layer) = layer_query.get(layer_entity) {
-                        for x in 0..layer.get_layer_size_in_tiles().0 {
-                            for y in 0..layer.get_layer_size_in_tiles().1 {
-                                let tile_pos = TilePos(x, y);
-                                let chunk_pos = ChunkPos(
-                                    tile_pos.0 / layer.settings.chunk_size.0,
-                                    tile_pos.1 / layer.settings.chunk_size.1,
-                                );
-                                if let Some(chunk_entity) = layer.get_chunk(chunk_pos) {
-                                    if let Ok(chunk) = chunk_query.get(chunk_entity) {
-                                        let chunk_tile_pos = chunk.to_chunk_pos(tile_pos);
-                                        if let Some(tile) = chunk.get_tile_entity(chunk_tile_pos) {
-                                            commands.entity(tile).despawn_recursive();
-                                        }
-                                    }
+                clear_map(
+                    &mut commands,
+                    &mut map,
+                    &children,
+                    &layer_query,
+                    &chunk_query,
+                );
 
-                                    commands.entity(chunk_entity).despawn_recursive();
-                                }
-                            }
-                        }
-
-                        map.remove_layer(&mut commands, layer_id);
-                    }
-                }
-                if let Some(children) = children {
-                    for child in children.iter() {
-                        commands.entity(*child).despawn_recursive();
-                    }
-                }
-
-                let tileset_definition_map: HashMap<i64, &TilesetDefinition> = ldtk_asset
+                let tileset_definition_map: HashMap<i32, &TilesetDefinition> = ldtk_asset
                     .project
                     .defs
                     .tilesets
@@ -151,287 +153,273 @@ pub fn process_loaded_ldtk(
                     .map(|t| (t.uid, t))
                     .collect();
 
-                let entity_definition_map: HashMap<i64, &EntityDefinition> = ldtk_asset
-                    .project
-                    .defs
-                    .entities
-                    .iter()
-                    .map(|e| (e.uid, e))
-                    .collect();
+                let entity_definition_map =
+                    create_entity_definition_map(&ldtk_asset.project.defs.entities);
 
                 for (_, level) in ldtk_asset
                     .project
                     .levels
                     .iter()
                     .enumerate()
-                    .filter(|(i, l)| match level_selection {
-                        LevelSelection::Identifier(s) => *s == l.identifier,
-                        LevelSelection::Index(j) => j == i,
-                        LevelSelection::Uid(u) => *u == l.uid,
-                    })
+                    .filter(|(i, l)| level_selection.is_match(i, l))
                 {
-                    if let Some(layer_instances) = &level.layer_instances {
-                        for (layer_z, layer_instance) in
-                            layer_instances.into_iter().rev().enumerate()
-                        {
-                            match layer_instance.layer_instance_type {
-                                Type::Entities => {
-                                    for entity_instance in &layer_instance.entity_instances {
-                                        let pivot_point_x = entity_instance.px[0] as f32;
-                                        let pivot_point_y =
-                                            (level.px_hei - entity_instance.px[1]) as f32;
-
-                                        let pivot_x = 0.5 - entity_instance.pivot[0] as f32;
-                                        let pivot_y = entity_instance.pivot[1] as f32 - 0.5;
-
-                                        let offset_x = entity_instance.width as f32 * pivot_x;
-                                        let offset_y = entity_instance.height as f32 * pivot_y;
-
-                                        let translation_x = pivot_point_x + offset_x;
-                                        let translation_y = pivot_point_y + offset_y;
-
-                                        let entity_definition = entity_definition_map
-                                            .get(&entity_instance.def_uid)
-                                            .unwrap();
-                                        let scale_x = entity_instance.width as f32
-                                            / entity_definition.width as f32;
-                                        let scale_y = entity_instance.height as f32
-                                            / entity_definition.height as f32;
-
-                                        let transform = Transform::from_xyz(
-                                            translation_x,
-                                            translation_y,
-                                            layer_z as f32,
-                                        )
-                                        .with_scale(Vec3::new(scale_x, scale_y, 1.));
-
-                                        let mut entity_commands = match bundle_map
-                                            .get(&entity_instance.identifier)
-                                        {
-                                            None => commands.spawn_bundle(EntityInstanceBundle {
-                                                entity_instance: entity_instance.clone(),
-                                            }),
-                                            Some(phantom_ldtk_entity) => phantom_ldtk_entity
-                                                .evaluate(
-                                                    &mut commands,
-                                                    &entity_instance,
-                                                    &ldtk_asset.tileset_map,
-                                                    &asset_server,
-                                                    &mut materials,
-                                                    &mut texture_atlases,
-                                                ),
-                                        };
-
-                                        entity_commands
-                                            .insert(transform)
-                                            .insert(GlobalTransform::default())
-                                            .insert(Parent(ldtk_entity));
-                                    }
-                                }
-                                _ => {
-                                    let map_size = MapSize(
-                                        (layer_instance.c_wid as f32 / CHUNK_SIZE.0 as f32).ceil()
-                                            as u32,
-                                        (layer_instance.c_hei as f32 / CHUNK_SIZE.1 as f32).ceil()
-                                            as u32,
-                                    );
-
-                                    let layer_entity = match layer_instance.tileset_def_uid {
-                                        Some(tileset_uid) => {
-                                            let tileset_definition =
-                                                tileset_definition_map.get(&tileset_uid).unwrap();
-                                            let settings = LayerSettings::new(
-                                                map_size,
-                                                CHUNK_SIZE,
-                                                TileSize(
-                                                    tileset_definition.tile_grid_size as f32,
-                                                    tileset_definition.tile_grid_size as f32,
-                                                ),
-                                                TextureSize(
-                                                    tileset_definition.px_wid as f32,
-                                                    tileset_definition.px_hei as f32,
-                                                ),
-                                            );
-
-                                            let texture_handle = ldtk_asset
-                                                .tileset_map
-                                                .get(&tileset_definition.uid)
-                                                .unwrap();
-
-                                            let material_handle = materials.add(
-                                                ColorMaterial::texture(texture_handle.clone_weak()),
-                                            );
-
-                                            let mut grid_tiles = layer_instance.grid_tiles.clone();
-                                            grid_tiles
-                                                .extend(layer_instance.auto_layer_tiles.clone());
-                                            let tile_maker = tile_pos_to_tile_maker(
-                                                layer_instance.c_hei,
-                                                (*tileset_definition).clone(),
-                                                grid_tiles,
-                                            );
-
-                                            match layer_instance.layer_instance_type {
-                                                Type::IntGrid => {
-                                                    LayerBuilder::<IntGridCellBundle>::new_batch(
-                                                        &mut commands,
-                                                        settings,
-                                                        &mut meshes,
-                                                        material_handle,
-                                                        map.id,
-                                                        layer_z as u16,
-                                                        None,
-                                                        tile_pos_to_int_grid_bundle_maker(
-                                                            layer_instance.c_wid,
-                                                            layer_instance.c_hei,
-                                                            layer_instance.int_grid_csv.clone(),
-                                                            tile_maker,
-                                                        ),
-                                                    )
-                                                }
-                                                _ => LayerBuilder::<TileBundle>::new_batch(
-                                                    &mut commands,
-                                                    settings,
-                                                    &mut meshes,
-                                                    material_handle,
-                                                    map.id,
-                                                    layer_z as u16,
-                                                    None,
-                                                    tile_pos_to_tile_bundle_maker(tile_maker),
-                                                ),
-                                            }
-                                        }
-                                        _ => {
-                                            let settings = LayerSettings::new(
-                                                map_size,
-                                                CHUNK_SIZE,
-                                                TileSize(
-                                                    layer_instance.grid_size as f32,
-                                                    layer_instance.grid_size as f32,
-                                                ),
-                                                TextureSize(0., 0.),
-                                            );
-
-                                            let material_handle =
-                                                materials.add(ColorMaterial::default());
-
-                                            LayerBuilder::<IntGridCellBundle>::new_batch(
-                                                &mut commands,
-                                                settings,
-                                                &mut meshes,
-                                                material_handle,
-                                                map.id,
-                                                layer_z as u16,
-                                                None,
-                                                tile_pos_to_int_grid_bundle_maker(
-                                                    layer_instance.c_wid,
-                                                    layer_instance.c_hei,
-                                                    layer_instance.int_grid_csv.clone(),
-                                                    invisible_tile,
-                                                ),
-                                            )
-                                        }
-                                    };
-
-                                    map.add_layer(&mut commands, layer_z as u16, layer_entity);
-                                }
-                            }
-                        }
-                    }
+                    spawn_level(
+                        level,
+                        &mut commands,
+                        &asset_server,
+                        &mut materials,
+                        &mut texture_atlases,
+                        &mut meshes,
+                        &ldtk_entity_map,
+                        &entity_definition_map,
+                        &ldtk_asset.tileset_map,
+                        &tileset_definition_map,
+                        &mut map,
+                        ldtk_entity,
+                    );
                 }
             }
         }
     }
 }
 
-fn invisible_tile(_: TilePos) -> Option<Tile> {
-    Some(Tile {
-        visible: false,
-        ..Default::default()
-    })
-}
+fn clear_map(
+    commands: &mut Commands,
+    map: &mut Map,
+    map_children: &Option<&Children>,
+    layer_query: &Query<&Layer>,
+    chunk_query: &Query<&Chunk>,
+) {
+    for (layer_id, layer_entity) in map.get_layers() {
+        if let Ok(layer) = layer_query.get(layer_entity) {
+            for x in 0..layer.get_layer_size_in_tiles().0 {
+                for y in 0..layer.get_layer_size_in_tiles().1 {
+                    let tile_pos = TilePos(x, y);
+                    let chunk_pos = ChunkPos(
+                        tile_pos.0 / layer.settings.chunk_size.0,
+                        tile_pos.1 / layer.settings.chunk_size.1,
+                    );
+                    if let Some(chunk_entity) = layer.get_chunk(chunk_pos) {
+                        if let Ok(chunk) = chunk_query.get(chunk_entity) {
+                            let chunk_tile_pos = chunk.to_chunk_pos(tile_pos);
+                            if let Some(tile) = chunk.get_tile_entity(chunk_tile_pos) {
+                                commands.entity(tile).despawn_recursive();
+                            }
+                        }
 
-fn tile_pos_to_tile_maker(
-    layer_height_in_tiles: i64,
-    tileset_definition: TilesetDefinition,
-    grid_tiles: Vec<TileInstance>,
-) -> impl FnMut(TilePos) -> Option<Tile> {
-    let grid_tile_map: HashMap<TilePos, TileInstance> = grid_tiles
-        .into_iter()
-        .map(|t| {
-            (
-                TilePos(
-                    (t.px[0] / tileset_definition.tile_grid_size) as u32,
-                    layer_height_in_tiles as u32
-                        - (t.px[1] / tileset_definition.tile_grid_size) as u32
-                        - 1,
-                ),
-                t,
-            )
-        })
-        .collect();
-
-    move |tile_pos: TilePos| -> Option<Tile> {
-        match grid_tile_map.get(&tile_pos) {
-            Some(tile_instance) => {
-                let tileset_x = tile_instance.src[0] / tileset_definition.tile_grid_size;
-                let tileset_y = tile_instance.src[1] / tileset_definition.tile_grid_size;
-                Some(Tile {
-                    texture_index: (tileset_y * tileset_definition.c_wid + tileset_x) as u16,
-                    ..Default::default()
-                })
+                        commands.entity(chunk_entity).despawn_recursive();
+                    }
+                }
             }
-            None => None,
+
+            map.remove_layer(commands, layer_id);
+        }
+    }
+    if let Some(children) = map_children {
+        for child in children.iter() {
+            commands.entity(*child).despawn_recursive();
         }
     }
 }
 
-fn tile_pos_to_tile_bundle_maker(
-    mut tile_maker: impl FnMut(TilePos) -> Option<Tile>,
-) -> impl FnMut(TilePos) -> Option<TileBundle> {
-    move |tile_pos: TilePos| -> Option<TileBundle> {
-        match tile_maker(tile_pos) {
-            Some(tile) => Some(TileBundle {
-                tile,
-                ..Default::default()
-            }),
-            None => None,
-        }
-    }
-}
+#[allow(clippy::too_many_arguments)]
+fn spawn_level(
+    level: &Level,
+    commands: &mut Commands,
+    asset_server: &AssetServer,
+    materials: &mut Assets<ColorMaterial>,
+    texture_atlases: &mut Assets<TextureAtlas>,
+    meshes: &mut ResMut<Assets<Mesh>>,
+    ldtk_entity_map: &LdtkEntityMap,
+    entity_definition_map: &HashMap<i32, &EntityDefinition>,
+    tileset_map: &TilesetMap,
+    tileset_definition_map: &HashMap<i32, &TilesetDefinition>,
+    map: &mut Map,
+    ldtk_entity: Entity,
+) {
+    if let Some(layer_instances) = &level.layer_instances {
+        for (layer_id, layer_instance) in layer_instances.iter().rev().enumerate() {
+            match layer_instance.layer_instance_type {
+                Type::Entities => {
+                    for entity_instance in &layer_instance.entity_instances {
+                        let transform = calculate_transform_from_entity_instance(
+                            entity_instance,
+                            entity_definition_map,
+                            level.px_hei as u32,
+                            layer_id as f32,
+                        );
 
-fn tile_pos_to_int_grid_bundle_maker(
-    layer_width_in_tiles: i64,
-    layer_height_in_tiles: i64,
-    int_grid_csv: Vec<i64>,
-    mut tile_maker: impl FnMut(TilePos) -> Option<Tile>,
-) -> impl FnMut(TilePos) -> Option<IntGridCellBundle> {
-    move |tile_pos: TilePos| -> Option<IntGridCellBundle> {
-        let ldtk_x = tile_pos.0 as i64;
-        let ldtk_y = layer_height_in_tiles - tile_pos.1 as i64 - 1;
+                        let mut entity_commands =
+                            match ldtk_entity_map.get(&entity_instance.identifier) {
+                                None => commands.spawn_bundle(EntityInstanceBundle {
+                                    entity_instance: entity_instance.clone(),
+                                }),
+                                Some(phantom_ldtk_entity) => phantom_ldtk_entity.evaluate(
+                                    commands,
+                                    entity_instance,
+                                    tileset_map,
+                                    asset_server,
+                                    materials,
+                                    texture_atlases,
+                                ),
+                            };
 
-        if ldtk_y < 0
-            || ldtk_y >= layer_height_in_tiles
-            || ldtk_x < 0
-            || ldtk_x >= layer_width_in_tiles
-        {
-            return None;
-        }
+                        entity_commands
+                            .insert(transform)
+                            .insert(GlobalTransform::default())
+                            .insert(Parent(ldtk_entity));
+                    }
+                }
+                _ => {
+                    // The remaining layers have a lot of shared code.
+                    // This is because:
+                    // 1. There is virtually no difference between AutoTile and Tile layers
+                    // 2. IntGrid layers can sometimes have AutoTile functionality
 
-        let csv_index = (ldtk_y * layer_width_in_tiles + ldtk_x) as usize;
+                    let map_size = MapSize(
+                        (layer_instance.c_wid as f32 / CHUNK_SIZE.0 as f32).ceil() as u32,
+                        (layer_instance.c_hei as f32 / CHUNK_SIZE.1 as f32).ceil() as u32,
+                    );
 
-        match int_grid_csv.get(csv_index) {
-            Some(x) if *x != 0 => match tile_maker(tile_pos) {
-                Some(tile) => Some(IntGridCellBundle {
-                    int_grid_cell: IntGridCell { value: *x },
-                    tile_bundle: TileBundle {
-                        tile,
-                        ..Default::default()
-                    },
-                }),
-                None => None,
-            },
-            _ => None,
+                    let tileset_definition = layer_instance
+                        .tileset_def_uid
+                        .map(|u| tileset_definition_map.get(&u).unwrap());
+
+                    let settings = match tileset_definition {
+                        Some(tileset_definition) => LayerSettings::new(
+                            map_size,
+                            CHUNK_SIZE,
+                            TileSize(
+                                tileset_definition.tile_grid_size as f32,
+                                tileset_definition.tile_grid_size as f32,
+                            ),
+                            TextureSize(
+                                tileset_definition.px_wid as f32,
+                                tileset_definition.px_hei as f32,
+                            ),
+                        ),
+                        None => LayerSettings::new(
+                            map_size,
+                            CHUNK_SIZE,
+                            TileSize(
+                                layer_instance.grid_size as f32,
+                                layer_instance.grid_size as f32,
+                            ),
+                            TextureSize(0., 0.),
+                        ),
+                    };
+
+                    let material_handle = match tileset_definition {
+                        Some(tileset_definition) => {
+                            let texture_handle = tileset_map.get(&tileset_definition.uid).unwrap();
+
+                            materials.add(ColorMaterial::texture(texture_handle.clone_weak()))
+                        }
+                        None => materials.add(ColorMaterial::default()),
+                    };
+
+                    let mut grid_tiles = layer_instance.grid_tiles.clone();
+                    grid_tiles.extend(layer_instance.auto_layer_tiles.clone());
+
+                    let layer_entity = if layer_instance.layer_instance_type == Type::IntGrid {
+                        // The current spawning of IntGrid layers doesn't allow using
+                        // LayerBuilder::new_batch().
+                        // So, the actual LayerBuilder usage diverges greatly here
+
+                        let (mut layer_builder, layer_entity) = LayerBuilder::<TileBundle>::new(
+                            commands,
+                            settings,
+                            map.id,
+                            layer_id as u16,
+                            None,
+                        );
+
+                        match tileset_definition {
+                            Some(tileset_definition) => {
+                                let tile_maker = tile_pos_to_tile_maker(
+                                    layer_instance.c_hei,
+                                    layer_instance.grid_size,
+                                    tileset_definition,
+                                    grid_tiles,
+                                );
+
+                                set_all_tiles_with_func(
+                                    &mut layer_builder,
+                                    tile_pos_to_tile_bundle_maker(tile_maker),
+                                );
+                            }
+                            None => {
+                                set_all_tiles_with_func(
+                                    &mut layer_builder,
+                                    tile_pos_to_tile_bundle_if_int_grid_nonzero_maker(
+                                        tile_pos_to_invisible_tile,
+                                        &layer_instance.int_grid_csv,
+                                        layer_instance.c_wid,
+                                        layer_instance.c_hei,
+                                    ),
+                                );
+                            }
+                        }
+
+                        for (i, value) in layer_instance
+                            .int_grid_csv
+                            .iter()
+                            .enumerate()
+                            .filter(|(_, v)| **v != 0)
+                        {
+                            let tile_pos = int_grid_index_to_tile_pos(
+                                i,
+                                layer_instance.c_wid as u32,
+                                layer_instance.c_hei as u32,
+                            ).expect("int_grid_csv indices should be within the bounds of 0..(layer_widthd * layer_height)");
+
+                            let tile_entity =
+                                layer_builder.get_tile_entity(commands, tile_pos).unwrap();
+
+                            let transform = calculate_transform_from_tile_pos(
+                                tile_pos,
+                                layer_instance.grid_size as u32,
+                                layer_id as f32,
+                            );
+                            commands
+                                .entity(tile_entity)
+                                .insert_bundle(IntGridCellBundle {
+                                    int_grid_cell: IntGridCell { value: *value },
+                                })
+                                .insert(transform)
+                                .insert(GlobalTransform::default())
+                                .insert(Parent(ldtk_entity));
+                        }
+
+                        let layer_bundle = layer_builder.build(commands, meshes, material_handle);
+
+                        commands.entity(layer_entity).insert_bundle(layer_bundle);
+
+                        layer_entity
+                    } else {
+                        let tile_maker = tile_pos_to_tile_maker(
+                            layer_instance.c_hei,
+                            layer_instance.grid_size,
+                            tileset_definition.expect(
+                                "tileset definition should exist on non-IntGrid, non-Entity layers",
+                            ),
+                            grid_tiles,
+                        );
+                        LayerBuilder::<TileBundle>::new_batch(
+                            commands,
+                            settings,
+                            meshes,
+                            material_handle,
+                            map.id,
+                            layer_id as u16,
+                            None,
+                            tile_pos_to_tile_bundle_maker(tile_maker),
+                        )
+                    };
+
+                    map.add_layer(commands, layer_id as u16, layer_entity);
+                }
+            }
         }
     }
 }

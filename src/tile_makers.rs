@@ -120,12 +120,54 @@ pub fn tile_pos_to_tile_bundle_maker(
     mut tile_maker: impl FnMut(TilePos) -> Option<Tile>,
 ) -> impl FnMut(TilePos) -> Option<TileBundle> {
     move |tile_pos: TilePos| -> Option<TileBundle> {
-        match tile_maker(tile_pos) {
-            Some(tile) => Some(TileBundle {
-                tile,
+        tile_maker(tile_pos).map(|tile| TileBundle {
+            tile,
+            ..Default::default()
+        })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_tile_pos_to_tile_maker() {
+        let grid_tiles = vec![
+            TileInstance {
+                px: vec![0, 0],
+                src: vec![32, 0],
                 ..Default::default()
-            }),
-            None => None,
-        }
+            },
+            TileInstance {
+                px: vec![32, 0],
+                src: vec![32, 32],
+                ..Default::default()
+            },
+            TileInstance {
+                px: vec![0, 32],
+                src: vec![64, 0],
+                ..Default::default()
+            },
+            TileInstance {
+                px: vec![32, 32],
+                src: vec![32, 0],
+                ..Default::default()
+            },
+        ];
+
+        let tileset_definition = TilesetDefinition {
+            c_wid: 3,
+            c_hei: 2,
+            tile_grid_size: 32,
+            ..Default::default()
+        };
+
+        let mut tile_maker = tile_pos_to_tile_maker(2, &tileset_definition, grid_tiles);
+
+        assert_eq!(tile_maker(TilePos(0, 0)).unwrap().texture_index, 2);
+        assert_eq!(tile_maker(TilePos(1, 0)).unwrap().texture_index, 1);
+        assert_eq!(tile_maker(TilePos(0, 1)).unwrap().texture_index, 1);
+        assert_eq!(tile_maker(TilePos(1, 1)).unwrap().texture_index, 4);
     }
 }

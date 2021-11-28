@@ -99,9 +99,9 @@ pub fn calculate_transform_from_entity_instance(
 
 /// Performs [TilePos] to [Transform] conversion
 ///
-/// Note that the resulting Transform will be as if `TilePos(0, 0)` is at `(0, 0, z_value)`.
-/// Internally, this transform is used to place [IntGridCell]s, as a
-/// children of the [LdtkMapBundle].
+/// Note that the resulting Transform will be as if `TilePos(0, 0)` is at `(size / 2, size / 2,
+/// z_value)`.
+/// Internally, this transform is used to place [IntGridCell]s, as children of the [LdtkMapBundle].
 pub fn calculate_transform_from_tile_pos(
     tile_pos: TilePos,
     tile_size: u32,
@@ -220,6 +220,24 @@ mod tests {
         assert_eq!(
             result,
             Transform::from_xyz(25., 75., 2.).with_scale(Vec3::new(3., 2., 1.))
+        );
+    }
+
+    #[test]
+    fn test_calculate_transform_from_tile_pos() {
+        assert_eq!(
+            calculate_transform_from_tile_pos(TilePos(1, 2), 32, 0.),
+            Transform::from_xyz(48., 80., 0.)
+        );
+
+        assert_eq!(
+            calculate_transform_from_tile_pos(TilePos(1, 0), 100, 50.),
+            Transform::from_xyz(150., 50., 50.)
+        );
+
+        assert_eq!(
+            calculate_transform_from_tile_pos(TilePos(0, 5), 1, 1.),
+            Transform::from_xyz(0.5, 5.5, 1.)
         );
     }
 }

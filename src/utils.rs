@@ -45,7 +45,7 @@ pub fn int_grid_index_to_tile_pos(
 
 /// Simple conversion from a list of [EntityDefinition]s to a map using their Uids as the keys.
 pub fn create_entity_definition_map(
-    entity_definitions: &Vec<EntityDefinition>,
+    entity_definitions: &[EntityDefinition],
 ) -> HashMap<i32, &EntityDefinition> {
     entity_definitions.iter().map(|e| (e.uid, e)).collect()
 }
@@ -130,7 +130,9 @@ pub fn set_all_tiles_with_func<T>(
     for x in 0..map_size_in_tiles.x {
         for y in 0..map_size_in_tiles.y {
             let tile_pos = TilePos(x, y);
-            func(tile_pos).map(|t| layer_builder.set_tile(tile_pos, t).unwrap());
+            if let Some(t) = func(tile_pos) {
+                layer_builder.set_tile(tile_pos, t).unwrap()
+            }
         }
     }
 }

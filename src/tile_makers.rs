@@ -85,7 +85,7 @@ pub fn tile_pos_to_tile_maker(
 /// Used for spawning IntGrid layers without AutoTile functionality.
 pub fn tile_pos_to_tile_bundle_if_int_grid_nonzero_maker(
     mut tile_maker: impl FnMut(TilePos) -> Option<Tile>,
-    int_grid_csv: &Vec<i32>,
+    int_grid_csv: &[i32],
     layer_width_in_tiles: i32,
     layer_height_in_tiles: i32,
 ) -> impl FnMut(TilePos) -> Option<TileBundle> {

@@ -95,6 +95,7 @@ pub fn determine_changed_ldtks(
     changed_ldtks
 }
 
+#[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub fn process_changed_ldtks(
     In(changed_ldtks): In<Vec<Handle<LdtkAsset>>>,
     mut commands: Commands,
@@ -208,6 +209,7 @@ fn clear_map(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn spawn_level(
     level: &Level,
     commands: &mut Commands,
@@ -223,13 +225,13 @@ fn spawn_level(
     ldtk_entity: Entity,
 ) {
     if let Some(layer_instances) = &level.layer_instances {
-        for (layer_id, layer_instance) in layer_instances.into_iter().rev().enumerate() {
+        for (layer_id, layer_instance) in layer_instances.iter().rev().enumerate() {
             match layer_instance.layer_instance_type {
                 Type::Entities => {
                     for entity_instance in &layer_instance.entity_instances {
                         let transform = calculate_transform_from_entity_instance(
                             entity_instance,
-                            &entity_definition_map,
+                            entity_definition_map,
                             level.px_hei as u32,
                             layer_id as f32,
                         );
@@ -241,9 +243,9 @@ fn spawn_level(
                                 }),
                                 Some(phantom_ldtk_entity) => phantom_ldtk_entity.evaluate(
                                     commands,
-                                    &entity_instance,
-                                    &tileset_map,
-                                    &asset_server,
+                                    entity_instance,
+                                    tileset_map,
+                                    asset_server,
                                     materials,
                                     texture_atlases,
                                 ),

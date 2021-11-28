@@ -36,6 +36,7 @@ pub fn tile_pos_to_invisible_tile(_: TilePos) -> Option<Tile> {
 /// Used for spawning Tile, AutoTile and IntGrid layers with AutoTile functionality.
 pub fn tile_pos_to_tile_maker(
     layer_height_in_tiles: i32,
+    layer_grid_size: i32,
     tileset_definition: &TilesetDefinition,
     grid_tiles: Vec<TileInstance>,
 ) -> impl FnMut(TilePos) -> Option<Tile> {
@@ -47,10 +48,8 @@ pub fn tile_pos_to_tile_maker(
         .map(|t| {
             (
                 TilePos(
-                    (t.px[0] / tileset_definition.tile_grid_size) as u32,
-                    layer_height_in_tiles as u32
-                        - (t.px[1] / tileset_definition.tile_grid_size) as u32
-                        - 1,
+                    (t.px[0] / layer_grid_size) as u32,
+                    layer_height_in_tiles as u32 - (t.px[1] / layer_grid_size) as u32 - 1,
                 ),
                 t,
             )
@@ -163,11 +162,62 @@ mod tests {
             ..Default::default()
         };
 
-        let mut tile_maker = tile_pos_to_tile_maker(2, &tileset_definition, grid_tiles);
+        let mut tile_maker = tile_pos_to_tile_maker(2, 32, &tileset_definition, grid_tiles);
 
         assert_eq!(tile_maker(TilePos(0, 0)).unwrap().texture_index, 2);
         assert_eq!(tile_maker(TilePos(1, 0)).unwrap().texture_index, 1);
         assert_eq!(tile_maker(TilePos(0, 1)).unwrap().texture_index, 1);
         assert_eq!(tile_maker(TilePos(1, 1)).unwrap().texture_index, 4);
+    }
+
+    #[test]
+    fn test_tile_pos_to_tile_maker_with_flips() {
+        let grid_tiles = vec![
+            TileInstance {
+                px: vec![0, 0],
+                src: vec![0, 0],
+                f: 0,
+                ..Default::default()
+            },
+            TileInstance {
+                px: vec![32, 0],
+                src: vec![0, 0],
+                f: 1,
+                ..Default::default()
+            },
+            TileInstance {
+                px: vec![0, 32],
+                src: vec![0, 0],
+                f: 2,
+                ..Default::default()
+            },
+            TileInstance {
+                px: vec![64, 0],
+                src: vec![0, 0],
+                f: 3,
+                ..Default::default()
+            },
+        ];
+
+        let tileset_definition = TilesetDefinition {
+            c_wid: 1,
+            c_hei: 1,
+            tile_grid_size: 16,
+            ..Default::default()
+        };
+
+        let mut tile_maker = tile_pos_to_tile_maker(2, 32, &tileset_definition, grid_tiles);
+
+        assert_eq!(tile_maker(TilePos(0, 0)).unwrap().flip_x, false);
+        assert_eq!(tile_maker(TilePos(0, 0)).unwrap().flip_y, true);
+
+        assert_eq!(tile_maker(TilePos(0, 1)).unwrap().flip_x, false);
+        assert_eq!(tile_maker(TilePos(0, 1)).unwrap().flip_y, false);
+
+        assert_eq!(tile_maker(TilePos(1, 1)).unwrap().flip_x, true);
+        assert_eq!(tile_maker(TilePos(1, 1)).unwrap().flip_y, false);
+
+        assert_eq!(tile_maker(TilePos(2, 1)).unwrap().flip_x, true);
+        assert_eq!(tile_maker(TilePos(2, 1)).unwrap().flip_y, true);
     }
 }

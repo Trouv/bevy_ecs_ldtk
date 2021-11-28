@@ -9,7 +9,7 @@ use std::{collections::HashMap, path::Path};
 
 fn ldtk_path_to_asset_path<'a, 'b>(
     load_context: &LoadContext<'a>,
-    rel_path: &String,
+    rel_path: &str,
 ) -> AssetPath<'b> {
     load_context
         .path()
@@ -46,7 +46,7 @@ impl AssetLoader for LdtkLoader {
             if project.external_levels {
                 for level in &project.levels {
                     if let Some(external_rel_path) = &level.external_rel_path {
-                        let asset_path = ldtk_path_to_asset_path(load_context, &external_rel_path);
+                        let asset_path = ldtk_path_to_asset_path(load_context, external_rel_path);
 
                         external_level_paths.push(asset_path.clone());
                         external_level_handles.push(load_context.get_handle(asset_path));
@@ -99,7 +99,7 @@ impl AssetLoader for LdtkLevelLoader {
     ) -> BoxedFuture<'a, anyhow::Result<()>> {
         Box::pin(async move {
             let ldtk_level = LdtkExternalLevel {
-                level: serde_json::from_slice(&bytes)?,
+                level: serde_json::from_slice(bytes)?,
             };
             load_context.set_default_asset(LoadedAsset::new(ldtk_level));
             Ok(())

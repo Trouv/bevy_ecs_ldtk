@@ -1,12 +1,12 @@
 //! Functions that deal with tile makers.
 //!
 //! A tile maker is a function loosely defined with the following signature:
-//! ```no_run
+//! ```ignore
 //! impl FnMut(TilePos) -> Option<Tile>
 //! ```
 //!
 //! Similarly, tile bundle makers are functions loosely defined as:
-//! ```no_run
+//! ```ignore
 //! impl FnMut(TilePos) -> Option<T> where T: TileBundleTrait
 //! ```
 //!
@@ -21,6 +21,9 @@ use bevy_ecs_tilemap::prelude::*;
 
 use std::collections::HashMap;
 
+/// A tile maker that always returns an invisible tile.
+///
+/// Used for spawning IntGrid layers without AutoTile functionality.
 pub fn tile_pos_to_invisible_tile(_: TilePos) -> Option<Tile> {
     Some(Tile {
         visible: false,
@@ -28,6 +31,9 @@ pub fn tile_pos_to_invisible_tile(_: TilePos) -> Option<Tile> {
     })
 }
 
+/// Creates a tile maker that matches the tileset visuals of an ldtk layer.
+///
+/// Used for spawning Tile, AutoTile and IntGrid layers with AutoTile functionality.
 pub fn tile_pos_to_tile_maker(
     layer_height_in_tiles: i32,
     tileset_definition: &TilesetDefinition,
@@ -74,6 +80,10 @@ pub fn tile_pos_to_tile_maker(
     }
 }
 
+/// Returns a tile bundle maker that returns the bundled results of the provided tile maker if that
+/// cell in the int grid is not zero.
+///
+/// Used for spawning IntGrid layers without AutoTile functionality.
 pub fn tile_pos_to_tile_bundle_if_int_grid_nonzero_maker(
     mut tile_maker: impl FnMut(TilePos) -> Option<Tile>,
     int_grid_csv: &Vec<i32>,
@@ -103,6 +113,9 @@ pub fn tile_pos_to_tile_bundle_if_int_grid_nonzero_maker(
     }
 }
 
+/// Returns a tile bundle maker that returns the bundled result of the provided tile maker.
+///
+/// Used for spawning Tile, AutoTile, and IntGrid layers with AutoTile functionality.
 pub fn tile_pos_to_tile_bundle_maker(
     mut tile_maker: impl FnMut(TilePos) -> Option<Tile>,
 ) -> impl FnMut(TilePos) -> Option<TileBundle> {

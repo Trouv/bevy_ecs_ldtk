@@ -257,28 +257,28 @@ pub struct PhantomLdtkEntity<B: LdtkEntity> {
 }
 
 pub trait PhantomLdtkEntityTrait {
-    fn evaluate<'w, 's, 'a>(
+    fn evaluate<'w, 's, 'a, 'b>(
         &self,
-        commands: &'a mut Commands<'w, 's>,
+        commands: &'b mut EntityCommands<'w, 's, 'a>,
         entity_instance: &EntityInstance,
         tileset_map: &TilesetMap,
         asset_server: &AssetServer,
         materials: &mut Assets<ColorMaterial>,
         texture_atlases: &mut Assets<TextureAtlas>,
-    ) -> EntityCommands<'w, 's, 'a>;
+    ) -> &'b mut EntityCommands<'w, 's, 'a>;
 }
 
 impl<B: LdtkEntity> PhantomLdtkEntityTrait for PhantomLdtkEntity<B> {
-    fn evaluate<'w, 's, 'a>(
+    fn evaluate<'w, 's, 'a, 'b>(
         &self,
-        commands: &'a mut Commands<'w, 's>,
+        entity_commands: &'b mut EntityCommands<'w, 's, 'a>,
         entity_instance: &EntityInstance,
         tileset_map: &TilesetMap,
         asset_server: &AssetServer,
         materials: &mut Assets<ColorMaterial>,
         texture_atlases: &mut Assets<TextureAtlas>,
-    ) -> EntityCommands<'w, 's, 'a> {
-        commands.spawn_bundle(B::bundle_entity(
+    ) -> &'b mut EntityCommands<'w, 's, 'a> {
+        entity_commands.insert_bundle(B::bundle_entity(
             entity_instance,
             tileset_map,
             asset_server,
@@ -300,20 +300,20 @@ pub struct PhantomLdtkIntCell<B: LdtkIntCell> {
 }
 
 pub trait PhantomLdtkIntCellTrait {
-    fn evaluate<'w, 's, 'a>(
+    fn evaluate<'w, 's, 'a, 'b>(
         &self,
-        commands: &'a mut Commands<'w, 's>,
+        entity_commands: &'b mut EntityCommands<'w, 's, 'a>,
         int_grid_cell: IntGridCell,
-    ) -> EntityCommands<'w, 's, 'a>;
+    ) -> &'b mut EntityCommands<'w, 's, 'a>;
 }
 
 impl<B: LdtkIntCell> PhantomLdtkIntCellTrait for PhantomLdtkIntCell<B> {
-    fn evaluate<'w, 's, 'a>(
+    fn evaluate<'w, 's, 'a, 'b>(
         &self,
-        commands: &'a mut Commands<'w, 's>,
+        entity_commands: &'b mut EntityCommands<'w, 's, 'a>,
         int_grid_cell: IntGridCell,
-    ) -> EntityCommands<'w, 's, 'a> {
-        commands.spawn_bundle(B::bundle_int_cell(int_grid_cell))
+    ) -> &'b mut EntityCommands<'w, 's, 'a> {
+        entity_commands.insert_bundle(B::bundle_int_cell(int_grid_cell))
     }
 }
 

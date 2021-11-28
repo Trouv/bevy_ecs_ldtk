@@ -317,6 +317,8 @@ impl<B: LdtkIntCell> PhantomLdtkIntCellTrait for PhantomLdtkIntCell<B> {
     }
 }
 
+pub type LdtkIntCellMap = HashMap<i32, Box<dyn PhantomLdtkIntCellTrait>>;
+
 /// Provides the [.register_ldtk_entity()](RegisterLdtkObjects::register_ldtk_entity) function to
 /// bevy's [App].
 ///
@@ -356,6 +358,8 @@ pub trait RegisterLdtkObjects {
     ///
     /// You can find more details on the `#[derive(LdtkEntity)]` macro at [LdtkEntity].
     fn register_ldtk_entity<B: LdtkEntity>(&mut self, identifier: &str) -> &mut Self;
+
+    fn register_ldtk_int_cell<B: LdtkIntCell>(&mut self, value: i32) -> &mut Self;
 }
 
 impl RegisterLdtkObjects for App {
@@ -371,6 +375,23 @@ impl RegisterLdtkObjects for App {
                 let mut bundle_map = LdtkEntityMap::new();
                 bundle_map.insert(identifier.to_string(), new_entry);
                 self.world.insert_non_send::<LdtkEntityMap>(bundle_map);
+            }
+        }
+        self
+    }
+
+    fn register_ldtk_int_cell<B: LdtkIntCell>(&mut self, value: i32) -> &mut Self {
+        let new_entry = Box::new(PhantomLdtkIntCell::<B> {
+            ldtk_int_cell: PhantomData,
+        });
+        match self.world.get_non_send_resource_mut::<LdtkIntCellMap>() {
+            Some(mut entries) => {
+                entries.insert(value, new_entry);
+            }
+            None => {
+                let mut bundle_map = LdtkIntCellMap::new();
+                bundle_map.insert(value, new_entry);
+                self.world.insert_non_send::<LdtkIntCellMap>(bundle_map);
             }
         }
         self

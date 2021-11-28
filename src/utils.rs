@@ -43,15 +43,22 @@ pub fn int_grid_index_to_tile_pos(
     }
 }
 
+/// Simple conversion from a list of [EntityDefinition]s to a map using their Uids as the keys.
+pub fn create_entity_definition_map(
+    entity_definitions: &Vec<EntityDefinition>,
+) -> HashMap<i32, &EntityDefinition> {
+    entity_definitions.iter().map(|e| (e.uid, e)).collect()
+}
+
 fn calculate_transform_from_ldtk_info(
     location: IVec2,
     pivot: Vec2,
     def_size: IVec2,
     size: IVec2,
-    level_height: i32,
+    level_height: u32,
     z_value: f32,
 ) -> Transform {
-    let pivot_point = Vec2::new(location.x as f32, (level_height - location.y) as f32);
+    let pivot_point = Vec2::new(location.x as f32, (level_height as i32 - location.y) as f32);
 
     let adjusted_pivot = Vec2::new(0.5 - pivot.x, pivot.y - 0.5);
 
@@ -74,7 +81,7 @@ fn calculate_transform_from_ldtk_info(
 pub fn calculate_transform_from_entity_instance(
     entity_instance: &EntityInstance,
     entity_definition_map: &HashMap<i32, &EntityDefinition>,
-    level_height: i32,
+    level_height: u32,
     z_value: f32,
 ) -> Transform {
     let entity_definition = entity_definition_map.get(&entity_instance.def_uid).unwrap();
@@ -97,7 +104,7 @@ pub fn calculate_transform_from_entity_instance(
 /// children of the [LdtkMapBundle].
 pub fn calculate_transform_from_tile_pos(
     tile_pos: TilePos,
-    tile_size: i32,
+    tile_size: u32,
     z_value: f32,
 ) -> Transform {
     let tile_pos: UVec2 = tile_pos.into();
@@ -152,5 +159,29 @@ mod tests {
         assert_eq!(int_grid_index_to_tile_pos(3, 5, 0), None);
 
         assert_eq!(int_grid_index_to_tile_pos(25, 5, 5), None);
+    }
+
+    #[test]
+    fn test_calculate_transform_from_entity_instance() {
+        let entity_definition_map = create_entity_definition_map(&vec![
+            EntityDefinition {
+                uid: 0,
+                width: 32,
+                height: 32,
+                ..Default::default()
+            },
+            EntityDefinition {
+                uid: 1,
+                width: 64,
+                height: 16,
+                ..Default::default()
+            },
+            EntityDefinition {
+                uid: 2,
+                width: 10,
+                height: 25,
+                ..Default::default()
+            },
+        ]);
     }
 }

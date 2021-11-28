@@ -139,13 +139,8 @@ pub fn process_changed_ldtks(
                     .map(|t| (t.uid, t))
                     .collect();
 
-                let entity_definition_map: HashMap<i32, &EntityDefinition> = ldtk_asset
-                    .project
-                    .defs
-                    .entities
-                    .iter()
-                    .map(|e| (e.uid, e))
-                    .collect();
+                let entity_definition_map =
+                    create_entity_definition_map(&ldtk_asset.project.defs.entities);
 
                 for (_, level) in ldtk_asset
                     .project
@@ -235,7 +230,7 @@ fn spawn_level(
                         let transform = calculate_transform_from_entity_instance(
                             entity_instance,
                             &entity_definition_map,
-                            level.px_hei,
+                            level.px_hei as u32,
                             layer_id as f32,
                         );
 
@@ -367,7 +362,7 @@ fn spawn_level(
 
                             let transform = calculate_transform_from_tile_pos(
                                 tile_pos,
-                                layer_instance.grid_size,
+                                layer_instance.grid_size as u32,
                                 layer_id as f32,
                             );
                             commands

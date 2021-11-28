@@ -163,7 +163,7 @@ pub struct Definitions {
     pub tilesets: Vec<TilesetDefinition>,
 }
 
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Default, Clone, Serialize, Deserialize)]
 pub struct EntityDefinition {
     /// Base entity color
     #[serde(rename = "color")]
@@ -1090,6 +1090,12 @@ pub enum LimitBehavior {
     PreventAdding,
 }
 
+impl Default for LimitBehavior {
+    fn default() -> Self {
+        Self::MoveLastOne
+    }
+}
+
 /// If TRUE, the maxCount is a "per world" limit, if FALSE, it's a "per level". Possible
 /// values: `PerLayer`, `PerLevel`, `PerWorld`
 #[derive(Eq, PartialEq, Debug, Clone, Serialize, Deserialize)]
@@ -1102,6 +1108,12 @@ pub enum LimitScope {
 
     #[serde(rename = "PerWorld")]
     PerWorld,
+}
+
+impl Default for LimitScope {
+    fn default() -> Self {
+        Self::PerLevel
+    }
 }
 
 /// Possible values: `Rectangle`, `Ellipse`, `Tile`, `Cross`
@@ -1120,6 +1132,12 @@ pub enum RenderMode {
     Tile,
 }
 
+impl Default for RenderMode {
+    fn default() -> Self {
+        Self::Rectangle
+    }
+}
+
 /// Possible values: `Cover`, `FitInside`, `Repeat`, `Stretch`
 #[derive(Eq, PartialEq, Debug, Clone, Serialize, Deserialize)]
 pub enum TileRenderMode {
@@ -1134,6 +1152,12 @@ pub enum TileRenderMode {
 
     #[serde(rename = "Stretch")]
     Stretch,
+}
+
+impl Default for TileRenderMode {
+    fn default() -> Self {
+        Self::FitInside
+    }
 }
 
 /// Checker mode Possible values: `None`, `Horizontal`, `Vertical`

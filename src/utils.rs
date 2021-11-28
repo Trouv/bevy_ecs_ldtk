@@ -163,7 +163,7 @@ mod tests {
 
     #[test]
     fn test_calculate_transform_from_entity_instance() {
-        let entity_definition_map = create_entity_definition_map(&vec![
+        let entity_definitions = vec![
             EntityDefinition {
                 uid: 0,
                 width: 32,
@@ -182,6 +182,44 @@ mod tests {
                 height: 25,
                 ..Default::default()
             },
-        ]);
+        ];
+        let entity_definition_map = create_entity_definition_map(&entity_definitions);
+
+        // simple case
+        let entity_instance = EntityInstance {
+            px: vec![256, 256],
+            def_uid: 0,
+            width: 32,
+            height: 32,
+            pivot: vec![0., 0.],
+            ..Default::default()
+        };
+        let result = calculate_transform_from_entity_instance(
+            &entity_instance,
+            &entity_definition_map,
+            320,
+            0.,
+        );
+        assert_eq!(result, Transform::from_xyz(272., 48., 0.));
+
+        // difficult case
+        let entity_instance = EntityInstance {
+            px: vec![40, 50],
+            def_uid: 2,
+            width: 30,
+            height: 50,
+            pivot: vec![1., 1.],
+            ..Default::default()
+        };
+        let result = calculate_transform_from_entity_instance(
+            &entity_instance,
+            &entity_definition_map,
+            100,
+            2.,
+        );
+        assert_eq!(
+            result,
+            Transform::from_xyz(25., 75., 2.).with_scale(Vec3::new(3., 2., 1.))
+        );
     }
 }

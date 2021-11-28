@@ -8,6 +8,7 @@ fn main() {
         .add_plugin(LdtkPlugin)
         .add_startup_system(setup)
         .register_ldtk_entity::<PlayerBundle>("Willo")
+        .add_system(debug_int_grid)
         .run();
 }
 
@@ -16,7 +17,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     asset_server.watch_for_changes().unwrap();
 
-    let ldtk_handle = asset_server.load("levels.ldtk");
+    let ldtk_handle = asset_server.load("Typical_2D_platformer_example.ldtk");
     let map_entity = commands.spawn().id();
     let transform = Transform::from_xyz(-5.5 * 32., -6. * 32., 0.);
     commands.entity(map_entity).insert_bundle(LdtkMapBundle {
@@ -48,4 +49,23 @@ impl LdtkEntity for PlayerBundle {
             },
         }
     }
+}
+
+fn debug_int_grid(
+    mut commands: Commands,
+    query: Query<(Entity, &TilePos, &IntGridCell, &Transform), Added<IntGridCell>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
+    query.for_each(|(entity, tile_pos, cell, transform)| {
+        commands
+            .entity(entity)
+            .insert_bundle(SpriteBundle {
+                sprite: Sprite::new(Vec2::splat(8.)),
+                material: materials.add(ColorMaterial::color(Color::WHITE)),
+                ..Default::default()
+            })
+            .insert(transform.clone());
+
+        println!("{} spawned at {:?}", cell.value, tile_pos);
+    })
 }

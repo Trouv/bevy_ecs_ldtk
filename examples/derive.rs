@@ -11,6 +11,7 @@ fn main() {
         .register_ldtk_entity::<TableBundle>("Table")
         .register_ldtk_entity::<SBlockBundle>("S")
         .register_ldtk_entity::<WBlockBundle>("W")
+        .add_system(debug_int_grid)
         .run();
 }
 
@@ -96,4 +97,23 @@ struct WBlockBundle {
     #[bundle]
     block_bundle: BlockBundle,
     w_block: WBlock,
+}
+
+fn debug_int_grid(
+    mut commands: Commands,
+    query: Query<(Entity, &TilePos, &IntGridCell, &Transform), Added<IntGridCell>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
+    query.for_each(|(entity, tile_pos, cell, transform)| {
+        commands
+            .entity(entity)
+            .insert_bundle(SpriteBundle {
+                sprite: Sprite::new(Vec2::splat(8.)),
+                material: materials.add(ColorMaterial::color(Color::WHITE)),
+                ..Default::default()
+            })
+            .insert(transform.clone());
+
+        println!("{} spawned at {:?}", cell.value, tile_pos);
+    })
 }

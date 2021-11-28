@@ -385,11 +385,18 @@ fn spawn_level(
                                 layer_instance.grid_size as u32,
                                 layer_id as f32,
                             );
-                            commands
-                                .entity(tile_entity)
-                                .insert_bundle(IntGridCellBundle {
+
+                            let mut entity_commands = commands.entity(tile_entity);
+
+                            match ldtk_int_cell_map.get(value) {
+                                Some(phantom_ldtk_int_cell) => phantom_ldtk_int_cell
+                                    .evaluate(&mut entity_commands, IntGridCell { value: *value }),
+                                None => entity_commands.insert_bundle(IntGridCellBundle {
                                     int_grid_cell: IntGridCell { value: *value },
-                                })
+                                }),
+                            };
+
+                            entity_commands
                                 .insert(transform)
                                 .insert(GlobalTransform::default())
                                 .insert(Parent(ldtk_entity));

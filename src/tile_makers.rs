@@ -220,4 +220,23 @@ mod tests {
         assert_eq!(tile_maker(TilePos(2, 1)).unwrap().flip_x, true);
         assert_eq!(tile_maker(TilePos(2, 1)).unwrap().flip_y, true);
     }
+
+    #[test]
+    fn test_tile_pos_to_tile_bundle_if_int_grid_nonzero_maker() {
+        let int_grid_csv = vec![0, 1, 2, -1, 0, 3];
+
+        let mut tile_bundle_maker = tile_pos_to_tile_bundle_if_int_grid_nonzero_maker(
+            tile_pos_to_invisible_tile,
+            &int_grid_csv,
+            3,
+            2,
+        );
+
+        assert!(tile_bundle_maker(TilePos(0, 0)).is_some());
+        assert!(tile_bundle_maker(TilePos(1, 0)).is_none());
+        assert!(tile_bundle_maker(TilePos(2, 0)).is_some());
+        assert!(tile_bundle_maker(TilePos(0, 1)).is_none());
+        assert!(tile_bundle_maker(TilePos(1, 1)).is_some());
+        assert!(tile_bundle_maker(TilePos(2, 1)).is_some());
+    }
 }

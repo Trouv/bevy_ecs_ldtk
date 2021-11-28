@@ -1,3 +1,18 @@
+//! Functions that deal with tile makers.
+//!
+//! A tile maker is a function loosely defined with the following signature:
+//! ```no_run
+//! impl FnMut(TilePos) -> Option<Tile>
+//! ```
+//!
+//! Similarly, tile bundle makers are functions loosely defined as:
+//! ```no_run
+//! impl FnMut(TilePos) -> Option<T> where T: TileBundleTrait
+//! ```
+//!
+//! Tile bundle makers can be used with [LayerBuilder::new_batch] and [set_all_tiles_with_func] to
+//! spawn many tiles at once.
+
 use crate::{
     ldtk::{TileInstance, TilesetDefinition},
     utils::*,

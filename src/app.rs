@@ -1,7 +1,7 @@
 //! Types and traits for hooking into the ldtk loading process via bevy's [App].
 //!
 //! *Requires the "app" feature, which is enabled by default*
-use crate::{assets::TilesetMap, ldtk::EntityInstance};
+use crate::{assets::TilesetMap, components::IntGridCell, ldtk::EntityInstance};
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::{collections::HashMap, marker::PhantomData};
 
@@ -252,6 +252,71 @@ impl LdtkEntity for SpriteBundle {
     }
 }
 
+pub struct PhantomLdtkEntity<B: LdtkEntity> {
+    ldtk_entity: PhantomData<B>,
+}
+
+pub trait PhantomLdtkEntityTrait {
+    fn evaluate<'w, 's, 'a>(
+        &self,
+        commands: &'a mut Commands<'w, 's>,
+        entity_instance: &EntityInstance,
+        tileset_map: &TilesetMap,
+        asset_server: &AssetServer,
+        materials: &mut Assets<ColorMaterial>,
+        texture_atlases: &mut Assets<TextureAtlas>,
+    ) -> EntityCommands<'w, 's, 'a>;
+}
+
+impl<B: LdtkEntity> PhantomLdtkEntityTrait for PhantomLdtkEntity<B> {
+    fn evaluate<'w, 's, 'a>(
+        &self,
+        commands: &'a mut Commands<'w, 's>,
+        entity_instance: &EntityInstance,
+        tileset_map: &TilesetMap,
+        asset_server: &AssetServer,
+        materials: &mut Assets<ColorMaterial>,
+        texture_atlases: &mut Assets<TextureAtlas>,
+    ) -> EntityCommands<'w, 's, 'a> {
+        commands.spawn_bundle(B::bundle_entity(
+            entity_instance,
+            tileset_map,
+            asset_server,
+            materials,
+            texture_atlases,
+        ))
+    }
+}
+
+/// Used by [RegisterLdtkObjects] to associate Ldtk entity identifiers with [LdtkEntity]s.
+pub type LdtkEntityMap = HashMap<String, Box<dyn PhantomLdtkEntityTrait>>;
+
+pub trait LdtkIntCell: Bundle {
+    fn bundle_int_cell(int_grid_cell: IntGridCell) -> Self;
+}
+
+pub struct PhantomLdtkIntCell<B: LdtkIntCell> {
+    ldtk_int_cell: PhantomData<B>,
+}
+
+pub trait PhantomLdtkIntCellTrait {
+    fn evaluate<'w, 's, 'a>(
+        &self,
+        commands: &'a mut Commands<'w, 's>,
+        int_grid_cell: IntGridCell,
+    ) -> EntityCommands<'w, 's, 'a>;
+}
+
+impl<B: LdtkIntCell> PhantomLdtkIntCellTrait for PhantomLdtkIntCell<B> {
+    fn evaluate<'w, 's, 'a>(
+        &self,
+        commands: &'a mut Commands<'w, 's>,
+        int_grid_cell: IntGridCell,
+    ) -> EntityCommands<'w, 's, 'a> {
+        commands.spawn_bundle(B::bundle_int_cell(int_grid_cell))
+    }
+}
+
 /// Provides the [.register_ldtk_entity()](RegisterLdtkObjects::register_ldtk_entity) function to
 /// bevy's [App].
 ///
@@ -309,44 +374,5 @@ impl RegisterLdtkObjects for App {
             }
         }
         self
-    }
-}
-
-/// Used by [RegisterLdtkObjects] to associate Ldtk entity identifiers with [LdtkEntity]s.
-pub type LdtkEntityMap = HashMap<String, Box<dyn PhantomLdtkEntityTrait>>;
-
-pub struct PhantomLdtkEntity<B: LdtkEntity> {
-    ldtk_entity: PhantomData<B>,
-}
-
-pub trait PhantomLdtkEntityTrait {
-    fn evaluate<'w, 's, 'a>(
-        &self,
-        commands: &'a mut Commands<'w, 's>,
-        entity_instance: &EntityInstance,
-        tileset_map: &TilesetMap,
-        asset_server: &AssetServer,
-        materials: &mut Assets<ColorMaterial>,
-        texture_atlases: &mut Assets<TextureAtlas>,
-    ) -> EntityCommands<'w, 's, 'a>;
-}
-
-impl<B: LdtkEntity> PhantomLdtkEntityTrait for PhantomLdtkEntity<B> {
-    fn evaluate<'w, 's, 'a>(
-        &self,
-        commands: &'a mut Commands<'w, 's>,
-        entity_instance: &EntityInstance,
-        tileset_map: &TilesetMap,
-        asset_server: &AssetServer,
-        materials: &mut Assets<ColorMaterial>,
-        texture_atlases: &mut Assets<TextureAtlas>,
-    ) -> EntityCommands<'w, 's, 'a> {
-        commands.spawn_bundle(B::bundle_entity(
-            entity_instance,
-            tileset_map,
-            asset_server,
-            materials,
-            texture_atlases,
-        ))
     }
 }

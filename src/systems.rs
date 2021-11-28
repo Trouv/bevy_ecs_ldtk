@@ -1,3 +1,5 @@
+//! System functions used by the plugin for processing ldtk files.
+
 use crate::{
     app::LdtkEntityMap,
     assets::{LdtkAsset, LdtkExternalLevel, TilesetMap},

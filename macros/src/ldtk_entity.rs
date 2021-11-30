@@ -94,7 +94,7 @@ pub fn expand_ldtk_entity_derive(ast: &syn::DeriveInput) -> proc_macro::TokenStr
     gen.into()
 }
 
-pub fn expand_sprite_bundle_attribute(
+fn expand_sprite_bundle_attribute(
     attribute: &syn::Attribute,
     field_name: &syn::Ident,
     field_type: &syn::Type,
@@ -139,7 +139,7 @@ pub fn expand_sprite_bundle_attribute(
     }
 }
 
-pub fn expand_sprite_sheet_bundle_attribute(
+fn expand_sprite_sheet_bundle_attribute(
     attribute: &syn::Attribute,
     field_name: &syn::Ident,
     field_type: &syn::Type,
@@ -257,7 +257,7 @@ pub fn expand_sprite_sheet_bundle_attribute(
     }
 }
 
-pub fn expand_ldtk_entity_attribute(
+fn expand_ldtk_entity_attribute(
     attribute: &syn::Attribute,
     field_name: &syn::Ident,
     field_type: &syn::Type,
@@ -275,7 +275,7 @@ pub fn expand_ldtk_entity_attribute(
     }
 }
 
-pub fn expand_from_entity_instance_attribute(
+fn expand_from_entity_instance_attribute(
     attribute: &syn::Attribute,
     field_name: &syn::Ident,
     field_type: &syn::Type,

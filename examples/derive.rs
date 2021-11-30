@@ -51,7 +51,7 @@ struct TableBundle {
     #[sprite_bundle]
     sprite_bundle: SpriteBundle,
     table: TableComponent,
-    #[entity_instance]
+    #[from_entity_instance]
     entity_instance: EntityInstance,
 }
 
@@ -60,8 +60,8 @@ struct Block {
     identifier: String,
 }
 
-impl From<&EntityInstance> for Block {
-    fn from(entity_instance: &EntityInstance) -> Block {
+impl From<EntityInstance> for Block {
+    fn from(entity_instance: EntityInstance) -> Block {
         Block {
             identifier: entity_instance.identifier.clone(),
         }

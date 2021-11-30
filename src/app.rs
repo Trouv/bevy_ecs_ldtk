@@ -122,22 +122,6 @@ use std::{collections::HashMap, marker::PhantomData};
 /// }
 /// ```
 ///
-/// ### `#[entity_instance]`
-/// Indicates that an [EntityInstance] component should be created as a clone of the LDtk
-/// [EntityInstance] that is causing it to spawn in the first place.
-/// ```
-/// # use bevy::prelude::*;
-/// # use bevy_ecs_ldtk::prelude::*;
-/// # #[derive(Component, Default)]
-/// # struct Completed;
-/// #[derive(Bundle, LdtkEntity)]
-/// pub struct GoalPost {
-///     completed: Completed,
-///     #[entity_instance]
-///     extra_info: EntityInstance,
-/// }
-/// ```
-///
 /// ### `#[ldtk_entity]`
 /// Indicates that a nested bundle that implements [LdtkEntity] should be created with
 /// [LdtkEntity::bundle_entity], allowing for nested [LdtkEntity]s.
@@ -166,18 +150,19 @@ use std::{collections::HashMap, marker::PhantomData};
 /// ```
 ///
 /// ### `#[from_entity_instance]`
-/// Indicates that a component or bundle that implements [From<&EntityInstance>] should be created
+/// Indicates that a component or bundle that implements [From<EntityInstance>] should be created
 /// using that conversion.
 /// This allows for more modular and custom component construction, and for different structs that
 /// contain the same component to have different constructions of that component, without having to
 /// `impl LdtkEntity` for both of them.
+/// It also allows you to have an [EntityInstance] field, since all types `T` implement `From<T>`.
 /// ```
 /// # use bevy::prelude::*;
 /// # use bevy_ecs_ldtk::prelude::*;
 /// # #[derive(Component, Default)]
 /// # struct Sellable { value: i32 }
-/// impl From<&EntityInstance> for Sellable {
-///     fn from(entity_instance: &EntityInstance) -> Sellable {
+/// impl From<EntityInstance> for Sellable {
+///     fn from(entity_instance: EntityInstance) -> Sellable {
 ///         let sell_value = match entity_instance.identifier.as_str() {
 ///             "gem" => 1000,
 ///             "nickel" => 5,
@@ -197,6 +182,8 @@ use std::{collections::HashMap, marker::PhantomData};
 ///     sprite: SpriteBundle,
 ///     #[from_entity_instance]
 ///     sellable: Sellable,
+///     #[from_entity_instance]
+///     entity_instance: EntityInstance,
 /// }
 /// ```
 pub trait LdtkEntity: Bundle {

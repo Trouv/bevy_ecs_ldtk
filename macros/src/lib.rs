@@ -6,13 +6,7 @@ mod attributes;
 
 #[proc_macro_derive(
     LdtkEntity,
-    attributes(
-        sprite_bundle,
-        entity_instance,
-        sprite_sheet_bundle,
-        ldtk_entity,
-        from_entity_instance
-    )
+    attributes(sprite_bundle, sprite_sheet_bundle, ldtk_entity, from_entity_instance)
 )]
 pub fn ldtk_entity_derive(input: TokenStream) -> TokenStream {
     let ast = syn::parse(input).unwrap();
@@ -22,7 +16,6 @@ pub fn ldtk_entity_derive(input: TokenStream) -> TokenStream {
 
 static SPRITE_BUNDLE_ATTRIBUTE_NAME: &str = "sprite_bundle";
 static SPRITE_SHEET_BUNDLE_ATTRIBUTE_NAME: &str = "sprite_sheet_bundle";
-static ENTITY_INSTANCE_ATTRIBUTE_NAME: &str = "entity_instance";
 static LDTK_ENTITY_ATTRIBUTE_NAME: &str = "ldtk_entity";
 static FROM_ENTITY_INSTANCE_ATTRIBUTE_NAME: &str = "from_entity_instance";
 
@@ -59,17 +52,6 @@ fn expand_ldtk_entity_derive(ast: &syn::DeriveInput) -> TokenStream {
             .find(|a| *a.path.get_ident().as_ref().unwrap() == SPRITE_SHEET_BUNDLE_ATTRIBUTE_NAME);
         if let Some(attribute) = sprite_sheet_bundle {
             field_constructions.push(attributes::expand_sprite_sheet_bundle_attribute(
-                attribute, field_name, field_type,
-            ));
-            continue;
-        }
-
-        let entity_instance = field
-            .attrs
-            .iter()
-            .find(|a| *a.path.get_ident().as_ref().unwrap() == ENTITY_INSTANCE_ATTRIBUTE_NAME);
-        if let Some(attribute) = entity_instance {
-            field_constructions.push(attributes::expand_entity_instance_attribute(
                 attribute, field_name, field_type,
             ));
             continue;

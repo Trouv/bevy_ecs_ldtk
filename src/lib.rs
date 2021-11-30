@@ -21,6 +21,7 @@ pub mod plugin {
         fn build(&self, app: &mut App) {
             app.add_plugin(TilemapPlugin)
                 .init_non_send_resource::<app::LdtkEntityMap>()
+                .init_non_send_resource::<app::LdtkIntCellMap>()
                 .add_asset::<assets::LdtkAsset>()
                 .init_asset_loader::<assets::LdtkLoader>()
                 .add_asset::<assets::LdtkExternalLevel>()
@@ -43,7 +44,7 @@ pub mod prelude {
     };
 
     #[cfg(feature = "app")]
-    pub use crate::app::{LdtkEntity, RegisterLdtkObjects};
+    pub use crate::app::{LdtkEntity, LdtkIntCell, RegisterLdtkObjects};
 
     #[cfg(feature = "derive")]
     pub use bevy_ecs_ldtk_macros::*;

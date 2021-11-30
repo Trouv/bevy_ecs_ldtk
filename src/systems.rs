@@ -1,7 +1,7 @@
 //! System functions used by the plugin for processing ldtk files.
 
 use crate::{
-    app::LdtkEntityMap,
+    app::{LdtkEntityMap, LdtkIntCellMap},
     assets::{LdtkAsset, LdtkExternalLevel, TilesetMap},
     components::*,
     ldtk::{EntityDefinition, TilesetDefinition, Type},
@@ -118,6 +118,7 @@ pub fn process_changed_ldtks(
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     ldtk_assets: Res<Assets<LdtkAsset>>,
     ldtk_entity_map: NonSend<LdtkEntityMap>,
+    ldtk_int_cell_map: NonSend<LdtkIntCellMap>,
     mut ldtk_map_query: Query<(
         Entity,
         &Handle<LdtkAsset>,
@@ -171,6 +172,7 @@ pub fn process_changed_ldtks(
                         &mut texture_atlases,
                         &mut meshes,
                         &ldtk_entity_map,
+                        &ldtk_int_cell_map,
                         &entity_definition_map,
                         &ldtk_asset.tileset_map,
                         &tileset_definition_map,
@@ -231,6 +233,7 @@ fn spawn_level(
     texture_atlases: &mut Assets<TextureAtlas>,
     meshes: &mut ResMut<Assets<Mesh>>,
     ldtk_entity_map: &LdtkEntityMap,
+    ldtk_int_cell_map: &LdtkIntCellMap,
     entity_definition_map: &HashMap<i32, &EntityDefinition>,
     tileset_map: &TilesetMap,
     tileset_definition_map: &HashMap<i32, &TilesetDefinition>,
@@ -249,20 +252,21 @@ fn spawn_level(
                             layer_id as f32,
                         );
 
-                        let mut entity_commands =
-                            match ldtk_entity_map.get(&entity_instance.identifier) {
-                                None => commands.spawn_bundle(EntityInstanceBundle {
-                                    entity_instance: entity_instance.clone(),
-                                }),
-                                Some(phantom_ldtk_entity) => phantom_ldtk_entity.evaluate(
-                                    commands,
-                                    entity_instance,
-                                    tileset_map,
-                                    asset_server,
-                                    materials,
-                                    texture_atlases,
-                                ),
-                            };
+                        let mut entity_commands = commands.spawn();
+
+                        match ldtk_entity_map.get(&entity_instance.identifier) {
+                            None => entity_commands.insert_bundle(EntityInstanceBundle {
+                                entity_instance: entity_instance.clone(),
+                            }),
+                            Some(phantom_ldtk_entity) => phantom_ldtk_entity.evaluate(
+                                &mut entity_commands,
+                                entity_instance,
+                                tileset_map,
+                                asset_server,
+                                materials,
+                                texture_atlases,
+                            ),
+                        };
 
                         entity_commands
                             .insert(transform)
@@ -381,11 +385,18 @@ fn spawn_level(
                                 layer_instance.grid_size as u32,
                                 layer_id as f32,
                             );
-                            commands
-                                .entity(tile_entity)
-                                .insert_bundle(IntGridCellBundle {
+
+                            let mut entity_commands = commands.entity(tile_entity);
+
+                            match ldtk_int_cell_map.get(value) {
+                                Some(phantom_ldtk_int_cell) => phantom_ldtk_int_cell
+                                    .evaluate(&mut entity_commands, IntGridCell { value: *value }),
+                                None => entity_commands.insert_bundle(IntGridCellBundle {
                                     int_grid_cell: IntGridCell { value: *value },
-                                })
+                                }),
+                            };
+
+                            entity_commands
                                 .insert(transform)
                                 .insert(GlobalTransform::default())
                                 .insert(Parent(ldtk_entity));

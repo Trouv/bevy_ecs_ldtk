@@ -189,7 +189,7 @@ use std::{collections::HashMap, marker::PhantomData};
 pub trait LdtkEntity: Bundle {
     /// The constructor used by the plugin when spawning entities from an LDtk file.
     /// Has access to resources/assets most commonly used for spawning 2d objects.
-    /// If you need access to more of the World, you can create a system that queries for
+    /// If you need access to more of the [World], you can create a system that queries for
     /// `Added<EntityInstance>`, and flesh out the entity from there, instead of implementing this
     /// trait.
     /// This is because the plugin spawns an entity with an [EntityInstance] component if it's not
@@ -287,7 +287,7 @@ pub type LdtkEntityMap = HashMap<String, Box<dyn PhantomLdtkEntityTrait>>;
 /// For common use cases, you'll want to use derive-macro `#[derive(LdtkIntCell)]`, but you can
 /// also provide a custom implementation.
 ///
-/// If there is an int grid tile in the LDtk file whose value is NOT registered, an entity will be
+/// If there is an IntGrid tile in the LDtk file whose value is NOT registered, an entity will be
 /// spawned with an [IntGridCell] component, allowing you to flesh it out in your own system.
 ///
 /// *Requires the "app" feature, which is enabled by default*
@@ -322,7 +322,7 @@ pub type LdtkEntityMap = HashMap<String, Box<dyn PhantomLdtkEntityTrait>>;
 ///     c: ComponentC,
 /// }
 /// ```
-/// Now, when loading your ldtk file, any int grid tiles with the value `1` will be spawned with as
+/// Now, when loading your ldtk file, any IntGrid tiles with the value `1` will be spawned with as
 /// tiles with `MyBundle` inserted.
 ///
 /// By default, each component or nested bundle in the bundle will be created using their [Default]
@@ -392,17 +392,17 @@ pub type LdtkEntityMap = HashMap<String, Box<dyn PhantomLdtkEntityTrait>>;
 /// ```
 pub trait LdtkIntCell: Bundle {
     /// The constructor used by the plugin when spawning additional components on IntGrid tiles.
-    /// If you need access to more of the World, you can create a system that queries for
+    /// If you need access to more of the [World], you can create a system that queries for
     /// `Added<IntGridCell>`, and flesh out the entity from there, instead of implementing this
     /// trait.
-    /// This is because the plugin spawns an tile with an [IntGridCell] component if the tile's
+    /// This is because the plugin spawns a tile with an [IntGridCell] component if the tile's
     /// value is not registered to the app.
     ///
     /// Note: whether or not the entity is registered to the app, the plugin will insert [Transform],
     /// [GlobalTransform], and [Parent] components to the entity **after** this bundle is inserted.
     /// So, any custom implementations of these components within this trait will be overwritten.
-    /// Furthermore, a [TileBundle] will be inserted **before** this bundle, so be careful not to
-    /// overwrite the components provided by that bundle.
+    /// Furthermore, a [bevy_ecs_tilemap::TileBundle] will be inserted **before** this bundle, so
+    /// be careful not to overwrite the components provided by that bundle.
     fn bundle_int_cell(int_grid_cell: IntGridCell) -> Self;
 }
 

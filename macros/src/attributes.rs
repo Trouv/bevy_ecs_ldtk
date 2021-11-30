@@ -165,35 +165,6 @@ pub fn expand_sprite_sheet_bundle_attribute(
     }
 }
 
-pub fn expand_entity_instance_attribute(
-    attribute: &syn::Attribute,
-    field_name: &syn::Ident,
-    field_type: &syn::Type,
-) -> TokenStream {
-    match field_type {
-        syn::Type::Path(syn::TypePath { path: syn::Path { segments, .. }, .. }) => {
-            if let Some(last) = segments.last() {
-                if last.ident.to_string() != "EntityInstance".to_string() {
-                    panic!("#[entity_instance] attribute should apply to a field of type bevy_ecs_ldtk::prelude::EntityInstance")
-                }
-            }
-        },
-        _ => panic!("#[entity_instance] attribute should apply to a field of type bevy_ecs_ldtk::prelude::EntityInstance")
-    }
-
-    match attribute
-        .parse_meta()
-        .expect("Cannot parse #[entity_instance] attribute")
-    {
-        syn::Meta::Path(_) => {
-            quote! {
-                #field_name: entity_instance.clone(),
-            }
-        }
-        _ => panic!("#[entity_instance] attribute should take the form #[entity_instance]"),
-    }
-}
-
 pub fn expand_ldtk_entity_attribute(
     attribute: &syn::Attribute,
     field_name: &syn::Ident,
@@ -223,7 +194,7 @@ pub fn expand_from_entity_instance_attribute(
     {
         syn::Meta::Path(_) => {
             quote! {
-                #field_name: #field_type::from(entity_instance),
+                #field_name: #field_type::from(entity_instance.clone()),
             }
         }
         _ => {

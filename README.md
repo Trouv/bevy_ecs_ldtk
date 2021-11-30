@@ -1,15 +1,22 @@
 # bevy_ecs_ldtk
 An ECS-friendly ldtk plugin for [bevy](https://github.com/bevyengine/bevy).
-Uses [bevy_ecs_tilemap](https://github.com/StarArawn/bevy_ecs_tilemap) as a base.
+Uses [bevy_ecs_tilemap](https://github.com/StarArawn/bevy_ecs_tilemap) as a
+base.
 Not released yet, still in development.
 
-bevy_ecs_tilemap once supported ldtk loading, but this was removed to keep the plugin small and focused (see: https://github.com/StarArawn/bevy_ecs_tilemap/issues/84). This plugin aims to be a more complete solution to ldtk in bevy.
+bevy_ecs_tilemap once supported ldtk loading, but this was removed to keep the
+plugin small and focused (see:
+https://github.com/StarArawn/bevy_ecs_tilemap/issues/84).
+This plugin aims to be a more complete solution to ldtk in bevy.
 
 ![screenshot](repo/screenshot.png)
 
-In addition to drawing tile/autotile layers, this crate provides
-`App::register_ldtk_entity()` and `#[derive(LdtkEntity)]` for conveniently
-spawning your bundles for particular Entity identifiers in an ldtk file:
+In addition to drawing Tile/AutoTile layers, this crate provides derive macros
+and `App` extensions for conveniently inserting your bundles for Entity and
+IntGrid layers.
+For example, `App::register_ldtk_entity()` and `#[derive(LdtkEntity)]` can be
+used for spawning your bundles for particular Entity identifiers in an ldtk
+file:
 
 ```rust
 use bevy::prelude::*;
@@ -34,10 +41,13 @@ pub struct MyBundle {
 
 There are other attributes available to `#[derive(LdtkEntity)]`, see the documentation for more details.
 
-Or, if you need more control, you can either `impl LdtkEntity` for your bundle,
-or just create a system that queries for `Added<EntityInstance>` and flesh out
-the entity from there.
-Similar options are available for adding components to IntGrid cells.
+Similar options are available for adding components to IntGrid tiles, through
+`App::register_ldtk_int_cell()` and `#[derive(LdtkIntCell)]`
+
+Or, if you need more control, you can either `impl LdtkEntity`/`impl
+LdtkIntCell` for your bundle, or just create a system that queries for
+`Added<EntityInstance>`/`Added<IntGridCell>` and flesh out the entity from
+there.
 
 ### Goals
 - [x] Supports all layer types
@@ -58,9 +68,9 @@ Similar options are available for adding components to IntGrid cells.
   - [x] hot-reloading for entity layers
   - [x] hot-reloading for tilesets
   - [ ] hot-reloading for external levels (see: https://github.com/Trouv/bevy_ecs_ldtk/issues/1)
-- [ ] derive macros for registering bundles to spawn for specific intgrid-layer and entity-layer values
+- [x] derive macros for registering bundles to spawn for specific intgrid-layer and entity-layer values
   - [x] derive macros for entities
-  - [ ] derive macros for intgrid
+  - [x] derive macros for intgrid
 - [ ] support for optionally loading level-neighbors
 
 Once most of these goals are met, and bevy has reached 0.6, this crate will have its first release.

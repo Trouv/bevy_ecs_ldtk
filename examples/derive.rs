@@ -11,6 +11,7 @@ fn main() {
         .register_ldtk_entity::<TableBundle>("Table")
         .register_ldtk_entity::<SBlockBundle>("S")
         .register_ldtk_entity::<WBlockBundle>("W")
+        .register_ldtk_int_cell::<IntGridCellTest>(1)
         .add_system(debug_int_grid)
         .run();
 }
@@ -99,9 +100,26 @@ struct WBlockBundle {
     w_block: WBlock,
 }
 
+#[derive(Component, Default)]
+pub struct Debug;
+
+#[derive(Bundle, LdtkIntCell)]
+struct IntGridCellTest {
+    debug: Debug,
+    #[from_int_grid_cell]
+    int_grid_cell: IntGridCell,
+}
+
+#[derive(Bundle, LdtkIntCell)]
+struct Test2 {
+    #[bundle]
+    #[ldtk_int_cell]
+    int_grid_cell_test: IntGridCellTest,
+}
+
 fn debug_int_grid(
     mut commands: Commands,
-    query: Query<(Entity, &TilePos, &IntGridCell, &Transform), Added<IntGridCell>>,
+    query: Query<(Entity, &TilePos, &IntGridCell, &Transform), (Added<IntGridCell>, With<Debug>)>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     query.for_each(|(entity, tile_pos, cell, transform)| {

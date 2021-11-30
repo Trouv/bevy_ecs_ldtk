@@ -54,8 +54,8 @@ pub fn expand_ldtk_int_cell_derive(ast: &syn::DeriveInput) -> proc_macro::TokenS
 
     let gen = quote! {
         impl #impl_generics bevy_ecs_ldtk::prelude::LdtkIntCell for #struct_name #ty_generics #where_clause {
-            fn bundle_entity(
-                int_grid_cell: &bevy_ecs_ldtk::prelude::IntGridCell,
+            fn bundle_int_cell(
+                int_grid_cell: bevy_ecs_ldtk::prelude::IntGridCell,
             ) -> Self {
                 Self {
                     #(#field_constructions)*
@@ -77,7 +77,7 @@ fn expand_ldtk_int_cell_attribute(
     {
         syn::Meta::Path(_) => {
             quote! {
-                #field_name: #field_type::bundle_int_cell(int_grid_cell, tileset_map, asset_server, materials, texture_atlases),
+                #field_name: #field_type::bundle_int_cell(int_grid_cell),
             }
         }
         _ => panic!("#[ldtk_int_cell] attribute should take the form #[ldtk_int_cell]"),

@@ -430,10 +430,11 @@ impl<B: LdtkIntCell> PhantomLdtkIntCellTrait for PhantomLdtkIntCell<B> {
 
 pub type LdtkIntCellMap = HashMap<i32, Box<dyn PhantomLdtkIntCellTrait>>;
 
-/// Provides the [.register_ldtk_entity()](RegisterLdtkObjects::register_ldtk_entity) function to
-/// bevy's [App].
+/// Provides the [.register_ldtk_entity()](RegisterLdtkObjects::register_ldtk_entity) and
+/// [.register_ldtk_int_cell()](RegisterLdtkObjects::register_ldtk_int_cell) function to bevy's
+/// [App].
 ///
-/// Not intended for custom implmentations on your own types, but you're still welcome to do so.
+/// Not intended for custom implementations on your own types, but you're still welcome to do so.
 ///
 /// *Requires the "app" feature, which is enabled by default*
 pub trait RegisterLdtkObjects {
@@ -470,6 +471,35 @@ pub trait RegisterLdtkObjects {
     /// You can find more details on the `#[derive(LdtkEntity)]` macro at [LdtkEntity].
     fn register_ldtk_entity<B: LdtkEntity>(&mut self, identifier: &str) -> &mut Self;
 
+    /// Registers [LdtkIntCell] types to be inserted for a given IntGrid value in an LDtk file.
+    ///
+    /// This example lets the plugin know that it should spawn a MyBundle when it encounters an
+    /// IntGrid tile whose value is `1`.
+    /// ```no_run
+    /// use bevy::prelude::*;
+    /// use bevy_ecs_ldtk::prelude::*;
+    ///
+    /// fn main() {
+    ///     App::empty()
+    ///         .add_plugin(LdtkPlugin)
+    ///         .register_ldtk_int_cell::<MyBundle>(1)
+    ///         // add other systems, plugins, resources...
+    ///         .run();
+    /// }
+    ///
+    /// # #[derive(Component, Default)]
+    /// # struct ComponentA;
+    /// # #[derive(Component, Default)]
+    /// # struct ComponentB;
+    /// # #[derive(Component, Default)]
+    /// # struct ComponentC;
+    /// #[derive(Bundle, LdtkIntCell)]
+    /// pub struct MyBundle {
+    ///     a: ComponentA,
+    ///     b: ComponentB,
+    ///     c: ComponentC,
+    /// }
+    /// ```
     fn register_ldtk_int_cell<B: LdtkIntCell>(&mut self, value: i32) -> &mut Self;
 }
 

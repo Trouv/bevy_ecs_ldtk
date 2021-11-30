@@ -278,6 +278,118 @@ impl<B: LdtkEntity> PhantomLdtkEntityTrait for PhantomLdtkEntity<B> {
 /// Used by [RegisterLdtkObjects] to associate Ldtk entity identifiers with [LdtkEntity]s.
 pub type LdtkEntityMap = HashMap<String, Box<dyn PhantomLdtkEntityTrait>>;
 
+/// Provides a constructor to a bevy [Bundle] which can be used for spawning additional components
+/// on IntGrid tiles.
+/// After implementing this trait on a bundle, you can register it to spawn automatically for a
+/// given int grid value via
+/// [app.register_ldtk_int_cell()](RegisterLdtkObjects::register_ldtk_int_cell).
+///
+/// For common use cases, you'll want to use derive-macro `#[derive(LdtkIntCell)]`, but you can
+/// also provide a custom implementation.
+///
+/// If there is an int grid tile in the LDtk file whose value is NOT registered, an entity will be
+/// spawned with an [IntGridCell] component, allowing you to flesh it out in your own system.
+///
+/// *Requires the "app" feature, which is enabled by default*
+///
+/// *Derive macro requires the "derive" feature, which is also enabled by default*
+///
+/// ## Derive macro usage
+/// Using `#[derive(LdtkIntCell)]` on a [Bundle] struct will allow the type to be registered to the
+/// app via [app.register_ldtk_int_cell()](RegisterLdtkObjects::register_ldtk_int_cell):
+/// ```no_run
+/// use bevy::prelude::*;
+/// use bevy_ecs_ldtk::prelude::*;
+///
+/// fn main() {
+///     App::empty()
+///         .add_plugin(LdtkPlugin)
+///         .register_ldtk_int_cell::<MyBundle>(1)
+///         // add other systems, plugins, resources...
+///         .run();
+/// }
+///
+/// # #[derive(Component, Default)]
+/// # struct ComponentA;
+/// # #[derive(Component, Default)]
+/// # struct ComponentB;
+/// # #[derive(Component, Default)]
+/// # struct ComponentC;
+/// #[derive(Bundle, LdtkIntCell)]
+/// pub struct MyBundle {
+///     a: ComponentA,
+///     b: ComponentB,
+///     c: ComponentC,
+/// }
+/// ```
+/// Now, when loading your ldtk file, any int grid tiles with the value `1` will be spawned with as
+/// tiles with `MyBundle` inserted.
+///
+/// By default, each component or nested bundle in the bundle will be created using their [Default]
+/// implementations.
+/// However, this behavior can be overriden with some field attribute macros...
+///
+/// ### `#[ldtk_int_cell]`
+/// Indicates that a nested bundle that implements [LdtkIntCell] should be created with
+/// [LdtkIntCell::bundle_int_cell], allowing for nested [LdtkIntCell]s.
+/// ```
+/// # use bevy::prelude::*;
+/// # use bevy_ecs_ldtk::prelude::*;
+/// # #[derive(Component, Default)]
+/// # struct RigidBody;
+/// # #[derive(Component, Default)]
+/// # struct Damage;
+/// #[derive(Bundle, LdtkIntCell)]
+/// pub struct Wall {
+///     rigid_body: RigidBody,
+/// }
+///
+/// #[derive(Bundle, LdtkIntCell)]
+/// pub struct DestructibleWall {
+///     #[ldtk_int_cell]
+///     #[bundle]
+///     wall: Wall,
+///     damage: Damage,
+/// }
+/// ```
+///
+/// ### `#[from_int_grid_cell]`
+/// Indicates that a component or bundle that implements [From<IntGridCell>] should be created
+/// using that conversion.
+/// This allows for more modular and custom component construction, and for different structs that
+/// contain the same component to have different constructions of that component, without having to
+/// `impl LdtkIntCell` for both of them.
+/// It also allows you to have an [IntGridCell] field, since all types `T` implement `From<T>`.
+/// ```
+/// # use bevy::prelude::*;
+/// # use bevy_ecs_ldtk::prelude::*;
+/// # #[derive(Component, Default)]
+/// # struct Fluid { viscosity: i32 }
+/// # #[derive(Component, Default)]
+/// # struct Damage;
+/// impl From<IntGridCell> for Fluid {
+///     fn from(int_grid_cell: IntGridCell) -> Fluid {
+///         let viscosity = match int_grid_cell.value {
+///             1 => 5,
+///             2 => 20,
+///             _ => 0,
+///         };
+///
+///         Fluid {
+///             viscosity,
+///         }
+///     }
+/// }
+///
+/// #[derive(Bundle, LdtkIntCell)]
+/// pub struct Lava {
+///     #[from_int_grid_cell]
+///     fluid: Fluid,
+///     #[from_int_grid_cell]
+///     int_grid_cell: IntGridCell,
+///     damage: Damage,
+/// }
+/// ```
 pub trait LdtkIntCell: Bundle {
     fn bundle_int_cell(int_grid_cell: IntGridCell) -> Self;
 }

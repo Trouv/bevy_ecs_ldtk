@@ -98,8 +98,8 @@ use std::{collections::HashMap, marker::PhantomData};
 /// - `#[sprite_sheet_bundle("path/to/asset.png", tile_width, tile_height, columns, rows, padding,
 /// index)]` will create the field using all of the information provided.
 /// Similar to using [TextureAtlas::from_grid()].
-/// - `#[sprite_sheet_bundle(columns, rows)]` will create the field mostly using information from
-/// the LDtk Editor visual, if it has one.
+/// - `#[sprite_sheet_bundle]` will create the field using information from the LDtk Editor visual,
+/// if it has one.
 /// ```
 /// # use bevy::prelude::*;
 /// # use bevy_ecs_ldtk::prelude::*;
@@ -120,7 +120,7 @@ use std::{collections::HashMap, marker::PhantomData};
 ///     damage: Damage,
 ///     bleed_damage: BleedDamage,
 ///     #[bundle]
-///     #[sprite_sheet_bundle(4, 5)]
+///     #[sprite_sheet_bundle]
 ///     sprite_sheet: SpriteSheetBundle,
 /// }
 /// ```

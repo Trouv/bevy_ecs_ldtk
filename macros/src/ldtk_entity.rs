@@ -210,49 +210,40 @@ fn expand_sprite_sheet_bundle_attribute(
                 },
             }
         },
-        syn::Meta::List(syn::MetaList { nested, .. }) if nested.len() == 2 => {
-            let mut nested_iter = nested.iter();
-
-            let columns = match nested_iter.next() {
-                Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_parse::<usize>().unwrap(),
-                _ => panic!("First argument of #[sprite_sheet_bundle(columns, rows)] should be an int")
-            };
-            let rows = match nested_iter.next() {
-                Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_parse::<usize>().unwrap(),
-                _ => panic!("Second argument of #[sprite_sheet_bundle(columns, rows)] should be an int")
-            };
-
+        syn::Meta::Path(_) => {
             quote! {
                 #field_name: {
-                    match (tileset, &entity_instance.tile) {
-                        (Some(tileset), Some(tile)) => bevy::prelude::SpriteSheetBundle {
+                    match (tileset, &entity_instance.tile, tileset_definition) {
+                        (Some(tileset), Some(tile), Some(tileset_definition)) => bevy::prelude::SpriteSheetBundle {
                             texture_atlas: texture_atlases.add(
-                                bevy::prelude::TextureAtlas::from_grid(
+                                bevy::prelude::TextureAtlas::from_grid_with_padding(
                                     tileset.clone(),
                                     bevy::prelude::Vec2::new(
                                         tile.src_rect[2] as f32,
                                         tile.src_rect[3] as f32,
                                     ),
-                                    #columns, #rows,
+                                    tileset_definition.c_wid as usize,
+                                    tileset_definition.c_hei as usize,
+                                    Vec2::splat(tileset_definition.spacing as f32),
                                 )
                             ),
                             sprite: bevy::prelude::TextureAtlasSprite {
                                 index: (tile.src_rect[1] / tile.src_rect[3]) as u32
-                                        * #columns as u32
+                                        * tileset_definition.c_hei as u32
                                         + (tile.src_rect[0] / tile.src_rect[2]) as u32,
                                 ..Default::default()
                             },
                             ..Default::default()
                         },
                         _ => {
-                            warn!("#[sprite_sheet_bundle(columns, rows)] attribute expected EntityInstance to have a tile defined");
+                            warn!("#[sprite_sheet_bundle] attribute expected EntityInstance to have a tile defined");
                             bevy::prelude::SpriteSheetBundle::default()
                         }
                     }
                 },
             }
         },
-        _ => panic!("#[sprite_sheet_bundle...] attribute should take the form #[sprite_sheet_bundle(\"asset/path.png\", tile_width, tile_height, columns, rows, padding, index)] or #[sprite_sheet_bundle(columns, rows)]"),
+        _ => panic!("#[sprite_sheet_bundle...] attribute should take the form #[sprite_sheet_bundle(\"asset/path.png\", tile_width, tile_height, columns, rows, padding, index)] or #[sprite_sheet_bundle]"),
     }
 }
 

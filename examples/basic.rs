@@ -8,7 +8,7 @@ fn main() {
         .add_plugin(LdtkPlugin)
         .add_startup_system(setup)
         .register_ldtk_entity::<PlayerBundle>("Willo")
-        .add_system(debug_int_grid)
+        //.add_system(debug_int_grid)
         .run();
 }
 
@@ -17,7 +17,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     asset_server.watch_for_changes().unwrap();
 
-    let ldtk_handle = asset_server.load("levels.ldtk");
+    let ldtk_handle = asset_server.load("Typical_2D_platformer_example.ldtk");
     let map_entity = commands.spawn().id();
     let transform = Transform::from_xyz(-5.5 * 32., -6. * 32., 0.);
     commands.entity(map_entity).insert_bundle(LdtkMapBundle {
@@ -37,7 +37,8 @@ struct PlayerBundle {
 impl LdtkEntity for PlayerBundle {
     fn bundle_entity(
         _: &EntityInstance,
-        _: &TilesetMap,
+        _: Option<&Handle<Texture>>,
+        _: Option<&TilesetDefinition>,
         asset_server: &AssetServer,
         materials: &mut Assets<ColorMaterial>,
         _: &mut Assets<TextureAtlas>,

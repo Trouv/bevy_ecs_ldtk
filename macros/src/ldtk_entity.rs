@@ -161,7 +161,7 @@ fn expand_sprite_sheet_bundle_attribute(
         .parse_meta()
         .expect("Cannot parse #[sprite_sheet_bundle...] attribute")
     {
-        syn::Meta::List(syn::MetaList { nested, .. }) if nested.len() == 6 => {
+        syn::Meta::List(syn::MetaList { nested, .. }) if nested.len() == 7 => {
             let mut nested_iter = nested.iter();
 
             let asset_path = &match nested_iter.next() {
@@ -184,18 +184,22 @@ fn expand_sprite_sheet_bundle_attribute(
                 Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_parse::<usize>().unwrap(),
                 _ => panic!("Fifth argument of #[sprite_sheet_bundle(...)] should be an int")
             };
+            let padding = match nested_iter.next() {
+                Some(syn::NestedMeta::Lit(syn::Lit::Float(asset))) => asset.base10_parse::<f32>().unwrap(),
+                _ => panic!("Sixth argument of #[sprite_sheet_bundle(...)] should be a float")
+            };
             let index = match nested_iter.next() {
                 Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_parse::<u32>().unwrap(),
-                _ => panic!("Sixth argument of #[sprite_sheet_bundle(...)] should be an int")
+                _ => panic!("Seventh argument of #[sprite_sheet_bundle(...)] should be an int")
             };
 
             quote! {
                 #field_name: bevy::prelude::SpriteSheetBundle {
                     texture_atlas: texture_atlases.add(
-                        bevy::prelude::TextureAtlas::from_grid(
+                        bevy::prelude::TextureAtlas::from_grid_with_padding(
                             asset_server.load(#asset_path).into(),
                             bevy::prelude::Vec2::new(#tile_width, #tile_height),
-                            #columns, #rows,
+                            #columns, #rows, bevy::prelude::Vec2::splat(#padding),
                         )
                     ),
                     sprite: bevy::prelude::TextureAtlasSprite {
@@ -248,7 +252,7 @@ fn expand_sprite_sheet_bundle_attribute(
                 },
             }
         },
-        _ => panic!("#[sprite_sheet_bundle...] attribute should take the form #[sprite_sheet_bundle(\"asset/path.png\", tile_width, tile_height, columns, rows, index)] or #[sprite_sheet_bundle(columns, rows)]"),
+        _ => panic!("#[sprite_sheet_bundle...] attribute should take the form #[sprite_sheet_bundle(\"asset/path.png\", tile_width, tile_height, columns, rows, padding, index)] or #[sprite_sheet_bundle(columns, rows)]"),
     }
 }
 

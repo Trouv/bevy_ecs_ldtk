@@ -95,8 +95,8 @@ use std::{collections::HashMap, marker::PhantomData};
 /// Similar to `#[sprite_bundle...]`, indicates that a [SpriteSheetBundle] field should be created
 /// with an actual material/image.
 /// There are two forms for this attribute:
-/// - `#[sprite_sheet_bundle("path/to/asset.png", tile_width, tile_height, columns, rows, index)]`
-/// will create the field using all of the information provided.
+/// - `#[sprite_sheet_bundle("path/to/asset.png", tile_width, tile_height, columns, rows, padding,
+/// index)]` will create the field using all of the information provided.
 /// Similar to using [TextureAtlas::from_grid()].
 /// - `#[sprite_sheet_bundle(columns, rows)]` will create the field mostly using information from
 /// the LDtk Editor visual, if it has one.
@@ -110,7 +110,7 @@ use std::{collections::HashMap, marker::PhantomData};
 /// #[derive(Bundle, LdtkEntity)]
 /// pub struct Sword {
 ///     #[bundle]
-///     #[sprite_sheet_bundle("weapons.png", 32.0, 32.0, 4, 5, 17)]
+///     #[sprite_sheet_bundle("weapons.png", 32.0, 32.0, 4, 5, 5.0, 17)]
 ///     sprite_sheet: SpriteSheetBundle,
 ///     damage: Damage,
 /// }

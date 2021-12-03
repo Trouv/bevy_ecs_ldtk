@@ -80,7 +80,8 @@ pub fn expand_ldtk_entity_derive(ast: &syn::DeriveInput) -> proc_macro::TokenStr
         impl #impl_generics bevy_ecs_ldtk::prelude::LdtkEntity for #struct_name #ty_generics #where_clause {
             fn bundle_entity(
                 entity_instance: &bevy_ecs_ldtk::prelude::EntityInstance,
-                tileset_map: &bevy_ecs_ldtk::prelude::TilesetMap,
+                tileset: Option<&bevy::prelude::Handle<bevy::prelude::Texture>>,
+                tileset_definition: Option<&bevy_ecs_ldtk::prelude::TilesetDefinition>,
                 asset_server: &bevy::prelude::AssetServer,
                 materials: &mut bevy::prelude::Assets<bevy::prelude::ColorMaterial>,
                 texture_atlases: &mut bevy::prelude::Assets<bevy::prelude::TextureAtlas>,
@@ -132,7 +133,7 @@ fn expand_sprite_bundle_attribute(
         },
         syn::Meta::Path(_) => {
             quote! {
-                #field_name: #field_type::bundle_entity(entity_instance, tileset_map, asset_server, materials, texture_atlases),
+                #field_name: #field_type::bundle_entity(entity_instance, tileset, tileset_definition, asset_server, materials, texture_atlases),
             }
         },
         _ => panic!("#[sprite_bundle...] attribute should take the form #[sprite_bundle(\"asset/path.png\")] or #[sprite_bundle]"),
@@ -219,33 +220,27 @@ fn expand_sprite_sheet_bundle_attribute(
 
             quote! {
                 #field_name: {
-                    match entity_instance.tile.as_ref() {
-                        Some(tile) => match tileset_map.get(&tile.tileset_uid) {
-                            Some(tileset) => bevy::prelude::SpriteSheetBundle {
-                                    texture_atlas: texture_atlases.add(
-                                        bevy::prelude::TextureAtlas::from_grid(
-                                            tileset.clone(),
-                                            bevy::prelude::Vec2::new(
-                                                tile.src_rect[2] as f32,
-                                                tile.src_rect[3] as f32,
-                                            ),
-                                            #columns, #rows,
-                                        )
+                    match (tileset, &entity_instance.tile) {
+                        (Some(tileset), Some(tile)) => bevy::prelude::SpriteSheetBundle {
+                            texture_atlas: texture_atlases.add(
+                                bevy::prelude::TextureAtlas::from_grid(
+                                    tileset.clone(),
+                                    bevy::prelude::Vec2::new(
+                                        tile.src_rect[2] as f32,
+                                        tile.src_rect[3] as f32,
                                     ),
-                                    sprite: bevy::prelude::TextureAtlasSprite {
-                                        index: (tile.src_rect[1] / tile.src_rect[3]) as u32
-                                                * #columns as u32
-                                                + (tile.src_rect[0] / tile.src_rect[2]) as u32,
-                                        ..Default::default()
-                                    },
-                                    ..Default::default()
-                                },
-                                None => {
-                                    warn!("EntityInstance's tileset should be in the TilesetMap");
-                                    bevy::prelude::SpriteSheetBundle::default()
-                                }
-                            }
-                        None => {
+                                    #columns, #rows,
+                                )
+                            ),
+                            sprite: bevy::prelude::TextureAtlasSprite {
+                                index: (tile.src_rect[1] / tile.src_rect[3]) as u32
+                                        * #columns as u32
+                                        + (tile.src_rect[0] / tile.src_rect[2]) as u32,
+                                ..Default::default()
+                            },
+                            ..Default::default()
+                        },
+                        _ => {
                             warn!("#[sprite_sheet_bundle(columns, rows)] attribute expected EntityInstance to have a tile defined");
                             bevy::prelude::SpriteSheetBundle::default()
                         }
@@ -268,7 +263,7 @@ fn expand_ldtk_entity_attribute(
     {
         syn::Meta::Path(_) => {
             quote! {
-                #field_name: #field_type::bundle_entity(entity_instance, tileset_map, asset_server, materials, texture_atlases),
+                #field_name: #field_type::bundle_entity(entity_instance, tileset, tileset_definition, asset_server, materials, texture_atlases),
             }
         }
         _ => panic!("#[ldtk_entity] attribute should take the form #[ldtk_entity]"),

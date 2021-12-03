@@ -1,7 +1,10 @@
 //! Types and traits for hooking into the ldtk loading process via bevy's [App].
 //!
 //! *Requires the "app" feature, which is enabled by default*
-use crate::{assets::TilesetMap, components::IntGridCell, ldtk::EntityInstance};
+use crate::{
+    components::IntGridCell,
+    ldtk::{EntityInstance, TilesetDefinition},
+};
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::{collections::HashMap, marker::PhantomData};
 
@@ -200,7 +203,8 @@ pub trait LdtkEntity: Bundle {
     /// So, any custom implementations of these components within this trait will be overwritten.
     fn bundle_entity(
         entity_instance: &EntityInstance,
-        tileset_map: &TilesetMap,
+        tileset: Option<&Handle<Texture>>,
+        tileset_definition: Option<&TilesetDefinition>,
         asset_server: &AssetServer,
         materials: &mut Assets<ColorMaterial>,
         texture_atlases: &mut Assets<TextureAtlas>,
@@ -209,21 +213,14 @@ pub trait LdtkEntity: Bundle {
 
 impl LdtkEntity for SpriteBundle {
     fn bundle_entity(
-        entity_instance: &EntityInstance,
-        tileset_map: &TilesetMap,
+        _: &EntityInstance,
+        tileset: Option<&Handle<Texture>>,
+        _: Option<&TilesetDefinition>,
         _: &AssetServer,
         materials: &mut Assets<ColorMaterial>,
         _: &mut Assets<TextureAtlas>,
     ) -> Self {
-        let tile = match entity_instance.tile.as_ref() {
-            Some(tile) => tile,
-            None => {
-                warn!("#[sprite_bundle] attribute expected the EntityInstance to have a tile defined.");
-                return SpriteBundle::default();
-            }
-        };
-
-        let tileset = match tileset_map.get(&tile.tileset_uid) {
+        let tileset = match tileset {
             Some(tileset) => tileset.clone(),
             None => {
                 warn!("EntityInstance's tileset should be in the TilesetMap");
@@ -248,7 +245,8 @@ pub trait PhantomLdtkEntityTrait {
         &self,
         commands: &'b mut EntityCommands<'w, 's, 'a>,
         entity_instance: &EntityInstance,
-        tileset_map: &TilesetMap,
+        tileset: Option<&Handle<Texture>>,
+        tileset_definition: Option<&TilesetDefinition>,
         asset_server: &AssetServer,
         materials: &mut Assets<ColorMaterial>,
         texture_atlases: &mut Assets<TextureAtlas>,
@@ -260,14 +258,16 @@ impl<B: LdtkEntity> PhantomLdtkEntityTrait for PhantomLdtkEntity<B> {
         &self,
         entity_commands: &'b mut EntityCommands<'w, 's, 'a>,
         entity_instance: &EntityInstance,
-        tileset_map: &TilesetMap,
+        tileset: Option<&Handle<Texture>>,
+        tileset_definition: Option<&TilesetDefinition>,
         asset_server: &AssetServer,
         materials: &mut Assets<ColorMaterial>,
         texture_atlases: &mut Assets<TextureAtlas>,
     ) -> &'b mut EntityCommands<'w, 's, 'a> {
         entity_commands.insert_bundle(B::bundle_entity(
             entity_instance,
-            tileset_map,
+            tileset,
+            tileset_definition,
             asset_server,
             materials,
             texture_atlases,

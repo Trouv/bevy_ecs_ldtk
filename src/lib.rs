@@ -34,12 +34,12 @@ pub mod plugin {
 
 pub mod prelude {
     pub use crate::{
-        assets::{LdtkAsset, LdtkExternalLevel, TilesetMap},
+        assets::{LdtkAsset, LdtkExternalLevel},
         components::{
             EntityInstance, EntityInstanceBundle, IntGridCell, IntGridCellBundle, LdtkMapBundle,
             LevelSelection,
         },
-        ldtk,
+        ldtk::{self, TilesetDefinition},
         plugin::LdtkPlugin,
     };
 

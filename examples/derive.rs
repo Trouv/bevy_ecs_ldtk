@@ -72,7 +72,7 @@ impl From<EntityInstance> for Block {
 #[derive(Clone, Default, Bundle, LdtkEntity)]
 struct BlockBundle {
     #[bundle]
-    #[sprite_sheet_bundle(2, 4)]
+    #[sprite_sheet_bundle]
     sprite_sheet_bundle: SpriteSheetBundle,
     #[from_entity_instance]
     block: Block,
@@ -84,7 +84,7 @@ pub struct SBlock;
 #[derive(Clone, Default, Bundle, LdtkEntity)]
 struct SBlockBundle {
     #[bundle]
-    #[sprite_sheet_bundle("input_blocks.png", 32., 32., 2, 4, 4)]
+    #[sprite_sheet_bundle("input_blocks.png", 32., 32., 2, 4, 0., 4)]
     sprite_sheet_bundle: SpriteSheetBundle,
     s_block: SBlock,
 }

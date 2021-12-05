@@ -446,11 +446,7 @@ fn layer_grid_tiles(grid_tiles: Vec<TileInstance>) -> Vec<Vec<TileInstance>> {
     let mut layer = Vec::new();
     let mut overflow = Vec::new();
     for tile in grid_tiles {
-        if layer
-            .iter()
-            .find(|&t: &&TileInstance| t.px == tile.px)
-            .is_some()
-        {
+        if layer.iter().any(|t: &TileInstance| t.px == tile.px) {
             overflow.push(tile);
         } else {
             layer.push(tile);

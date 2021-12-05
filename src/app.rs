@@ -223,7 +223,7 @@ impl LdtkEntity for SpriteBundle {
         let tileset = match tileset {
             Some(tileset) => tileset.clone(),
             None => {
-                warn!("EntityInstance's tileset should be in the TilesetMap");
+                warn!("EntityInstance needs a tileset to be bundled as a SpriteBundle");
                 return SpriteBundle::default();
             }
         };
@@ -232,6 +232,40 @@ impl LdtkEntity for SpriteBundle {
         SpriteBundle {
             material,
             ..Default::default()
+        }
+    }
+}
+
+impl LdtkEntity for SpriteSheetBundle {
+    fn bundle_entity(
+        entity_instance: &EntityInstance,
+        tileset: Option<&Handle<Texture>>,
+        tileset_definition: Option<&TilesetDefinition>,
+        _: &AssetServer,
+        _: &mut Assets<ColorMaterial>,
+        texture_atlases: &mut Assets<TextureAtlas>,
+    ) -> Self {
+        match (tileset, &entity_instance.tile, tileset_definition) {
+            (Some(tileset), Some(tile), Some(tileset_definition)) => SpriteSheetBundle {
+                texture_atlas: texture_atlases.add(TextureAtlas::from_grid_with_padding(
+                    tileset.clone(),
+                    Vec2::new(tile.src_rect[2] as f32, tile.src_rect[3] as f32),
+                    tileset_definition.c_wid as usize,
+                    tileset_definition.c_hei as usize,
+                    Vec2::splat(tileset_definition.spacing as f32),
+                )),
+                sprite: TextureAtlasSprite {
+                    index: (tile.src_rect[1] / tile.src_rect[3]) as u32
+                        * tileset_definition.c_hei as u32
+                        + (tile.src_rect[0] / tile.src_rect[2]) as u32,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            _ => {
+                warn!("EntityInstance needs a tile, an associated tileset, and an associated tileset definition to be bundled as a SpriteSheetBundle");
+                SpriteSheetBundle::default()
+            }
         }
     }
 }

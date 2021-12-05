@@ -255,6 +255,14 @@ fn spawn_level(
 
                         let mut entity_commands = commands.spawn();
 
+                        let (tileset, tileset_definition) = match &entity_instance.tile {
+                            Some(t) => (
+                                tileset_map.get(&t.tileset_uid).map(|h| h),
+                                tileset_definition_map.get(&t.tileset_uid).map(|&d| d),
+                            ),
+                            None => (None, None),
+                        };
+
                         match ldtk_entity_map.get(&entity_instance.identifier) {
                             None => entity_commands.insert_bundle(EntityInstanceBundle {
                                 entity_instance: entity_instance.clone(),
@@ -262,7 +270,8 @@ fn spawn_level(
                             Some(phantom_ldtk_entity) => phantom_ldtk_entity.evaluate(
                                 &mut entity_commands,
                                 entity_instance,
-                                tileset_map,
+                                tileset,
+                                tileset_definition,
                                 asset_server,
                                 materials,
                                 texture_atlases,

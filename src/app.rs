@@ -1,7 +1,10 @@
 //! Types and traits for hooking into the ldtk loading process via bevy's [App].
 //!
 //! *Requires the "app" feature, which is enabled by default*
-use crate::{assets::TilesetMap, components::IntGridCell, ldtk::EntityInstance};
+use crate::{
+    components::IntGridCell,
+    ldtk::{EntityInstance, TilesetDefinition},
+};
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::{collections::HashMap, marker::PhantomData};
 
@@ -92,11 +95,11 @@ use std::{collections::HashMap, marker::PhantomData};
 /// Similar to `#[sprite_bundle...]`, indicates that a [SpriteSheetBundle] field should be created
 /// with an actual material/image.
 /// There are two forms for this attribute:
-/// - `#[sprite_sheet_bundle("path/to/asset.png", tile_width, tile_height, columns, rows, index)]`
-/// will create the field using all of the information provided.
+/// - `#[sprite_sheet_bundle("path/to/asset.png", tile_width, tile_height, columns, rows, padding,
+/// index)]` will create the field using all of the information provided.
 /// Similar to using [TextureAtlas::from_grid()].
-/// - `#[sprite_sheet_bundle(columns, rows)]` will create the field mostly using information from
-/// the LDtk Editor visual, if it has one.
+/// - `#[sprite_sheet_bundle]` will create the field using information from the LDtk Editor visual,
+/// if it has one.
 /// ```
 /// # use bevy::prelude::*;
 /// # use bevy_ecs_ldtk::prelude::*;
@@ -107,7 +110,7 @@ use std::{collections::HashMap, marker::PhantomData};
 /// #[derive(Bundle, LdtkEntity)]
 /// pub struct Sword {
 ///     #[bundle]
-///     #[sprite_sheet_bundle("weapons.png", 32.0, 32.0, 4, 5, 17)]
+///     #[sprite_sheet_bundle("weapons.png", 32.0, 32.0, 4, 5, 5.0, 17)]
 ///     sprite_sheet: SpriteSheetBundle,
 ///     damage: Damage,
 /// }
@@ -117,7 +120,7 @@ use std::{collections::HashMap, marker::PhantomData};
 ///     damage: Damage,
 ///     bleed_damage: BleedDamage,
 ///     #[bundle]
-///     #[sprite_sheet_bundle(4, 5)]
+///     #[sprite_sheet_bundle]
 ///     sprite_sheet: SpriteSheetBundle,
 /// }
 /// ```
@@ -200,7 +203,8 @@ pub trait LdtkEntity: Bundle {
     /// So, any custom implementations of these components within this trait will be overwritten.
     fn bundle_entity(
         entity_instance: &EntityInstance,
-        tileset_map: &TilesetMap,
+        tileset: Option<&Handle<Texture>>,
+        tileset_definition: Option<&TilesetDefinition>,
         asset_server: &AssetServer,
         materials: &mut Assets<ColorMaterial>,
         texture_atlases: &mut Assets<TextureAtlas>,
@@ -209,24 +213,17 @@ pub trait LdtkEntity: Bundle {
 
 impl LdtkEntity for SpriteBundle {
     fn bundle_entity(
-        entity_instance: &EntityInstance,
-        tileset_map: &TilesetMap,
+        _: &EntityInstance,
+        tileset: Option<&Handle<Texture>>,
+        _: Option<&TilesetDefinition>,
         _: &AssetServer,
         materials: &mut Assets<ColorMaterial>,
         _: &mut Assets<TextureAtlas>,
     ) -> Self {
-        let tile = match entity_instance.tile.as_ref() {
-            Some(tile) => tile,
-            None => {
-                warn!("#[sprite_bundle] attribute expected the EntityInstance to have a tile defined.");
-                return SpriteBundle::default();
-            }
-        };
-
-        let tileset = match tileset_map.get(&tile.tileset_uid) {
+        let tileset = match tileset {
             Some(tileset) => tileset.clone(),
             None => {
-                warn!("EntityInstance's tileset should be in the TilesetMap");
+                warn!("EntityInstance needs a tileset to be bundled as a SpriteBundle");
                 return SpriteBundle::default();
             }
         };
@@ -235,6 +232,40 @@ impl LdtkEntity for SpriteBundle {
         SpriteBundle {
             material,
             ..Default::default()
+        }
+    }
+}
+
+impl LdtkEntity for SpriteSheetBundle {
+    fn bundle_entity(
+        entity_instance: &EntityInstance,
+        tileset: Option<&Handle<Texture>>,
+        tileset_definition: Option<&TilesetDefinition>,
+        _: &AssetServer,
+        _: &mut Assets<ColorMaterial>,
+        texture_atlases: &mut Assets<TextureAtlas>,
+    ) -> Self {
+        match (tileset, &entity_instance.tile, tileset_definition) {
+            (Some(tileset), Some(tile), Some(tileset_definition)) => SpriteSheetBundle {
+                texture_atlas: texture_atlases.add(TextureAtlas::from_grid_with_padding(
+                    tileset.clone(),
+                    Vec2::new(tile.src_rect[2] as f32, tile.src_rect[3] as f32),
+                    tileset_definition.c_wid as usize,
+                    tileset_definition.c_hei as usize,
+                    Vec2::splat(tileset_definition.spacing as f32),
+                )),
+                sprite: TextureAtlasSprite {
+                    index: (tile.src_rect[1] / tile.src_rect[3]) as u32
+                        * tileset_definition.c_hei as u32
+                        + (tile.src_rect[0] / tile.src_rect[2]) as u32,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            _ => {
+                warn!("EntityInstance needs a tile, an associated tileset, and an associated tileset definition to be bundled as a SpriteSheetBundle");
+                SpriteSheetBundle::default()
+            }
         }
     }
 }
@@ -248,7 +279,8 @@ pub trait PhantomLdtkEntityTrait {
         &self,
         commands: &'b mut EntityCommands<'w, 's, 'a>,
         entity_instance: &EntityInstance,
-        tileset_map: &TilesetMap,
+        tileset: Option<&Handle<Texture>>,
+        tileset_definition: Option<&TilesetDefinition>,
         asset_server: &AssetServer,
         materials: &mut Assets<ColorMaterial>,
         texture_atlases: &mut Assets<TextureAtlas>,
@@ -260,14 +292,16 @@ impl<B: LdtkEntity> PhantomLdtkEntityTrait for PhantomLdtkEntity<B> {
         &self,
         entity_commands: &'b mut EntityCommands<'w, 's, 'a>,
         entity_instance: &EntityInstance,
-        tileset_map: &TilesetMap,
+        tileset: Option<&Handle<Texture>>,
+        tileset_definition: Option<&TilesetDefinition>,
         asset_server: &AssetServer,
         materials: &mut Assets<ColorMaterial>,
         texture_atlases: &mut Assets<TextureAtlas>,
     ) -> &'b mut EntityCommands<'w, 's, 'a> {
         entity_commands.insert_bundle(B::bundle_entity(
             entity_instance,
-            tileset_map,
+            tileset,
+            tileset_definition,
             asset_server,
             materials,
             texture_atlases,

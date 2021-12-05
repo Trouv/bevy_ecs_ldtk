@@ -252,6 +252,8 @@ fn spawn_level(
                             level.px_hei as u32,
                             layer_id as f32,
                         );
+                        // Note: entities do not seem to be affected visually by layer offsets in
+                        // the editor, so no layer offset is added to the transform here.
 
                         let mut entity_commands = commands.spawn();
 
@@ -412,7 +414,7 @@ fn spawn_level(
                                 entity_commands
                                     .insert(transform)
                                     .insert(GlobalTransform::default())
-                                    .insert(Parent(ldtk_entity));
+                                    .insert(Parent(layer_entity));
                             }
 
                             let layer_bundle =
@@ -423,13 +425,14 @@ fn spawn_level(
                             layer_entity
                         } else {
                             let tile_maker = tile_pos_to_tile_maker(
-                            layer_instance.c_hei,
-                            layer_instance.grid_size,
-                            tileset_definition.expect(
-                                "tileset definition should exist on non-IntGrid, non-Entity layers",
-                            ),
-                            grid_tiles,
-                        );
+                                layer_instance.c_hei,
+                                layer_instance.grid_size,
+                                tileset_definition.expect(
+                                    "tileset definition should exist on non-IntGrid, non-Entity layers",
+                                ),
+                                grid_tiles,
+                            );
+
                             LayerBuilder::<TileBundle>::new_batch(
                                 commands,
                                 settings,
@@ -441,6 +444,16 @@ fn spawn_level(
                                 tile_pos_to_tile_bundle_maker(tile_maker),
                             )
                         };
+
+                        let layer_offset = Vec3::new(
+                            layer_instance.px_total_offset_x as f32,
+                            -layer_instance.px_total_offset_y as f32,
+                            0.,
+                        );
+
+                        commands
+                            .entity(layer_entity)
+                            .insert(Transform::from_translation(layer_offset));
 
                         map.add_layer(commands, layer_id as u16, layer_entity);
                         layer_id += 1;

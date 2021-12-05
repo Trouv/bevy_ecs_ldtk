@@ -13,6 +13,8 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
+      - name: Install alsa and udev
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
       - uses: actions-rs/cargo@v1
         with:
           command: check
@@ -27,6 +29,8 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
+      - name: Install alsa and udev
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
       - uses: actions-rs/cargo@v1
         with:
           command: test
@@ -42,6 +46,8 @@ jobs:
           toolchain: stable
           override: true
       - run: rustup component add rustfmt
+      - name: Install alsa and udev
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
       - uses: actions-rs/cargo@v1
         with:
           command: fmt
@@ -58,6 +64,8 @@ jobs:
           toolchain: stable
           override: true
       - run: rustup component add clippy
+      - name: Install alsa and udev
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
       - uses: actions-rs/cargo@v1
         with:
           command: clippy

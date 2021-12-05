@@ -46,8 +46,6 @@ jobs:
           toolchain: stable
           override: true
       - run: rustup component add rustfmt
-      - name: Install alsa and udev
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
       - uses: actions-rs/cargo@v1
         with:
           command: fmt

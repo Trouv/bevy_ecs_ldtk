@@ -8,7 +8,7 @@ fn main() {
         .add_plugin(LdtkPlugin)
         .add_startup_system(setup)
         .register_ldtk_entity::<PlayerBundle>("Willo")
-        //.add_system(debug_int_grid)
+        .add_system(debug_int_grid)
         .run();
 }
 

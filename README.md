@@ -77,5 +77,6 @@ there.
 Once most of these goals are met, and bevy has reached 0.6, this crate will have its first release.
 
 ### Compatibility
-bevy | bevy_ecs_tilemap | bevy_ecs_ldtk
-0.6 | 0.5 | 0.1
+| bevy | bevy_ecs_tilemap | bevy_ecs_ldtk |
+| --- | --- | --- |
+| 0.6 | 0.5 | 0.1 |

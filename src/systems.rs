@@ -301,29 +301,21 @@ fn spawn_level(
                         .tileset_def_uid
                         .map(|u| tileset_definition_map.get(&u).unwrap());
 
-                    let settings = match tileset_definition {
-                        Some(tileset_definition) => LayerSettings::new(
-                            map_size,
-                            CHUNK_SIZE,
-                            TileSize(
-                                tileset_definition.tile_grid_size as f32,
-                                tileset_definition.tile_grid_size as f32,
-                            ),
-                            TextureSize(
-                                tileset_definition.px_wid as f32,
-                                tileset_definition.px_hei as f32,
-                            ),
+                    let tile_size = TileSize(
+                        layer_instance.grid_size as f32,
+                        layer_instance.grid_size as f32,
+                    );
+
+                    let texture_size = match tileset_definition {
+                        Some(tileset_definition) => TextureSize(
+                            tileset_definition.px_wid as f32,
+                            tileset_definition.px_hei as f32,
                         ),
-                        None => LayerSettings::new(
-                            map_size,
-                            CHUNK_SIZE,
-                            TileSize(
-                                layer_instance.grid_size as f32,
-                                layer_instance.grid_size as f32,
-                            ),
-                            TextureSize(0., 0.),
-                        ),
+                        None => TextureSize(0., 0.),
                     };
+
+                    let settings =
+                        LayerSettings::new(map_size, CHUNK_SIZE, tile_size, texture_size);
 
                     let material_handle = match tileset_definition {
                         Some(tileset_definition) => {

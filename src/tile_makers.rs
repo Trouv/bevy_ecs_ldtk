@@ -17,6 +17,7 @@ use crate::{
     ldtk::{TileInstance, TilesetDefinition},
     utils::*,
 };
+use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 
 use std::collections::HashMap;
@@ -40,7 +41,12 @@ pub fn tile_pos_to_tile_maker(
     tileset_definition: &TilesetDefinition,
     grid_tiles: Vec<TileInstance>,
 ) -> impl FnMut(TilePos) -> Option<Tile> {
-    let tile_grid_size = tileset_definition.tile_grid_size;
+    let &TilesetDefinition {
+        tile_grid_size,
+        spacing,
+        padding,
+        ..
+    } = tileset_definition;
     let tileset_width_in_tiles = tileset_definition.c_wid;
 
     let grid_tile_map: HashMap<TilePos, TileInstance> = grid_tiles
@@ -59,16 +65,20 @@ pub fn tile_pos_to_tile_maker(
     move |tile_pos: TilePos| -> Option<Tile> {
         match grid_tile_map.get(&tile_pos) {
             Some(tile_instance) => {
-                let tileset_x = tile_instance.src[0] / tile_grid_size;
-                let tileset_y = tile_instance.src[1] / tile_grid_size;
+                let src = IVec2::new(tile_instance.src[0], tile_instance.src[1]);
+                let tileset_coord = (src - IVec2::splat(padding))
+                    / (IVec2::splat(tile_grid_size) + IVec2::splat(spacing));
+
                 let (flip_x, flip_y) = match tile_instance.f {
                     1 => (true, false),
                     2 => (false, true),
                     3 => (true, true),
                     _ => (false, false),
                 };
+
                 Some(Tile {
-                    texture_index: (tileset_y * tileset_width_in_tiles + tileset_x) as u16,
+                    texture_index: (tileset_coord.y * tileset_width_in_tiles + tileset_coord.x)
+                        as u16,
                     flip_x,
                     flip_y,
                     ..Default::default()

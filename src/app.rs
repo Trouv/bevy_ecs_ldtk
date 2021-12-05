@@ -275,6 +275,7 @@ pub struct PhantomLdtkEntity<B: LdtkEntity> {
 }
 
 pub trait PhantomLdtkEntityTrait {
+    #[allow(clippy::too_many_arguments)]
     fn evaluate<'w, 's, 'a, 'b>(
         &self,
         commands: &'b mut EntityCommands<'w, 's, 'a>,

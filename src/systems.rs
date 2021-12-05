@@ -257,8 +257,8 @@ fn spawn_level(
 
                         let (tileset, tileset_definition) = match &entity_instance.tile {
                             Some(t) => (
-                                tileset_map.get(&t.tileset_uid).map(|h| h),
-                                tileset_definition_map.get(&t.tileset_uid).map(|&d| d),
+                                tileset_map.get(&t.tileset_uid),
+                                tileset_definition_map.get(&t.tileset_uid).copied(),
                             ),
                             None => (None, None),
                         };

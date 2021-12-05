@@ -257,8 +257,8 @@ fn spawn_level(
 
                         let (tileset, tileset_definition) = match &entity_instance.tile {
                             Some(t) => (
-                                tileset_map.get(&t.tileset_uid).map(|h| h),
-                                tileset_definition_map.get(&t.tileset_uid).map(|&d| d),
+                                tileset_map.get(&t.tileset_uid),
+                                tileset_definition_map.get(&t.tileset_uid).copied(),
                             ),
                             None => (None, None),
                         };
@@ -455,11 +455,7 @@ fn layer_grid_tiles(grid_tiles: Vec<TileInstance>) -> Vec<Vec<TileInstance>> {
     let mut layer = Vec::new();
     let mut overflow = Vec::new();
     for tile in grid_tiles {
-        if layer
-            .iter()
-            .find(|&t: &&TileInstance| t.px == tile.px)
-            .is_some()
-        {
+        if layer.iter().any(|t: &TileInstance| t.px == tile.px) {
             overflow.push(tile);
         } else {
             layer.push(tile);

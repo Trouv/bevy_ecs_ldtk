@@ -1,4 +1,11 @@
-# bevy_ecs_ldtk
+# `bevy_ecs_ldtk`
+[![crates.io](https://img.shields.io/crates/v/bevy_ecs_ldtk)](https://crates.io/crates/bevy_ecs_ldtk)
+[![docs.rs](https://docs.rs/bevy_ecs_ldtk/badge.svg)](https://docs.rs/bevy_ecs_ldtk)
+[![crates.io](https://img.shields.io/crates/d/bevy_ecs_ldtk)](https://crates.io/crates/bevy_ecs_ldtk)
+[![MIT/Apache 2.0](https://img.shields.io/badge/license-MIT%2FApache-blue.svg)](./LICENSE)
+[![Bevy tracking](https://img.shields.io/badge/Bevy%20tracking-released%20version-lightblue)](https://github.com/bevyengine/bevy/blob/main/docs/plugins_guidelines.md#main-branch-tracking)
+[![CI](https://github.com/Trouv/bevy_ecs_ldtk/actions/workflows/ci.yml/badge.svg)](https://github.com/Trouv/bevy_ecs_ldtk/actions/workflows/ci.yml)
+
 An ECS-friendly ldtk plugin for [bevy](https://github.com/bevyengine/bevy).
 Uses [bevy_ecs_tilemap](https://github.com/StarArawn/bevy_ecs_tilemap) as a
 base.
@@ -74,3 +81,8 @@ there.
 - [ ] support for optionally loading level-neighbors
 
 Once most of these goals are met, and bevy has reached 0.6, this crate will have its first release.
+
+### Compatibility
+| bevy | bevy_ecs_tilemap | bevy_ecs_ldtk |
+| --- | --- | --- |
+| 0.6 | 0.5 | 0.1 |

@@ -1,3 +1,4 @@
+[![Bevy tracking](https://img.shields.io/badge/Bevy%20tracking-released%20version-lightblue)](https://github.com/bevyengine/bevy/blob/main/docs/plugins_guidelines.md#main-branch-tracking)
 # bevy_ecs_ldtk
 An ECS-friendly ldtk plugin for [bevy](https://github.com/bevyengine/bevy).
 Uses [bevy_ecs_tilemap](https://github.com/StarArawn/bevy_ecs_tilemap) as a
@@ -74,3 +75,7 @@ there.
 - [ ] support for optionally loading level-neighbors
 
 Once most of these goals are met, and bevy has reached 0.6, this crate will have its first release.
+
+### Compatibility
+bevy | bevy_ecs_tilemap | bevy_ecs_ldtk
+0.6 | 0.5 | 0.1

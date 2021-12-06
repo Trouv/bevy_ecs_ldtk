@@ -344,11 +344,10 @@ fn spawn_level(
                             );
 
                             match tileset_definition {
-                                Some(tileset_definition) => {
+                                Some(_) => {
                                     let tile_maker = tile_pos_to_tile_maker(
                                         layer_instance.c_hei,
                                         layer_instance.grid_size,
-                                        tileset_definition,
                                         grid_tiles,
                                     );
 
@@ -419,9 +418,6 @@ fn spawn_level(
                             let tile_maker = tile_pos_to_tile_maker(
                                 layer_instance.c_hei,
                                 layer_instance.grid_size,
-                                tileset_definition.expect(
-                                    "tileset definition should exist on non-IntGrid, non-Entity layers",
-                                ),
                                 grid_tiles,
                             );
 

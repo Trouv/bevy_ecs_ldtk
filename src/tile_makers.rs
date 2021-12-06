@@ -13,11 +13,7 @@
 //! Tile bundle makers can be used with [LayerBuilder::new_batch] and [set_all_tiles_with_func] to
 //! spawn many tiles at once.
 
-use crate::{
-    ldtk::{TileInstance, TilesetDefinition},
-    utils::*,
-};
-use bevy::prelude::*;
+use crate::{ldtk::TileInstance, utils::*};
 use bevy_ecs_tilemap::prelude::*;
 
 use std::collections::HashMap;
@@ -38,17 +34,8 @@ pub fn tile_pos_to_invisible_tile(_: TilePos) -> Option<Tile> {
 pub fn tile_pos_to_tile_maker(
     layer_height_in_tiles: i32,
     layer_grid_size: i32,
-    tileset_definition: &TilesetDefinition,
     grid_tiles: Vec<TileInstance>,
 ) -> impl FnMut(TilePos) -> Option<Tile> {
-    let &TilesetDefinition {
-        tile_grid_size,
-        spacing,
-        padding,
-        ..
-    } = tileset_definition;
-    let tileset_width_in_tiles = tileset_definition.c_wid;
-
     let grid_tile_map: HashMap<TilePos, TileInstance> = grid_tiles
         .into_iter()
         .map(|t| {
@@ -65,10 +52,6 @@ pub fn tile_pos_to_tile_maker(
     move |tile_pos: TilePos| -> Option<Tile> {
         match grid_tile_map.get(&tile_pos) {
             Some(tile_instance) => {
-                let src = IVec2::new(tile_instance.src[0], tile_instance.src[1]);
-                let tileset_coord = (src - IVec2::splat(padding))
-                    / (IVec2::splat(tile_grid_size) + IVec2::splat(spacing));
-
                 let (flip_x, flip_y) = match tile_instance.f {
                     1 => (true, false),
                     2 => (false, true),
@@ -77,8 +60,7 @@ pub fn tile_pos_to_tile_maker(
                 };
 
                 Some(Tile {
-                    texture_index: (tileset_coord.y * tileset_width_in_tiles + tileset_coord.x)
-                        as u16,
+                    texture_index: tile_instance.t as u16,
                     flip_x,
                     flip_y,
                     ..Default::default()
@@ -146,33 +128,30 @@ mod tests {
             TileInstance {
                 px: vec![0, 0],
                 src: vec![32, 0],
+                t: 1,
                 ..Default::default()
             },
             TileInstance {
                 px: vec![32, 0],
                 src: vec![32, 32],
+                t: 4,
                 ..Default::default()
             },
             TileInstance {
                 px: vec![0, 32],
                 src: vec![64, 0],
+                t: 2,
                 ..Default::default()
             },
             TileInstance {
                 px: vec![32, 32],
                 src: vec![32, 0],
+                t: 1,
                 ..Default::default()
             },
         ];
 
-        let tileset_definition = TilesetDefinition {
-            c_wid: 3,
-            c_hei: 2,
-            tile_grid_size: 32,
-            ..Default::default()
-        };
-
-        let mut tile_maker = tile_pos_to_tile_maker(2, 32, &tileset_definition, grid_tiles);
+        let mut tile_maker = tile_pos_to_tile_maker(2, 32, grid_tiles);
 
         assert_eq!(tile_maker(TilePos(0, 0)).unwrap().texture_index, 2);
         assert_eq!(tile_maker(TilePos(1, 0)).unwrap().texture_index, 1);
@@ -186,37 +165,34 @@ mod tests {
             TileInstance {
                 px: vec![0, 0],
                 src: vec![0, 0],
+                t: 0,
                 f: 0,
                 ..Default::default()
             },
             TileInstance {
                 px: vec![32, 0],
                 src: vec![0, 0],
+                t: 0,
                 f: 1,
                 ..Default::default()
             },
             TileInstance {
                 px: vec![0, 32],
                 src: vec![0, 0],
+                t: 0,
                 f: 2,
                 ..Default::default()
             },
             TileInstance {
                 px: vec![64, 0],
                 src: vec![0, 0],
+                t: 0,
                 f: 3,
                 ..Default::default()
             },
         ];
 
-        let tileset_definition = TilesetDefinition {
-            c_wid: 1,
-            c_hei: 1,
-            tile_grid_size: 16,
-            ..Default::default()
-        };
-
-        let mut tile_maker = tile_pos_to_tile_maker(2, 32, &tileset_definition, grid_tiles);
+        let mut tile_maker = tile_pos_to_tile_maker(2, 32, grid_tiles);
 
         assert_eq!(tile_maker(TilePos(0, 0)).unwrap().flip_x, false);
         assert_eq!(tile_maker(TilePos(0, 0)).unwrap().flip_y, true);

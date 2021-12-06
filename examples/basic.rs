@@ -61,7 +61,7 @@ fn debug_int_grid(
         commands
             .entity(entity)
             .insert_bundle(SpriteBundle {
-                sprite: Sprite::new(Vec2::splat(8.)),
+                sprite: Sprite::new(Vec2::splat(2.)),
                 material: materials.add(ColorMaterial::color(Color::WHITE)),
                 ..Default::default()
             })

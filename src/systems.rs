@@ -252,6 +252,8 @@ fn spawn_level(
                             level.px_hei as u32,
                             layer_id as f32,
                         );
+                        // Note: entities do not seem to be affected visually by layer offsets in
+                        // the editor, so no layer offset is added to the transform here.
 
                         let mut entity_commands = commands.spawn();
 
@@ -299,29 +301,40 @@ fn spawn_level(
                         .tileset_def_uid
                         .map(|u| tileset_definition_map.get(&u).unwrap());
 
-                    let settings = match tileset_definition {
-                        Some(tileset_definition) => LayerSettings::new(
-                            map_size,
-                            CHUNK_SIZE,
-                            TileSize(
-                                tileset_definition.tile_grid_size as f32,
-                                tileset_definition.tile_grid_size as f32,
-                            ),
-                            TextureSize(
-                                tileset_definition.px_wid as f32,
-                                tileset_definition.px_hei as f32,
-                            ),
+                    let tile_size = match tileset_definition {
+                        Some(tileset_definition) => TileSize(
+                            tileset_definition.tile_grid_size as f32,
+                            tileset_definition.tile_grid_size as f32,
                         ),
-                        None => LayerSettings::new(
-                            map_size,
-                            CHUNK_SIZE,
-                            TileSize(
-                                layer_instance.grid_size as f32,
-                                layer_instance.grid_size as f32,
-                            ),
-                            TextureSize(0., 0.),
+                        None => TileSize(
+                            layer_instance.grid_size as f32,
+                            layer_instance.grid_size as f32,
                         ),
                     };
+
+                    let texture_size = match tileset_definition {
+                        Some(tileset_definition) => TextureSize(
+                            tileset_definition.px_wid as f32,
+                            tileset_definition.px_hei as f32,
+                        ),
+                        None => TextureSize(0., 0.),
+                    };
+
+                    let mut settings =
+                        LayerSettings::new(map_size, CHUNK_SIZE, tile_size, texture_size);
+
+                    if let Some(tileset_definition) = tileset_definition {
+                        settings.grid_size = Vec2::splat(layer_instance.grid_size as f32);
+                        settings.tile_spacing = Vec2::splat(tileset_definition.spacing as f32);
+                    }
+
+                    // The change to the settings.grid_size above is supposed to help handle cases
+                    // where the tileset's tile size and the layer's tile size are different.
+                    // However, changing the grid_size doesn't have any affect with the current
+                    // bevy_ecs_tilemap, so the workaround is to scale up the entire layer.
+                    let layer_scale = (settings.grid_size
+                        / Vec2::new(settings.tile_size.0 as f32, settings.tile_size.1 as f32))
+                    .extend(1.);
 
                     let material_handle = match tileset_definition {
                         Some(tileset_definition) => {
@@ -350,11 +363,10 @@ fn spawn_level(
                             );
 
                             match tileset_definition {
-                                Some(tileset_definition) => {
+                                Some(_) => {
                                     let tile_maker = tile_pos_to_tile_maker(
                                         layer_instance.c_hei,
                                         layer_instance.grid_size,
-                                        tileset_definition,
                                         grid_tiles,
                                     );
 
@@ -391,11 +403,13 @@ fn spawn_level(
                                 let tile_entity =
                                     layer_builder.get_tile_entity(commands, tile_pos).unwrap();
 
-                                let transform = calculate_transform_from_tile_pos(
+                                let mut transform = calculate_transform_from_tile_pos(
                                     tile_pos,
                                     layer_instance.grid_size as u32,
                                     layer_id as f32,
                                 );
+
+                                transform.translation /= layer_scale;
 
                                 let mut entity_commands = commands.entity(tile_entity);
 
@@ -412,7 +426,7 @@ fn spawn_level(
                                 entity_commands
                                     .insert(transform)
                                     .insert(GlobalTransform::default())
-                                    .insert(Parent(ldtk_entity));
+                                    .insert(Parent(layer_entity));
                             }
 
                             let layer_bundle =
@@ -423,13 +437,11 @@ fn spawn_level(
                             layer_entity
                         } else {
                             let tile_maker = tile_pos_to_tile_maker(
-                            layer_instance.c_hei,
-                            layer_instance.grid_size,
-                            tileset_definition.expect(
-                                "tileset definition should exist on non-IntGrid, non-Entity layers",
-                            ),
-                            grid_tiles,
-                        );
+                                layer_instance.c_hei,
+                                layer_instance.grid_size,
+                                grid_tiles,
+                            );
+
                             LayerBuilder::<TileBundle>::new_batch(
                                 commands,
                                 settings,
@@ -441,6 +453,16 @@ fn spawn_level(
                                 tile_pos_to_tile_bundle_maker(tile_maker),
                             )
                         };
+
+                        let layer_offset = Vec3::new(
+                            layer_instance.px_total_offset_x as f32,
+                            -layer_instance.px_total_offset_y as f32,
+                            0.,
+                        );
+
+                        commands.entity(layer_entity).insert(
+                            Transform::from_translation(layer_offset).with_scale(layer_scale),
+                        );
 
                         map.add_layer(commands, layer_id as u16, layer_entity);
                         layer_id += 1;

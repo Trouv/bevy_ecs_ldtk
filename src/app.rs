@@ -2,7 +2,7 @@
 //!
 //! *Requires the "app" feature, which is enabled by default*
 use crate::{
-    components::IntGridCell,
+    components::{IntGridCell, IntGridCellBundle},
     ldtk::{EntityInstance, LayerInstance, TilesetDefinition},
 };
 use bevy::{ecs::system::EntityCommands, prelude::*};
@@ -441,6 +441,12 @@ pub trait LdtkIntCell: Bundle {
     fn bundle_int_cell(int_grid_cell: IntGridCell) -> Self;
 }
 
+impl LdtkIntCell for IntGridCellBundle {
+    fn bundle_int_cell(int_grid_cell: IntGridCell) -> Self {
+        IntGridCellBundle { int_grid_cell }
+    }
+}
+
 pub struct PhantomLdtkIntCell<B: LdtkIntCell> {
     ldtk_int_cell: PhantomData<B>,
 }
@@ -463,30 +469,34 @@ impl<B: LdtkIntCell> PhantomLdtkIntCellTrait for PhantomLdtkIntCell<B> {
     }
 }
 
-pub type LdtkIntCellMap = HashMap<i32, Box<dyn PhantomLdtkIntCellTrait>>;
-
-#[derive(Clone, Eq, PartialEq, Debug, Component)]
-pub enum LayerSelection {
-    Identifier(String),
-    Index(usize),
-    Uid(i32),
-    Any,
+pub struct LdtkIntCellMap {
+    map: HashMap<(Option<String>, Option<i32>), Box<dyn PhantomLdtkIntCellTrait>>,
 }
 
-impl Default for LayerSelection {
-    fn default() -> Self {
-        LayerSelection::Any
-    }
-}
-
-impl LayerSelection {
-    pub fn is_match(&self, index: &usize, layer: &LayerInstance) -> bool {
-        match self {
-            LayerSelection::Identifier(s) => *s == layer.identifier,
-            LayerSelection::Index(i) => *i == *index,
-            LayerSelection::Uid(u) => *u == layer.layer_def_uid,
-            LayerSelection::Any => true,
+impl LdtkIntCellMap {
+    fn new() -> LdtkIntCellMap {
+        LdtkIntCellMap {
+            map: HashMap::new(),
         }
+    }
+
+    fn get_or_default<'a>(
+        &'a self,
+        layer: String,
+        value: i32,
+    ) -> &'a Box<dyn PhantomLdtkIntCellTrait> {
+        self.map
+            .get(&(Some(layer), Some(value)))
+            .or(self.map.get(&(None, Some(value))))
+            .or(self.map.get(&(Some(layer), None)))
+            .or(self.map.get(&(None, None)))
+            .unwrap_or({
+                let boxed: Box<dyn PhantomLdtkIntCellTrait> =
+                    Box::new(PhantomLdtkIntCell::<IntGridCellBundle> {
+                        ldtk_int_cell: PhantomData,
+                    });
+                &boxed
+            })
     }
 }
 

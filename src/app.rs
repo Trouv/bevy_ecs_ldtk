@@ -3,7 +3,7 @@
 //! *Requires the "app" feature, which is enabled by default*
 use crate::{
     components::IntGridCell,
-    ldtk::{EntityInstance, TilesetDefinition},
+    ldtk::{EntityInstance, LayerInstance, TilesetDefinition},
 };
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::{collections::HashMap, marker::PhantomData};
@@ -464,6 +464,31 @@ impl<B: LdtkIntCell> PhantomLdtkIntCellTrait for PhantomLdtkIntCell<B> {
 }
 
 pub type LdtkIntCellMap = HashMap<i32, Box<dyn PhantomLdtkIntCellTrait>>;
+
+#[derive(Clone, Eq, PartialEq, Debug, Component)]
+pub enum LayerSelection {
+    Identifier(String),
+    Index(usize),
+    Uid(i32),
+    Any,
+}
+
+impl Default for LayerSelection {
+    fn default() -> Self {
+        LayerSelection::Any
+    }
+}
+
+impl LayerSelection {
+    pub fn is_match(&self, index: &usize, layer: &LayerInstance) -> bool {
+        match self {
+            LayerSelection::Identifier(s) => *s == layer.identifier,
+            LayerSelection::Index(i) => *i == *index,
+            LayerSelection::Uid(u) => *u == layer.layer_def_uid,
+            LayerSelection::Any => true,
+        }
+    }
+}
 
 /// Provides the [.register_ldtk_entity()](RegisterLdtkObjects::register_ldtk_entity) and
 /// [.register_ldtk_int_cell()](RegisterLdtkObjects::register_ldtk_int_cell) function to bevy's

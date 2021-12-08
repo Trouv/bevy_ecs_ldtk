@@ -2,7 +2,7 @@
 //!
 //! *Requires the "app" feature, which is enabled by default*
 use crate::{
-    components::{IntGridCell, IntGridCellBundle},
+    components::{EntityInstanceBundle, IntGridCell, IntGridCellBundle},
     ldtk::{EntityInstance, TilesetDefinition},
 };
 use bevy::{ecs::system::EntityCommands, prelude::*};
@@ -209,6 +209,21 @@ pub trait LdtkEntity: Bundle {
         materials: &mut Assets<ColorMaterial>,
         texture_atlases: &mut Assets<TextureAtlas>,
     ) -> Self;
+}
+
+impl LdtkEntity for EntityInstanceBundle {
+    fn bundle_entity(
+        entity_instance: &EntityInstance,
+        _: Option<&Handle<Texture>>,
+        _: Option<&TilesetDefinition>,
+        _: &AssetServer,
+        _: &mut Assets<ColorMaterial>,
+        _: &mut Assets<TextureAtlas>,
+    ) -> Self {
+        EntityInstanceBundle {
+            entity_instance: entity_instance.clone(),
+        }
+    }
 }
 
 impl LdtkEntity for SpriteBundle {

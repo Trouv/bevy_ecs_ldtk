@@ -7,7 +7,7 @@ use crate::ldtk::*;
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 
-use std::collections::HashMap;
+use std::{collections::HashMap, hash::Hash};
 
 /// The `int_grid_csv` field of a [LayerInstance] is a 1-dimensional [Vec<i32>].
 /// This function can map the indices of this [Vec] to a corresponding [TilePos].
@@ -137,15 +137,32 @@ pub fn set_all_tiles_with_func<T>(
     }
 }
 
-pub(crate) fn try_each_optional_permutation<'a, A, B, R>(
+pub(crate) fn try_each_optional_permutation<A, B, R>(
     a: A,
     b: B,
-    func: impl FnMut(Option<A>, Option<B>) -> Option<R>,
-) -> Option<R> {
-    func(Some(a), Some(b))
+    mut func: impl FnMut(Option<A>, Option<B>) -> Option<R>,
+) -> Option<R>
+where
+    A: Clone,
+    B: Clone,
+{
+    func(Some(a.clone()), Some(b.clone()))
         .or(func(None, Some(b)))
         .or(func(Some(a), None))
         .or(func(None, None))
+}
+
+pub(crate) fn ldtk_map_get_or_default<'a, A, B, L>(
+    a: A,
+    b: B,
+    default: &'a L,
+    map: &'a HashMap<(Option<A>, Option<B>), L>,
+) -> &'a L
+where
+    A: Hash + Eq + Clone,
+    B: Hash + Eq + Clone,
+{
+    try_each_optional_permutation(a, b, |x, y| map.get(&(x, y)).map(|r| r)).unwrap_or(default)
 }
 
 #[cfg(test)]

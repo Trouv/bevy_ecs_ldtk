@@ -1,7 +1,10 @@
 //! System functions used by the plugin for processing ldtk files.
 
 use crate::{
-    app::{LdtkEntityMap, LdtkIntCellMap},
+    app::{
+        LdtkEntityMap, LdtkIntCellMap, PhantomLdtkEntity, PhantomLdtkEntityTrait,
+        PhantomLdtkIntCell, PhantomLdtkIntCellTrait,
+    },
     assets::{LdtkAsset, LdtkExternalLevel, TilesetMap},
     components::*,
     ldtk::{EntityDefinition, TileInstance, TilesetDefinition, Type},
@@ -11,7 +14,7 @@ use crate::{
 
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
-use std::collections::HashMap;
+use std::{collections::HashMap, marker::PhantomData};
 
 const CHUNK_SIZE: ChunkSize = ChunkSize(32, 32);
 
@@ -265,20 +268,25 @@ fn spawn_level(
                             None => (None, None),
                         };
 
-                        match ldtk_entity_map.get(&entity_instance.identifier) {
-                            None => entity_commands.insert_bundle(EntityInstanceBundle {
-                                entity_instance: entity_instance.clone(),
-                            }),
-                            Some(phantom_ldtk_entity) => phantom_ldtk_entity.evaluate(
-                                &mut entity_commands,
-                                entity_instance,
-                                tileset,
-                                tileset_definition,
-                                asset_server,
-                                materials,
-                                texture_atlases,
-                            ),
-                        };
+                        let phantom_ldtk_entity: &Box<dyn PhantomLdtkEntityTrait> =
+                            ldtk_map_get_or_default(
+                                layer_instance.identifier.clone(),
+                                entity_instance.identifier.clone(),
+                                Box::new(PhantomLdtkEntity::<EntityInstanceBundle> {
+                                    ldtk_entity: PhantomData,
+                                }),
+                                ldtk_entity_map,
+                            );
+
+                        phantom_ldtk_entity.evaluate(
+                            &mut entity_commands,
+                            entity_instance,
+                            tileset,
+                            tileset_definition,
+                            asset_server,
+                            materials,
+                            texture_atlases,
+                        );
 
                         entity_commands
                             .insert(transform)
@@ -413,15 +421,18 @@ fn spawn_level(
 
                                 let mut entity_commands = commands.entity(tile_entity);
 
-                                match ldtk_int_cell_map.get(value) {
-                                    Some(phantom_ldtk_int_cell) => phantom_ldtk_int_cell.evaluate(
-                                        &mut entity_commands,
-                                        IntGridCell { value: *value },
-                                    ),
-                                    None => entity_commands.insert_bundle(IntGridCellBundle {
-                                        int_grid_cell: IntGridCell { value: *value },
-                                    }),
-                                };
+                                let phantom_ldtk_int_cell: &Box<dyn PhantomLdtkIntCellTrait> =
+                                    ldtk_map_get_or_default(
+                                        layer_instance.identifier.clone(),
+                                        *value,
+                                        &Box::new(PhantomLdtkIntCell::<IntGridCellBundle> {
+                                            ldtk_int_cell: PhantomData,
+                                        }),
+                                        ldtk_int_cell_map,
+                                    );
+
+                                phantom_ldtk_int_cell
+                                    .evaluate(&mut entity_commands, IntGridCell { value: *value });
 
                                 entity_commands
                                     .insert(transform)

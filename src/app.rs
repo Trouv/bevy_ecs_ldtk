@@ -3,7 +3,7 @@
 //! *Requires the "app" feature, which is enabled by default*
 use crate::{
     components::{IntGridCell, IntGridCellBundle},
-    ldtk::{EntityInstance, LayerInstance, TilesetDefinition},
+    ldtk::{EntityInstance, TilesetDefinition},
 };
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::{collections::HashMap, marker::PhantomData};
@@ -311,7 +311,7 @@ impl<B: LdtkEntity> PhantomLdtkEntityTrait for PhantomLdtkEntity<B> {
 }
 
 /// Used by [RegisterLdtkObjects] to associate Ldtk entity identifiers with [LdtkEntity]s.
-pub type LdtkEntityMap = HashMap<String, Box<dyn PhantomLdtkEntityTrait>>;
+pub type LdtkEntityMap = HashMap<(Option<String>, Option<String>), Box<dyn PhantomLdtkEntityTrait>>;
 
 /// Provides a constructor to a bevy [Bundle] which can be used for spawning additional components
 /// on IntGrid tiles.
@@ -510,7 +510,37 @@ pub trait RegisterLdtkObjects {
     /// ```
     ///
     /// You can find more details on the `#[derive(LdtkEntity)]` macro at [LdtkEntity].
-    fn register_ldtk_entity<B: LdtkEntity>(&mut self, identifier: &str) -> &mut Self;
+    fn register_ldtk_entity_for_layer_optional<B: LdtkEntity>(
+        &mut self,
+        layer_identifier: Option<String>,
+        entity_identifier: Option<String>,
+    ) -> &mut Self;
+
+    fn register_ldtk_entity_for_layer<B: LdtkEntity>(
+        &mut self,
+        layer_identifier: &str,
+        entity_identifier: &str,
+    ) -> &mut Self {
+        self.register_ldtk_entity_for_layer_optional::<B>(
+            Some(layer_identifier.to_string()),
+            Some(entity_identifier.to_string()),
+        )
+    }
+
+    fn register_ldtk_entity<B: LdtkEntity>(&mut self, entity_identifier: &str) -> &mut Self {
+        self.register_ldtk_entity_for_layer_optional::<B>(None, Some(entity_identifier.to_string()))
+    }
+
+    fn register_default_ldtk_entity_for_layer<B: LdtkEntity>(
+        &mut self,
+        layer_identifier: &str,
+    ) -> &mut Self {
+        self.register_ldtk_entity_for_layer_optional::<B>(Some(layer_identifier.to_string()), None)
+    }
+
+    fn register_default_ldtk_entity<B: LdtkEntity>(&mut self) -> &mut Self {
+        self.register_ldtk_entity_for_layer_optional::<B>(None, None)
+    }
 
     /// Registers [LdtkIntCell] types to be inserted for a given IntGrid value in an LDtk file.
     ///
@@ -541,38 +571,79 @@ pub trait RegisterLdtkObjects {
     ///     c: ComponentC,
     /// }
     /// ```
-    fn register_ldtk_int_cell<B: LdtkIntCell>(&mut self, value: i32) -> &mut Self;
+    fn register_ldtk_int_cell_for_layer_optional<B: LdtkIntCell>(
+        &mut self,
+        layer_identifier: Option<String>,
+        value: Option<i32>,
+    ) -> &mut Self;
+
+    fn register_ldtk_int_cell_for_layer<B: LdtkIntCell>(
+        &mut self,
+        layer_identifier: &str,
+        value: i32,
+    ) -> &mut Self {
+        self.register_ldtk_int_cell_for_layer_optional::<B>(
+            Some(layer_identifier.to_string()),
+            Some(value),
+        )
+    }
+
+    fn register_ldtk_int_cell<B: LdtkIntCell>(&mut self, value: i32) -> &mut Self {
+        self.register_ldtk_int_cell_for_layer_optional::<B>(None, Some(value))
+    }
+
+    fn register_default_ldtk_int_cell_for_layer<B: LdtkIntCell>(
+        &mut self,
+        layer_identifier: &str,
+    ) -> &mut Self {
+        self.register_ldtk_int_cell_for_layer_optional::<B>(
+            Some(layer_identifier.to_string()),
+            None,
+        )
+    }
+
+    fn register_default_ldtk_int_cell<B: LdtkIntCell>(&mut self) -> &mut Self {
+        self.register_ldtk_int_cell_for_layer_optional::<B>(None, None)
+    }
 }
 
 impl RegisterLdtkObjects for App {
-    fn register_ldtk_entity<B: LdtkEntity>(&mut self, identifier: &str) -> &mut App {
+    fn register_ldtk_entity_for_layer_optional<B: LdtkEntity>(
+        &mut self,
+        layer_identifier: Option<String>,
+        entity_identifier: Option<String>,
+    ) -> &mut Self {
         let new_entry = Box::new(PhantomLdtkEntity::<B> {
             ldtk_entity: PhantomData,
         });
         match self.world.get_non_send_resource_mut::<LdtkEntityMap>() {
             Some(mut entries) => {
-                entries.insert(identifier.to_string(), new_entry);
+                entries.insert((layer_identifier, entity_identifier), new_entry);
             }
             None => {
                 let mut bundle_map = LdtkEntityMap::new();
-                bundle_map.insert(identifier.to_string(), new_entry);
+                bundle_map.insert((layer_identifier, entity_identifier), new_entry);
                 self.world.insert_non_send::<LdtkEntityMap>(bundle_map);
             }
         }
         self
     }
 
-    fn register_ldtk_int_cell<B: LdtkIntCell>(&mut self, value: i32) -> &mut Self {
+    fn register_ldtk_int_cell_for_layer_optional<B: LdtkIntCell>(
+        &mut self,
+        layer_identifier: Option<String>,
+        value: Option<i32>,
+    ) -> &mut Self {
         let new_entry = Box::new(PhantomLdtkIntCell::<B> {
             ldtk_int_cell: PhantomData,
         });
         match self.world.get_non_send_resource_mut::<LdtkIntCellMap>() {
             Some(mut entries) => {
-                entries.insert(value, new_entry);
+                entries.insert((layer_identifier, value), new_entry);
             }
             None => {
                 let mut bundle_map = LdtkIntCellMap::new();
-                bundle_map.insert(value, new_entry);
+                bundle_map.insert((layer_identifier, value), new_entry);
                 self.world.insert_non_send::<LdtkIntCellMap>(bundle_map);
             }
         }

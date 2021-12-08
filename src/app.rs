@@ -289,6 +289,14 @@ pub struct PhantomLdtkEntity<B: LdtkEntity> {
     ldtk_entity: PhantomData<B>,
 }
 
+impl<B: LdtkEntity> PhantomLdtkEntity<B> {
+    pub fn new() -> Self {
+        PhantomLdtkEntity::<B> {
+            ldtk_entity: PhantomData,
+        }
+    }
+}
+
 pub trait PhantomLdtkEntityTrait {
     #[allow(clippy::too_many_arguments)]
     fn evaluate<'w, 's, 'a, 'b>(
@@ -464,6 +472,14 @@ impl LdtkIntCell for IntGridCellBundle {
 
 pub struct PhantomLdtkIntCell<B: LdtkIntCell> {
     ldtk_int_cell: PhantomData<B>,
+}
+
+impl<B: LdtkIntCell> PhantomLdtkIntCell<B> {
+    pub fn new() -> Self {
+        PhantomLdtkIntCell::<B> {
+            ldtk_int_cell: PhantomData,
+        }
+    }
 }
 
 pub trait PhantomLdtkIntCellTrait {

@@ -14,7 +14,7 @@ use crate::{
 
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
-use std::{collections::HashMap, marker::PhantomData};
+use std::collections::HashMap;
 
 const CHUNK_SIZE: ChunkSize = ChunkSize(32, 32);
 
@@ -268,13 +268,14 @@ fn spawn_level(
                             None => (None, None),
                         };
 
+                        let default_ldtk_entity: Box<dyn PhantomLdtkEntityTrait> =
+                            Box::new(PhantomLdtkEntity::<EntityInstanceBundle>::new());
+
                         let phantom_ldtk_entity: &Box<dyn PhantomLdtkEntityTrait> =
                             ldtk_map_get_or_default(
                                 layer_instance.identifier.clone(),
                                 entity_instance.identifier.clone(),
-                                Box::new(PhantomLdtkEntity::<EntityInstanceBundle> {
-                                    ldtk_entity: PhantomData,
-                                }),
+                                &default_ldtk_entity,
                                 ldtk_entity_map,
                             );
 
@@ -421,13 +422,14 @@ fn spawn_level(
 
                                 let mut entity_commands = commands.entity(tile_entity);
 
+                                let default_ldtk_int_cell: Box<dyn PhantomLdtkIntCellTrait> =
+                                    Box::new(PhantomLdtkIntCell::<IntGridCellBundle>::new());
+
                                 let phantom_ldtk_int_cell: &Box<dyn PhantomLdtkIntCellTrait> =
                                     ldtk_map_get_or_default(
                                         layer_instance.identifier.clone(),
                                         *value,
-                                        &Box::new(PhantomLdtkIntCell::<IntGridCellBundle> {
-                                            ldtk_int_cell: PhantomData,
-                                        }),
+                                        &default_ldtk_int_cell,
                                         ldtk_int_cell_map,
                                     );
 

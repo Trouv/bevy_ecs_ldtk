@@ -469,36 +469,7 @@ impl<B: LdtkIntCell> PhantomLdtkIntCellTrait for PhantomLdtkIntCell<B> {
     }
 }
 
-pub struct LdtkIntCellMap {
-    map: HashMap<(Option<String>, Option<i32>), Box<dyn PhantomLdtkIntCellTrait>>,
-}
-
-impl LdtkIntCellMap {
-    fn new() -> LdtkIntCellMap {
-        LdtkIntCellMap {
-            map: HashMap::new(),
-        }
-    }
-
-    fn get_or_default<'a>(
-        &'a self,
-        layer: String,
-        value: i32,
-    ) -> &'a Box<dyn PhantomLdtkIntCellTrait> {
-        self.map
-            .get(&(Some(layer), Some(value)))
-            .or(self.map.get(&(None, Some(value))))
-            .or(self.map.get(&(Some(layer), None)))
-            .or(self.map.get(&(None, None)))
-            .unwrap_or({
-                let boxed: Box<dyn PhantomLdtkIntCellTrait> =
-                    Box::new(PhantomLdtkIntCell::<IntGridCellBundle> {
-                        ldtk_int_cell: PhantomData,
-                    });
-                &boxed
-            })
-    }
-}
+pub type LdtkIntCellMap = HashMap<(Option<String>, Option<i32>), Box<dyn PhantomLdtkIntCellTrait>>;
 
 /// Provides the [.register_ldtk_entity()](RegisterLdtkObjects::register_ldtk_entity) and
 /// [.register_ldtk_int_cell()](RegisterLdtkObjects::register_ldtk_int_cell) function to bevy's

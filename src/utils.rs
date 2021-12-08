@@ -137,6 +137,17 @@ pub fn set_all_tiles_with_func<T>(
     }
 }
 
+pub(crate) fn try_each_optional_permutation<'a, A, B, R>(
+    a: A,
+    b: B,
+    func: impl FnMut(Option<A>, Option<B>) -> Option<R>,
+) -> Option<R> {
+    func(Some(a), Some(b))
+        .or(func(None, Some(b)))
+        .or(func(Some(a), None))
+        .or(func(None, None))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

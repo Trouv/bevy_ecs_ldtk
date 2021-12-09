@@ -11,7 +11,7 @@ use std::{collections::HashMap, marker::PhantomData};
 /// Provides a constructor to a bevy [Bundle] which can be used for spawning entities from an LDtk
 /// file.
 /// After implementing this trait on a bundle, you can register it to spawn automatically for a
-/// given identifier via [app.register_ldtk_entity()](RegisterLdtkObjects::register_ldtk_entity).
+/// given identifier via [RegisterLdtkObjects] functions on your [App].
 ///
 /// For common use cases, you'll want to use derive-macro `#[derive(LdtkEntity)]`, but you can also
 /// provide a custom implementation.
@@ -25,7 +25,7 @@ use std::{collections::HashMap, marker::PhantomData};
 ///
 /// ## Derive macro usage
 /// Using `#[derive(LdtkEntity)]` on a [Bundle] struct will allow the type to be registered to the
-/// app via [app.register_ldtk_entity()](RegisterLdtkObjects::register_ldtk_entity):
+/// [App] via [RegisterLdtkObjects] functions:
 /// ```no_run
 /// use bevy::prelude::*;
 /// use bevy_ecs_ldtk::prelude::*;
@@ -340,7 +340,7 @@ pub type LdtkEntityMap = HashMap<(Option<String>, Option<String>), Box<dyn Phant
 /// on IntGrid tiles.
 /// After implementing this trait on a bundle, you can register it to spawn automatically for a
 /// given int grid value via
-/// [app.register_ldtk_int_cell()](RegisterLdtkObjects::register_ldtk_int_cell).
+/// [RegisterLdtkObjects] on your [App].
 ///
 /// For common use cases, you'll want to use derive-macro `#[derive(LdtkIntCell)]`, but you can
 /// also provide a custom implementation.
@@ -354,7 +354,7 @@ pub type LdtkEntityMap = HashMap<(Option<String>, Option<String>), Box<dyn Phant
 ///
 /// ## Derive macro usage
 /// Using `#[derive(LdtkIntCell)]` on a [Bundle] struct will allow the type to be registered to the
-/// app via [app.register_ldtk_int_cell()](RegisterLdtkObjects::register_ldtk_int_cell):
+/// [App] via [RegisterLdtkObjects] functions:
 /// ```no_run
 /// use bevy::prelude::*;
 /// use bevy_ecs_ldtk::prelude::*;
@@ -502,14 +502,32 @@ impl<B: LdtkIntCell> PhantomLdtkIntCellTrait for PhantomLdtkIntCell<B> {
 
 pub type LdtkIntCellMap = HashMap<(Option<String>, Option<i32>), Box<dyn PhantomLdtkIntCellTrait>>;
 
-/// Provides the [.register_ldtk_entity()](RegisterLdtkObjects::register_ldtk_entity) and
-/// [.register_ldtk_int_cell()](RegisterLdtkObjects::register_ldtk_int_cell) function to bevy's
-/// [App].
+/// Provides functions to register [Bundle]s to bevy's [App] for particular LDtk layer identifiers,
+/// entity identifiers, and IntGrid values.
+/// After being registered, [Entity]s will be spawned with these bundles when some IntGrid tile or
+/// entity meets the criteria you specify.
 ///
-/// Not intended for custom implementations on your own types, but you're still welcome to do so.
+/// Not necessarily intended for custom implementations on your own types.
 ///
 /// *Requires the "app" feature, which is enabled by default*
 pub trait RegisterLdtkObjects {
+    fn register_ldtk_entity_for_layer_optional<B: LdtkEntity>(
+        &mut self,
+        layer_identifier: Option<String>,
+        entity_identifier: Option<String>,
+    ) -> &mut Self;
+
+    fn register_ldtk_entity_for_layer<B: LdtkEntity>(
+        &mut self,
+        layer_identifier: &str,
+        entity_identifier: &str,
+    ) -> &mut Self {
+        self.register_ldtk_entity_for_layer_optional::<B>(
+            Some(layer_identifier.to_string()),
+            Some(entity_identifier.to_string()),
+        )
+    }
+
     /// Registers [LdtkEntity] types to be spawned for a given Entity identifier in an LDtk file.
     ///
     /// This example lets the plugin know that it should spawn a MyBundle when it encounters a
@@ -541,23 +559,6 @@ pub trait RegisterLdtkObjects {
     /// ```
     ///
     /// You can find more details on the `#[derive(LdtkEntity)]` macro at [LdtkEntity].
-    fn register_ldtk_entity_for_layer_optional<B: LdtkEntity>(
-        &mut self,
-        layer_identifier: Option<String>,
-        entity_identifier: Option<String>,
-    ) -> &mut Self;
-
-    fn register_ldtk_entity_for_layer<B: LdtkEntity>(
-        &mut self,
-        layer_identifier: &str,
-        entity_identifier: &str,
-    ) -> &mut Self {
-        self.register_ldtk_entity_for_layer_optional::<B>(
-            Some(layer_identifier.to_string()),
-            Some(entity_identifier.to_string()),
-        )
-    }
-
     fn register_ldtk_entity<B: LdtkEntity>(&mut self, entity_identifier: &str) -> &mut Self {
         self.register_ldtk_entity_for_layer_optional::<B>(None, Some(entity_identifier.to_string()))
     }
@@ -571,6 +572,23 @@ pub trait RegisterLdtkObjects {
 
     fn register_default_ldtk_entity<B: LdtkEntity>(&mut self) -> &mut Self {
         self.register_ldtk_entity_for_layer_optional::<B>(None, None)
+    }
+
+    fn register_ldtk_int_cell_for_layer_optional<B: LdtkIntCell>(
+        &mut self,
+        layer_identifier: Option<String>,
+        value: Option<i32>,
+    ) -> &mut Self;
+
+    fn register_ldtk_int_cell_for_layer<B: LdtkIntCell>(
+        &mut self,
+        layer_identifier: &str,
+        value: i32,
+    ) -> &mut Self {
+        self.register_ldtk_int_cell_for_layer_optional::<B>(
+            Some(layer_identifier.to_string()),
+            Some(value),
+        )
     }
 
     /// Registers [LdtkIntCell] types to be inserted for a given IntGrid value in an LDtk file.
@@ -602,23 +620,6 @@ pub trait RegisterLdtkObjects {
     ///     c: ComponentC,
     /// }
     /// ```
-    fn register_ldtk_int_cell_for_layer_optional<B: LdtkIntCell>(
-        &mut self,
-        layer_identifier: Option<String>,
-        value: Option<i32>,
-    ) -> &mut Self;
-
-    fn register_ldtk_int_cell_for_layer<B: LdtkIntCell>(
-        &mut self,
-        layer_identifier: &str,
-        value: i32,
-    ) -> &mut Self {
-        self.register_ldtk_int_cell_for_layer_optional::<B>(
-            Some(layer_identifier.to_string()),
-            Some(value),
-        )
-    }
-
     fn register_ldtk_int_cell<B: LdtkIntCell>(&mut self, value: i32) -> &mut Self {
         self.register_ldtk_int_cell_for_layer_optional::<B>(None, Some(value))
     }

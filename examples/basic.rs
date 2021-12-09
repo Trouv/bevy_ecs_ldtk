@@ -7,7 +7,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(LdtkPlugin)
         .add_startup_system(setup)
-        .register_ldtk_entity::<PlayerBundle>("Willo")
+        .register_ldtk_entity_for_layer::<PlayerBundle>("Entities", "Willo")
         .add_system(debug_int_grid)
         .run();
 }

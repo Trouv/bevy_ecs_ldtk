@@ -10,6 +10,7 @@ use std::{collections::HashMap, marker::PhantomData};
 
 /// Provides a constructor to a bevy [Bundle] which can be used for spawning entities from an LDtk
 /// file.
+///
 /// After implementing this trait on a bundle, you can register it to spawn automatically for a
 /// given identifier via [RegisterLdtkObjects] functions on your [App].
 ///
@@ -338,6 +339,7 @@ pub type LdtkEntityMap = HashMap<(Option<String>, Option<String>), Box<dyn Phant
 
 /// Provides a constructor to a bevy [Bundle] which can be used for spawning additional components
 /// on IntGrid tiles.
+///
 /// After implementing this trait on a bundle, you can register it to spawn automatically for a
 /// given int grid value via
 /// [RegisterLdtkObjects] on your [App].
@@ -500,10 +502,12 @@ impl<B: LdtkIntCell> PhantomLdtkIntCellTrait for PhantomLdtkIntCell<B> {
     }
 }
 
+/// Used by [RegisterLdtkObjects] to associate Ldtk IntGrid values with [LdtkIntCell]s.
 pub type LdtkIntCellMap = HashMap<(Option<String>, Option<i32>), Box<dyn PhantomLdtkIntCellTrait>>;
 
 /// Provides functions to register [Bundle]s to bevy's [App] for particular LDtk layer identifiers,
 /// entity identifiers, and IntGrid values.
+///
 /// After being registered, [Entity]s will be spawned with these bundles when some IntGrid tile or
 /// entity meets the criteria you specify.
 ///

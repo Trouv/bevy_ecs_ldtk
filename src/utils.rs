@@ -137,6 +137,16 @@ pub fn set_all_tiles_with_func<T>(
     }
 }
 
+/// Wraps `a` and `b` in an [Option] and tries each [Some]/[None] permutation as inputs to `func`,
+/// returning the first non-none result of `func`.
+///
+/// The permutations are tried in this order:
+/// 1. Some, Some
+/// 2. None, Some
+/// 3. Some, None
+/// 4. None, None
+///
+/// Used for the defaulting functionality of [bevy_ecs_ldtk::app::RegisterLdtkObjects]
 pub(crate) fn try_each_optional_permutation<A, B, R>(
     a: A,
     b: B,
@@ -152,6 +162,13 @@ where
         .or(func(None, None))
 }
 
+/// The "get" function used on [bevy_ecs_ldtk::app::LdtkEntityMap] and
+/// [bevy_ecs_ldtk::app::LdtkIntCellMap].
+///
+/// Due to the defaulting functionality of [bevy_ecs_ldtk::app::RegisterLdtkObjects], a single
+/// instance of an LDtk entity or int grid tile may match multiple registrations.
+/// This function is responsible for picking the correct registration while spawning these
+/// entities/tiles.
 pub(crate) fn ldtk_map_get_or_default<'a, A, B, L>(
     a: A,
     b: B,

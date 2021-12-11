@@ -11,7 +11,7 @@ fn main() {
         .register_ldtk_entity::<TableBundle>("Table")
         .register_ldtk_entity::<SBlockBundle>("S")
         .register_ldtk_entity::<WBlockBundle>("W")
-        .register_ldtk_int_cell::<IntGridCellTest>(1)
+        .register_default_ldtk_int_cell_for_layer::<IntGridCellTest>("IntGrid")
         .add_system(debug_int_grid)
         .run();
 }
@@ -112,9 +112,10 @@ struct IntGridCellTest {
 
 #[derive(Bundle, LdtkIntCell)]
 struct Test2 {
-    #[bundle]
-    #[ldtk_int_cell]
-    int_grid_cell_test: IntGridCellTest,
+    //#[bundle]
+    //#[ldtk_int_cell]
+    //int_grid_cell_test: IntGridCellTest,
+    w_block: WBlock,
 }
 
 fn debug_int_grid(

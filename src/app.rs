@@ -286,6 +286,7 @@ impl LdtkEntity for SpriteSheetBundle {
     }
 }
 
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Hash)]
 pub struct PhantomLdtkEntity<B: LdtkEntity> {
     ldtk_entity: PhantomData<B>,
 }
@@ -472,6 +473,7 @@ impl LdtkIntCell for IntGridCellBundle {
     }
 }
 
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Hash)]
 pub struct PhantomLdtkIntCell<B: LdtkIntCell> {
     ldtk_int_cell: PhantomData<B>,
 }
@@ -728,5 +730,92 @@ impl RegisterLdtkObjects for App {
             }
         }
         self
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[derive(Default, Component, Debug)]
+    struct ComponentA;
+
+    #[derive(Default, Component, Debug)]
+    struct ComponentB;
+
+    #[derive(Default, Bundle, Debug)]
+    struct LdtkEntityBundle {
+        a: ComponentA,
+        b: ComponentB,
+    }
+
+    impl LdtkEntity for LdtkEntityBundle {
+        fn bundle_entity(
+            _: &EntityInstance,
+            _: Option<&Handle<Texture>>,
+            _: Option<&TilesetDefinition>,
+            _: &AssetServer,
+            _: &mut Assets<ColorMaterial>,
+            _: &mut Assets<TextureAtlas>,
+        ) -> LdtkEntityBundle {
+            LdtkEntityBundle::default()
+        }
+    }
+
+    #[derive(Default, Bundle)]
+    struct LdtkIntCellBundle {
+        a: ComponentA,
+        b: ComponentB,
+    }
+
+    impl LdtkIntCell for LdtkIntCellBundle {
+        fn bundle_int_cell(_: IntGridCell) -> LdtkIntCellBundle {
+            LdtkIntCellBundle::default()
+        }
+    }
+
+    #[test]
+    fn test_ldtk_entity_registrations() {
+        let mut app = App::new();
+        app.register_ldtk_entity_for_layer::<LdtkEntityBundle>("layer", "entity_for_layer")
+            .register_ldtk_entity::<LdtkEntityBundle>("entity")
+            .register_default_ldtk_entity_for_layer::<LdtkEntityBundle>("default_entity_for_layer")
+            .register_default_ldtk_entity::<LdtkEntityBundle>();
+
+        let ldtk_entity_map = app.world.get_non_send_resource::<LdtkEntityMap>().unwrap();
+
+        assert!(ldtk_entity_map.contains_key(&(
+            Some("layer".to_string()),
+            Some("entity_for_layer".to_string())
+        )));
+
+        assert!(ldtk_entity_map.contains_key(&(None, Some("entity".to_string()))));
+
+        assert!(ldtk_entity_map.contains_key(&(Some("default_entity_for_layer".to_string()), None)));
+
+        assert!(ldtk_entity_map.contains_key(&(None, None)));
+    }
+
+    #[test]
+    fn test_ldtk_int_cell_registrations() {
+        let mut app = App::new();
+        app.register_ldtk_int_cell_for_layer::<LdtkIntCellBundle>("layer", 1)
+            .register_ldtk_int_cell::<LdtkIntCellBundle>(2)
+            .register_default_ldtk_int_cell_for_layer::<LdtkIntCellBundle>(
+                "default_int_cell_for_layer",
+            )
+            .register_default_ldtk_int_cell::<LdtkIntCellBundle>();
+
+        let ldtk_int_cell_map = app.world.get_non_send_resource::<LdtkIntCellMap>().unwrap();
+
+        assert!(ldtk_int_cell_map.contains_key(&(Some("layer".to_string()), Some(1))));
+
+        assert!(ldtk_int_cell_map.contains_key(&(None, Some(2))));
+
+        assert!(
+            ldtk_int_cell_map.contains_key(&(Some("default_int_cell_for_layer".to_string()), None))
+        );
+
+        assert!(ldtk_int_cell_map.contains_key(&(None, None)));
     }
 }

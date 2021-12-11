@@ -194,17 +194,17 @@ mod tests {
 
         let mut tile_maker = tile_pos_to_tile_maker(2, 32, grid_tiles);
 
-        assert_eq!(tile_maker(TilePos(0, 0)).unwrap().flip_x, false);
-        assert_eq!(tile_maker(TilePos(0, 0)).unwrap().flip_y, true);
+        assert!(!tile_maker(TilePos(0, 0)).unwrap().flip_x);
+        assert!(tile_maker(TilePos(0, 0)).unwrap().flip_y);
 
-        assert_eq!(tile_maker(TilePos(0, 1)).unwrap().flip_x, false);
-        assert_eq!(tile_maker(TilePos(0, 1)).unwrap().flip_y, false);
+        assert!(!tile_maker(TilePos(0, 1)).unwrap().flip_x);
+        assert!(!tile_maker(TilePos(0, 1)).unwrap().flip_y);
 
-        assert_eq!(tile_maker(TilePos(1, 1)).unwrap().flip_x, true);
-        assert_eq!(tile_maker(TilePos(1, 1)).unwrap().flip_y, false);
+        assert!(tile_maker(TilePos(1, 1)).unwrap().flip_x);
+        assert!(!tile_maker(TilePos(1, 1)).unwrap().flip_y);
 
-        assert_eq!(tile_maker(TilePos(2, 1)).unwrap().flip_x, true);
-        assert_eq!(tile_maker(TilePos(2, 1)).unwrap().flip_y, true);
+        assert!(tile_maker(TilePos(2, 1)).unwrap().flip_x);
+        assert!(tile_maker(TilePos(2, 1)).unwrap().flip_y);
     }
 
     #[test]

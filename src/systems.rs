@@ -271,15 +271,13 @@ fn spawn_level(
                         let default_ldtk_entity: Box<dyn PhantomLdtkEntityTrait> =
                             Box::new(PhantomLdtkEntity::<EntityInstanceBundle>::new());
 
-                        let phantom_ldtk_entity: &Box<dyn PhantomLdtkEntityTrait> =
-                            ldtk_map_get_or_default(
-                                layer_instance.identifier.clone(),
-                                entity_instance.identifier.clone(),
-                                &default_ldtk_entity,
-                                ldtk_entity_map,
-                            );
-
-                        phantom_ldtk_entity.evaluate(
+                        ldtk_map_get_or_default(
+                            layer_instance.identifier.clone(),
+                            entity_instance.identifier.clone(),
+                            &default_ldtk_entity,
+                            ldtk_entity_map,
+                        )
+                        .evaluate(
                             &mut entity_commands,
                             entity_instance,
                             tileset,
@@ -425,16 +423,13 @@ fn spawn_level(
                                 let default_ldtk_int_cell: Box<dyn PhantomLdtkIntCellTrait> =
                                     Box::new(PhantomLdtkIntCell::<IntGridCellBundle>::new());
 
-                                let phantom_ldtk_int_cell: &Box<dyn PhantomLdtkIntCellTrait> =
-                                    ldtk_map_get_or_default(
-                                        layer_instance.identifier.clone(),
-                                        *value,
-                                        &default_ldtk_int_cell,
-                                        ldtk_int_cell_map,
-                                    );
-
-                                phantom_ldtk_int_cell
-                                    .evaluate(&mut entity_commands, IntGridCell { value: *value });
+                                ldtk_map_get_or_default(
+                                    layer_instance.identifier.clone(),
+                                    *value,
+                                    &default_ldtk_int_cell,
+                                    ldtk_int_cell_map,
+                                )
+                                .evaluate(&mut entity_commands, IntGridCell { value: *value });
 
                                 entity_commands
                                     .insert(transform)

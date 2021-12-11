@@ -64,7 +64,7 @@ struct Block {
 impl From<EntityInstance> for Block {
     fn from(entity_instance: EntityInstance) -> Block {
         Block {
-            identifier: entity_instance.identifier.clone(),
+            identifier: entity_instance.identifier,
         }
     }
 }
@@ -131,7 +131,7 @@ fn debug_int_grid(
                 material: materials.add(ColorMaterial::color(Color::WHITE)),
                 ..Default::default()
             })
-            .insert(transform.clone());
+            .insert(*transform);
 
         println!("{} spawned at {:?}", cell.value, tile_pos);
     })

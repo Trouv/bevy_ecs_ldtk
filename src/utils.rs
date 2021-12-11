@@ -157,9 +157,9 @@ where
     B: Clone,
 {
     func(Some(a.clone()), Some(b.clone()))
-        .or(func(None, Some(b)))
-        .or(func(Some(a), None))
-        .or(func(None, None))
+        .or_else(|| func(None, Some(b)))
+        .or_else(|| func(Some(a), None))
+        .or_else(|| func(None, None))
 }
 
 /// The "get" function used on [bevy_ecs_ldtk::app::LdtkEntityMap] and
@@ -179,7 +179,7 @@ where
     A: Hash + Eq + Clone,
     B: Hash + Eq + Clone,
 {
-    try_each_optional_permutation(a, b, |x, y| map.get(&(x, y)).map(|r| r)).unwrap_or(default)
+    try_each_optional_permutation(a, b, |x, y| map.get(&(x, y))).unwrap_or(default)
 }
 
 #[cfg(test)]
@@ -305,6 +305,7 @@ mod tests {
         assert_eq!(try_each_optional_permutation(1, 1, test_func), Some(1));
         assert_eq!(try_each_optional_permutation(2, 1, test_func), Some(2));
         assert_eq!(try_each_optional_permutation(2, 2, test_func), Some(2));
+        assert_eq!(try_each_optional_permutation(2, 3, test_func), Some(3));
         assert_eq!(try_each_optional_permutation(3, 3, test_func), Some(3));
         assert_eq!(try_each_optional_permutation(4, 3, test_func), Some(3));
         assert_eq!(try_each_optional_permutation(4, 4, test_func), Some(4));

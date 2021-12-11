@@ -287,4 +287,27 @@ mod tests {
             Transform::from_xyz(0.5, 5.5, 1.)
         );
     }
+
+    #[test]
+    fn test_try_each_optional_permutation() {
+        fn test_func(a: Option<i32>, b: Option<i32>) -> Option<i32> {
+            match (a, b) {
+                (Some(a), Some(_)) if a == 1 => Some(1),
+                (Some(_), Some(_)) => None,
+                (Some(a), None) if a == 2 => Some(2),
+                (Some(_), None) => None,
+                (None, Some(b)) if b == 3 => Some(3),
+                (None, Some(_)) => None,
+                (None, None) => Some(4),
+            }
+        }
+
+        assert_eq!(try_each_optional_permutation(1, 1, test_func), Some(1));
+        assert_eq!(try_each_optional_permutation(2, 1, test_func), Some(2));
+        assert_eq!(try_each_optional_permutation(2, 2, test_func), Some(2));
+        assert_eq!(try_each_optional_permutation(3, 3, test_func), Some(3));
+        assert_eq!(try_each_optional_permutation(4, 3, test_func), Some(3));
+        assert_eq!(try_each_optional_permutation(4, 4, test_func), Some(4));
+        assert_eq!(try_each_optional_permutation(5, 5, test_func), Some(4));
+    }
 }

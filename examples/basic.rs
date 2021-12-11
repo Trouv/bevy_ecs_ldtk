@@ -7,7 +7,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(LdtkPlugin)
         .add_startup_system(setup)
-        .register_ldtk_entity::<PlayerBundle>("Willo")
+        .register_ldtk_entity_for_layer::<PlayerBundle>("Entities", "Willo")
         .add_system(debug_int_grid)
         .run();
 }
@@ -65,7 +65,7 @@ fn debug_int_grid(
                 material: materials.add(ColorMaterial::color(Color::WHITE)),
                 ..Default::default()
             })
-            .insert(transform.clone());
+            .insert(*transform);
 
         println!("{} spawned at {:?}", cell.value, tile_pos);
     })

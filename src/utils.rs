@@ -7,7 +7,7 @@ use crate::ldtk::*;
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 
-use std::collections::HashMap;
+use std::{collections::HashMap, hash::Hash};
 
 /// The `int_grid_csv` field of a [LayerInstance] is a 1-dimensional [Vec<i32>].
 /// This function can map the indices of this [Vec] to a corresponding [TilePos].
@@ -137,6 +137,51 @@ pub fn set_all_tiles_with_func<T>(
     }
 }
 
+/// Wraps `a` and `b` in an [Option] and tries each [Some]/[None] permutation as inputs to `func`,
+/// returning the first non-none result of `func`.
+///
+/// The permutations are tried in this order:
+/// 1. Some, Some
+/// 2. None, Some
+/// 3. Some, None
+/// 4. None, None
+///
+/// Used for the defaulting functionality of [bevy_ecs_ldtk::app::RegisterLdtkObjects]
+pub(crate) fn try_each_optional_permutation<A, B, R>(
+    a: A,
+    b: B,
+    mut func: impl FnMut(Option<A>, Option<B>) -> Option<R>,
+) -> Option<R>
+where
+    A: Clone,
+    B: Clone,
+{
+    func(Some(a.clone()), Some(b.clone()))
+        .or_else(|| func(None, Some(b)))
+        .or_else(|| func(Some(a), None))
+        .or_else(|| func(None, None))
+}
+
+/// The "get" function used on [bevy_ecs_ldtk::app::LdtkEntityMap] and
+/// [bevy_ecs_ldtk::app::LdtkIntCellMap].
+///
+/// Due to the defaulting functionality of [bevy_ecs_ldtk::app::RegisterLdtkObjects], a single
+/// instance of an LDtk entity or int grid tile may match multiple registrations.
+/// This function is responsible for picking the correct registration while spawning these
+/// entities/tiles.
+pub(crate) fn ldtk_map_get_or_default<'a, A, B, L>(
+    a: A,
+    b: B,
+    default: &'a L,
+    map: &'a HashMap<(Option<A>, Option<B>), L>,
+) -> &'a L
+where
+    A: Hash + Eq + Clone,
+    B: Hash + Eq + Clone,
+{
+    try_each_optional_permutation(a, b, |x, y| map.get(&(x, y))).unwrap_or(default)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -241,5 +286,29 @@ mod tests {
             calculate_transform_from_tile_pos(TilePos(0, 5), 1, 1.),
             Transform::from_xyz(0.5, 5.5, 1.)
         );
+    }
+
+    #[test]
+    fn test_try_each_optional_permutation() {
+        fn test_func(a: Option<i32>, b: Option<i32>) -> Option<i32> {
+            match (a, b) {
+                (Some(a), Some(_)) if a == 1 => Some(1),
+                (Some(_), Some(_)) => None,
+                (Some(a), None) if a == 2 => Some(2),
+                (Some(_), None) => None,
+                (None, Some(b)) if b == 3 => Some(3),
+                (None, Some(_)) => None,
+                (None, None) => Some(4),
+            }
+        }
+
+        assert_eq!(try_each_optional_permutation(1, 1, test_func), Some(1));
+        assert_eq!(try_each_optional_permutation(2, 1, test_func), Some(2));
+        assert_eq!(try_each_optional_permutation(2, 2, test_func), Some(2));
+        assert_eq!(try_each_optional_permutation(2, 3, test_func), Some(3));
+        assert_eq!(try_each_optional_permutation(3, 3, test_func), Some(3));
+        assert_eq!(try_each_optional_permutation(4, 3, test_func), Some(3));
+        assert_eq!(try_each_optional_permutation(4, 4, test_func), Some(4));
+        assert_eq!(try_each_optional_permutation(5, 5, test_func), Some(4));
     }
 }

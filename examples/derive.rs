@@ -7,11 +7,11 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(LdtkPlugin)
         .add_startup_system(setup)
-        .register_ldtk_entity::<PlayerBundle>("Willo")
+        .register_ldtk_entity_for_layer::<PlayerBundle>("Entities", "Willo")
         .register_ldtk_entity::<TableBundle>("Table")
         .register_ldtk_entity::<SBlockBundle>("S")
         .register_ldtk_entity::<WBlockBundle>("W")
-        .register_ldtk_int_cell::<IntGridCellTest>(1)
+        .register_default_ldtk_int_cell_for_layer::<IntGridCellTest>("IntGrid")
         .add_system(debug_int_grid)
         .run();
 }
@@ -64,7 +64,7 @@ struct Block {
 impl From<EntityInstance> for Block {
     fn from(entity_instance: EntityInstance) -> Block {
         Block {
-            identifier: entity_instance.identifier.clone(),
+            identifier: entity_instance.identifier,
         }
     }
 }
@@ -112,9 +112,10 @@ struct IntGridCellTest {
 
 #[derive(Bundle, LdtkIntCell)]
 struct Test2 {
-    #[bundle]
-    #[ldtk_int_cell]
-    int_grid_cell_test: IntGridCellTest,
+    //#[bundle]
+    //#[ldtk_int_cell]
+    //int_grid_cell_test: IntGridCellTest,
+    w_block: WBlock,
 }
 
 fn debug_int_grid(
@@ -130,7 +131,7 @@ fn debug_int_grid(
                 material: materials.add(ColorMaterial::color(Color::WHITE)),
                 ..Default::default()
             })
-            .insert(transform.clone());
+            .insert(*transform);
 
         println!("{} spawned at {:?}", cell.value, tile_pos);
     })

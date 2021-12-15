@@ -1,6 +1,4 @@
 //! Types and traits for hooking into the ldtk loading process via bevy's [App].
-//!
-//! *Requires the "app" feature, which is enabled by default*
 use crate::{
     components::{EntityInstanceBundle, IntGridCell, IntGridCellBundle},
     ldtk::{EntityInstance, TilesetDefinition},
@@ -20,9 +18,7 @@ use std::{collections::HashMap, marker::PhantomData};
 /// If there is an entity in the LDtk file that is NOT registered, an entity will be spawned with
 /// an [EntityInstance] component, allowing you to flesh it out in your own system.
 ///
-/// *Requires the "app" feature, which is enabled by default*
-///
-/// *Derive macro requires the "derive" feature, which is also enabled by default*
+/// *Derive macro requires the "derive" feature, which is enabled by default*
 ///
 /// ## Derive macro usage
 /// Using `#[derive(LdtkEntity)]` on a [Bundle] struct will allow the type to be registered to the
@@ -351,9 +347,7 @@ pub type LdtkEntityMap = HashMap<(Option<String>, Option<String>), Box<dyn Phant
 /// If there is an IntGrid tile in the LDtk file whose value is NOT registered, an entity will be
 /// spawned with an [IntGridCell] component, allowing you to flesh it out in your own system.
 ///
-/// *Requires the "app" feature, which is enabled by default*
-///
-/// *Derive macro requires the "derive" feature, which is also enabled by default*
+/// *Derive macro requires the "derive" feature, which is enabled by default*
 ///
 /// ## Derive macro usage
 /// Using `#[derive(LdtkIntCell)]` on a [Bundle] struct will allow the type to be registered to the
@@ -514,8 +508,6 @@ pub type LdtkIntCellMap = HashMap<(Option<String>, Option<i32>), Box<dyn Phantom
 /// entity meets the criteria you specify.
 ///
 /// Not necessarily intended for custom implementations on your own types.
-///
-/// *Requires the "app" feature, which is enabled by default*
 pub trait RegisterLdtkObjects {
     /// Used internally by all the other LDtk entity registration functions.
     ///

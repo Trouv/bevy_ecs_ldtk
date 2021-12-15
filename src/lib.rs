@@ -1,15 +1,16 @@
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 
-#[cfg(feature = "app")]
 pub mod app;
-
 pub mod assets;
 pub mod components;
 pub mod ldtk;
 pub mod systems;
 mod tile_makers;
 pub mod utils;
+
+#[cfg(feature = "derive")]
+pub use bevy_ecs_ldtk_macros::*;
 
 pub mod plugin {
     use super::*;
@@ -20,8 +21,8 @@ pub mod plugin {
     impl Plugin for LdtkPlugin {
         fn build(&self, app: &mut App) {
             app.add_plugin(TilemapPlugin)
-                .init_non_send_resource::<app::LdtkEntityMap>()
-                .init_non_send_resource::<app::LdtkIntCellMap>()
+                .init_non_send_resource::<app::ldtk_entity::LdtkEntityMap>()
+                .init_non_send_resource::<app::ldtk_int_cell::LdtkIntCellMap>()
                 .add_asset::<assets::LdtkAsset>()
                 .init_asset_loader::<assets::LdtkLoader>()
                 .add_asset::<assets::LdtkExternalLevel>()
@@ -33,7 +34,14 @@ pub mod plugin {
 }
 
 pub mod prelude {
+    #[cfg(feature = "derive")]
+    pub use crate::{LdtkEntity, LdtkIntCell};
+
     pub use crate::{
+        app::{
+            ldtk_entity::LdtkEntity, ldtk_int_cell::LdtkIntCell,
+            register_ldtk_objects::RegisterLdtkObjects,
+        },
         assets::{LdtkAsset, LdtkExternalLevel},
         components::{
             EntityInstance, EntityInstanceBundle, IntGridCell, IntGridCellBundle, LdtkMapBundle,
@@ -42,10 +50,4 @@ pub mod prelude {
         ldtk::{self, TilesetDefinition},
         plugin::LdtkPlugin,
     };
-
-    #[cfg(feature = "app")]
-    pub use crate::app::{LdtkEntity, LdtkIntCell, RegisterLdtkObjects};
-
-    #[cfg(feature = "derive")]
-    pub use bevy_ecs_ldtk_macros::*;
 }

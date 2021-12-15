@@ -21,8 +21,8 @@ pub mod plugin {
     impl Plugin for LdtkPlugin {
         fn build(&self, app: &mut App) {
             app.add_plugin(TilemapPlugin)
-                .init_non_send_resource::<app::LdtkEntityMap>()
-                .init_non_send_resource::<app::LdtkIntCellMap>()
+                .init_non_send_resource::<app::ldtk_entity::LdtkEntityMap>()
+                .init_non_send_resource::<app::ldtk_int_cell::LdtkIntCellMap>()
                 .add_asset::<assets::LdtkAsset>()
                 .init_asset_loader::<assets::LdtkLoader>()
                 .add_asset::<assets::LdtkExternalLevel>()
@@ -38,7 +38,10 @@ pub mod prelude {
     pub use crate::{LdtkEntity, LdtkIntCell};
 
     pub use crate::{
-        app::{LdtkEntity, LdtkIntCell, RegisterLdtkObjects},
+        app::{
+            ldtk_entity::LdtkEntity, ldtk_int_cell::LdtkIntCell,
+            register_ldtk_objects::RegisterLdtkObjects,
+        },
         assets::{LdtkAsset, LdtkExternalLevel},
         components::{
             EntityInstance, EntityInstanceBundle, IntGridCell, IntGridCellBundle, LdtkMapBundle,

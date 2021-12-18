@@ -355,7 +355,7 @@ fn spawn_level(
                     let mut grid_tiles = layer_instance.grid_tiles.clone();
                     grid_tiles.extend(layer_instance.auto_layer_tiles.clone());
 
-                    for grid_tiles in layer_grid_tiles(grid_tiles) {
+                    for (i, grid_tiles) in layer_grid_tiles(grid_tiles).into_iter().enumerate() {
                         let layer_entity = if layer_instance.layer_instance_type == Type::IntGrid {
                             // The current spawning of IntGrid layers doesn't allow using
                             // LayerBuilder::new_batch().
@@ -395,46 +395,48 @@ fn spawn_level(
                                 }
                             }
 
-                            for (i, value) in layer_instance
-                                .int_grid_csv
-                                .iter()
-                                .enumerate()
-                                .filter(|(_, v)| **v != 0)
-                            {
-                                let tile_pos = int_grid_index_to_tile_pos(
+                            if i == 0 {
+                                for (i, value) in layer_instance
+                                    .int_grid_csv
+                                    .iter()
+                                    .enumerate()
+                                    .filter(|(_, v)| **v != 0)
+                                {
+                                    let tile_pos = int_grid_index_to_tile_pos(
                                 i,
                                 layer_instance.c_wid as u32,
                                 layer_instance.c_hei as u32,
                             ).expect("int_grid_csv indices should be within the bounds of 0..(layer_widthd * layer_height)");
 
-                                let tile_entity =
-                                    layer_builder.get_tile_entity(commands, tile_pos).unwrap();
+                                    let tile_entity =
+                                        layer_builder.get_tile_entity(commands, tile_pos).unwrap();
 
-                                let mut transform = calculate_transform_from_tile_pos(
-                                    tile_pos,
-                                    layer_instance.grid_size as u32,
-                                    layer_id as f32,
-                                );
+                                    let mut transform = calculate_transform_from_tile_pos(
+                                        tile_pos,
+                                        layer_instance.grid_size as u32,
+                                        layer_id as f32,
+                                    );
 
-                                transform.translation /= layer_scale;
+                                    transform.translation /= layer_scale;
 
-                                let mut entity_commands = commands.entity(tile_entity);
+                                    let mut entity_commands = commands.entity(tile_entity);
 
-                                let default_ldtk_int_cell: Box<dyn PhantomLdtkIntCellTrait> =
-                                    Box::new(PhantomLdtkIntCell::<IntGridCellBundle>::new());
+                                    let default_ldtk_int_cell: Box<dyn PhantomLdtkIntCellTrait> =
+                                        Box::new(PhantomLdtkIntCell::<IntGridCellBundle>::new());
 
-                                ldtk_map_get_or_default(
-                                    layer_instance.identifier.clone(),
-                                    *value,
-                                    &default_ldtk_int_cell,
-                                    ldtk_int_cell_map,
-                                )
-                                .evaluate(&mut entity_commands, IntGridCell { value: *value });
+                                    ldtk_map_get_or_default(
+                                        layer_instance.identifier.clone(),
+                                        *value,
+                                        &default_ldtk_int_cell,
+                                        ldtk_int_cell_map,
+                                    )
+                                    .evaluate(&mut entity_commands, IntGridCell { value: *value });
 
-                                entity_commands
-                                    .insert(transform)
-                                    .insert(GlobalTransform::default())
-                                    .insert(Parent(layer_entity));
+                                    entity_commands
+                                        .insert(transform)
+                                        .insert(GlobalTransform::default())
+                                        .insert(Parent(layer_entity));
+                                }
                             }
 
                             let layer_bundle =

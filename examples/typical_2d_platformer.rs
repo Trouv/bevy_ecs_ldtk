@@ -7,10 +7,15 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(LdtkPlugin)
         .add_startup_system(setup)
+        .insert_resource(physics::Gravity { value: -9.8 })
+        .add_event::<physics::CollisionEvent>()
         .add_system(physics::detect_collision)
         .add_system(physics::uncollide_rigid_bodies)
         .add_system(physics::gravity)
         .add_system(physics::apply_velocity)
+        .register_ldtk_int_cell_for_layer::<ColliderBundle>("Collisions", 1)
+        .register_ldtk_int_cell_for_layer::<ColliderBundle>("Collisions", 3)
+        .register_ldtk_entity_for_layer::<PlayerBundle>("Entities", "Player")
         .run();
 }
 
@@ -18,10 +23,19 @@ mod physics {
     use bevy::prelude::*;
     use std::collections::HashMap;
 
-    #[derive(Copy, Clone, Debug, Default, Component)]
+    #[derive(Copy, Clone, PartialEq, Debug, Component)]
     pub struct RectangleCollider {
-        half_width: f32,
-        half_height: f32,
+        pub half_width: f32,
+        pub half_height: f32,
+    }
+
+    impl Default for RectangleCollider {
+        fn default() -> Self {
+            RectangleCollider {
+                half_width: 0.4,
+                half_height: 0.4,
+            }
+        }
     }
 
     #[derive(Copy, Clone, Eq, PartialEq, Debug, Component)]
@@ -31,9 +45,15 @@ mod physics {
         Sensor,
     }
 
+    impl Default for RigidBody {
+        fn default() -> Self {
+            RigidBody::Static
+        }
+    }
+
     #[derive(Copy, Clone, PartialEq, Debug, Default)]
     pub struct Gravity {
-        value: f32,
+        pub value: f32,
     }
 
     #[derive(Copy, Clone, Debug)]
@@ -49,16 +69,15 @@ mod physics {
     }
 
     pub fn detect_collision(
-        query: Query<(Entity, &Transform, &Velocity, &RectangleCollider)>,
+        query: Query<(Entity, &Transform, &RectangleCollider)>,
         mut writer: EventWriter<CollisionEvent>,
     ) {
         let mut collider_rectangles = Vec::new();
-        query.for_each(|(entity, transform, velocity, rectangle_collider)| {
+        query.for_each(|(entity, transform, rectangle_collider)| {
             let half_width = transform.scale.x * rectangle_collider.half_width;
             let half_height = transform.scale.y * rectangle_collider.half_height;
             collider_rectangles.push((
                 entity,
-                velocity,
                 Vec4::new(
                     transform.translation.x - half_width,
                     transform.translation.y - half_height,
@@ -68,8 +87,8 @@ mod physics {
             ));
         });
 
-        for (i, (entity_a, velocity_a, rect_a)) in collider_rectangles.iter().enumerate() {
-            for (entity_b, velocity_b, rect_b) in collider_rectangles[i + 1..].iter() {
+        for (i, (entity_a, rect_a)) in collider_rectangles.iter().enumerate() {
+            for (entity_b, rect_b) in collider_rectangles[i + 1..].iter() {
                 let top_a = rect_a.y + rect_a.w;
                 let right_a = rect_a.x + rect_a.z;
                 let bottom_a = rect_a.y;
@@ -120,7 +139,7 @@ mod physics {
             if let Ok((_, _, other_rigid_body)) = query.get_mut(collision.other_entity) {
                 if *other_rigid_body != RigidBody::Sensor {
                     if let Ok((_, _, RigidBody::Dynamic)) = query.get_mut(collision.entity) {
-                        let mut current_adjustment = adjustments
+                        let current_adjustment = adjustments
                             .entry(collision.entity)
                             .or_insert_with(|| Vec2::default());
 
@@ -189,4 +208,36 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         transform,
         ..Default::default()
     });
+}
+
+#[derive(Copy, Clone, PartialEq, Debug, Default, Bundle, LdtkIntCell)]
+struct ColliderBundle {
+    collider: physics::RectangleCollider,
+    rigid_body: physics::RigidBody,
+}
+
+impl From<EntityInstance> for ColliderBundle {
+    fn from(entity_instance: EntityInstance) -> ColliderBundle {
+        match entity_instance.identifier.as_ref() {
+            "Player" => ColliderBundle {
+                collider: physics::RectangleCollider {
+                    half_width: 8.,
+                    half_height: 11.,
+                },
+                rigid_body: physics::RigidBody::Dynamic,
+            },
+            _ => ColliderBundle::default(),
+        }
+    }
+}
+
+#[derive(Clone, Default, Bundle, LdtkEntity)]
+struct PlayerBundle {
+    #[sprite_bundle("player.png")]
+    #[bundle]
+    sprite_bundle: SpriteBundle,
+    #[from_entity_instance]
+    #[bundle]
+    collider_bundle: ColliderBundle,
+    velocity: physics::Velocity,
 }

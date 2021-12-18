@@ -8,6 +8,7 @@ fn main() {
         .add_plugin(LdtkPlugin)
         .add_startup_system(setup)
         .add_system(detect_collision)
+        .add_system(uncollide_rigid_bodies)
         .run();
 }
 
@@ -17,7 +18,7 @@ struct RectangleCollider {
     half_height: f32,
 }
 
-#[derive(Copy, Clone, Debug, Component)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Component)]
 enum RigidBody {
     Dynamic,
     Static,
@@ -26,8 +27,9 @@ enum RigidBody {
 
 #[derive(Copy, Clone, Debug)]
 struct CollisionEvent {
-    entities: (Entity, Entity),
-    normal: Vec2,
+    entity: Entity,
+    other_entity: Entity,
+    overlap: Vec2,
 }
 
 #[derive(Copy, Clone, Debug, Default, Component)]
@@ -83,15 +85,63 @@ fn detect_collision(
 
     for (i, (entity_a, velocity_a, rect_a)) in collider_rectangles.iter().enumerate() {
         for (entity_b, velocity_b, rect_b) in collider_rectangles[i + 1..].iter() {
-            if rect_a.x + rect_a.z >= rect_b.x
-                && rect_a.x <= rect_b.x + rect_b.z
-                && rect_a.y + rect_a.w >= rect_b.y
-                && rect_a.y <= rect_b.y + rect_b.z
-            {
+            let top_a = rect_a.y + rect_a.w;
+            let right_a = rect_a.x + rect_a.z;
+            let bottom_a = rect_a.y;
+            let left_a = rect_a.x;
+
+            let top_b = rect_b.y + rect_b.w;
+            let right_b = rect_b.x + rect_b.z;
+            let bottom_b = rect_b.y;
+            let left_b = rect_b.x;
+
+            if right_a >= left_b && left_a <= right_b && top_a >= bottom_b && bottom_a <= top_b {
+                let overlap_x = if f32::abs(right_a - left_b) <= f32::abs(left_a - right_b) {
+                    right_a - left_b
+                } else {
+                    left_a - right_b
+                };
+
+                let overlap_y = if f32::abs(top_a - bottom_b) <= f32::abs(bottom_a - top_b) {
+                    top_a - bottom_b
+                } else {
+                    bottom_a - top_b
+                };
+
                 writer.send(CollisionEvent {
-                    entities: (*entity_a, *entity_b),
-                    normal: Vec2::new(0., 0.),
+                    entity: *entity_a,
+                    other_entity: *entity_b,
+                    overlap: Vec2::new(overlap_x, overlap_y),
                 });
+
+                writer.send(CollisionEvent {
+                    entity: *entity_b,
+                    other_entity: *entity_a,
+                    overlap: Vec2::new(-overlap_x, -overlap_y),
+                });
+            }
+        }
+    }
+}
+
+fn uncollide_rigid_bodies(
+    mut query: Query<(&mut Transform, &mut Velocity, &RigidBody)>,
+    mut collisions: EventReader<CollisionEvent>,
+) {
+    for collision in collisions.iter() {
+        if let Ok((_, _, other_rigid_body)) = query.get_mut(collision.other_entity) {
+            if *other_rigid_body != RigidBody::Sensor {
+                if let Ok((mut transform, mut velocity, RigidBody::Dynamic)) =
+                    query.get_mut(collision.entity)
+                {
+                    if f32::abs(collision.overlap.x) <= f32::abs(collision.overlap.y) {
+                        transform.translation.x -= collision.overlap.x;
+                        velocity.value.x = 0.;
+                    } else {
+                        transform.translation.y -= collision.overlap.y;
+                        velocity.value.y = 0.;
+                    }
+                }
             }
         }
     }

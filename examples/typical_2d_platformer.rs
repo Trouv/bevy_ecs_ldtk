@@ -9,6 +9,8 @@ fn main() {
         .add_startup_system(setup)
         .add_system(detect_collision)
         .add_system(uncollide_rigid_bodies)
+        .add_system(gravity)
+        .add_system(apply_velocity)
         .run();
 }
 
@@ -25,6 +27,11 @@ enum RigidBody {
     Sensor,
 }
 
+#[derive(Copy, Clone, PartialEq, Debug, Default)]
+struct Gravity {
+    value: f32,
+}
+
 #[derive(Copy, Clone, Debug)]
 struct CollisionEvent {
     entity: Entity,
@@ -34,16 +41,6 @@ struct CollisionEvent {
 
 #[derive(Copy, Clone, Debug, Default, Component)]
 struct Velocity {
-    value: Vec3,
-}
-
-#[derive(Copy, Clone, Debug, Default, Component)]
-struct Acceleration {
-    value: Vec3,
-}
-
-#[derive(Copy, Clone, Debug, Default, Component)]
-struct Force {
     value: Vec3,
 }
 
@@ -145,4 +142,20 @@ fn uncollide_rigid_bodies(
             }
         }
     }
+}
+
+fn gravity(mut query: Query<(&mut Velocity, &RigidBody)>, gravity: Res<Gravity>, time: Res<Time>) {
+    query.for_each_mut(|(mut velocity, rigid_body)| {
+        if *rigid_body == RigidBody::Dynamic {
+            velocity.value.y += gravity.value * time.delta_seconds();
+        }
+    });
+}
+
+fn apply_velocity(mut query: Query<(&Velocity, &mut Transform, &RigidBody)>, time: Res<Time>) {
+    query.for_each_mut(|(velocity, mut transform, rigid_body)| {
+        if *rigid_body == RigidBody::Dynamic {
+            transform.translation += velocity.value * time.delta_seconds();
+        }
+    });
 }

@@ -7,7 +7,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(LdtkPlugin)
         .add_startup_system(setup)
-        .insert_resource(physics::Gravity { value: -9.8 })
+        .insert_resource(physics::Gravity { value: -5. })
         .add_event::<physics::CollisionEvent>()
         .add_system(physics::detect_collision)
         .add_system(physics::uncollide_rigid_bodies)
@@ -32,8 +32,8 @@ mod physics {
     impl Default for RectangleCollider {
         fn default() -> Self {
             RectangleCollider {
-                half_width: 0.4,
-                half_height: 0.4,
+                half_width: 7.5,
+                half_height: 7.5,
             }
         }
     }
@@ -78,40 +78,39 @@ mod physics {
             let half_height = transform.scale.y * rectangle_collider.half_height;
             collider_rectangles.push((
                 entity,
-                Vec4::new(
-                    transform.translation.x - half_width,
-                    transform.translation.y - half_height,
-                    half_width * 2.,
-                    half_height * 2.,
-                ),
+                Rect {
+                    left: transform.translation.x - half_width,
+                    bottom: transform.translation.y - half_height,
+                    right: transform.translation.x + half_width,
+                    top: transform.translation.y + half_height,
+                },
             ));
         });
 
         for (i, (entity_a, rect_a)) in collider_rectangles.iter().enumerate() {
             for (entity_b, rect_b) in collider_rectangles[i + 1..].iter() {
-                let top_a = rect_a.y + rect_a.w;
-                let right_a = rect_a.x + rect_a.z;
-                let bottom_a = rect_a.y;
-                let left_a = rect_a.x;
-
-                let top_b = rect_b.y + rect_b.w;
-                let right_b = rect_b.x + rect_b.z;
-                let bottom_b = rect_b.y;
-                let left_b = rect_b.x;
-
-                if right_a >= left_b && left_a <= right_b && top_a >= bottom_b && bottom_a <= top_b
+                if rect_a.right >= rect_b.left
+                    && rect_a.left <= rect_b.right
+                    && rect_a.top >= rect_b.bottom
+                    && rect_a.bottom <= rect_b.top
                 {
-                    let overlap_x = if f32::abs(right_a - left_b) <= f32::abs(left_a - right_b) {
-                        right_a - left_b
+                    let overlap_x = if f32::abs(rect_a.right - rect_b.left)
+                        <= f32::abs(rect_a.left - rect_b.right)
+                    {
+                        rect_a.right - rect_b.left
                     } else {
-                        left_a - right_b
+                        rect_a.left - rect_b.right
                     };
 
-                    let overlap_y = if f32::abs(top_a - bottom_b) <= f32::abs(bottom_a - top_b) {
-                        top_a - bottom_b
+                    let overlap_y = if f32::abs(rect_a.top - rect_b.bottom)
+                        <= f32::abs(rect_a.bottom - rect_b.top)
+                    {
+                        rect_a.top - rect_b.bottom
                     } else {
-                        bottom_a - top_b
+                        rect_a.bottom - rect_b.top
                     };
+
+                    debug!("{:?} and {:?} collided", rect_a, rect_b);
 
                     writer.send(CollisionEvent {
                         entity: *entity_a,
@@ -136,9 +135,12 @@ mod physics {
         let mut adjustments: HashMap<Entity, Vec2> = HashMap::new();
 
         for collision in collisions.iter() {
+            debug!("collision event: {:?}", collision);
             if let Ok((_, _, other_rigid_body)) = query.get_mut(collision.other_entity) {
+                debug!("found other entity");
                 if *other_rigid_body != RigidBody::Sensor {
                     if let Ok((_, _, RigidBody::Dynamic)) = query.get_mut(collision.entity) {
+                        debug!("found entity");
                         let current_adjustment = adjustments
                             .entry(collision.entity)
                             .or_insert_with(|| Vec2::default());
@@ -156,6 +158,8 @@ mod physics {
                 }
             }
         }
+
+        debug!("adjustments: {:?}", adjustments);
 
         for (entity, adjustment) in adjustments.iter() {
             if let Ok((mut transform, mut velocity, _)) = query.get_mut(*entity) {
@@ -210,10 +214,11 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
 }
 
-#[derive(Copy, Clone, PartialEq, Debug, Default, Bundle, LdtkIntCell)]
+#[derive(Copy, Clone, Debug, Default, Bundle, LdtkIntCell)]
 struct ColliderBundle {
     collider: physics::RectangleCollider,
     rigid_body: physics::RigidBody,
+    velocity: physics::Velocity,
 }
 
 impl From<EntityInstance> for ColliderBundle {
@@ -225,6 +230,7 @@ impl From<EntityInstance> for ColliderBundle {
                     half_height: 11.,
                 },
                 rigid_body: physics::RigidBody::Dynamic,
+                ..Default::default()
             },
             _ => ColliderBundle::default(),
         }
@@ -239,5 +245,4 @@ struct PlayerBundle {
     #[from_entity_instance]
     #[bundle]
     collider_bundle: ColliderBundle,
-    velocity: physics::Velocity,
 }

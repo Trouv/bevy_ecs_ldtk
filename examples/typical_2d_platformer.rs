@@ -6,13 +6,11 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(LdtkPlugin)
+        .add_plugin(physics::BasicPhysicsPlugin)
+        .insert_resource(physics::Gravity { value: -2000. })
+        .insert_resource(physics::MaxVelocity { value: 1000. })
         .add_startup_system(setup)
-        .insert_resource(physics::Gravity { value: -5. })
-        .add_event::<physics::CollisionEvent>()
-        .add_system(physics::detect_collision)
-        .add_system(physics::uncollide_rigid_bodies)
-        .add_system(physics::gravity)
-        .add_system(physics::apply_velocity)
+        .add_system(movement)
         .register_ldtk_int_cell_for_layer::<ColliderBundle>("Collisions", 1)
         .register_ldtk_int_cell_for_layer::<ColliderBundle>("Collisions", 3)
         .register_ldtk_entity_for_layer::<PlayerBundle>("Entities", "Player")
@@ -22,6 +20,27 @@ fn main() {
 mod physics {
     use bevy::prelude::*;
     use std::collections::HashMap;
+
+    pub struct BasicPhysicsPlugin;
+
+    impl Plugin for BasicPhysicsPlugin {
+        fn build(&self, app: &mut App) {
+            app.add_event::<CollisionEvent>()
+                .add_system_to_stage(CoreStage::PreUpdate, apply_velocity.label("apply_velocity"))
+                .add_system_to_stage(
+                    CoreStage::PreUpdate,
+                    detect_collision.after("apply_velocity"),
+                )
+                .add_system_to_stage(
+                    CoreStage::PreUpdate,
+                    gravity.label("gravity").after("apply_velocity"),
+                )
+                .add_system_to_stage(
+                    CoreStage::PreUpdate,
+                    uncollide_rigid_bodies.after("gravity"),
+                );
+        }
+    }
 
     #[derive(Copy, Clone, PartialEq, Debug, Component)]
     pub struct RectangleCollider {
@@ -56,16 +75,21 @@ mod physics {
         pub value: f32,
     }
 
+    #[derive(Copy, Clone, PartialEq, Debug, Default)]
+    pub struct MaxVelocity {
+        pub value: f32,
+    }
+
     #[derive(Copy, Clone, Debug)]
     pub struct CollisionEvent {
-        entity: Entity,
-        other_entity: Entity,
-        overlap: Vec2,
+        pub entity: Entity,
+        pub other_entity: Entity,
+        pub overlap: Vec2,
     }
 
     #[derive(Copy, Clone, Debug, Default, Component)]
     pub struct Velocity {
-        value: Vec3,
+        pub value: Vec3,
     }
 
     pub fn detect_collision(
@@ -187,10 +211,15 @@ mod physics {
     }
 
     pub fn apply_velocity(
-        mut query: Query<(&Velocity, &mut Transform, &RigidBody)>,
+        mut query: Query<(&mut Velocity, &mut Transform, &RigidBody)>,
         time: Res<Time>,
+        max_velocity: Res<MaxVelocity>,
     ) {
-        query.for_each_mut(|(velocity, mut transform, rigid_body)| {
+        query.for_each_mut(|(mut velocity, mut transform, rigid_body)| {
+            if velocity.value.length() > max_velocity.value {
+                velocity.value = velocity.value.normalize() * max_velocity.value;
+            }
+
             if *rigid_body == RigidBody::Dynamic {
                 transform.translation += velocity.value * time.delta_seconds();
             }
@@ -205,11 +234,9 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     let ldtk_handle = asset_server.load("Typical_2D_platformer_example.ldtk");
     let map_entity = commands.spawn().id();
-    let transform = Transform::default();
     commands.entity(map_entity).insert_bundle(LdtkMapBundle {
         ldtk_handle,
         map: Map::new(0u16, map_entity),
-        transform,
         ..Default::default()
     });
 }
@@ -237,6 +264,9 @@ impl From<EntityInstance> for ColliderBundle {
     }
 }
 
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Component)]
+struct Player;
+
 #[derive(Clone, Default, Bundle, LdtkEntity)]
 struct PlayerBundle {
     #[sprite_bundle("player.png")]
@@ -245,4 +275,18 @@ struct PlayerBundle {
     #[from_entity_instance]
     #[bundle]
     collider_bundle: ColliderBundle,
+    player: Player,
+}
+
+fn movement(input: Res<Input<KeyCode>>, mut query: Query<&mut physics::Velocity, With<Player>>) {
+    for mut velocity in query.iter_mut() {
+        let right = if input.pressed(KeyCode::D) { 1. } else { 0. };
+        let left = if input.pressed(KeyCode::A) { 1. } else { 0. };
+
+        velocity.value.x = (right - left) * 200.;
+
+        if input.just_pressed(KeyCode::Space) {
+            velocity.value.y = 450.;
+        }
+    }
 }

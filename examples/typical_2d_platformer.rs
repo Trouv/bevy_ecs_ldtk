@@ -15,10 +15,13 @@ fn main() {
         .add_system(movement)
         .add_system(detect_climb_range)
         .add_system(ignore_gravity_if_climbing)
+        .add_system(patrol)
+        .add_system(patrol_setup)
         .register_ldtk_int_cell_for_layer::<ColliderBundle>("Collisions", 1)
         .register_ldtk_int_cell_for_layer::<LadderBundle>("Collisions", 2)
         .register_ldtk_int_cell_for_layer::<ColliderBundle>("Collisions", 3)
         .register_ldtk_entity_for_layer::<PlayerBundle>("Entities", "Player")
+        .register_ldtk_entity_for_layer::<MobBundle>("Entities", "Mob")
         .run();
 }
 
@@ -142,8 +145,6 @@ mod physics {
                         rect_a.bottom - rect_b.top
                     };
 
-                    debug!("{:?} and {:?} collided", rect_a, rect_b);
-
                     writer.send(CollisionEvent {
                         entity: *entity_a,
                         other_entity: *entity_b,
@@ -167,12 +168,9 @@ mod physics {
         let mut adjustments: HashMap<Entity, Vec2> = HashMap::new();
 
         for collision in collisions.iter() {
-            debug!("collision event: {:?}", collision);
             if let Ok((_, _, other_rigid_body)) = query.get_mut(collision.other_entity) {
-                debug!("found other entity");
                 if *other_rigid_body != RigidBody::Sensor {
                     if let Ok((_, _, RigidBody::Dynamic)) = query.get_mut(collision.entity) {
-                        debug!("found entity");
                         let current_adjustment = adjustments
                             .entry(collision.entity)
                             .or_insert_with(|| Vec2::default());
@@ -190,8 +188,6 @@ mod physics {
                 }
             }
         }
-
-        debug!("adjustments: {:?}", adjustments);
 
         for (entity, adjustment) in adjustments.iter() {
             if let Ok((mut transform, mut velocity, _)) = query.get_mut(*entity) {
@@ -267,6 +263,14 @@ impl From<EntityInstance> for ColliderBundle {
                 rigid_body: physics::RigidBody::Dynamic,
                 ..Default::default()
             },
+            "Mob" => ColliderBundle {
+                collider: physics::RectangleCollider {
+                    half_width: 5.,
+                    half_height: 5.,
+                },
+                rigid_body: physics::RigidBody::Dynamic,
+                ..Default::default()
+            },
             _ => ColliderBundle::default(),
         }
     }
@@ -325,6 +329,31 @@ struct LadderBundle {
     #[bundle]
     collider_bundle: ColliderBundle,
     climbable: Climbable,
+}
+
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Component)]
+struct Enemy;
+
+#[derive(Clone, PartialEq, Debug, Default, Component)]
+struct Patrol {
+    points: Vec<Vec2>,
+    index: usize,
+    forward: bool,
+}
+
+#[derive(Clone, Default, Bundle, LdtkEntity)]
+struct MobBundle {
+    #[sprite_sheet_bundle]
+    #[bundle]
+    sprite_sheet_bundle: SpriteSheetBundle,
+    #[from_entity_instance]
+    #[bundle]
+    collider_bundle: ColliderBundle,
+    enemy: Enemy,
+    ignore_gravity: physics::IgnoreGravity,
+    #[from_entity_instance]
+    entity_instance: EntityInstance,
+    patrol: Patrol,
 }
 
 fn movement(
@@ -395,5 +424,83 @@ fn ignore_gravity_if_climbing(
                 commands.entity(entity).remove::<physics::IgnoreGravity>();
             }
         }
+    }
+}
+
+fn patrol_setup(
+    mut query: Query<(&mut Patrol, &EntityInstance, &Transform), Added<EntityInstance>>,
+) {
+    for (mut patrol, entity_instance, transform) in query.iter_mut() {
+        patrol.points.push(transform.translation.into());
+
+        let ldtk_patrol = entity_instance
+            .field_instances
+            .iter()
+            .find(|f| f.identifier == "patrol".to_string())
+            .unwrap();
+        if let Some(serde_json::Value::Array(ldtk_points)) = &ldtk_patrol.value {
+            for ldtk_point in ldtk_points {
+                if let serde_json::Value::Object(ldtk_point) = ldtk_point {
+                    if let (
+                        Some(serde_json::Value::Number(x)),
+                        Some(serde_json::Value::Number(y)),
+                    ) = (ldtk_point.get("cx"), ldtk_point.get("cy"))
+                    {
+                        if let (Some(x), Some(y)) = (x.as_i64(), y.as_i64()) {
+                            let mut grid_offset = IVec2::new(x as i32, y as i32)
+                                - IVec2::from_slice(entity_instance.grid.as_slice());
+
+                            grid_offset.y = -grid_offset.y;
+
+                            let pixel_offset = grid_offset.as_vec2() * Vec2::splat(16.);
+
+                            patrol
+                                .points
+                                .push(Vec2::from(transform.translation) + pixel_offset);
+                        }
+                    }
+                }
+            }
+        }
+
+        patrol.forward = true;
+        patrol.index = 1;
+    }
+}
+
+fn patrol(mut query: Query<(&mut Transform, &mut physics::Velocity, &mut Patrol)>) {
+    for (mut transform, mut velocity, mut patrol) in query.iter_mut() {
+        if patrol.points.len() <= 1 {
+            continue;
+        }
+
+        let mut new_velocity = Vec3::from((
+            (patrol.points[patrol.index] - Vec2::from(transform.translation)).normalize() * 75.,
+            0.,
+        ));
+
+        if new_velocity.dot(velocity.value) < 0. {
+            if patrol.index == 0 {
+                patrol.forward = true;
+            } else if patrol.index == patrol.points.len() - 1 {
+                patrol.forward = false;
+            }
+
+            transform.translation.x = patrol.points[patrol.index].x;
+            transform.translation.y = patrol.points[patrol.index].y;
+
+            if patrol.forward {
+                patrol.index += 1;
+            } else {
+                patrol.index -= 1;
+            }
+
+            new_velocity = Vec3::from((
+                (patrol.points[patrol.index] - Vec2::from(transform.translation)).normalize() * 75.,
+                0.,
+            ));
+        }
+
+        velocity.value = new_velocity;
     }
 }

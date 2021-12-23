@@ -60,8 +60,8 @@ mod physics {
     impl Default for RectangleCollider {
         fn default() -> Self {
             RectangleCollider {
-                half_width: 7.5,
-                half_height: 7.5,
+                half_width: 8.,
+                half_height: 8.,
             }
         }
     }
@@ -125,10 +125,10 @@ mod physics {
 
         for (i, (entity_a, rect_a)) in collider_rectangles.iter().enumerate() {
             for (entity_b, rect_b) in collider_rectangles[i + 1..].iter() {
-                if rect_a.right >= rect_b.left
-                    && rect_a.left <= rect_b.right
-                    && rect_a.top >= rect_b.bottom
-                    && rect_a.bottom <= rect_b.top
+                if rect_a.right > rect_b.left
+                    && rect_a.left < rect_b.right
+                    && rect_a.top > rect_b.bottom
+                    && rect_a.bottom < rect_b.top
                 {
                     let overlap_x = if f32::abs(rect_a.right - rect_b.left)
                         <= f32::abs(rect_a.left - rect_b.right)
@@ -258,7 +258,7 @@ impl From<EntityInstance> for ColliderBundle {
         match entity_instance.identifier.as_ref() {
             "Player" => ColliderBundle {
                 collider: physics::RectangleCollider {
-                    half_width: 8.,
+                    half_width: 4.,
                     half_height: 11.,
                 },
                 rigid_body: physics::RigidBody::Dynamic,
@@ -282,8 +282,8 @@ impl From<IntGridCell> for ColliderBundle {
         match int_grid_cell.value {
             2 => ColliderBundle {
                 collider: physics::RectangleCollider {
-                    half_width: 0.5,
-                    half_height: 7.5,
+                    half_width: 8.,
+                    half_height: 8.,
                 },
                 rigid_body: physics::RigidBody::Sensor,
                 ..Default::default()

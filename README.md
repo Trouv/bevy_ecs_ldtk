@@ -16,7 +16,7 @@ plugin small and focused (see:
 https://github.com/StarArawn/bevy_ecs_tilemap/issues/84).
 This plugin aims to be a more complete solution to ldtk in bevy.
 
-![screenshot](repo/screenshot.png)
+![platformer-example](repo/platformer-example.gif)
 
 In addition to drawing Tile/AutoTile layers, this crate provides derive macros
 and `App` extensions for conveniently inserting your bundles for Entity and

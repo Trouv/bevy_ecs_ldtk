@@ -55,8 +55,8 @@ impl From<EntityInstance> for ColliderBundle {
         match entity_instance.identifier.as_ref() {
             "Player" => ColliderBundle {
                 collider: physics::RectangleCollider {
-                    half_width: 4.,
-                    half_height: 11.,
+                    half_width: 6.,
+                    half_height: 16.,
                 },
                 rigid_body: physics::RigidBody::Dynamic,
                 ..Default::default()

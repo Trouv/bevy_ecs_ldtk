@@ -247,7 +247,7 @@ fn patrol_setup(
     mut query: Query<(&mut Patrol, &EntityInstance, &Transform), Added<EntityInstance>>,
 ) {
     for (mut patrol, entity_instance, transform) in query.iter_mut() {
-        patrol.points.push(transform.translation.into());
+        patrol.points.push(transform.translation.truncate());
 
         let ldtk_patrol = entity_instance
             .field_instances
@@ -272,7 +272,7 @@ fn patrol_setup(
 
                             patrol
                                 .points
-                                .push(Vec2::from(transform.translation) + pixel_offset);
+                                .push(Vec2::from(transform.translation.truncate()) + pixel_offset);
                         }
                     }
                 }
@@ -291,7 +291,9 @@ fn patrol(mut query: Query<(&mut Transform, &mut physics::Velocity, &mut Patrol)
         }
 
         let mut new_velocity = Vec3::from((
-            (patrol.points[patrol.index] - Vec2::from(transform.translation)).normalize() * 75.,
+            (patrol.points[patrol.index] - Vec2::from(transform.translation.truncate()))
+                .normalize()
+                * 75.,
             0.,
         ));
 
@@ -312,7 +314,9 @@ fn patrol(mut query: Query<(&mut Transform, &mut physics::Velocity, &mut Patrol)
             }
 
             new_velocity = Vec3::from((
-                (patrol.points[patrol.index] - Vec2::from(transform.translation)).normalize() * 75.,
+                (patrol.points[patrol.index] - Vec2::from(transform.translation.truncate()))
+                    .normalize()
+                    * 75.,
                 0.,
             ));
         }

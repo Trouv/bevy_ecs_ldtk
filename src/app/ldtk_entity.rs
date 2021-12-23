@@ -199,10 +199,9 @@ pub trait LdtkEntity: Bundle {
     /// So, any custom implementations of these components within this trait will be overwritten.
     fn bundle_entity(
         entity_instance: &EntityInstance,
-        tileset: Option<&Handle<Texture>>,
+        tileset: Option<&Handle<Image>>,
         tileset_definition: Option<&TilesetDefinition>,
         asset_server: &AssetServer,
-        materials: &mut Assets<ColorMaterial>,
         texture_atlases: &mut Assets<TextureAtlas>,
     ) -> Self;
 }
@@ -210,10 +209,9 @@ pub trait LdtkEntity: Bundle {
 impl LdtkEntity for EntityInstanceBundle {
     fn bundle_entity(
         entity_instance: &EntityInstance,
-        _: Option<&Handle<Texture>>,
+        _: Option<&Handle<Image>>,
         _: Option<&TilesetDefinition>,
         _: &AssetServer,
-        _: &mut Assets<ColorMaterial>,
         _: &mut Assets<TextureAtlas>,
     ) -> Self {
         EntityInstanceBundle {
@@ -225,10 +223,9 @@ impl LdtkEntity for EntityInstanceBundle {
 impl LdtkEntity for SpriteBundle {
     fn bundle_entity(
         _: &EntityInstance,
-        tileset: Option<&Handle<Texture>>,
+        tileset: Option<&Handle<Image>>,
         _: Option<&TilesetDefinition>,
         _: &AssetServer,
-        materials: &mut Assets<ColorMaterial>,
         _: &mut Assets<TextureAtlas>,
     ) -> Self {
         let tileset = match tileset {
@@ -239,9 +236,8 @@ impl LdtkEntity for SpriteBundle {
             }
         };
 
-        let material = materials.add(tileset.into());
         SpriteBundle {
-            material,
+            texture: tileset,
             ..Default::default()
         }
     }
@@ -250,10 +246,9 @@ impl LdtkEntity for SpriteBundle {
 impl LdtkEntity for SpriteSheetBundle {
     fn bundle_entity(
         entity_instance: &EntityInstance,
-        tileset: Option<&Handle<Texture>>,
+        tileset: Option<&Handle<Image>>,
         tileset_definition: Option<&TilesetDefinition>,
         _: &AssetServer,
-        _: &mut Assets<ColorMaterial>,
         texture_atlases: &mut Assets<TextureAtlas>,
     ) -> Self {
         match (tileset, &entity_instance.tile, tileset_definition) {
@@ -266,9 +261,9 @@ impl LdtkEntity for SpriteSheetBundle {
                     Vec2::splat(tileset_definition.spacing as f32),
                 )),
                 sprite: TextureAtlasSprite {
-                    index: (tile.src_rect[1] / tile.src_rect[3]) as u32
-                        * tileset_definition.c_wid as u32
-                        + (tile.src_rect[0] / tile.src_rect[2]) as u32,
+                    index: (tile.src_rect[1] / tile.src_rect[3]) as usize
+                        * tileset_definition.c_wid as usize
+                        + (tile.src_rect[0] / tile.src_rect[2]) as usize,
                     ..Default::default()
                 },
                 ..Default::default()
@@ -300,10 +295,9 @@ pub trait PhantomLdtkEntityTrait {
         &self,
         commands: &'b mut EntityCommands<'w, 's, 'a>,
         entity_instance: &EntityInstance,
-        tileset: Option<&Handle<Texture>>,
+        tileset: Option<&Handle<Image>>,
         tileset_definition: Option<&TilesetDefinition>,
         asset_server: &AssetServer,
-        materials: &mut Assets<ColorMaterial>,
         texture_atlases: &mut Assets<TextureAtlas>,
     ) -> &'b mut EntityCommands<'w, 's, 'a>;
 }
@@ -313,10 +307,9 @@ impl<B: LdtkEntity> PhantomLdtkEntityTrait for PhantomLdtkEntity<B> {
         &self,
         entity_commands: &'b mut EntityCommands<'w, 's, 'a>,
         entity_instance: &EntityInstance,
-        tileset: Option<&Handle<Texture>>,
+        tileset: Option<&Handle<Image>>,
         tileset_definition: Option<&TilesetDefinition>,
         asset_server: &AssetServer,
-        materials: &mut Assets<ColorMaterial>,
         texture_atlases: &mut Assets<TextureAtlas>,
     ) -> &'b mut EntityCommands<'w, 's, 'a> {
         entity_commands.insert_bundle(B::bundle_entity(
@@ -324,7 +317,6 @@ impl<B: LdtkEntity> PhantomLdtkEntityTrait for PhantomLdtkEntity<B> {
             tileset,
             tileset_definition,
             asset_server,
-            materials,
             texture_atlases,
         ))
     }

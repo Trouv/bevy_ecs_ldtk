@@ -23,6 +23,7 @@ fn main() {
         .register_ldtk_int_cell_for_layer::<ColliderBundle>("Collisions", 3)
         .register_ldtk_entity_for_layer::<PlayerBundle>("Entities", "Player")
         .register_ldtk_entity_for_layer::<MobBundle>("Entities", "Mob")
+        .register_ldtk_entity_for_layer::<ChestBundle>("Entities", "Chest")
         .run();
 }
 
@@ -272,6 +273,14 @@ impl From<EntityInstance> for ColliderBundle {
                 rigid_body: physics::RigidBody::Dynamic,
                 ..Default::default()
             },
+            "Chest" => ColliderBundle {
+                collider: physics::RectangleCollider {
+                    half_width: 8.,
+                    half_height: 8.,
+                },
+                rigid_body: physics::RigidBody::Dynamic,
+                ..Default::default()
+            },
             _ => ColliderBundle::default(),
         }
     }
@@ -355,6 +364,16 @@ struct MobBundle {
     #[from_entity_instance]
     entity_instance: EntityInstance,
     patrol: Patrol,
+}
+
+#[derive(Clone, Default, Bundle, LdtkEntity)]
+struct ChestBundle {
+    #[sprite_sheet_bundle]
+    #[bundle]
+    sprite_sheet_bundle: SpriteSheetBundle,
+    #[from_entity_instance]
+    #[bundle]
+    collider_bundle: ColliderBundle,
 }
 
 fn movement(

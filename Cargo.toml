@@ -26,5 +26,5 @@ default = ["derive"]
 derive = ["bevy_ecs_ldtk_macros"]
 
 [[example]]
-name = "typical_2d_platformer"
-path = "examples/typical_2d_platformer/main.rs"
+name = "platformer"
+path = "examples/platformer/main.rs"

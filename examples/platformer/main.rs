@@ -18,12 +18,12 @@ fn main() {
         .add_system(patrol)
         .add_system(patrol_setup)
         .add_system(camera_fit_inside_current_level)
-        .register_ldtk_int_cell_for_layer::<ColliderBundle>("Collisions", 1)
-        .register_ldtk_int_cell_for_layer::<LadderBundle>("Collisions", 2)
-        .register_ldtk_int_cell_for_layer::<ColliderBundle>("Collisions", 3)
-        .register_ldtk_entity_for_layer::<PlayerBundle>("Entities", "Player")
-        .register_ldtk_entity_for_layer::<MobBundle>("Entities", "Mob")
-        .register_ldtk_entity_for_layer::<ChestBundle>("Entities", "Chest")
+        .register_ldtk_int_cell::<ColliderBundle>(1)
+        .register_ldtk_int_cell::<LadderBundle>(2)
+        .register_ldtk_int_cell::<ColliderBundle>(3)
+        .register_ldtk_entity::<PlayerBundle>("Player")
+        .register_ldtk_entity::<MobBundle>("Mob")
+        .register_ldtk_entity::<ChestBundle>("Chest")
         .run();
 }
 

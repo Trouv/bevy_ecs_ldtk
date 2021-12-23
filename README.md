@@ -16,7 +16,7 @@ plugin small and focused (see:
 https://github.com/StarArawn/bevy_ecs_tilemap/issues/84).
 This plugin aims to be a more complete solution to ldtk in bevy.
 
-![screenshot](repo/screenshot.png)
+![platformer-example](repo/platformer-example.gif)
 
 In addition to drawing Tile/AutoTile layers, this crate provides derive macros
 and `App` extensions for conveniently inserting your bundles for Entity and
@@ -86,3 +86,7 @@ Once most of these goals are met, and bevy has reached 0.6, this crate will have
 | bevy | bevy_ecs_tilemap | bevy_ecs_ldtk |
 | --- | --- | --- |
 | 0.6 | 0.5 | 0.1 |
+
+### Asset Credits
+- [7Soul's RPG Graphics](https://7soul.itch.io/7souls-rpg-graphics-pack-1-icons), a sprite pack by 7soul, licensed under [CC BY-ND 4.0](https://creativecommons.org/licenses/by-nd/4.0/)
+- [SunnyLand](https://ansimuz.itch.io/sunny-land-pixel-game-art), a texture pack by Ansimuz, licensed under [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)

@@ -267,7 +267,7 @@ impl LdtkEntity for SpriteSheetBundle {
                 )),
                 sprite: TextureAtlasSprite {
                     index: (tile.src_rect[1] / tile.src_rect[3]) as u32
-                        * tileset_definition.c_hei as u32
+                        * tileset_definition.c_wid as u32
                         + (tile.src_rect[0] / tile.src_rect[2]) as u32,
                     ..Default::default()
                 },

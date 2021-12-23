@@ -24,3 +24,7 @@ bevy = { git = "https://github.com/bevyengine/bevy", branch = "main", default-fe
 [features]
 default = ["derive"]
 derive = ["bevy_ecs_ldtk_macros"]
+
+[[example]]
+name = "typical_2d_platformer"
+path = "examples/typical_2d_platformer/main.rs"

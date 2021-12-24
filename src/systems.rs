@@ -12,7 +12,7 @@ use crate::{
     utils::*,
 };
 
-use bevy::prelude::*;
+use bevy::{prelude::*, render::texture::DEFAULT_IMAGE_HANDLE};
 use bevy_ecs_tilemap::prelude::*;
 use std::collections::HashMap;
 
@@ -117,7 +117,6 @@ pub fn process_changed_ldtks(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut meshes: ResMut<Assets<Mesh>>,
-    mut images: ResMut<Assets<Image>>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     ldtk_assets: Res<Assets<LdtkAsset>>,
     ldtk_entity_map: NonSend<LdtkEntityMap>,
@@ -172,7 +171,6 @@ pub fn process_changed_ldtks(
                         &mut commands,
                         &asset_server,
                         &mut texture_atlases,
-                        &mut images,
                         &mut meshes,
                         &ldtk_entity_map,
                         &ldtk_int_cell_map,
@@ -233,7 +231,6 @@ fn spawn_level(
     commands: &mut Commands,
     asset_server: &AssetServer,
     texture_atlases: &mut Assets<TextureAtlas>,
-    images: &mut ResMut<Assets<Image>>,
     meshes: &mut ResMut<Assets<Mesh>>,
     ldtk_entity_map: &LdtkEntityMap,
     ldtk_int_cell_map: &LdtkIntCellMap,
@@ -346,7 +343,7 @@ fn spawn_level(
                         Some(tileset_definition) => {
                             tileset_map.get(&tileset_definition.uid).unwrap().clone()
                         }
-                        None => images.add(Image::default()),
+                        None => DEFAULT_IMAGE_HANDLE.typed(),
                     };
 
                     let mut grid_tiles = layer_instance.grid_tiles.clone();

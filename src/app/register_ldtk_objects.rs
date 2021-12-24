@@ -244,10 +244,9 @@ mod tests {
     impl LdtkEntity for LdtkEntityBundle {
         fn bundle_entity(
             _: &EntityInstance,
-            _: Option<&Handle<Texture>>,
+            _: Option<&Handle<Image>>,
             _: Option<&TilesetDefinition>,
             _: &AssetServer,
-            _: &mut Assets<ColorMaterial>,
             _: &mut Assets<TextureAtlas>,
         ) -> LdtkEntityBundle {
             LdtkEntityBundle::default()

@@ -12,7 +12,7 @@ use crate::{
     utils::*,
 };
 
-use bevy::prelude::*;
+use bevy::{prelude::*, render::texture::DEFAULT_IMAGE_HANDLE};
 use bevy_ecs_tilemap::prelude::*;
 use std::collections::HashMap;
 
@@ -117,7 +117,6 @@ pub fn process_changed_ldtks(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     ldtk_assets: Res<Assets<LdtkAsset>>,
     ldtk_entity_map: NonSend<LdtkEntityMap>,
@@ -171,7 +170,6 @@ pub fn process_changed_ldtks(
                         level,
                         &mut commands,
                         &asset_server,
-                        &mut materials,
                         &mut texture_atlases,
                         &mut meshes,
                         &ldtk_entity_map,
@@ -232,7 +230,6 @@ fn spawn_level(
     level: &Level,
     commands: &mut Commands,
     asset_server: &AssetServer,
-    materials: &mut Assets<ColorMaterial>,
     texture_atlases: &mut Assets<TextureAtlas>,
     meshes: &mut ResMut<Assets<Mesh>>,
     ldtk_entity_map: &LdtkEntityMap,
@@ -283,7 +280,6 @@ fn spawn_level(
                             tileset,
                             tileset_definition,
                             asset_server,
-                            materials,
                             texture_atlases,
                         );
 
@@ -343,13 +339,11 @@ fn spawn_level(
                         / Vec2::new(settings.tile_size.0 as f32, settings.tile_size.1 as f32))
                     .extend(1.);
 
-                    let material_handle = match tileset_definition {
+                    let image_handle = match tileset_definition {
                         Some(tileset_definition) => {
-                            let texture_handle = tileset_map.get(&tileset_definition.uid).unwrap();
-
-                            materials.add(ColorMaterial::texture(texture_handle.clone_weak()))
+                            tileset_map.get(&tileset_definition.uid).unwrap().clone()
                         }
-                        None => materials.add(ColorMaterial::default()),
+                        None => DEFAULT_IMAGE_HANDLE.typed(),
                     };
 
                     let mut grid_tiles = layer_instance.grid_tiles.clone();
@@ -366,7 +360,6 @@ fn spawn_level(
                                 settings,
                                 map.id,
                                 layer_id as u16,
-                                None,
                             );
 
                             match tileset_definition {
@@ -440,7 +433,7 @@ fn spawn_level(
                             }
 
                             let layer_bundle =
-                                layer_builder.build(commands, meshes, material_handle.clone());
+                                layer_builder.build(commands, meshes, image_handle.clone());
 
                             commands.entity(layer_entity).insert_bundle(layer_bundle);
 
@@ -456,10 +449,9 @@ fn spawn_level(
                                 commands,
                                 settings,
                                 meshes,
-                                material_handle.clone(),
+                                image_handle.clone(),
                                 map.id,
                                 layer_id as u16,
-                                None,
                                 tile_pos_to_tile_bundle_maker(tile_maker),
                             )
                         };

@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy::render::texture::DEFAULT_IMAGE_HANDLE;
 use bevy_ecs_ldtk::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 
@@ -120,15 +121,18 @@ struct Test2 {
 
 fn debug_int_grid(
     mut commands: Commands,
-    query: Query<(Entity, &TilePos, &IntGridCell, &Transform), (Added<IntGridCell>, With<Debug>)>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
+    query: Query<(Entity, &TilePos, &IntGridCell, &Transform), Added<IntGridCell>>,
 ) {
     query.for_each(|(entity, tile_pos, cell, transform)| {
         commands
             .entity(entity)
             .insert_bundle(SpriteBundle {
-                sprite: Sprite::new(Vec2::splat(8.)),
-                material: materials.add(ColorMaterial::color(Color::WHITE)),
+                sprite: Sprite {
+                    color: Color::WHITE,
+                    custom_size: Some(Vec2::splat(2.)),
+                    ..Default::default()
+                },
+                texture: DEFAULT_IMAGE_HANDLE.typed(),
                 ..Default::default()
             })
             .insert(*transform);

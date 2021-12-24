@@ -2,6 +2,9 @@ use crate::components::{IntGridCell, IntGridCellBundle};
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::{collections::HashMap, marker::PhantomData};
 
+#[allow(unused_imports)]
+use crate::app::register_ldtk_objects::RegisterLdtkObjects;
+
 /// Provides a constructor to a bevy [Bundle] which can be used for spawning additional components
 /// on IntGrid tiles.
 ///

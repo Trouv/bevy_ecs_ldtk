@@ -2,12 +2,15 @@ use crate::components::{IntGridCell, IntGridCellBundle};
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::{collections::HashMap, marker::PhantomData};
 
+#[allow(unused_imports)]
+use crate::app::register_ldtk_objects::RegisterLdtkObjects;
+
 /// Provides a constructor to a bevy [Bundle] which can be used for spawning additional components
 /// on IntGrid tiles.
 ///
 /// After implementing this trait on a bundle, you can register it to spawn automatically for a
 /// given int grid value via
-/// [crate::prelude::RegisterLdtkObjects] on your [App].
+/// [RegisterLdtkObjects] on your [App].
 ///
 /// For common use cases, you'll want to use derive-macro `#[derive(LdtkIntCell)]`, but you can
 /// also provide a custom implementation.
@@ -19,7 +22,7 @@ use std::{collections::HashMap, marker::PhantomData};
 ///
 /// ## Derive macro usage
 /// Using `#[derive(LdtkIntCell)]` on a [Bundle] struct will allow the type to be registered to the
-/// [App] via [crate::prelude::RegisterLdtkObjects] functions:
+/// [App] via [RegisterLdtkObjects] functions:
 /// ```no_run
 /// use bevy::prelude::*;
 /// use bevy_ecs_ldtk::prelude::*;
@@ -166,5 +169,5 @@ impl<B: LdtkIntCell> PhantomLdtkIntCellTrait for PhantomLdtkIntCell<B> {
     }
 }
 
-/// Used by [crate::prelude::RegisterLdtkObjects] to associate Ldtk IntGrid values with [LdtkIntCell]s.
+/// Used by [RegisterLdtkObjects] to associate Ldtk IntGrid values with [LdtkIntCell]s.
 pub type LdtkIntCellMap = HashMap<(Option<String>, Option<i32>), Box<dyn PhantomLdtkIntCellTrait>>;

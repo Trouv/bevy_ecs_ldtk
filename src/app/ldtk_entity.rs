@@ -9,7 +9,7 @@ use std::{collections::HashMap, marker::PhantomData};
 /// file.
 ///
 /// After implementing this trait on a bundle, you can register it to spawn automatically for a
-/// given identifier via [RegisterLdtkObjects] functions on your [App].
+/// given identifier via [crate::prelude::RegisterLdtkObjects] functions on your [App].
 ///
 /// For common use cases, you'll want to use derive-macro `#[derive(LdtkEntity)]`, but you can also
 /// provide a custom implementation.
@@ -21,7 +21,7 @@ use std::{collections::HashMap, marker::PhantomData};
 ///
 /// ## Derive macro usage
 /// Using `#[derive(LdtkEntity)]` on a [Bundle] struct will allow the type to be registered to the
-/// [App] via [RegisterLdtkObjects] functions:
+/// [App] via [crate::prelude::RegisterLdtkObjects] functions:
 /// ```no_run
 /// use bevy::prelude::*;
 /// use bevy_ecs_ldtk::prelude::*;
@@ -322,5 +322,5 @@ impl<B: LdtkEntity> PhantomLdtkEntityTrait for PhantomLdtkEntity<B> {
     }
 }
 
-/// Used by [RegisterLdtkObjects] to associate Ldtk entity identifiers with [LdtkEntity]s.
+/// Used by [crate::prelude::RegisterLdtkObjects] to associate Ldtk entity identifiers with [LdtkEntity]s.
 pub type LdtkEntityMap = HashMap<(Option<String>, Option<String>), Box<dyn PhantomLdtkEntityTrait>>;

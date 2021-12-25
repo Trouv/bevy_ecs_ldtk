@@ -90,7 +90,10 @@ pub fn calculate_transform_from_entity_instance(
 
     let pivot = Vec2::from_slice(entity_instance.pivot.as_slice());
 
-    let def_size = IVec2::new(entity_definition.width, entity_definition.height);
+    let def_size = match &entity_instance.tile {
+        Some(tile) => IVec2::new(tile.src_rect[2], tile.src_rect[3]),
+        None => IVec2::new(entity_definition.width, entity_definition.height),
+    };
 
     let size = IVec2::new(entity_instance.width, entity_instance.height);
 

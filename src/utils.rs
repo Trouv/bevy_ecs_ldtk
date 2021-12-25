@@ -90,7 +90,10 @@ pub fn calculate_transform_from_entity_instance(
 
     let pivot = Vec2::from_slice(entity_instance.pivot.as_slice());
 
-    let def_size = IVec2::new(entity_definition.width, entity_definition.height);
+    let def_size = match &entity_instance.tile {
+        Some(tile) => IVec2::new(tile.src_rect[2], tile.src_rect[3]),
+        None => IVec2::new(entity_definition.width, entity_definition.height),
+    };
 
     let size = IVec2::new(entity_instance.width, entity_instance.height);
 
@@ -267,6 +270,40 @@ mod tests {
         assert_eq!(
             result,
             Transform::from_xyz(25., 75., 2.).with_scale(Vec3::new(3., 2., 1.))
+        );
+    }
+
+    #[test]
+    fn test_calculate_transform_from_entity_instance_with_tile() {
+        let entity_definitions = vec![EntityDefinition {
+            uid: 0,
+            width: 32,
+            height: 32,
+            ..Default::default()
+        }];
+        let entity_definition_map = create_entity_definition_map(&entity_definitions);
+
+        let entity_instance = EntityInstance {
+            px: vec![64, 64],
+            def_uid: 0,
+            width: 64,
+            height: 64,
+            pivot: vec![1., 1.],
+            tile: Some(EntityInstanceTile {
+                src_rect: vec![0, 0, 16, 32],
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        let result = calculate_transform_from_entity_instance(
+            &entity_instance,
+            &entity_definition_map,
+            100,
+            2.,
+        );
+        assert_eq!(
+            result,
+            Transform::from_xyz(32., 68., 2.).with_scale(Vec3::new(4., 2., 1.))
         );
     }
 

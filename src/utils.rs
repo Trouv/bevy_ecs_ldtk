@@ -139,6 +139,14 @@ pub fn tile_pos_to_ldtk_grid_coords(tile_pos: TilePos, ldtk_grid_height: i32) ->
     ldtk_coord_conversion(tile_coords.as_ivec2(), ldtk_grid_height)
 }
 
+pub fn ldtk_grid_coords_to_translation(
+    ldtk_coords: IVec2,
+    grid_size: IVec2,
+    ldtk_grid_height: i32,
+) -> Vec2 {
+    ldtk_pixel_coords_to_translation(ldtk_coords * grid_size, ldtk_grid_height * grid_size.y)
+}
+
 /// Similar to [LayerBuilder::new_batch], except it doesn't consume the [LayerBuilder]
 ///
 /// This allows for more methods to be performed on the [LayerBuilder] before building it.

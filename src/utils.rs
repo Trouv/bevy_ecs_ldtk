@@ -117,6 +117,14 @@ pub fn calculate_transform_from_tile_pos(
     Transform::from_xyz(translation.x, translation.y, z_value)
 }
 
+pub fn ldtk_pixel_coords_to_translation(ldtk_coords: IVec2, ldtk_pixel_height: i32) -> Vec2 {
+    IVec2::new(ldtk_coords.x, ldtk_pixel_height - ldtk_coords.y - 1).as_vec2()
+}
+
+pub fn translation_to_ldtk_pixel_coords(translation: Vec2, ldtk_pixel_height: i32) -> IVec2 {
+    Vec2::new(translation.x, ldtk_pixel_height as f32 - translation.y - 1.).as_ivec2()
+}
+
 /// Similar to [LayerBuilder::new_batch], except it doesn't consume the [LayerBuilder]
 ///
 /// This allows for more methods to be performed on the [LayerBuilder] before building it.

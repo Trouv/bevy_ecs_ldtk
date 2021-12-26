@@ -117,12 +117,26 @@ pub fn calculate_transform_from_tile_pos(
     Transform::from_xyz(translation.x, translation.y, z_value)
 }
 
+fn ldtk_coord_conversion(coords: IVec2, height: i32) -> IVec2 {
+    IVec2::new(coords.x, height - coords.y - 1)
+}
+
 pub fn ldtk_pixel_coords_to_translation(ldtk_coords: IVec2, ldtk_pixel_height: i32) -> Vec2 {
-    IVec2::new(ldtk_coords.x, ldtk_pixel_height - ldtk_coords.y - 1).as_vec2()
+    ldtk_coord_conversion(ldtk_coords, ldtk_pixel_height).as_vec2()
 }
 
 pub fn translation_to_ldtk_pixel_coords(translation: Vec2, ldtk_pixel_height: i32) -> IVec2 {
-    Vec2::new(translation.x, ldtk_pixel_height as f32 - translation.y - 1.).as_ivec2()
+    ldtk_coord_conversion(translation.as_ivec2(), ldtk_pixel_height)
+}
+
+pub fn ldtk_grid_coords_to_tile_pos(ldtk_coords: IVec2, ldtk_grid_height: i32) -> TilePos {
+    let tile_coords = ldtk_coord_conversion(ldtk_coords, ldtk_grid_height).as_uvec2();
+    TilePos(tile_coords.x, tile_coords.y)
+}
+
+pub fn tile_pos_to_ldtk_grid_coords(tile_pos: TilePos, ldtk_grid_height: i32) -> IVec2 {
+    let tile_coords: UVec2 = tile_pos.into();
+    ldtk_coord_conversion(tile_coords.as_ivec2(), ldtk_grid_height)
 }
 
 /// Similar to [LayerBuilder::new_batch], except it doesn't consume the [LayerBuilder]

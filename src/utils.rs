@@ -35,9 +35,10 @@ pub fn int_grid_index_to_tile_pos(
         // is a natural number.
         // This means tile_x == index where index < n, and tile_x < index where index >= n.
 
-        let tile_y = layer_height_in_tiles - inverted_y - 1;
-
-        Some(TilePos(tile_x, tile_y))
+        Some(ldtk_grid_coords_to_tile_pos(
+            IVec2::new(tile_x as i32, inverted_y as i32),
+            layer_height_in_tiles as i32,
+        ))
     } else {
         None
     }
@@ -141,10 +142,25 @@ pub fn tile_pos_to_ldtk_grid_coords(tile_pos: TilePos, ldtk_grid_height: i32) ->
 
 pub fn ldtk_grid_coords_to_translation(
     ldtk_coords: IVec2,
-    grid_size: IVec2,
     ldtk_grid_height: i32,
+    grid_size: IVec2,
 ) -> Vec2 {
     ldtk_pixel_coords_to_translation(ldtk_coords * grid_size, ldtk_grid_height * grid_size.y)
+}
+
+pub fn ldtk_grid_coords_to_translation_centered(
+    ldtk_coords: IVec2,
+    ldtk_grid_height: i32,
+    grid_size: IVec2,
+) -> Vec2 {
+    ldtk_pixel_coords_to_translation(ldtk_coords * grid_size, ldtk_grid_height * grid_size.y)
+        + Vec2::new(grid_size.x as f32, -grid_size.y as f32)
+}
+
+pub fn tile_pos_to_translation_centered(tile_pos: TilePos, tile_size: IVec2) -> Vec2 {
+    let tile_coords: UVec2 = tile_pos.into();
+    let tile_size = tile_size.as_vec2();
+    (tile_size * tile_coords.as_vec2()) + (tile_size / Vec2::splat(0.5))
 }
 
 /// Similar to [LayerBuilder::new_batch], except it doesn't consume the [LayerBuilder]

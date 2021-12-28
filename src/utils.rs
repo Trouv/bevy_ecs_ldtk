@@ -163,6 +163,21 @@ pub fn tile_pos_to_translation_centered(tile_pos: TilePos, tile_size: IVec2) -> 
     (tile_size * tile_coords.as_vec2()) + (tile_size / Vec2::splat(0.5))
 }
 
+pub fn ldtk_pixel_coords_to_translation_pivoted(
+    ldtk_coords: IVec2,
+    ldtk_pixel_height: i32,
+    grid_size: IVec2,
+    pivot: Vec2,
+) -> Vec2 {
+    let pivot_point = ldtk_coord_conversion(ldtk_coords, ldtk_pixel_height).as_vec2();
+
+    let adjusted_pivot = Vec2::new(0.5 - pivot.x, pivot.y - 0.5);
+
+    let offset = grid_size.as_vec2() * adjusted_pivot;
+
+    pivot_point + offset
+}
+
 /// Similar to [LayerBuilder::new_batch], except it doesn't consume the [LayerBuilder]
 ///
 /// This allows for more methods to be performed on the [LayerBuilder] before building it.

@@ -51,28 +51,6 @@ pub fn create_entity_definition_map(
     entity_definitions.iter().map(|e| (e.uid, e)).collect()
 }
 
-fn calculate_transform_from_ldtk_info(
-    location: IVec2,
-    pivot: Vec2,
-    def_size: IVec2,
-    size: IVec2,
-    level_height: u32,
-    z_value: f32,
-) -> Transform {
-    let pivot_point = Vec2::new(location.x as f32, (level_height as i32 - location.y) as f32);
-
-    let adjusted_pivot = Vec2::new(0.5 - pivot.x, pivot.y - 0.5);
-
-    let offset = size.as_vec2() * adjusted_pivot;
-
-    let translation = pivot_point + offset;
-
-    let scale = size.as_vec2() / def_size.as_vec2();
-
-    Transform::from_xyz(translation.x, translation.y, z_value)
-        .with_scale(Vec3::new(scale.x, scale.y, 1.))
-}
-
 /// Performs [EntityInstance] to [Transform] conversion
 ///
 /// The `entity_definition_map` should be a map of [EntityDefinition] uids to [EntityDefinition]s.
@@ -82,7 +60,7 @@ fn calculate_transform_from_ldtk_info(
 pub fn calculate_transform_from_entity_instance(
     entity_instance: &EntityInstance,
     entity_definition_map: &HashMap<i32, &EntityDefinition>,
-    level_height: u32,
+    level_height: i32,
     z_value: f32,
 ) -> Transform {
     let entity_definition = entity_definition_map.get(&entity_instance.def_uid).unwrap();
@@ -98,7 +76,11 @@ pub fn calculate_transform_from_entity_instance(
 
     let size = IVec2::new(entity_instance.width, entity_instance.height);
 
-    calculate_transform_from_ldtk_info(location, pivot, def_size, size, level_height, z_value)
+    let translation =
+        ldtk_pixel_coords_to_translation_pivoted(location, level_height as i32, size, pivot);
+    let scale = size.as_vec2() / def_size.as_vec2();
+
+    Transform::from_translation(translation.extend(z_value)).with_scale(scale.extend(1.))
 }
 
 /// Performs [TilePos] to [Transform] conversion
@@ -311,7 +293,7 @@ mod tests {
             320,
             0.,
         );
-        assert_eq!(result, Transform::from_xyz(272., 48., 0.));
+        assert_eq!(result, Transform::from_xyz(272., 47., 0.));
 
         // difficult case
         let entity_instance = EntityInstance {
@@ -330,7 +312,7 @@ mod tests {
         );
         assert_eq!(
             result,
-            Transform::from_xyz(25., 75., 2.).with_scale(Vec3::new(3., 2., 1.))
+            Transform::from_xyz(25., 74., 2.).with_scale(Vec3::new(3., 2., 1.))
         );
     }
 
@@ -364,7 +346,7 @@ mod tests {
         );
         assert_eq!(
             result,
-            Transform::from_xyz(32., 68., 2.).with_scale(Vec3::new(4., 2., 1.))
+            Transform::from_xyz(32., 67., 2.).with_scale(Vec3::new(4., 2., 1.))
         );
     }
 

@@ -249,7 +249,7 @@ fn spawn_level(
                         let transform = calculate_transform_from_entity_instance(
                             entity_instance,
                             entity_definition_map,
-                            level.px_hei as u32,
+                            level.px_hei,
                             layer_id as f32,
                         );
                         // Note: entities do not seem to be affected visually by layer offsets in

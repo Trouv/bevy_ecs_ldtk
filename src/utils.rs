@@ -83,23 +83,6 @@ pub fn calculate_transform_from_entity_instance(
     Transform::from_translation(translation.extend(z_value)).with_scale(scale.extend(1.))
 }
 
-/// Performs [TilePos] to [Transform] conversion
-///
-/// Note that the resulting Transform will be as if `TilePos(0, 0)` is at `(size / 2, size / 2,
-/// z_value)`.
-/// Internally, this transform is used to place [IntGridCell]s, as children of the [LdtkMapBundle].
-pub fn calculate_transform_from_tile_pos(
-    tile_pos: TilePos,
-    tile_size: u32,
-    z_value: f32,
-) -> Transform {
-    let tile_pos: UVec2 = tile_pos.into();
-    let tile_size = Vec2::splat(tile_size as f32);
-    let translation = tile_size * Vec2::splat(0.5) + tile_size * tile_pos.as_vec2();
-
-    Transform::from_xyz(translation.x, translation.y, z_value)
-}
-
 fn ldtk_coord_conversion(coords: IVec2, height: i32) -> IVec2 {
     IVec2::new(coords.x, height - coords.y - 1)
 }
@@ -139,10 +122,15 @@ pub fn ldtk_grid_coords_to_translation_centered(
         + Vec2::new(grid_size.x as f32, -grid_size.y as f32)
 }
 
+/// Performs [TilePos] to [Transform] conversion
+///
+/// Note that the resulting Transform will be as if `TilePos(0, 0)` is at `(size / 2, size / 2,
+/// z_value)`.
+/// Internally, this transform is used to place [IntGridCell]s, as children of the [LdtkMapBundle].
 pub fn tile_pos_to_translation_centered(tile_pos: TilePos, tile_size: IVec2) -> Vec2 {
     let tile_coords: UVec2 = tile_pos.into();
     let tile_size = tile_size.as_vec2();
-    (tile_size * tile_coords.as_vec2()) + (tile_size / Vec2::splat(0.5))
+    (tile_size * tile_coords.as_vec2()) + (tile_size / Vec2::splat(2.))
 }
 
 pub fn ldtk_pixel_coords_to_translation_pivoted(
@@ -351,20 +339,20 @@ mod tests {
     }
 
     #[test]
-    fn test_calculate_transform_from_tile_pos() {
+    fn test_calculate_translation_from_tile_pos() {
         assert_eq!(
-            calculate_transform_from_tile_pos(TilePos(1, 2), 32, 0.),
-            Transform::from_xyz(48., 80., 0.)
+            tile_pos_to_translation_centered(TilePos(1, 2), IVec2::splat(32)),
+            Vec2::new(48., 80.)
         );
 
         assert_eq!(
-            calculate_transform_from_tile_pos(TilePos(1, 0), 100, 50.),
-            Transform::from_xyz(150., 50., 50.)
+            tile_pos_to_translation_centered(TilePos(1, 0), IVec2::splat(100)),
+            Vec2::new(150., 50.)
         );
 
         assert_eq!(
-            calculate_transform_from_tile_pos(TilePos(0, 5), 1, 1.),
-            Transform::from_xyz(0.5, 5.5, 1.)
+            tile_pos_to_translation_centered(TilePos(0, 5), IVec2::splat(1)),
+            Vec2::new(0.5, 5.5)
         );
     }
 

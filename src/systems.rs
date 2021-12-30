@@ -404,13 +404,13 @@ fn spawn_level(
                                     let tile_entity =
                                         layer_builder.get_tile_entity(commands, tile_pos).unwrap();
 
-                                    let mut transform = calculate_transform_from_tile_pos(
+                                    let mut translation = tile_pos_to_translation_centered(
                                         tile_pos,
-                                        layer_instance.grid_size as u32,
-                                        layer_id as f32,
-                                    );
+                                        IVec2::splat(layer_instance.grid_size),
+                                    )
+                                    .extend(layer_id as f32);
 
-                                    transform.translation /= layer_scale;
+                                    translation /= layer_scale;
 
                                     let mut entity_commands = commands.entity(tile_entity);
 
@@ -426,7 +426,7 @@ fn spawn_level(
                                     .evaluate(&mut entity_commands, IntGridCell { value: *value });
 
                                     entity_commands
-                                        .insert(transform)
+                                        .insert(Transform::from_translation(translation))
                                         .insert(GlobalTransform::default())
                                         .insert(Parent(layer_entity));
                                 }

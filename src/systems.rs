@@ -12,7 +12,10 @@ use crate::{
     utils::*,
 };
 
-use bevy::{prelude::*, render::texture::DEFAULT_IMAGE_HANDLE};
+use bevy::{
+    prelude::*,
+    render::{render_resource::TextureUsages, texture::DEFAULT_IMAGE_HANDLE},
+};
 use bevy_ecs_tilemap::prelude::*;
 use std::collections::HashMap;
 
@@ -492,4 +495,42 @@ fn layer_grid_tiles(grid_tiles: Vec<TileInstance>) -> Vec<Vec<TileInstance>> {
     }
 
     layered_grid_tiles
+}
+
+pub fn set_ldtk_texture_filters_to_nearest(
+    mut texture_events: EventReader<AssetEvent<Image>>,
+    mut textures: ResMut<Assets<Image>>,
+    ldtk_assets: Res<Assets<LdtkAsset>>,
+) {
+    // Based on
+    // https://github.com/StarArawn/bevy_ecs_tilemap/blob/main/examples/helpers/texture.rs,
+    // except it only applies to the ldtk tilesets.
+    for event in texture_events.iter() {
+        match event {
+            AssetEvent::Created { handle } => {
+                let mut set_texture_filters_to_nearest = false;
+
+                for (_, ldtk_asset) in ldtk_assets.iter() {
+                    if ldtk_asset
+                        .tileset_map
+                        .iter()
+                        .find(|(_, v)| *v == handle)
+                        .is_some()
+                    {
+                        set_texture_filters_to_nearest = true;
+                        break;
+                    }
+                }
+
+                if set_texture_filters_to_nearest {
+                    if let Some(mut texture) = textures.get_mut(handle) {
+                        texture.texture_descriptor.usage = TextureUsages::TEXTURE_BINDING
+                            | TextureUsages::COPY_SRC
+                            | TextureUsages::COPY_DST;
+                    }
+                }
+            }
+            _ => (),
+        }
+    }
 }

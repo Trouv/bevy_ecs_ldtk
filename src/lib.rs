@@ -28,7 +28,8 @@ pub mod plugin {
                 .add_asset::<assets::LdtkExternalLevel>()
                 .init_asset_loader::<assets::LdtkLevelLoader>()
                 .add_system(systems::process_external_levels)
-                .add_system(systems::determine_changed_ldtks.chain(systems::process_changed_ldtks));
+                .add_system(systems::determine_changed_ldtks.chain(systems::process_changed_ldtks))
+                .add_system(systems::set_ldtk_texture_filters_to_nearest);
         }
     }
 }

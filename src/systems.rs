@@ -506,31 +506,23 @@ pub fn set_ldtk_texture_filters_to_nearest(
     // https://github.com/StarArawn/bevy_ecs_tilemap/blob/main/examples/helpers/texture.rs,
     // except it only applies to the ldtk tilesets.
     for event in texture_events.iter() {
-        match event {
-            AssetEvent::Created { handle } => {
-                let mut set_texture_filters_to_nearest = false;
+        if let AssetEvent::Created { handle } = event {
+            let mut set_texture_filters_to_nearest = false;
 
-                for (_, ldtk_asset) in ldtk_assets.iter() {
-                    if ldtk_asset
-                        .tileset_map
-                        .iter()
-                        .find(|(_, v)| *v == handle)
-                        .is_some()
-                    {
-                        set_texture_filters_to_nearest = true;
-                        break;
-                    }
-                }
-
-                if set_texture_filters_to_nearest {
-                    if let Some(mut texture) = textures.get_mut(handle) {
-                        texture.texture_descriptor.usage = TextureUsages::TEXTURE_BINDING
-                            | TextureUsages::COPY_SRC
-                            | TextureUsages::COPY_DST;
-                    }
+            for (_, ldtk_asset) in ldtk_assets.iter() {
+                if ldtk_asset.tileset_map.iter().any(|(_, v)| v == handle) {
+                    set_texture_filters_to_nearest = true;
+                    break;
                 }
             }
-            _ => (),
+
+            if set_texture_filters_to_nearest {
+                if let Some(mut texture) = textures.get_mut(handle) {
+                    texture.texture_descriptor.usage = TextureUsages::TEXTURE_BINDING
+                        | TextureUsages::COPY_SRC
+                        | TextureUsages::COPY_DST;
+                }
+            }
         }
     }
 }

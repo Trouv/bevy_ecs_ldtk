@@ -84,6 +84,10 @@ pub fn calculate_transform_from_entity_instance(
 }
 
 fn ldtk_coord_conversion(coords: IVec2, height: i32) -> IVec2 {
+    IVec2::new(coords.x, height - coords.y)
+}
+
+fn ldtk_coord_conversion_origin_adjusted(coords: IVec2, height: i32) -> IVec2 {
     IVec2::new(coords.x, height - coords.y - 1)
 }
 
@@ -99,14 +103,15 @@ pub fn translation_to_ldtk_pixel_coords(translation: Vec2, ldtk_pixel_height: i3
 
 /// Performs LDtk grid coordinate to [TilePos] conversion.
 pub fn ldtk_grid_coords_to_tile_pos(ldtk_coords: IVec2, ldtk_grid_height: i32) -> TilePos {
-    let tile_coords = ldtk_coord_conversion(ldtk_coords, ldtk_grid_height).as_uvec2();
+    let tile_coords =
+        ldtk_coord_conversion_origin_adjusted(ldtk_coords, ldtk_grid_height).as_uvec2();
     TilePos(tile_coords.x, tile_coords.y)
 }
 
 /// Performs [TilePos] to LDtk grid coordinate conversion.
 pub fn tile_pos_to_ldtk_grid_coords(tile_pos: TilePos, ldtk_grid_height: i32) -> IVec2 {
     let tile_coords: UVec2 = tile_pos.into();
-    ldtk_coord_conversion(tile_coords.as_ivec2(), ldtk_grid_height)
+    ldtk_coord_conversion_origin_adjusted(tile_coords.as_ivec2(), ldtk_grid_height)
 }
 
 /// Performs direct LDtk grid coordinate to translation conversion.
@@ -292,7 +297,7 @@ mod tests {
             320,
             0.,
         );
-        assert_eq!(result, Transform::from_xyz(272., 47., 0.));
+        assert_eq!(result, Transform::from_xyz(272., 48., 0.));
 
         // difficult case
         let entity_instance = EntityInstance {
@@ -311,7 +316,7 @@ mod tests {
         );
         assert_eq!(
             result,
-            Transform::from_xyz(25., 74., 2.).with_scale(Vec3::new(3., 2., 1.))
+            Transform::from_xyz(25., 75., 2.).with_scale(Vec3::new(3., 2., 1.))
         );
     }
 
@@ -345,7 +350,15 @@ mod tests {
         );
         assert_eq!(
             result,
-            Transform::from_xyz(32., 67., 2.).with_scale(Vec3::new(4., 2., 1.))
+            Transform::from_xyz(32., 68., 2.).with_scale(Vec3::new(4., 2., 1.))
+        );
+    }
+
+    #[test]
+    fn test_translation_ldtk_pixel_coords_conversion() {
+        assert_eq!(
+            ldtk_pixel_coords_to_translation(IVec2::new(32, 64), 128),
+            Vec2::new(32., 64.)
         );
     }
 

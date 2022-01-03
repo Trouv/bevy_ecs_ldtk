@@ -87,24 +87,29 @@ fn ldtk_coord_conversion(coords: IVec2, height: i32) -> IVec2 {
     IVec2::new(coords.x, height - coords.y - 1)
 }
 
+/// Performs LDtk pixel coordinate to translation conversion.
 pub fn ldtk_pixel_coords_to_translation(ldtk_coords: IVec2, ldtk_pixel_height: i32) -> Vec2 {
     ldtk_coord_conversion(ldtk_coords, ldtk_pixel_height).as_vec2()
 }
 
+/// Performs translation to LDtk pixel coordinate conversion.
 pub fn translation_to_ldtk_pixel_coords(translation: Vec2, ldtk_pixel_height: i32) -> IVec2 {
     ldtk_coord_conversion(translation.as_ivec2(), ldtk_pixel_height)
 }
 
+/// Performs LDtk grid coordinate to [TilePos] conversion.
 pub fn ldtk_grid_coords_to_tile_pos(ldtk_coords: IVec2, ldtk_grid_height: i32) -> TilePos {
     let tile_coords = ldtk_coord_conversion(ldtk_coords, ldtk_grid_height).as_uvec2();
     TilePos(tile_coords.x, tile_coords.y)
 }
 
+/// Performs [TilePos] to LDtk grid coordinate conversion.
 pub fn tile_pos_to_ldtk_grid_coords(tile_pos: TilePos, ldtk_grid_height: i32) -> IVec2 {
     let tile_coords: UVec2 = tile_pos.into();
     ldtk_coord_conversion(tile_coords.as_ivec2(), ldtk_grid_height)
 }
 
+/// Performs direct LDtk grid coordinate to translation conversion.
 pub fn ldtk_grid_coords_to_translation(
     ldtk_coords: IVec2,
     ldtk_grid_height: i32,
@@ -113,6 +118,8 @@ pub fn ldtk_grid_coords_to_translation(
     ldtk_pixel_coords_to_translation(ldtk_coords * grid_size, ldtk_grid_height * grid_size.y)
 }
 
+/// Performs LDtk grid coordinate to translation conversion, so that the resulting translation is
+/// in the center of the tile.
 pub fn ldtk_grid_coords_to_translation_centered(
     ldtk_coords: IVec2,
     ldtk_grid_height: i32,
@@ -122,10 +129,10 @@ pub fn ldtk_grid_coords_to_translation_centered(
         + Vec2::new(grid_size.x as f32, -grid_size.y as f32)
 }
 
-/// Performs [TilePos] to [Transform] conversion
+/// Performs [TilePos] to translation conversion, so that the resulting translation is in the in the center of the tile.
 ///
-/// Note that the resulting Transform will be as if `TilePos(0, 0)` is at `(size / 2, size / 2,
-/// z_value)`.
+/// Assumes that the bottom left corner of the origin tile is at [Vec2::ZERO].
+///
 /// Internally, this transform is used to place [IntGridCell]s, as children of the [LdtkMapBundle].
 pub fn tile_pos_to_translation_centered(tile_pos: TilePos, tile_size: IVec2) -> Vec2 {
     let tile_coords: UVec2 = tile_pos.into();
@@ -133,6 +140,10 @@ pub fn tile_pos_to_translation_centered(tile_pos: TilePos, tile_size: IVec2) -> 
     (tile_size * tile_coords.as_vec2()) + (tile_size / Vec2::splat(2.))
 }
 
+/// Performs LDtk pixel coordinate to translation conversion, with "pivot" support.
+///
+/// In LDtk, the "pivot" of an entity indicates the percentage that an entity's visual is adjusted
+/// relative to its pixel coordinates in both directions.
 pub fn ldtk_pixel_coords_to_translation_pivoted(
     ldtk_coords: IVec2,
     ldtk_pixel_height: i32,
@@ -339,7 +350,7 @@ mod tests {
     }
 
     #[test]
-    fn test_calculate_translation_from_tile_pos() {
+    fn test_tile_pos_to_translation_centered() {
         assert_eq!(
             tile_pos_to_translation_centered(TilePos(1, 2), IVec2::splat(32)),
             Vec2::new(48., 80.)

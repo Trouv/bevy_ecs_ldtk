@@ -277,6 +277,7 @@ fn spawn_level(
                         .evaluate(
                             &mut entity_commands,
                             entity_instance,
+                            layer_instance,
                             tileset,
                             tileset_definition,
                             asset_server,

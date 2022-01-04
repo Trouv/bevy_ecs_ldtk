@@ -1,6 +1,6 @@
 use crate::{
     components::EntityInstanceBundle,
-    ldtk::{EntityInstance, TilesetDefinition},
+    ldtk::{EntityInstance, LayerInstance, TilesetDefinition},
 };
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::{collections::HashMap, marker::PhantomData};
@@ -202,6 +202,7 @@ pub trait LdtkEntity {
     /// So, any custom implementations of these components within this trait will be overwritten.
     fn bundle_entity(
         entity_instance: &EntityInstance,
+        layer_instance: &LayerInstance,
         tileset: Option<&Handle<Image>>,
         tileset_definition: Option<&TilesetDefinition>,
         asset_server: &AssetServer,
@@ -212,6 +213,7 @@ pub trait LdtkEntity {
 impl LdtkEntity for EntityInstanceBundle {
     fn bundle_entity(
         entity_instance: &EntityInstance,
+        _: &LayerInstance,
         _: Option<&Handle<Image>>,
         _: Option<&TilesetDefinition>,
         _: &AssetServer,
@@ -226,6 +228,7 @@ impl LdtkEntity for EntityInstanceBundle {
 impl LdtkEntity for SpriteBundle {
     fn bundle_entity(
         _: &EntityInstance,
+        _: &LayerInstance,
         tileset: Option<&Handle<Image>>,
         _: Option<&TilesetDefinition>,
         _: &AssetServer,
@@ -249,6 +252,7 @@ impl LdtkEntity for SpriteBundle {
 impl LdtkEntity for SpriteSheetBundle {
     fn bundle_entity(
         entity_instance: &EntityInstance,
+        _: &LayerInstance,
         tileset: Option<&Handle<Image>>,
         tileset_definition: Option<&TilesetDefinition>,
         _: &AssetServer,
@@ -298,6 +302,7 @@ pub trait PhantomLdtkEntityTrait {
         &self,
         commands: &'b mut EntityCommands<'w, 's, 'a>,
         entity_instance: &EntityInstance,
+        layer_instance: &LayerInstance,
         tileset: Option<&Handle<Image>>,
         tileset_definition: Option<&TilesetDefinition>,
         asset_server: &AssetServer,
@@ -310,6 +315,7 @@ impl<B: LdtkEntity + Bundle> PhantomLdtkEntityTrait for PhantomLdtkEntity<B> {
         &self,
         entity_commands: &'b mut EntityCommands<'w, 's, 'a>,
         entity_instance: &EntityInstance,
+        layer_instance: &LayerInstance,
         tileset: Option<&Handle<Image>>,
         tileset_definition: Option<&TilesetDefinition>,
         asset_server: &AssetServer,
@@ -317,6 +323,7 @@ impl<B: LdtkEntity + Bundle> PhantomLdtkEntityTrait for PhantomLdtkEntity<B> {
     ) -> &'b mut EntityCommands<'w, 's, 'a> {
         entity_commands.insert_bundle(B::bundle_entity(
             entity_instance,
+            layer_instance,
             tileset,
             tileset_definition,
             asset_server,

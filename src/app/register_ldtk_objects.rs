@@ -229,7 +229,7 @@ mod tests {
     use super::*;
     use crate::{
         components::{EntityInstance, IntGridCell},
-        ldtk::TilesetDefinition,
+        ldtk::{LayerInstance, TilesetDefinition},
     };
 
     #[derive(Default, Component, Debug)]
@@ -247,6 +247,7 @@ mod tests {
     impl LdtkEntity for LdtkEntityBundle {
         fn bundle_entity(
             _: &EntityInstance,
+            _: &LayerInstance,
             _: Option<&Handle<Image>>,
             _: Option<&TilesetDefinition>,
             _: &AssetServer,

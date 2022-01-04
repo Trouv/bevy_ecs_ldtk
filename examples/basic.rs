@@ -38,6 +38,7 @@ struct PlayerBundle {
 impl LdtkEntity for PlayerBundle {
     fn bundle_entity(
         _: &EntityInstance,
+        _: &LayerInstance,
         _: Option<&Handle<Image>>,
         _: Option<&TilesetDefinition>,
         asset_server: &AssetServer,

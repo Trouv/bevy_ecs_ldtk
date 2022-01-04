@@ -1,6 +1,6 @@
 use crate::{
     components::EntityInstanceBundle,
-    ldtk::{EntityInstance, TilesetDefinition},
+    ldtk::{EntityInstance, LayerInstance, TilesetDefinition},
 };
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::{collections::HashMap, marker::PhantomData};
@@ -8,14 +8,15 @@ use std::{collections::HashMap, marker::PhantomData};
 #[allow(unused_imports)]
 use crate::app::register_ldtk_objects::RegisterLdtkObjects;
 
-/// Provides a constructor to a bevy [Bundle] which can be used for spawning entities from an LDtk
-/// file.
+/// Provides a constructor which can be used for spawning entities from an LDtk file.
 ///
-/// After implementing this trait on a bundle, you can register it to spawn automatically for a
+/// After implementing this trait on a [Bundle], you can register it to spawn automatically for a
 /// given identifier via [RegisterLdtkObjects] functions on your [App].
 ///
 /// For common use cases, you'll want to use derive-macro `#[derive(LdtkEntity)]`, but you can also
 /// provide a custom implementation.
+///
+/// You can also implement this trait on non-[Bundle] types, but only [Bundle]s can be registered.
 ///
 /// If there is an entity in the LDtk file that is NOT registered, an entity will be spawned with
 /// an [EntityInstance] component, allowing you to flesh it out in your own system.
@@ -125,8 +126,12 @@ use crate::app::register_ldtk_objects::RegisterLdtkObjects;
 /// ```
 ///
 /// ### `#[ldtk_entity]`
-/// Indicates that a nested bundle that implements [LdtkEntity] should be created with
+/// Indicates that a component or bundle that implements [LdtkEntity] should be created with
 /// [LdtkEntity::bundle_entity], allowing for nested [LdtkEntity]s.
+///
+/// Note: the [LdtkEntity] field decorated with this attribute doesn't have to be a [Bundle].
+/// This can be useful if a [Component]'s construction requires the additional access to the world
+/// provided by [LdtkEntity::bundle_entity].
 /// ```
 /// # use bevy::prelude::*;
 /// # use bevy_ecs_ldtk::prelude::*;
@@ -188,7 +193,7 @@ use crate::app::register_ldtk_objects::RegisterLdtkObjects;
 ///     entity_instance: EntityInstance,
 /// }
 /// ```
-pub trait LdtkEntity: Bundle {
+pub trait LdtkEntity {
     /// The constructor used by the plugin when spawning entities from an LDtk file.
     /// Has access to resources/assets most commonly used for spawning 2d objects.
     /// If you need access to more of the [World], you can create a system that queries for
@@ -202,6 +207,7 @@ pub trait LdtkEntity: Bundle {
     /// So, any custom implementations of these components within this trait will be overwritten.
     fn bundle_entity(
         entity_instance: &EntityInstance,
+        layer_instance: &LayerInstance,
         tileset: Option<&Handle<Image>>,
         tileset_definition: Option<&TilesetDefinition>,
         asset_server: &AssetServer,
@@ -212,6 +218,7 @@ pub trait LdtkEntity: Bundle {
 impl LdtkEntity for EntityInstanceBundle {
     fn bundle_entity(
         entity_instance: &EntityInstance,
+        _: &LayerInstance,
         _: Option<&Handle<Image>>,
         _: Option<&TilesetDefinition>,
         _: &AssetServer,
@@ -226,6 +233,7 @@ impl LdtkEntity for EntityInstanceBundle {
 impl LdtkEntity for SpriteBundle {
     fn bundle_entity(
         _: &EntityInstance,
+        _: &LayerInstance,
         tileset: Option<&Handle<Image>>,
         _: Option<&TilesetDefinition>,
         _: &AssetServer,
@@ -249,6 +257,7 @@ impl LdtkEntity for SpriteBundle {
 impl LdtkEntity for SpriteSheetBundle {
     fn bundle_entity(
         entity_instance: &EntityInstance,
+        _: &LayerInstance,
         tileset: Option<&Handle<Image>>,
         tileset_definition: Option<&TilesetDefinition>,
         _: &AssetServer,
@@ -280,11 +289,11 @@ impl LdtkEntity for SpriteSheetBundle {
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Hash)]
-pub struct PhantomLdtkEntity<B: LdtkEntity> {
+pub struct PhantomLdtkEntity<B: LdtkEntity + Bundle> {
     ldtk_entity: PhantomData<B>,
 }
 
-impl<B: LdtkEntity> PhantomLdtkEntity<B> {
+impl<B: LdtkEntity + Bundle> PhantomLdtkEntity<B> {
     pub fn new() -> Self {
         PhantomLdtkEntity::<B> {
             ldtk_entity: PhantomData,
@@ -298,6 +307,7 @@ pub trait PhantomLdtkEntityTrait {
         &self,
         commands: &'b mut EntityCommands<'w, 's, 'a>,
         entity_instance: &EntityInstance,
+        layer_instance: &LayerInstance,
         tileset: Option<&Handle<Image>>,
         tileset_definition: Option<&TilesetDefinition>,
         asset_server: &AssetServer,
@@ -305,11 +315,12 @@ pub trait PhantomLdtkEntityTrait {
     ) -> &'b mut EntityCommands<'w, 's, 'a>;
 }
 
-impl<B: LdtkEntity> PhantomLdtkEntityTrait for PhantomLdtkEntity<B> {
+impl<B: LdtkEntity + Bundle> PhantomLdtkEntityTrait for PhantomLdtkEntity<B> {
     fn evaluate<'w, 's, 'a, 'b>(
         &self,
         entity_commands: &'b mut EntityCommands<'w, 's, 'a>,
         entity_instance: &EntityInstance,
+        layer_instance: &LayerInstance,
         tileset: Option<&Handle<Image>>,
         tileset_definition: Option<&TilesetDefinition>,
         asset_server: &AssetServer,
@@ -317,6 +328,7 @@ impl<B: LdtkEntity> PhantomLdtkEntityTrait for PhantomLdtkEntity<B> {
     ) -> &'b mut EntityCommands<'w, 's, 'a> {
         entity_commands.insert_bundle(B::bundle_entity(
             entity_instance,
+            layer_instance,
             tileset,
             tileset_definition,
             asset_server,

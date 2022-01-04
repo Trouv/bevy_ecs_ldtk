@@ -80,6 +80,7 @@ pub fn expand_ldtk_entity_derive(ast: &syn::DeriveInput) -> proc_macro::TokenStr
         impl #impl_generics bevy_ecs_ldtk::prelude::LdtkEntity for #struct_name #ty_generics #where_clause {
             fn bundle_entity(
                 entity_instance: &bevy_ecs_ldtk::prelude::EntityInstance,
+                layer_instance: &bevy_ecs_ldtk::prelude::LayerInstance,
                 tileset: Option<&bevy::prelude::Handle<bevy::prelude::Image>>,
                 tileset_definition: Option<&bevy_ecs_ldtk::prelude::TilesetDefinition>,
                 asset_server: &bevy::prelude::AssetServer,
@@ -132,7 +133,7 @@ fn expand_sprite_bundle_attribute(
         },
         syn::Meta::Path(_) => {
             quote! {
-                #field_name: #field_type::bundle_entity(entity_instance, tileset, tileset_definition, asset_server, texture_atlases),
+                #field_name: #field_type::bundle_entity(entity_instance, layer_instance, tileset, tileset_definition, asset_server, texture_atlases),
             }
         },
         _ => panic!("#[sprite_bundle...] attribute should take the form #[sprite_bundle(\"asset/path.png\")] or #[sprite_bundle]"),
@@ -211,7 +212,7 @@ fn expand_sprite_sheet_bundle_attribute(
         },
         syn::Meta::Path(_) => {
             quote! {
-                #field_name: #field_type::bundle_entity(entity_instance, tileset, tileset_definition, asset_server, texture_atlases),
+                #field_name: #field_type::bundle_entity(entity_instance, layer_instance, tileset, tileset_definition, asset_server, texture_atlases),
             }
         },
         _ => panic!("#[sprite_sheet_bundle...] attribute should take the form #[sprite_sheet_bundle(\"asset/path.png\", tile_width, tile_height, columns, rows, padding, index)] or #[sprite_sheet_bundle]"),
@@ -229,7 +230,7 @@ fn expand_ldtk_entity_attribute(
     {
         syn::Meta::Path(_) => {
             quote! {
-                #field_name: #field_type::bundle_entity(entity_instance, tileset, tileset_definition, asset_server, texture_atlases),
+                #field_name: #field_type::bundle_entity(entity_instance, layer_instance, tileset, tileset_definition, asset_server, texture_atlases),
             }
         }
         _ => panic!("#[ldtk_entity] attribute should take the form #[ldtk_entity]"),

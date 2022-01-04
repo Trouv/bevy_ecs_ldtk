@@ -116,7 +116,7 @@ use crate::app::register_ldtk_objects::RegisterLdtkObjects;
 ///     damage: Damage,
 /// }
 /// ```
-pub trait LdtkIntCell: Bundle {
+pub trait LdtkIntCell {
     /// The constructor used by the plugin when spawning additional components on IntGrid tiles.
     /// If you need access to more of the [World], you can create a system that queries for
     /// `Added<IntGridCell>`, and flesh out the entity from there, instead of implementing this
@@ -139,11 +139,11 @@ impl LdtkIntCell for IntGridCellBundle {
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Hash)]
-pub struct PhantomLdtkIntCell<B: LdtkIntCell> {
+pub struct PhantomLdtkIntCell<B: LdtkIntCell + Bundle> {
     ldtk_int_cell: PhantomData<B>,
 }
 
-impl<B: LdtkIntCell> PhantomLdtkIntCell<B> {
+impl<B: LdtkIntCell + Bundle> PhantomLdtkIntCell<B> {
     pub fn new() -> Self {
         PhantomLdtkIntCell::<B> {
             ldtk_int_cell: PhantomData,
@@ -159,7 +159,7 @@ pub trait PhantomLdtkIntCellTrait {
     ) -> &'b mut EntityCommands<'w, 's, 'a>;
 }
 
-impl<B: LdtkIntCell> PhantomLdtkIntCellTrait for PhantomLdtkIntCell<B> {
+impl<B: LdtkIntCell + Bundle> PhantomLdtkIntCellTrait for PhantomLdtkIntCell<B> {
     fn evaluate<'w, 's, 'a, 'b>(
         &self,
         entity_commands: &'b mut EntityCommands<'w, 's, 'a>,

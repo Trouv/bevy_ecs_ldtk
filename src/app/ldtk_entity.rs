@@ -188,7 +188,7 @@ use crate::app::register_ldtk_objects::RegisterLdtkObjects;
 ///     entity_instance: EntityInstance,
 /// }
 /// ```
-pub trait LdtkEntity: Bundle {
+pub trait LdtkEntity {
     /// The constructor used by the plugin when spawning entities from an LDtk file.
     /// Has access to resources/assets most commonly used for spawning 2d objects.
     /// If you need access to more of the [World], you can create a system that queries for
@@ -280,11 +280,11 @@ impl LdtkEntity for SpriteSheetBundle {
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Hash)]
-pub struct PhantomLdtkEntity<B: LdtkEntity> {
+pub struct PhantomLdtkEntity<B: LdtkEntity + Bundle> {
     ldtk_entity: PhantomData<B>,
 }
 
-impl<B: LdtkEntity> PhantomLdtkEntity<B> {
+impl<B: LdtkEntity + Bundle> PhantomLdtkEntity<B> {
     pub fn new() -> Self {
         PhantomLdtkEntity::<B> {
             ldtk_entity: PhantomData,
@@ -305,7 +305,7 @@ pub trait PhantomLdtkEntityTrait {
     ) -> &'b mut EntityCommands<'w, 's, 'a>;
 }
 
-impl<B: LdtkEntity> PhantomLdtkEntityTrait for PhantomLdtkEntity<B> {
+impl<B: LdtkEntity + Bundle> PhantomLdtkEntityTrait for PhantomLdtkEntity<B> {
     fn evaluate<'w, 's, 'a, 'b>(
         &self,
         entity_commands: &'b mut EntityCommands<'w, 's, 'a>,

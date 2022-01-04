@@ -23,7 +23,7 @@ pub trait RegisterLdtkObjects {
     /// 2. Just `entity_identifier` is specified
     /// 3. Just `layer_identifier` is specified
     /// 4. Neither `entity_identifier` nor `layer_identifier` are specified
-    fn register_ldtk_entity_for_layer_optional<B: LdtkEntity>(
+    fn register_ldtk_entity_for_layer_optional<B: LdtkEntity + Bundle>(
         &mut self,
         layer_identifier: Option<String>,
         entity_identifier: Option<String>,
@@ -61,7 +61,7 @@ pub trait RegisterLdtkObjects {
     /// ```
     ///
     /// You can find more details on the `#[derive(LdtkEntity)]` macro at [LdtkEntity].
-    fn register_ldtk_entity_for_layer<B: LdtkEntity>(
+    fn register_ldtk_entity_for_layer<B: LdtkEntity + Bundle>(
         &mut self,
         layer_identifier: &str,
         entity_identifier: &str,
@@ -74,13 +74,16 @@ pub trait RegisterLdtkObjects {
 
     /// Similar to [RegisterLdtkObjects::register_ldtk_entity_for_layer], except it applies the
     /// registration to all layers.
-    fn register_ldtk_entity<B: LdtkEntity>(&mut self, entity_identifier: &str) -> &mut Self {
+    fn register_ldtk_entity<B: LdtkEntity + Bundle>(
+        &mut self,
+        entity_identifier: &str,
+    ) -> &mut Self {
         self.register_ldtk_entity_for_layer_optional::<B>(None, Some(entity_identifier.to_string()))
     }
 
     /// Similar to [RegisterLdtkObjects::register_ldtk_entity_for_layer], except it applies the
     /// registration to all entities on the given layer.
-    fn register_default_ldtk_entity_for_layer<B: LdtkEntity>(
+    fn register_default_ldtk_entity_for_layer<B: LdtkEntity + Bundle>(
         &mut self,
         layer_identifier: &str,
     ) -> &mut Self {
@@ -89,7 +92,7 @@ pub trait RegisterLdtkObjects {
 
     /// Similar to [RegisterLdtkObjects::register_ldtk_entity_for_layer], except it applies the
     /// registration to any entity and any layer.
-    fn register_default_ldtk_entity<B: LdtkEntity>(&mut self) -> &mut Self {
+    fn register_default_ldtk_entity<B: LdtkEntity + Bundle>(&mut self) -> &mut Self {
         self.register_ldtk_entity_for_layer_optional::<B>(None, None)
     }
 
@@ -107,7 +110,7 @@ pub trait RegisterLdtkObjects {
     /// 2. Just `value` is specified
     /// 3. Just `layer_identifier` is specified
     /// 4. Neither `value` nor `layer_identifier` are specified
-    fn register_ldtk_int_cell_for_layer_optional<B: LdtkIntCell>(
+    fn register_ldtk_int_cell_for_layer_optional<B: LdtkIntCell + Bundle>(
         &mut self,
         layer_identifier: Option<String>,
         value: Option<i32>,
@@ -145,7 +148,7 @@ pub trait RegisterLdtkObjects {
     /// ```
     ///
     /// You can find more details on the `#[derive(LdtkIntCell)]` macro at [LdtkIntCell].
-    fn register_ldtk_int_cell_for_layer<B: LdtkIntCell>(
+    fn register_ldtk_int_cell_for_layer<B: LdtkIntCell + Bundle>(
         &mut self,
         layer_identifier: &str,
         value: i32,
@@ -158,13 +161,13 @@ pub trait RegisterLdtkObjects {
 
     /// Similar to [RegisterLdtkObjects::register_ldtk_int_cell_for_layer], except it applies the
     /// registration to all layers.
-    fn register_ldtk_int_cell<B: LdtkIntCell>(&mut self, value: i32) -> &mut Self {
+    fn register_ldtk_int_cell<B: LdtkIntCell + Bundle>(&mut self, value: i32) -> &mut Self {
         self.register_ldtk_int_cell_for_layer_optional::<B>(None, Some(value))
     }
 
     /// Similar to [RegisterLdtkObjects::register_ldtk_int_cell_for_layer], except it applies the
     /// registration to all tiles on the given layer.
-    fn register_default_ldtk_int_cell_for_layer<B: LdtkIntCell>(
+    fn register_default_ldtk_int_cell_for_layer<B: LdtkIntCell + Bundle>(
         &mut self,
         layer_identifier: &str,
     ) -> &mut Self {
@@ -176,13 +179,13 @@ pub trait RegisterLdtkObjects {
 
     /// Similar to [RegisterLdtkObjects::register_ldtk_int_cell_for_layer], except it applies the
     /// registration to any tile and any layer.
-    fn register_default_ldtk_int_cell<B: LdtkIntCell>(&mut self) -> &mut Self {
+    fn register_default_ldtk_int_cell<B: LdtkIntCell + Bundle>(&mut self) -> &mut Self {
         self.register_ldtk_int_cell_for_layer_optional::<B>(None, None)
     }
 }
 
 impl RegisterLdtkObjects for App {
-    fn register_ldtk_entity_for_layer_optional<B: LdtkEntity>(
+    fn register_ldtk_entity_for_layer_optional<B: LdtkEntity + Bundle>(
         &mut self,
         layer_identifier: Option<String>,
         entity_identifier: Option<String>,
@@ -201,7 +204,7 @@ impl RegisterLdtkObjects for App {
         self
     }
 
-    fn register_ldtk_int_cell_for_layer_optional<B: LdtkIntCell>(
+    fn register_ldtk_int_cell_for_layer_optional<B: LdtkIntCell + Bundle>(
         &mut self,
         layer_identifier: Option<String>,
         value: Option<i32>,

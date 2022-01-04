@@ -8,15 +8,15 @@ use std::{collections::HashMap, marker::PhantomData};
 #[allow(unused_imports)]
 use crate::app::register_ldtk_objects::RegisterLdtkObjects;
 
-/// Provides a constructor to a bevy [Bundle] which can be used for spawning additional components
-/// on IntGrid tiles.
+/// Provides a constructor which can be used for spawning additional components on IntGrid tiles.
 ///
-/// After implementing this trait on a bundle, you can register it to spawn automatically for a
-/// given int grid value via
-/// [RegisterLdtkObjects] on your [App].
+/// After implementing this trait on a [Bundle], you can register it to spawn automatically for a
+/// given int grid value via [RegisterLdtkObjects] on your [App].
 ///
 /// For common use cases, you'll want to use derive-macro `#[derive(LdtkIntCell)]`, but you can
 /// also provide a custom implementation.
+///
+/// You can also implement this trait on non-[Bundle] types, but only [Bundle]s can be registered.
 ///
 /// If there is an IntGrid tile in the LDtk file whose value is NOT registered, an entity will be
 /// spawned with an [IntGridCell] component, allowing you to flesh it out in your own system.
@@ -59,8 +59,12 @@ use crate::app::register_ldtk_objects::RegisterLdtkObjects;
 /// However, this behavior can be overriden with some field attribute macros...
 ///
 /// ### `#[ldtk_int_cell]`
-/// Indicates that a nested bundle that implements [LdtkIntCell] should be created with
+/// Indicates that a component or bundle that implements [LdtkIntCell] should be created with
 /// [LdtkIntCell::bundle_int_cell], allowing for nested [LdtkIntCell]s.
+///
+/// Note: the [LdtkIntCell] field decorated with this attribute doesn't have to be a [Bundle].
+/// This can be useful if a [Component]'s construction requires the additional access to the world
+/// provided by [LdtkIntCell::bundle_int_cell].
 /// ```
 /// # use bevy::prelude::*;
 /// # use bevy_ecs_ldtk::prelude::*;

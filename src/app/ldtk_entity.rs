@@ -8,14 +8,15 @@ use std::{collections::HashMap, marker::PhantomData};
 #[allow(unused_imports)]
 use crate::app::register_ldtk_objects::RegisterLdtkObjects;
 
-/// Provides a constructor to a bevy [Bundle] which can be used for spawning entities from an LDtk
-/// file.
+/// Provides a constructor which can be used for spawning entities from an LDtk file.
 ///
-/// After implementing this trait on a bundle, you can register it to spawn automatically for a
+/// After implementing this trait on a [Bundle], you can register it to spawn automatically for a
 /// given identifier via [RegisterLdtkObjects] functions on your [App].
 ///
 /// For common use cases, you'll want to use derive-macro `#[derive(LdtkEntity)]`, but you can also
 /// provide a custom implementation.
+///
+/// You can also implement this trait on non-[Bundle] types, but only [Bundle]s can be registered.
 ///
 /// If there is an entity in the LDtk file that is NOT registered, an entity will be spawned with
 /// an [EntityInstance] component, allowing you to flesh it out in your own system.
@@ -125,8 +126,12 @@ use crate::app::register_ldtk_objects::RegisterLdtkObjects;
 /// ```
 ///
 /// ### `#[ldtk_entity]`
-/// Indicates that a nested bundle that implements [LdtkEntity] should be created with
+/// Indicates that a component or bundle that implements [LdtkEntity] should be created with
 /// [LdtkEntity::bundle_entity], allowing for nested [LdtkEntity]s.
+///
+/// Note: the [LdtkEntity] field decorated with this attribute doesn't have to be a [Bundle].
+/// This can be useful if a [Component]'s construction requires the additional access to the world
+/// provided by [LdtkEntity::bundle_entity].
 /// ```
 /// # use bevy::prelude::*;
 /// # use bevy_ecs_ldtk::prelude::*;

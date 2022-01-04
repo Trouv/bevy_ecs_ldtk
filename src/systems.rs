@@ -424,7 +424,11 @@ fn spawn_level(
                                         &default_ldtk_int_cell,
                                         ldtk_int_cell_map,
                                     )
-                                    .evaluate(&mut entity_commands, IntGridCell { value: *value });
+                                    .evaluate(
+                                        &mut entity_commands,
+                                        IntGridCell { value: *value },
+                                        layer_instance,
+                                    );
 
                                     entity_commands
                                         .insert(Transform::from_translation(translation))

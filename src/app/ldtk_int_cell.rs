@@ -1,4 +1,7 @@
-use crate::components::{IntGridCell, IntGridCellBundle};
+use crate::{
+    components::{IntGridCell, IntGridCellBundle},
+    ldtk::LayerInstance,
+};
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::{collections::HashMap, marker::PhantomData};
 
@@ -129,11 +132,11 @@ pub trait LdtkIntCell {
     /// So, any custom implementations of these components within this trait will be overwritten.
     /// Furthermore, a [bevy_ecs_tilemap::TileBundle] will be inserted **before** this bundle, so
     /// be careful not to overwrite the components provided by that bundle.
-    fn bundle_int_cell(int_grid_cell: IntGridCell) -> Self;
+    fn bundle_int_cell(int_grid_cell: IntGridCell, layer_instance: &LayerInstance) -> Self;
 }
 
 impl LdtkIntCell for IntGridCellBundle {
-    fn bundle_int_cell(int_grid_cell: IntGridCell) -> Self {
+    fn bundle_int_cell(int_grid_cell: IntGridCell, _: &LayerInstance) -> Self {
         IntGridCellBundle { int_grid_cell }
     }
 }
@@ -156,6 +159,7 @@ pub trait PhantomLdtkIntCellTrait {
         &self,
         entity_commands: &'b mut EntityCommands<'w, 's, 'a>,
         int_grid_cell: IntGridCell,
+        layer_instance: &LayerInstance,
     ) -> &'b mut EntityCommands<'w, 's, 'a>;
 }
 
@@ -164,8 +168,9 @@ impl<B: LdtkIntCell + Bundle> PhantomLdtkIntCellTrait for PhantomLdtkIntCell<B> 
         &self,
         entity_commands: &'b mut EntityCommands<'w, 's, 'a>,
         int_grid_cell: IntGridCell,
+        layer_instance: &LayerInstance,
     ) -> &'b mut EntityCommands<'w, 's, 'a> {
-        entity_commands.insert_bundle(B::bundle_int_cell(int_grid_cell))
+        entity_commands.insert_bundle(B::bundle_int_cell(int_grid_cell, layer_instance))
     }
 }
 

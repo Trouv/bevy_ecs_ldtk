@@ -264,7 +264,7 @@ mod tests {
     }
 
     impl LdtkIntCell for LdtkIntCellBundle {
-        fn bundle_int_cell(_: IntGridCell) -> LdtkIntCellBundle {
+        fn bundle_int_cell(_: IntGridCell, _: &LayerInstance) -> LdtkIntCellBundle {
             LdtkIntCellBundle::default()
         }
     }

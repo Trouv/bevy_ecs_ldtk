@@ -35,9 +35,10 @@ pub fn int_grid_index_to_tile_pos(
         // is a natural number.
         // This means tile_x == index where index < n, and tile_x < index where index >= n.
 
-        let tile_y = layer_height_in_tiles - inverted_y - 1;
-
-        Some(TilePos(tile_x, tile_y))
+        Some(ldtk_grid_coords_to_tile_pos(
+            IVec2::new(tile_x as i32, inverted_y as i32),
+            layer_height_in_tiles as i32,
+        ))
     } else {
         None
     }
@@ -50,28 +51,6 @@ pub fn create_entity_definition_map(
     entity_definitions.iter().map(|e| (e.uid, e)).collect()
 }
 
-fn calculate_transform_from_ldtk_info(
-    location: IVec2,
-    pivot: Vec2,
-    def_size: IVec2,
-    size: IVec2,
-    level_height: u32,
-    z_value: f32,
-) -> Transform {
-    let pivot_point = Vec2::new(location.x as f32, (level_height as i32 - location.y) as f32);
-
-    let adjusted_pivot = Vec2::new(0.5 - pivot.x, pivot.y - 0.5);
-
-    let offset = size.as_vec2() * adjusted_pivot;
-
-    let translation = pivot_point + offset;
-
-    let scale = size.as_vec2() / def_size.as_vec2();
-
-    Transform::from_xyz(translation.x, translation.y, z_value)
-        .with_scale(Vec3::new(scale.x, scale.y, 1.))
-}
-
 /// Performs [EntityInstance] to [Transform] conversion
 ///
 /// The `entity_definition_map` should be a map of [EntityDefinition] uids to [EntityDefinition]s.
@@ -81,7 +60,7 @@ fn calculate_transform_from_ldtk_info(
 pub fn calculate_transform_from_entity_instance(
     entity_instance: &EntityInstance,
     entity_definition_map: &HashMap<i32, &EntityDefinition>,
-    level_height: u32,
+    level_height: i32,
     z_value: f32,
 ) -> Transform {
     let entity_definition = entity_definition_map.get(&entity_instance.def_uid).unwrap();
@@ -97,46 +76,97 @@ pub fn calculate_transform_from_entity_instance(
 
     let size = IVec2::new(entity_instance.width, entity_instance.height);
 
-    calculate_transform_from_ldtk_info(location, pivot, def_size, size, level_height, z_value)
-}
+    let translation =
+        ldtk_pixel_coords_to_translation_pivoted(location, level_height as i32, size, pivot);
+    let scale = size.as_vec2() / def_size.as_vec2();
 
-/// Performs [TilePos] to [Transform] conversion
-///
-/// Note that the resulting Transform will be as if `TilePos(0, 0)` is at `(size / 2, size / 2,
-/// z_value)`.
-/// Internally, this transform is used to place [IntGridCell]s, as children of the [LdtkMapBundle].
-pub fn calculate_transform_from_tile_pos(
-    tile_pos: TilePos,
-    tile_size: u32,
-    z_value: f32,
-) -> Transform {
-    let tile_pos: UVec2 = tile_pos.into();
-    let tile_size = Vec2::splat(tile_size as f32);
-    let translation = tile_size * Vec2::splat(0.5) + tile_size * tile_pos.as_vec2();
-
-    Transform::from_xyz(translation.x, translation.y, z_value)
+    Transform::from_translation(translation.extend(z_value)).with_scale(scale.extend(1.))
 }
 
 fn ldtk_coord_conversion(coords: IVec2, height: i32) -> IVec2 {
+    IVec2::new(coords.x, height - coords.y)
+}
+
+fn ldtk_coord_conversion_origin_adjusted(coords: IVec2, height: i32) -> IVec2 {
     IVec2::new(coords.x, height - coords.y - 1)
 }
 
+/// Performs LDtk pixel coordinate to translation conversion.
 pub fn ldtk_pixel_coords_to_translation(ldtk_coords: IVec2, ldtk_pixel_height: i32) -> Vec2 {
     ldtk_coord_conversion(ldtk_coords, ldtk_pixel_height).as_vec2()
 }
 
+/// Performs translation to LDtk pixel coordinate conversion.
 pub fn translation_to_ldtk_pixel_coords(translation: Vec2, ldtk_pixel_height: i32) -> IVec2 {
     ldtk_coord_conversion(translation.as_ivec2(), ldtk_pixel_height)
 }
 
+/// Performs LDtk grid coordinate to [TilePos] conversion.
+///
+/// This conversion is performed so that both the LDtk grid coords and the resulting [TilePos]
+/// refer to the same tile.
+/// This is different from them referring to the same position in space, because the tile is
+/// referenced by its top-left corner in LDtk, and by its bottom-left corner with [TilePos].
 pub fn ldtk_grid_coords_to_tile_pos(ldtk_coords: IVec2, ldtk_grid_height: i32) -> TilePos {
-    let tile_coords = ldtk_coord_conversion(ldtk_coords, ldtk_grid_height).as_uvec2();
+    let tile_coords =
+        ldtk_coord_conversion_origin_adjusted(ldtk_coords, ldtk_grid_height).as_uvec2();
     TilePos(tile_coords.x, tile_coords.y)
 }
 
+/// Performs [TilePos] to LDtk grid coordinate conversion.
+///
+/// This conversion is performed so that both the [TilePos] and the resulting LDtk grid coords
+/// refer to the same tile.
+/// This is different from them referring to the same position in space, because the tile is
+/// referenced by its top-left corner in LDtk, and by its bottom-left corner with [TilePos].
 pub fn tile_pos_to_ldtk_grid_coords(tile_pos: TilePos, ldtk_grid_height: i32) -> IVec2 {
     let tile_coords: UVec2 = tile_pos.into();
-    ldtk_coord_conversion(tile_coords.as_ivec2(), ldtk_grid_height)
+    ldtk_coord_conversion_origin_adjusted(tile_coords.as_ivec2(), ldtk_grid_height)
+}
+
+/// Performs LDtk grid coordinate to translation conversion, so that the resulting translation is
+/// in the center of the tile.
+pub fn ldtk_grid_coords_to_translation_centered(
+    ldtk_coords: IVec2,
+    ldtk_grid_height: i32,
+    grid_size: IVec2,
+) -> Vec2 {
+    ldtk_pixel_coords_to_translation(ldtk_coords * grid_size, ldtk_grid_height * grid_size.y)
+        + Vec2::new(grid_size.x as f32 / 2., -grid_size.y as f32 / 2.)
+}
+
+/// Performs [TilePos] to translation conversion, so that the resulting translation is in the in
+/// the center of the tile.
+///
+/// Assumes that the bottom-left corner of the origin tile is at [Vec2::ZERO].
+///
+/// Internally, this transform is used to place [IntGridCell]s, as children of the [LdtkMapBundle].
+pub fn tile_pos_to_translation_centered(tile_pos: TilePos, tile_size: IVec2) -> Vec2 {
+    let tile_coords: UVec2 = tile_pos.into();
+    let tile_size = tile_size.as_vec2();
+    (tile_size * tile_coords.as_vec2()) + (tile_size / Vec2::splat(2.))
+}
+
+/// Performs LDtk pixel coordinate to translation conversion, with "pivot" support.
+///
+/// In LDtk, the "pivot" of an entity indicates the percentage that an entity's visual is adjusted
+/// relative to its pixel coordinates in both directions.
+///
+/// The resulting translation will indicate the location of the "center" of the entity's visual,
+/// after being pivot-adjusted.
+pub fn ldtk_pixel_coords_to_translation_pivoted(
+    ldtk_coords: IVec2,
+    ldtk_pixel_height: i32,
+    entity_size: IVec2,
+    pivot: Vec2,
+) -> Vec2 {
+    let pivot_point = ldtk_coord_conversion(ldtk_coords, ldtk_pixel_height).as_vec2();
+
+    let adjusted_pivot = Vec2::new(0.5 - pivot.x, pivot.y - 0.5);
+
+    let offset = entity_size.as_vec2() * adjusted_pivot;
+
+    pivot_point + offset
 }
 
 /// Similar to [LayerBuilder::new_batch], except it doesn't consume the [LayerBuilder]
@@ -330,20 +360,92 @@ mod tests {
     }
 
     #[test]
-    fn test_calculate_transform_from_tile_pos() {
+    fn test_translation_ldtk_pixel_coords_conversion() {
         assert_eq!(
-            calculate_transform_from_tile_pos(TilePos(1, 2), 32, 0.),
-            Transform::from_xyz(48., 80., 0.)
+            ldtk_pixel_coords_to_translation(IVec2::new(32, 64), 128),
+            Vec2::new(32., 64.)
+        );
+        assert_eq!(
+            ldtk_pixel_coords_to_translation(IVec2::new(0, 0), 100),
+            Vec2::new(0., 100.)
         );
 
         assert_eq!(
-            calculate_transform_from_tile_pos(TilePos(1, 0), 100, 50.),
-            Transform::from_xyz(150., 50., 50.)
+            translation_to_ldtk_pixel_coords(Vec2::new(32., 64.), 128),
+            IVec2::new(32, 64)
+        );
+        assert_eq!(
+            translation_to_ldtk_pixel_coords(Vec2::new(0., 0.), 100),
+            IVec2::new(0, 100)
+        );
+    }
+
+    #[test]
+    fn test_ldtk_grid_coords_to_translation_centered() {
+        assert_eq!(
+            ldtk_grid_coords_to_translation_centered(IVec2::new(1, 1), 4, IVec2::splat(32)),
+            Vec2::new(48., 80.)
         );
 
         assert_eq!(
-            calculate_transform_from_tile_pos(TilePos(0, 5), 1, 1.),
-            Transform::from_xyz(0.5, 5.5, 1.)
+            ldtk_grid_coords_to_translation_centered(IVec2::new(1, 1), 2, IVec2::splat(100)),
+            Vec2::new(150., 50.)
+        );
+
+        assert_eq!(
+            ldtk_grid_coords_to_translation_centered(IVec2::new(0, 4), 10, IVec2::splat(1)),
+            Vec2::new(0.5, 5.5)
+        );
+    }
+
+    #[test]
+    fn test_tile_pos_to_translation_centered() {
+        assert_eq!(
+            tile_pos_to_translation_centered(TilePos(1, 2), IVec2::splat(32)),
+            Vec2::new(48., 80.)
+        );
+
+        assert_eq!(
+            tile_pos_to_translation_centered(TilePos(1, 0), IVec2::splat(100)),
+            Vec2::new(150., 50.)
+        );
+
+        assert_eq!(
+            tile_pos_to_translation_centered(TilePos(0, 5), IVec2::splat(1)),
+            Vec2::new(0.5, 5.5)
+        );
+    }
+
+    #[test]
+    fn test_ldtk_pixel_coords_to_translation_pivoted() {
+        assert_eq!(
+            ldtk_pixel_coords_to_translation_pivoted(
+                IVec2::new(32, 64),
+                128,
+                IVec2::splat(32),
+                Vec2::ZERO
+            ),
+            Vec2::new(48., 48.),
+        );
+
+        assert_eq!(
+            ldtk_pixel_coords_to_translation_pivoted(
+                IVec2::new(0, 0),
+                10,
+                IVec2::splat(1),
+                Vec2::new(1., 0.)
+            ),
+            Vec2::new(-0.5, 9.5),
+        );
+
+        assert_eq!(
+            ldtk_pixel_coords_to_translation_pivoted(
+                IVec2::new(20, 20),
+                20,
+                IVec2::splat(5),
+                Vec2::new(0.5, 0.5)
+            ),
+            Vec2::new(20., 0.),
         );
     }
 

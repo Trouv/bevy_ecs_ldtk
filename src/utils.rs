@@ -124,15 +124,6 @@ pub fn tile_pos_to_ldtk_grid_coords(tile_pos: TilePos, ldtk_grid_height: i32) ->
     ldtk_coord_conversion_origin_adjusted(tile_coords.as_ivec2(), ldtk_grid_height)
 }
 
-/// Performs direct LDtk grid coordinate to translation conversion.
-pub fn ldtk_grid_coords_to_translation(
-    ldtk_coords: IVec2,
-    ldtk_grid_height: i32,
-    grid_size: IVec2,
-) -> Vec2 {
-    ldtk_pixel_coords_to_translation(ldtk_coords * grid_size, ldtk_grid_height * grid_size.y)
-}
-
 /// Performs LDtk grid coordinate to translation conversion, so that the resulting translation is
 /// in the center of the tile.
 pub fn ldtk_grid_coords_to_translation_centered(
@@ -141,10 +132,11 @@ pub fn ldtk_grid_coords_to_translation_centered(
     grid_size: IVec2,
 ) -> Vec2 {
     ldtk_pixel_coords_to_translation(ldtk_coords * grid_size, ldtk_grid_height * grid_size.y)
-        + Vec2::new(grid_size.x as f32, -grid_size.y as f32)
+        + Vec2::new(grid_size.x as f32 / 2., -grid_size.y as f32 / 2.)
 }
 
-/// Performs [TilePos] to translation conversion, so that the resulting translation is in the in the center of the tile.
+/// Performs [TilePos] to translation conversion, so that the resulting translation is in the in
+/// the center of the tile.
 ///
 /// Assumes that the bottom-left corner of the origin tile is at [Vec2::ZERO].
 ///
@@ -159,6 +151,9 @@ pub fn tile_pos_to_translation_centered(tile_pos: TilePos, tile_size: IVec2) -> 
 ///
 /// In LDtk, the "pivot" of an entity indicates the percentage that an entity's visual is adjusted
 /// relative to its pixel coordinates in both directions.
+///
+/// The resulting translation will indicate the location of the "center" of the entity's visual,
+/// after being pivot-adjusted.
 pub fn ldtk_pixel_coords_to_translation_pivoted(
     ldtk_coords: IVec2,
     ldtk_pixel_height: i32,
@@ -370,6 +365,37 @@ mod tests {
             ldtk_pixel_coords_to_translation(IVec2::new(32, 64), 128),
             Vec2::new(32., 64.)
         );
+        assert_eq!(
+            ldtk_pixel_coords_to_translation(IVec2::new(0, 0), 100),
+            Vec2::new(0., 100.)
+        );
+
+        assert_eq!(
+            translation_to_ldtk_pixel_coords(Vec2::new(32., 64.), 128),
+            IVec2::new(32, 64)
+        );
+        assert_eq!(
+            translation_to_ldtk_pixel_coords(Vec2::new(0., 0.), 100),
+            IVec2::new(0, 100)
+        );
+    }
+
+    #[test]
+    fn test_ldtk_grid_coords_to_translation_centered() {
+        assert_eq!(
+            ldtk_grid_coords_to_translation_centered(IVec2::new(1, 1), 4, IVec2::splat(32)),
+            Vec2::new(48., 80.)
+        );
+
+        assert_eq!(
+            ldtk_grid_coords_to_translation_centered(IVec2::new(1, 1), 2, IVec2::splat(100)),
+            Vec2::new(150., 50.)
+        );
+
+        assert_eq!(
+            ldtk_grid_coords_to_translation_centered(IVec2::new(0, 4), 10, IVec2::splat(1)),
+            Vec2::new(0.5, 5.5)
+        );
     }
 
     #[test]
@@ -387,6 +413,39 @@ mod tests {
         assert_eq!(
             tile_pos_to_translation_centered(TilePos(0, 5), IVec2::splat(1)),
             Vec2::new(0.5, 5.5)
+        );
+    }
+
+    #[test]
+    fn test_ldtk_pixel_coords_to_translation_pivoted() {
+        assert_eq!(
+            ldtk_pixel_coords_to_translation_pivoted(
+                IVec2::new(32, 64),
+                128,
+                IVec2::splat(32),
+                Vec2::ZERO
+            ),
+            Vec2::new(48., 48.),
+        );
+
+        assert_eq!(
+            ldtk_pixel_coords_to_translation_pivoted(
+                IVec2::new(0, 0),
+                10,
+                IVec2::splat(1),
+                Vec2::new(1., 0.)
+            ),
+            Vec2::new(-0.5, 9.5),
+        );
+
+        assert_eq!(
+            ldtk_pixel_coords_to_translation_pivoted(
+                IVec2::new(20, 20),
+                20,
+                IVec2::splat(5),
+                Vec2::new(0.5, 0.5)
+            ),
+            Vec2::new(20., 0.),
         );
     }
 

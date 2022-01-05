@@ -1261,7 +1261,7 @@ pub enum WorldLayout {
 pub enum FieldInstance {
     Integer(Option<i32>),
     Float(Option<f32>),
-    Boolean(bool),
+    Bool(bool),
     String(Option<String>),
     #[serde(deserialize_with = "deserialize_hex_color")]
     Color(Color),
@@ -1269,9 +1269,22 @@ pub enum FieldInstance {
     #[serde(alias = "LocalEnum.Item")]
     LocalEnum(Option<String>),
     Point(Option<FieldPoint>),
+    #[serde(alias = "Array<Integer>")]
+    Integers(Vec<Option<i32>>),
+    #[serde(alias = "Array<Float>")]
+    Floats(Vec<Option<f32>>),
+    #[serde(alias = "Array<Bool>")]
+    Booleans(Vec<bool>),
+    #[serde(alias = "Array<String>")]
+    Strings(Vec<Option<String>>),
+    #[serde(alias = "Array<Color>")]
+    Colors(Vec<Color>),
+    #[serde(alias = "Array<FilePath>")]
+    FilePaths(Vec<Option<String>>),
     #[serde(alias = "Array<LocalEnum.Item>")]
+    Enums(Vec<Option<String>>),
     #[serde(alias = "Array<Point>")]
-    Array(FieldArrayValue),
+    Points(Vec<Option<FieldPoint>>),
 }
 
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
@@ -1282,16 +1295,4 @@ pub struct FieldPoint {
 
 fn deserialize_hex_color<'de, D: Deserializer<'de>>(deserializer: D) -> Result<Color, D::Error> {
     Ok(Color::WHITE)
-}
-
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-pub enum FieldArrayValue {
-    Integers(Vec<Option<i32>>),
-    Floats(Vec<Option<f32>>),
-    Booleans(Vec<bool>),
-    Strings(Vec<Option<String>>),
-    Colors(Vec<Color>),
-    FilePaths(Vec<Option<String>>),
-    Enums(Vec<Option<String>>),
-    Points(Vec<Option<FieldPoint>>),
 }

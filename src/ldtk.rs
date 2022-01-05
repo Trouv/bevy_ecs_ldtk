@@ -11,6 +11,7 @@
 //     let model: [object Object] = serde_json::from_str(&json).unwrap();
 // }
 
+use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -1253,4 +1254,25 @@ pub enum WorldLayout {
 
     #[serde(rename = "LinearVertical")]
     LinearVertical,
+}
+
+pub enum FieldValue {
+    Integer(Option<i32>),
+    Float(Option<f32>),
+    Boolean(bool),
+    String(Option<String>),
+    Color(Color),
+    Enum(Option<String>),
+    Point(Option<IVec2>),
+    Array(FieldArrayValue),
+}
+
+pub enum FieldArrayValue {
+    Integers(Vec<Option<i32>>),
+    Floats(Vec<Option<f32>>),
+    Booleans(Vec<bool>),
+    Strings(Vec<Option<String>>),
+    Colors(Vec<Color>),
+    Enums(Vec<Option<String>>),
+    Points(Vec<Option<IVec2>>),
 }

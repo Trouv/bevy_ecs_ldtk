@@ -12,7 +12,7 @@
 // }
 
 use bevy::prelude::*;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::HashMap;
 
 /// This file is a JSON schema of files created by LDtk level editor <https://ldtk.io>.
@@ -766,29 +766,29 @@ pub struct LevelBackgroundPosition {
     pub top_left_px: Vec<i32>,
 }
 
-#[derive(Eq, PartialEq, Debug, Default, Clone, Serialize, Deserialize)]
-pub struct FieldInstance {
-    /// Field definition identifier
-    #[serde(rename = "__identifier")]
-    pub identifier: String,
+//#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+//pub struct FieldInstance {
+///// Field definition identifier
+//#[serde(rename = "__identifier")]
+//pub identifier: String,
 
-    /// Type of the field, such as `Int`, `Float`, `Enum(my_enum_name)`, `Bool`, etc.
-    #[serde(rename = "__type")]
-    pub field_instance_type: String,
+///// Type of the field, such as `Int`, `Float`, `Enum(my_enum_name)`, `Bool`, etc.
+//#[serde(rename = "__type")]
+//pub field_instance_type: String,
 
-    /// Actual value of the field instance. The value type may vary, depending on `__type`
-    /// (Integer, Boolean, String etc.)<br/>  It can also be an `Array` of those same types.
-    #[serde(rename = "__value")]
-    pub value: Option<serde_json::Value>,
+///// Actual value of the field instance. The value type may vary, depending on `__type`
+///// (Integer, Boolean, String etc.)<br/>  It can also be an `Array` of those same types.
+//#[serde(rename = "__value")]
+//pub value: FieldValue,
 
-    /// Reference of the **Field definition** UID
-    #[serde(rename = "defUid")]
-    pub def_uid: i32,
+///// Reference of the **Field definition** UID
+//#[serde(rename = "defUid")]
+//pub def_uid: i32,
 
-    /// Editor internal raw values
-    #[serde(rename = "realEditorValues")]
-    pub real_editor_values: Vec<Option<serde_json::Value>>,
-}
+///// Editor internal raw values
+//#[serde(rename = "realEditorValues")]
+//pub real_editor_values: Vec<Option<serde_json::Value>>,
+//}
 
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
 pub struct LayerInstance {
@@ -1256,23 +1256,42 @@ pub enum WorldLayout {
     LinearVertical,
 }
 
-pub enum FieldValue {
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "__type", content = "__value")]
+pub enum FieldInstance {
     Integer(Option<i32>),
     Float(Option<f32>),
     Boolean(bool),
     String(Option<String>),
+    #[serde(deserialize_with = "deserialize_hex_color")]
     Color(Color),
-    Enum(Option<String>),
-    Point(Option<IVec2>),
+    FilePath(Option<String>),
+    #[serde(alias = "LocalEnum.Item")]
+    LocalEnum(Option<String>),
+    Point(Option<FieldPoint>),
+    #[serde(alias = "Array<LocalEnum.Item>")]
+    #[serde(alias = "Array<Point>")]
     Array(FieldArrayValue),
 }
 
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+pub struct FieldPoint {
+    cx: i32,
+    cy: i32,
+}
+
+fn deserialize_hex_color<'de, D: Deserializer<'de>>(deserializer: D) -> Result<Color, D::Error> {
+    Ok(Color::WHITE)
+}
+
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
 pub enum FieldArrayValue {
     Integers(Vec<Option<i32>>),
     Floats(Vec<Option<f32>>),
     Booleans(Vec<bool>),
     Strings(Vec<Option<String>>),
     Colors(Vec<Color>),
+    FilePaths(Vec<Option<String>>),
     Enums(Vec<Option<String>>),
-    Points(Vec<Option<IVec2>>),
+    Points(Vec<Option<FieldPoint>>),
 }

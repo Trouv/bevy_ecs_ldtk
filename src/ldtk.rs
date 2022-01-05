@@ -12,7 +12,7 @@
 // }
 
 use bevy::prelude::*;
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::{de, Deserialize, Deserializer, Serialize};
 use std::collections::HashMap;
 
 /// This file is a JSON schema of files created by LDtk level editor <https://ldtk.io>.
@@ -766,29 +766,112 @@ pub struct LevelBackgroundPosition {
     pub top_left_px: Vec<i32>,
 }
 
-//#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-//pub struct FieldInstance {
-///// Field definition identifier
-//#[serde(rename = "__identifier")]
-//pub identifier: String,
+#[derive(PartialEq, Debug, Clone, Serialize)]
+pub struct FieldInstance {
+    /// Field definition identifier
+    #[serde(rename = "__identifier")]
+    pub identifier: String,
 
-///// Type of the field, such as `Int`, `Float`, `Enum(my_enum_name)`, `Bool`, etc.
-//#[serde(rename = "__type")]
-//pub field_instance_type: String,
+    /// Type of the field, such as `Int`, `Float`, `Enum(my_enum_name)`, `Bool`, etc.
+    #[serde(rename = "__type")]
+    pub field_instance_type: String,
 
-///// Actual value of the field instance. The value type may vary, depending on `__type`
-///// (Integer, Boolean, String etc.)<br/>  It can also be an `Array` of those same types.
-//#[serde(rename = "__value")]
-//pub value: FieldValue,
+    /// Actual value of the field instance. The value type may vary, depending on `__type`
+    /// (Integer, Boolean, String etc.)<br/>  It can also be an `Array` of those same types.
+    #[serde(rename = "__value")]
+    pub value: FieldValue,
 
-///// Reference of the **Field definition** UID
-//#[serde(rename = "defUid")]
-//pub def_uid: i32,
+    /// Reference of the **Field definition** UID
+    #[serde(rename = "defUid")]
+    pub def_uid: i32,
 
-///// Editor internal raw values
-//#[serde(rename = "realEditorValues")]
-//pub real_editor_values: Vec<Option<serde_json::Value>>,
-//}
+    /// Editor internal raw values
+    #[serde(rename = "realEditorValues")]
+    pub real_editor_values: Vec<Option<serde_json::Value>>,
+}
+
+impl<'de> Deserialize<'de> for FieldInstance {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        struct FieldInstanceHelper {
+            #[serde(rename = "__identifier")]
+            pub identifier: String,
+
+            #[serde(rename = "__type")]
+            pub field_instance_type: String,
+
+            #[serde(rename = "__value")]
+            pub value: serde_json::Value,
+
+            #[serde(rename = "defUid")]
+            pub def_uid: i32,
+
+            #[serde(rename = "realEditorValues")]
+            pub real_editor_values: Vec<Option<serde_json::Value>>,
+        }
+
+        let helper = FieldInstanceHelper::deserialize(deserializer)?;
+
+        let value = match helper.field_instance_type.as_str() {
+            "Integer" => FieldValue::Integer(
+                Option::<i32>::deserialize(helper.value).map_err(de::Error::custom)?,
+            ),
+            "Float" => FieldValue::Float(
+                Option::<f32>::deserialize(helper.value).map_err(de::Error::custom)?,
+            ),
+            "Bool" => FieldValue::Bool(bool::deserialize(helper.value).map_err(de::Error::custom)?),
+            "String" => FieldValue::String(
+                Option::<String>::deserialize(helper.value).map_err(de::Error::custom)?,
+            ),
+            "Color" => {
+                let value_string = String::deserialize(helper.value).map_err(de::Error::custom)?;
+
+                let mut chars = value_string.chars();
+                chars.next();
+
+                FieldValue::Color(
+                    Color::hex::<String>(chars.collect())
+                        .map_err(|_| de::Error::custom("Encountered HexColorError"))?,
+                )
+            }
+            "FilePath" => FieldValue::FilePath(
+                Option::<String>::deserialize(helper.value).map_err(de::Error::custom)?,
+            ),
+            _ => FieldValue::Integer(Some(0)),
+        };
+
+        Ok(FieldInstance {
+            identifier: helper.identifier,
+            field_instance_type: helper.field_instance_type,
+            def_uid: helper.def_uid,
+            real_editor_values: helper.real_editor_values,
+            value,
+        })
+    }
+}
+
+#[derive(PartialEq, Debug, Clone, Serialize)]
+pub enum FieldValue {
+    Integer(Option<i32>),
+    Float(Option<f32>),
+    Bool(bool),
+    String(Option<String>),
+    Color(Color),
+    FilePath(Option<String>),
+    LocalEnum(Option<String>),
+    Point(Option<IVec2>),
+    Integers(Vec<Option<i32>>),
+    Floats(Vec<Option<f32>>),
+    Booleans(Vec<bool>),
+    Strings(Vec<Option<String>>),
+    Colors(Vec<Color>),
+    FilePaths(Vec<Option<String>>),
+    Enums(Vec<Option<String>>),
+    Points(Vec<Option<IVec2>>),
+}
 
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
 pub struct LayerInstance {
@@ -1254,45 +1337,4 @@ pub enum WorldLayout {
 
     #[serde(rename = "LinearVertical")]
     LinearVertical,
-}
-
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "__type", content = "__value")]
-pub enum FieldInstance {
-    Integer(Option<i32>),
-    Float(Option<f32>),
-    Bool(bool),
-    String(Option<String>),
-    #[serde(deserialize_with = "deserialize_hex_color")]
-    Color(Color),
-    FilePath(Option<String>),
-    #[serde(alias = "LocalEnum.Item")]
-    LocalEnum(Option<String>),
-    Point(Option<FieldPoint>),
-    #[serde(alias = "Array<Integer>")]
-    Integers(Vec<Option<i32>>),
-    #[serde(alias = "Array<Float>")]
-    Floats(Vec<Option<f32>>),
-    #[serde(alias = "Array<Bool>")]
-    Booleans(Vec<bool>),
-    #[serde(alias = "Array<String>")]
-    Strings(Vec<Option<String>>),
-    #[serde(alias = "Array<Color>")]
-    Colors(Vec<Color>),
-    #[serde(alias = "Array<FilePath>")]
-    FilePaths(Vec<Option<String>>),
-    #[serde(alias = "Array<LocalEnum.Item>")]
-    Enums(Vec<Option<String>>),
-    #[serde(alias = "Array<Point>")]
-    Points(Vec<Option<FieldPoint>>),
-}
-
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-pub struct FieldPoint {
-    cx: i32,
-    cy: i32,
-}
-
-fn deserialize_hex_color<'de, D: Deserializer<'de>>(deserializer: D) -> Result<Color, D::Error> {
-    Ok(Color::WHITE)
 }

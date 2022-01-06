@@ -17,6 +17,7 @@ bevy = { git = "https://github.com/bevyengine/bevy", rev = "081350916c39fc1c7c9d
 anyhow = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+regex = "1.5"
 
 [dev-dependencies]
 bevy = { git = "https://github.com/bevyengine/bevy", rev = "081350916c39fc1c7c9d659ccb6d86413832b465", default-features = true }

@@ -15,6 +15,8 @@ use bevy::prelude::*;
 use serde::{de, Deserialize, Deserializer, Serialize};
 use std::collections::HashMap;
 
+use regex::Regex;
+
 /// This file is a JSON schema of files created by LDtk level editor <https://ldtk.io>.
 ///
 /// This is the root of any Project JSON file. It contains:  - the project settings, - an
@@ -873,7 +875,25 @@ impl<'de> Deserialize<'de> for FieldInstance {
             "Array<FilePath>" => FieldValue::Strings(
                 Vec::<Option<String>>::deserialize(helper.value).map_err(de::Error::custom)?,
             ),
-            _ => FieldValue::Integer(Some(0)),
+            t => {
+                let enum_regex =
+                    Regex::new(r"^(LocalEnum|ExternEnum)\.").expect("enum regex should be valid");
+                let enums_regex = Regex::new(r"^Array<(LocalEnum|ExternEnum)\.")
+                    .expect("enums regex should be valid");
+
+                if enum_regex.is_match(t) {
+                    FieldValue::Enum(
+                        Option::<String>::deserialize(helper.value).map_err(de::Error::custom)?,
+                    )
+                } else if enums_regex.is_match(t) {
+                    FieldValue::Enums(
+                        Vec::<Option<String>>::deserialize(helper.value)
+                            .map_err(de::Error::custom)?,
+                    )
+                } else {
+                    return Err(de::Error::custom("Encountered unknown field type"));
+                }
+            }
         };
 
         Ok(FieldInstance {
@@ -894,7 +914,7 @@ pub enum FieldValue {
     String(Option<String>),
     Color(Color),
     FilePath(Option<String>),
-    LocalEnum(Option<String>),
+    Enum(Option<String>),
     Point(Option<IVec2>),
     Integers(Vec<Option<i32>>),
     Floats(Vec<Option<f32>>),

@@ -815,6 +815,12 @@ impl<'de> Deserialize<'de> for FieldInstance {
             pub real_editor_values: Vec<Option<serde_json::Value>>,
         }
 
+        #[derive(Deserialize)]
+        struct PointHelper {
+            cx: i32,
+            cy: i32,
+        }
+
         let helper = FieldInstanceHelper::deserialize(deserializer)?;
 
         let value = match helper.field_instance_type.as_str() {
@@ -842,6 +848,12 @@ impl<'de> Deserialize<'de> for FieldInstance {
             "FilePath" => FieldValue::FilePath(
                 Option::<String>::deserialize(helper.value).map_err(de::Error::custom)?,
             ),
+            "Point" => {
+                let point_helper =
+                    Option::<PointHelper>::deserialize(helper.value).map_err(de::Error::custom)?;
+
+                FieldValue::Point(point_helper.map(|p| IVec2::new(p.cx, p.cy)))
+            }
             "Array<Integer>" => FieldValue::Integers(
                 Vec::<Option<i32>>::deserialize(helper.value).map_err(de::Error::custom)?,
             ),
@@ -875,6 +887,17 @@ impl<'de> Deserialize<'de> for FieldInstance {
             "Array<FilePath>" => FieldValue::Strings(
                 Vec::<Option<String>>::deserialize(helper.value).map_err(de::Error::custom)?,
             ),
+            "Array<Point>" => {
+                let point_helpers = Vec::<Option<PointHelper>>::deserialize(helper.value)
+                    .map_err(de::Error::custom)?;
+
+                let mut points = Vec::new();
+                for point_helper in point_helpers {
+                    points.push(point_helper.map(|p| IVec2::new(p.cx, p.cy)));
+                }
+
+                FieldValue::Points(points)
+            }
             t => {
                 let enum_regex =
                     Regex::new(r"^(LocalEnum|ExternEnum)\.").expect("enum regex should be valid");

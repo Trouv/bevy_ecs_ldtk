@@ -840,6 +840,39 @@ impl<'de> Deserialize<'de> for FieldInstance {
             "FilePath" => FieldValue::FilePath(
                 Option::<String>::deserialize(helper.value).map_err(de::Error::custom)?,
             ),
+            "Array<Integer>" => FieldValue::Integers(
+                Vec::<Option<i32>>::deserialize(helper.value).map_err(de::Error::custom)?,
+            ),
+            "Array<Float>" => FieldValue::Floats(
+                Vec::<Option<f32>>::deserialize(helper.value).map_err(de::Error::custom)?,
+            ),
+            "Array<Bool>" => FieldValue::Bools(
+                Vec::<bool>::deserialize(helper.value).map_err(de::Error::custom)?,
+            ),
+            "Array<String>" => FieldValue::Strings(
+                Vec::<Option<String>>::deserialize(helper.value).map_err(de::Error::custom)?,
+            ),
+            "Array<Color>" => {
+                let value_strings =
+                    Vec::<String>::deserialize(helper.value).map_err(de::Error::custom)?;
+
+                let mut colors = Vec::new();
+
+                for value_string in value_strings {
+                    let mut chars = value_string.chars();
+                    chars.next();
+
+                    colors.push(
+                        Color::hex::<String>(chars.collect())
+                            .map_err(|_| de::Error::custom("Encountered HexColorError"))?,
+                    );
+                }
+
+                FieldValue::Colors(colors)
+            }
+            "Array<FilePath>" => FieldValue::Strings(
+                Vec::<Option<String>>::deserialize(helper.value).map_err(de::Error::custom)?,
+            ),
             _ => FieldValue::Integer(Some(0)),
         };
 
@@ -865,7 +898,7 @@ pub enum FieldValue {
     Point(Option<IVec2>),
     Integers(Vec<Option<i32>>),
     Floats(Vec<Option<f32>>),
-    Booleans(Vec<bool>),
+    Bools(Vec<bool>),
     Strings(Vec<Option<String>>),
     Colors(Vec<Color>),
     FilePaths(Vec<Option<String>>),

@@ -11,7 +11,7 @@
 //     let model: [object Object] = serde_json::from_str(&json).unwrap();
 // }
 
-use bevy::prelude::*;
+use bevy::{prelude::*, render::color::HexColorError};
 use serde::{de, Deserialize, Deserializer, Serialize};
 use std::collections::HashMap;
 
@@ -835,14 +835,15 @@ impl<'de> Deserialize<'de> for FieldInstance {
                 Option::<String>::deserialize(helper.value).map_err(de::Error::custom)?,
             ),
             "Color" => {
-                let value_string = String::deserialize(helper.value).map_err(de::Error::custom)?;
+                let value = String::deserialize(helper.value).map_err(de::Error::custom)?;
 
-                let mut chars = value_string.chars();
-                chars.next();
+                let hex = match value.strip_prefix("#") {
+                    Some(h) => h.to_string(),
+                    None => value,
+                };
 
                 FieldValue::Color(
-                    Color::hex::<String>(chars.collect())
-                        .map_err(|_| de::Error::custom("Encountered HexColorError"))?,
+                    Color::hex(hex).map_err(|_| de::Error::custom("Encountered HexColorError"))?,
                 )
             }
             "FilePath" => FieldValue::FilePath(
@@ -867,20 +868,20 @@ impl<'de> Deserialize<'de> for FieldInstance {
                 Vec::<Option<String>>::deserialize(helper.value).map_err(de::Error::custom)?,
             ),
             "Array<Color>" => {
-                let value_strings =
-                    Vec::<String>::deserialize(helper.value).map_err(de::Error::custom)?;
+                let values = Vec::<String>::deserialize(helper.value).map_err(de::Error::custom)?;
 
-                let mut colors = Vec::new();
+                let colors = values
+                    .into_iter()
+                    .map(|value| {
+                        let hex = match value.strip_prefix("#") {
+                            Some(h) => h.to_string(),
+                            None => value,
+                        };
 
-                for value_string in value_strings {
-                    let mut chars = value_string.chars();
-                    chars.next();
-
-                    colors.push(
-                        Color::hex::<String>(chars.collect())
-                            .map_err(|_| de::Error::custom("Encountered HexColorError"))?,
-                    );
-                }
+                        Color::hex(hex)
+                    })
+                    .collect::<Result<Vec<Color>, HexColorError>>()
+                    .map_err(|_| de::Error::custom("Encountered HexColorError"))?;
 
                 FieldValue::Colors(colors)
             }
@@ -891,10 +892,10 @@ impl<'de> Deserialize<'de> for FieldInstance {
                 let point_helpers = Vec::<Option<PointHelper>>::deserialize(helper.value)
                     .map_err(de::Error::custom)?;
 
-                let mut points = Vec::new();
-                for point_helper in point_helpers {
-                    points.push(point_helper.map(|p| IVec2::new(p.cx, p.cy)));
-                }
+                let points = point_helpers
+                    .into_iter()
+                    .map(|ph| ph.map(|p| IVec2::new(p.cx, p.cy)))
+                    .collect();
 
                 FieldValue::Points(points)
             }

@@ -1,18 +1,29 @@
-// Example code that deserializes and serializes the model.
-// extern crate serde;
-// #[macro_use]
-// extern crate serde_derive;
-// extern crate serde_json;
-//
-// use generated_module::[object Object];
-//
-// fn main() {
-//     let json = r#"{"answer": 42}"#;
-//     let model: [object Object] = serde_json::from_str(&json).unwrap();
-// }
+//! Contains all the types for serializing/deserializing an LDtk file.
+//!
+//! This is mostly based on LDtk's existing rust
+//! [QuickType loader](https://ldtk.io/files/quicktype/LdtkJson.rs).
+//!
+//! For the most part, changes to the generated module are avoided to make it simpler to maintain
+//! this plugin in the future.
+//! However, some usability concerns have been addressed.
+//! Any changes should be documented here for maintenance purposes:
+//! 1. [serde] has been imported with `use` instead of `extern`
+//! 2. All struct fields have been made public.
+//! 3. [Eq], [PartialEq], [Debug], [Default], and [Clone] have been derived wherever possible.
+//! 4. [i64] and [f64] have been changed to [i32] and [f32].
+//! 5. [LimitBehavior], [LimitScope], [RenderMode], and [TileRenderMode] have been given custom
+//!    [Default] implementations.
+//! 6. `Component` has been derived for [EntityInstance]
+//! 7. [FieldInstance] has been moved to its own module, and is re-exported here.
+//! 8. The `layer_instance_type` field of [LayerInstance] has been re-typed to [Type]
+//! 9. Comment at the top of the file has been replaced with this documentation.
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+
+mod field_instance;
+
+pub use field_instance::*;
 
 /// This file is a JSON schema of files created by LDtk level editor <https://ldtk.io>.
 ///
@@ -763,30 +774,6 @@ pub struct LevelBackgroundPosition {
     /// **cropped** background image, depending on `bgPos` option.
     #[serde(rename = "topLeftPx")]
     pub top_left_px: Vec<i32>,
-}
-
-#[derive(Eq, PartialEq, Debug, Default, Clone, Serialize, Deserialize)]
-pub struct FieldInstance {
-    /// Field definition identifier
-    #[serde(rename = "__identifier")]
-    pub identifier: String,
-
-    /// Type of the field, such as `Int`, `Float`, `Enum(my_enum_name)`, `Bool`, etc.
-    #[serde(rename = "__type")]
-    pub field_instance_type: String,
-
-    /// Actual value of the field instance. The value type may vary, depending on `__type`
-    /// (Integer, Boolean, String etc.)<br/>  It can also be an `Array` of those same types.
-    #[serde(rename = "__value")]
-    pub value: Option<serde_json::Value>,
-
-    /// Reference of the **Field definition** UID
-    #[serde(rename = "defUid")]
-    pub def_uid: i32,
-
-    /// Editor internal raw values
-    #[serde(rename = "realEditorValues")]
-    pub real_editor_values: Vec<Option<serde_json::Value>>,
 }
 
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]

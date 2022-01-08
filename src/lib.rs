@@ -47,7 +47,7 @@ pub mod prelude {
             EntityInstance, EntityInstanceBundle, IntGridCell, IntGridCellBundle, LdtkMapBundle,
             LevelSelection,
         },
-        ldtk::{self, LayerInstance, TilesetDefinition},
+        ldtk::{self, FieldValue, LayerInstance, TilesetDefinition},
         plugin::LdtkPlugin,
     };
 }

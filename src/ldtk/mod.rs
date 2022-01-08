@@ -1,21 +1,28 @@
-// Example code that deserializes and serializes the model.
-// extern crate serde;
-// #[macro_use]
-// extern crate serde_derive;
-// extern crate serde_json;
-//
-// use generated_module::[object Object];
-//
-// fn main() {
-//     let json = r#"{"answer": 42}"#;
-//     let model: [object Object] = serde_json::from_str(&json).unwrap();
-// }
-
-use bevy::{prelude::*, render::color::HexColorError};
-use serde::{de, Deserialize, Deserializer, Serialize};
+/// Contains all the types for serializing/deserializing an LDtk file.
+///
+/// This is mostly based on LDtk's existing rust
+/// [QuickType loader](https://ldtk.io/files/quicktype/LdtkJson.rs).
+///
+/// For the most part, changes to the generated module are avoided to make it simpler to maintain
+/// this plugin in the future.
+/// However, some usability concerns have been addressed.
+/// Any changes should be documented here for maintenance purposes:
+/// 1. [serde] has been imported with `use` instead of `extern`
+/// 2. All struct fields have been made public.
+/// 3. [Eq], [PartialEq], [Debug], [Default], and [Clone] have been derived wherever possible.
+/// 4. [i64] and [f64] have been changed to [i32] and [f32].
+/// 5. [LimitBehavior], [LimitScope], [RenderMode], and [TileRenderMode] have been given custom
+///    [Default] implementations.
+/// 6. [bevy::ecs::Component] has been derived for [EntityInstance]
+/// 7. [FieldInstance] has been moved to its own module, and is re-exported here.
+/// 8. The `layer_instance_type` field of [LayerInstance] has been re-typed to [Type]
+/// 9. Comment at the top of the file has been removed.
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use regex::Regex;
+mod field_instance;
+
+pub use field_instance::*;
 
 /// This file is a JSON schema of files created by LDtk level editor <https://ldtk.io>.
 ///
@@ -766,188 +773,6 @@ pub struct LevelBackgroundPosition {
     /// **cropped** background image, depending on `bgPos` option.
     #[serde(rename = "topLeftPx")]
     pub top_left_px: Vec<i32>,
-}
-
-#[derive(PartialEq, Debug, Clone, Serialize)]
-pub struct FieldInstance {
-    /// Field definition identifier
-    #[serde(rename = "__identifier")]
-    pub identifier: String,
-
-    /// Type of the field, such as `Int`, `Float`, `Enum(my_enum_name)`, `Bool`, etc.
-    #[serde(rename = "__type")]
-    pub field_instance_type: String,
-
-    /// Actual value of the field instance. The value type may vary, depending on `__type`
-    /// (Integer, Boolean, String etc.)<br/>  It can also be an `Array` of those same types.
-    #[serde(rename = "__value")]
-    pub value: FieldValue,
-
-    /// Reference of the **Field definition** UID
-    #[serde(rename = "defUid")]
-    pub def_uid: i32,
-
-    /// Editor internal raw values
-    #[serde(rename = "realEditorValues")]
-    pub real_editor_values: Vec<Option<serde_json::Value>>,
-}
-
-impl<'de> Deserialize<'de> for FieldInstance {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        #[derive(Deserialize)]
-        struct FieldInstanceHelper {
-            #[serde(rename = "__identifier")]
-            pub identifier: String,
-
-            #[serde(rename = "__type")]
-            pub field_instance_type: String,
-
-            #[serde(rename = "__value")]
-            pub value: serde_json::Value,
-
-            #[serde(rename = "defUid")]
-            pub def_uid: i32,
-
-            #[serde(rename = "realEditorValues")]
-            pub real_editor_values: Vec<Option<serde_json::Value>>,
-        }
-
-        #[derive(Deserialize)]
-        struct PointHelper {
-            cx: i32,
-            cy: i32,
-        }
-
-        let helper = FieldInstanceHelper::deserialize(deserializer)?;
-
-        let value = match helper.field_instance_type.as_str() {
-            "Integer" => FieldValue::Integer(
-                Option::<i32>::deserialize(helper.value).map_err(de::Error::custom)?,
-            ),
-            "Float" => FieldValue::Float(
-                Option::<f32>::deserialize(helper.value).map_err(de::Error::custom)?,
-            ),
-            "Bool" => FieldValue::Bool(bool::deserialize(helper.value).map_err(de::Error::custom)?),
-            "String" => FieldValue::String(
-                Option::<String>::deserialize(helper.value).map_err(de::Error::custom)?,
-            ),
-            "Color" => {
-                let value = String::deserialize(helper.value).map_err(de::Error::custom)?;
-
-                let hex = match value.strip_prefix("#") {
-                    Some(h) => h.to_string(),
-                    None => value,
-                };
-
-                FieldValue::Color(
-                    Color::hex(hex).map_err(|_| de::Error::custom("Encountered HexColorError"))?,
-                )
-            }
-            "FilePath" => FieldValue::FilePath(
-                Option::<String>::deserialize(helper.value).map_err(de::Error::custom)?,
-            ),
-            "Point" => {
-                let point_helper =
-                    Option::<PointHelper>::deserialize(helper.value).map_err(de::Error::custom)?;
-
-                FieldValue::Point(point_helper.map(|p| IVec2::new(p.cx, p.cy)))
-            }
-            "Array<Integer>" => FieldValue::Integers(
-                Vec::<Option<i32>>::deserialize(helper.value).map_err(de::Error::custom)?,
-            ),
-            "Array<Float>" => FieldValue::Floats(
-                Vec::<Option<f32>>::deserialize(helper.value).map_err(de::Error::custom)?,
-            ),
-            "Array<Bool>" => FieldValue::Bools(
-                Vec::<bool>::deserialize(helper.value).map_err(de::Error::custom)?,
-            ),
-            "Array<String>" => FieldValue::Strings(
-                Vec::<Option<String>>::deserialize(helper.value).map_err(de::Error::custom)?,
-            ),
-            "Array<Color>" => {
-                let values = Vec::<String>::deserialize(helper.value).map_err(de::Error::custom)?;
-
-                let colors = values
-                    .into_iter()
-                    .map(|value| {
-                        let hex = match value.strip_prefix("#") {
-                            Some(h) => h.to_string(),
-                            None => value,
-                        };
-
-                        Color::hex(hex)
-                    })
-                    .collect::<Result<Vec<Color>, HexColorError>>()
-                    .map_err(|_| de::Error::custom("Encountered HexColorError"))?;
-
-                FieldValue::Colors(colors)
-            }
-            "Array<FilePath>" => FieldValue::Strings(
-                Vec::<Option<String>>::deserialize(helper.value).map_err(de::Error::custom)?,
-            ),
-            "Array<Point>" => {
-                let point_helpers = Vec::<Option<PointHelper>>::deserialize(helper.value)
-                    .map_err(de::Error::custom)?;
-
-                let points = point_helpers
-                    .into_iter()
-                    .map(|ph| ph.map(|p| IVec2::new(p.cx, p.cy)))
-                    .collect();
-
-                FieldValue::Points(points)
-            }
-            t => {
-                let enum_regex =
-                    Regex::new(r"^(LocalEnum|ExternEnum)\.").expect("enum regex should be valid");
-                let enums_regex = Regex::new(r"^Array<(LocalEnum|ExternEnum)\.")
-                    .expect("enums regex should be valid");
-
-                if enum_regex.is_match(t) {
-                    FieldValue::Enum(
-                        Option::<String>::deserialize(helper.value).map_err(de::Error::custom)?,
-                    )
-                } else if enums_regex.is_match(t) {
-                    FieldValue::Enums(
-                        Vec::<Option<String>>::deserialize(helper.value)
-                            .map_err(de::Error::custom)?,
-                    )
-                } else {
-                    return Err(de::Error::custom("Encountered unknown field type"));
-                }
-            }
-        };
-
-        Ok(FieldInstance {
-            identifier: helper.identifier,
-            field_instance_type: helper.field_instance_type,
-            def_uid: helper.def_uid,
-            real_editor_values: helper.real_editor_values,
-            value,
-        })
-    }
-}
-
-#[derive(PartialEq, Debug, Clone, Serialize)]
-pub enum FieldValue {
-    Integer(Option<i32>),
-    Float(Option<f32>),
-    Bool(bool),
-    String(Option<String>),
-    Color(Color),
-    FilePath(Option<String>),
-    Enum(Option<String>),
-    Point(Option<IVec2>),
-    Integers(Vec<Option<i32>>),
-    Floats(Vec<Option<f32>>),
-    Bools(Vec<bool>),
-    Strings(Vec<Option<String>>),
-    Colors(Vec<Color>),
-    FilePaths(Vec<Option<String>>),
-    Enums(Vec<Option<String>>),
-    Points(Vec<Option<IVec2>>),
 }
 
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]

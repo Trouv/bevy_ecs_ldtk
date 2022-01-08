@@ -27,8 +27,11 @@ pub mod plugin {
                 .init_asset_loader::<assets::LdtkLoader>()
                 .add_asset::<assets::LdtkExternalLevel>()
                 .init_asset_loader::<assets::LdtkLevelLoader>()
-                .add_system(systems::process_external_levels)
-                .add_system(systems::determine_changed_ldtks.chain(systems::process_changed_ldtks));
+                .add_system_to_stage(CoreStage::PreUpdate, systems::process_external_levels)
+                .add_system_to_stage(
+                    CoreStage::PreUpdate,
+                    systems::determine_changed_ldtks.chain(systems::process_changed_ldtks),
+                );
         }
     }
 }

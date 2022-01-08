@@ -372,7 +372,7 @@ dependencies = [
 [[package]]
 name = "bevy_ecs_tilemap"
 version = "0.5.0"
-source = "git+https://github.com/StarArawn/bevy_ecs_tilemap?rev=4cf4d01bb9c41058da0efbe35fe94c3e531ba4e4#4cf4d01bb9c41058da0efbe35fe94c3e531ba4e4"
+source = "git+https://github.com/StarArawn/bevy_ecs_tilemap?rev=1a8aedf31fccba7482d4335a0a1f04b4ecc69d05#1a8aedf31fccba7482d4335a0a1f04b4ecc69d05"
 dependencies = [
  "bevy",
  "bytemuck",
@@ -1149,9 +1149,9 @@ dependencies = [
 
 [[package]]
 name = "crossbeam-channel"
-version = "0.5.1"
+version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "06ed27e177f16d65f0f0c22a213e17c696ace5dd64b14258b52f9417ccb52db4"
+checksum = "e54ea8bc3fb1ee042f5aace6e3c6e025d3874866da222930f70ce62aceba0bfa"
 dependencies = [
  "cfg-if 1.0.0",
  "crossbeam-utils",
@@ -1159,9 +1159,9 @@ dependencies = [
 
 [[package]]
 name = "crossbeam-utils"
-version = "0.8.5"
+version = "0.8.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d82cfc11ce7f2c3faef78d8a684447b40d503d9681acebed6cb728d45940c4db"
+checksum = "cfcae03edb34f947e64acdb1c33ec169824e20657e9ecb61cef6c8c74dcb8120"
 dependencies = [
  "cfg-if 1.0.0",
  "lazy_static",

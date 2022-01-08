@@ -13,7 +13,7 @@
 //! 4. [i64] and [f64] have been changed to [i32] and [f32].
 //! 5. [LimitBehavior], [LimitScope], [RenderMode], and [TileRenderMode] have been given custom
 //!    [Default] implementations.
-//! 6. [bevy::ecs::Component] has been derived for [EntityInstance]
+//! 6. `Component` has been derived for [EntityInstance]
 //! 7. [FieldInstance] has been moved to its own module, and is re-exported here.
 //! 8. The `layer_instance_type` field of [LayerInstance] has been re-typed to [Type]
 //! 9. Comment at the top of the file has been replaced with this documentation.

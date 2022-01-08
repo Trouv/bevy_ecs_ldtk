@@ -18,7 +18,10 @@
 //! 8. [FieldInstance] has been moved to its own module, and is re-exported here.
 //! 9. The `layer_instance_type` field of [LayerInstance] has been re-typed to [Type]
 //! 10. Comment at the top of the file has been replaced with this documentation.
+//! 11. Some "coordinate" fields on [LevelBackgroundPosition], [EntityInstance], and [TileInstance]
+//!     have been changed from vectors to [IVec2] and [Vec2].
 
+use bevy::prelude::{IVec2, Vec2};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -772,12 +775,12 @@ pub struct LevelBackgroundPosition {
     /// An array containing the `[scaleX,scaleY]` values of the **cropped** background image,
     /// depending on `bgPos` option.
     #[serde(rename = "scale")]
-    pub scale: Vec<f32>,
+    pub scale: Vec2,
 
     /// An array containing the `[x,y]` pixel coordinates of the top-left corner of the
     /// **cropped** background image, depending on `bgPos` option.
     #[serde(rename = "topLeftPx")]
-    pub top_left_px: Vec<i32>,
+    pub top_left_px: IVec2,
 }
 
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
@@ -899,11 +902,11 @@ pub struct TileInstance {
     /// Pixel coordinates of the tile in the **layer** (`[x,y]` format). Don't forget optional
     /// layer offsets, if they exist!
     #[serde(rename = "px")]
-    pub px: Vec<i32>,
+    pub px: IVec2,
 
     /// Pixel coordinates of the tile in the **tileset** (`[x,y]` format)
     #[serde(rename = "src")]
-    pub src: Vec<i32>,
+    pub src: IVec2,
 
     /// The *Tile ID* in the corresponding tileset.
     #[serde(rename = "t")]
@@ -919,7 +922,7 @@ pub struct TileInstance {
 pub struct EntityInstance {
     /// Grid-based coordinates (`[x,y]` format)
     #[serde(rename = "__grid")]
-    pub grid: Vec<i32>,
+    pub grid: IVec2,
 
     /// Entity definition identifier
     #[serde(rename = "__identifier")]
@@ -927,7 +930,7 @@ pub struct EntityInstance {
 
     /// Pivot coordinates  (`[x,y]` format, values are from 0 to 1) of the Entity
     #[serde(rename = "__pivot")]
-    pub pivot: Vec<f32>,
+    pub pivot: Vec2,
 
     /// Optional Tile used to display this entity (it could either be the default Entity tile, or
     /// some tile provided by a field value, like an Enum).
@@ -950,7 +953,7 @@ pub struct EntityInstance {
     /// Pixel coordinates (`[x,y]` format) in current level coordinate space. Don't forget
     /// optional layer offsets, if they exist!
     #[serde(rename = "px")]
-    pub px: Vec<i32>,
+    pub px: IVec2,
 
     /// Entity width in pixels. For non-resizable entities, it will be the same as Entity
     /// definition.

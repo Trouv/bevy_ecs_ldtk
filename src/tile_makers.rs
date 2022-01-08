@@ -121,31 +121,32 @@ pub fn tile_pos_to_tile_bundle_maker(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use bevy::prelude::*;
 
     #[test]
     fn test_tile_pos_to_tile_maker() {
         let grid_tiles = vec![
             TileInstance {
-                px: vec![0, 0],
-                src: vec![32, 0],
+                px: IVec2::new(0, 0),
+                src: IVec2::new(32, 0),
                 t: 1,
                 ..Default::default()
             },
             TileInstance {
-                px: vec![32, 0],
-                src: vec![32, 32],
+                px: IVec2::new(32, 0),
+                src: IVec2::new(32, 32),
                 t: 4,
                 ..Default::default()
             },
             TileInstance {
-                px: vec![0, 32],
-                src: vec![64, 0],
+                px: IVec2::new(0, 32),
+                src: IVec2::new(64, 0),
                 t: 2,
                 ..Default::default()
             },
             TileInstance {
-                px: vec![32, 32],
-                src: vec![32, 0],
+                px: IVec2::new(32, 32),
+                src: IVec2::new(32, 0),
                 t: 1,
                 ..Default::default()
             },
@@ -163,29 +164,29 @@ mod tests {
     fn test_tile_pos_to_tile_maker_with_flips() {
         let grid_tiles = vec![
             TileInstance {
-                px: vec![0, 0],
-                src: vec![0, 0],
+                px: IVec2::new(0, 0),
+                src: IVec2::new(0, 0),
                 t: 0,
                 f: 0,
                 ..Default::default()
             },
             TileInstance {
-                px: vec![32, 0],
-                src: vec![0, 0],
+                px: IVec2::new(32, 0),
+                src: IVec2::new(0, 0),
                 t: 0,
                 f: 1,
                 ..Default::default()
             },
             TileInstance {
-                px: vec![0, 32],
-                src: vec![0, 0],
+                px: IVec2::new(0, 32),
+                src: IVec2::new(0, 0),
                 t: 0,
                 f: 2,
                 ..Default::default()
             },
             TileInstance {
-                px: vec![64, 0],
-                src: vec![0, 0],
+                px: IVec2::new(64, 0),
+                src: IVec2::new(0, 0),
                 t: 0,
                 f: 3,
                 ..Default::default()

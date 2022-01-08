@@ -65,10 +65,6 @@ pub fn calculate_transform_from_entity_instance(
 ) -> Transform {
     let entity_definition = entity_definition_map.get(&entity_instance.def_uid).unwrap();
 
-    let location = IVec2::from_slice(entity_instance.px.as_slice());
-
-    let pivot = Vec2::from_slice(entity_instance.pivot.as_slice());
-
     let def_size = match &entity_instance.tile {
         Some(tile) => IVec2::new(tile.src_rect[2], tile.src_rect[3]),
         None => IVec2::new(entity_definition.width, entity_definition.height),
@@ -76,8 +72,12 @@ pub fn calculate_transform_from_entity_instance(
 
     let size = IVec2::new(entity_instance.width, entity_instance.height);
 
-    let translation =
-        ldtk_pixel_coords_to_translation_pivoted(location, level_height as i32, size, pivot);
+    let translation = ldtk_pixel_coords_to_translation_pivoted(
+        entity_instance.px,
+        level_height as i32,
+        size,
+        entity_instance.pivot,
+    );
     let scale = size.as_vec2() / def_size.as_vec2();
 
     Transform::from_translation(translation.extend(z_value)).with_scale(scale.extend(1.))
@@ -289,11 +289,11 @@ mod tests {
 
         // simple case
         let entity_instance = EntityInstance {
-            px: vec![256, 256],
+            px: IVec2::new(256, 256),
             def_uid: 0,
             width: 32,
             height: 32,
-            pivot: vec![0., 0.],
+            pivot: Vec2::new(0., 0.),
             ..Default::default()
         };
         let result = calculate_transform_from_entity_instance(
@@ -306,11 +306,11 @@ mod tests {
 
         // difficult case
         let entity_instance = EntityInstance {
-            px: vec![40, 50],
+            px: IVec2::new(40, 50),
             def_uid: 2,
             width: 30,
             height: 50,
-            pivot: vec![1., 1.],
+            pivot: Vec2::new(1., 1.),
             ..Default::default()
         };
         let result = calculate_transform_from_entity_instance(
@@ -336,11 +336,11 @@ mod tests {
         let entity_definition_map = create_entity_definition_map(&entity_definitions);
 
         let entity_instance = EntityInstance {
-            px: vec![64, 64],
+            px: IVec2::new(64, 64),
             def_uid: 0,
             width: 64,
             height: 64,
-            pivot: vec![1., 1.],
+            pivot: Vec2::new(1., 1.),
             tile: Some(EntityInstanceTile {
                 src_rect: vec![0, 0, 16, 32],
                 ..Default::default()

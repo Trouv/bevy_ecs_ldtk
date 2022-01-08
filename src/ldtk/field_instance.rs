@@ -73,7 +73,7 @@ impl<'de> Deserialize<'de> for FieldInstance {
             "Color" => {
                 let value = String::deserialize(helper.value).map_err(de::Error::custom)?;
 
-                let hex = match value.strip_prefix("#") {
+                let hex = match value.strip_prefix('#') {
                     Some(h) => h.to_string(),
                     None => value,
                 };
@@ -109,7 +109,7 @@ impl<'de> Deserialize<'de> for FieldInstance {
                 let colors = values
                     .into_iter()
                     .map(|value| {
-                        let hex = match value.strip_prefix("#") {
+                        let hex = match value.strip_prefix('#') {
                             Some(h) => h.to_string(),
                             None => value,
                         };
@@ -206,7 +206,7 @@ fn serialize_color<S: Serializer>(color: &Color, serializer: S) -> Result<S::Ok,
     hex_string.serialize(serializer)
 }
 
-fn serialize_colors<S: Serializer>(colors: &Vec<Color>, serializer: S) -> Result<S::Ok, S::Error> {
+fn serialize_colors<S: Serializer>(colors: &[Color], serializer: S) -> Result<S::Ok, S::Error> {
     let field_values: Vec<FieldValue> = colors.iter().map(|c| FieldValue::Color(*c)).collect();
     field_values.serialize(serializer)
 }
@@ -217,7 +217,7 @@ fn serialize_point<S: Serializer>(point: &Option<IVec2>, serializer: S) -> Resul
 }
 
 fn serialize_points<S: Serializer>(
-    points: &Vec<Option<IVec2>>,
+    points: &[Option<IVec2>],
     serializer: S,
 ) -> Result<S::Ok, S::Error> {
     let field_values: Vec<FieldValue> = points.iter().map(|p| FieldValue::Point(*p)).collect();

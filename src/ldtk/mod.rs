@@ -1,22 +1,23 @@
-/// Contains all the types for serializing/deserializing an LDtk file.
-///
-/// This is mostly based on LDtk's existing rust
-/// [QuickType loader](https://ldtk.io/files/quicktype/LdtkJson.rs).
-///
-/// For the most part, changes to the generated module are avoided to make it simpler to maintain
-/// this plugin in the future.
-/// However, some usability concerns have been addressed.
-/// Any changes should be documented here for maintenance purposes:
-/// 1. [serde] has been imported with `use` instead of `extern`
-/// 2. All struct fields have been made public.
-/// 3. [Eq], [PartialEq], [Debug], [Default], and [Clone] have been derived wherever possible.
-/// 4. [i64] and [f64] have been changed to [i32] and [f32].
-/// 5. [LimitBehavior], [LimitScope], [RenderMode], and [TileRenderMode] have been given custom
-///    [Default] implementations.
-/// 6. [bevy::ecs::Component] has been derived for [EntityInstance]
-/// 7. [FieldInstance] has been moved to its own module, and is re-exported here.
-/// 8. The `layer_instance_type` field of [LayerInstance] has been re-typed to [Type]
-/// 9. Comment at the top of the file has been replaced with this documentation.
+//! Contains all the types for serializing/deserializing an LDtk file.
+//!
+//! This is mostly based on LDtk's existing rust
+//! [QuickType loader](https://ldtk.io/files/quicktype/LdtkJson.rs).
+//!
+//! For the most part, changes to the generated module are avoided to make it simpler to maintain
+//! this plugin in the future.
+//! However, some usability concerns have been addressed.
+//! Any changes should be documented here for maintenance purposes:
+//! 1. [serde] has been imported with `use` instead of `extern`
+//! 2. All struct fields have been made public.
+//! 3. [Eq], [PartialEq], [Debug], [Default], and [Clone] have been derived wherever possible.
+//! 4. [i64] and [f64] have been changed to [i32] and [f32].
+//! 5. [LimitBehavior], [LimitScope], [RenderMode], and [TileRenderMode] have been given custom
+//!    [Default] implementations.
+//! 6. [bevy::ecs::Component] has been derived for [EntityInstance]
+//! 7. [FieldInstance] has been moved to its own module, and is re-exported here.
+//! 8. The `layer_instance_type` field of [LayerInstance] has been re-typed to [Type]
+//! 9. Comment at the top of the file has been replaced with this documentation.
+
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 

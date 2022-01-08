@@ -1,4 +1,4 @@
-use serde::{de, Deserialize, Deserializer, Serialize};
+use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
 
 use bevy::{prelude::*, render::color::HexColorError};
 use regex::Regex;
@@ -27,35 +27,35 @@ pub struct FieldInstance {
     pub real_editor_values: Vec<Option<serde_json::Value>>,
 }
 
+#[derive(Serialize, Deserialize)]
+struct FieldInstanceHelper {
+    #[serde(rename = "__identifier")]
+    pub identifier: String,
+
+    #[serde(rename = "__type")]
+    pub field_instance_type: String,
+
+    #[serde(rename = "__value")]
+    pub value: serde_json::Value,
+
+    #[serde(rename = "defUid")]
+    pub def_uid: i32,
+
+    #[serde(rename = "realEditorValues")]
+    pub real_editor_values: Vec<Option<serde_json::Value>>,
+}
+
+#[derive(Serialize, Deserialize)]
+struct PointHelper {
+    cx: i32,
+    cy: i32,
+}
+
 impl<'de> Deserialize<'de> for FieldInstance {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
-        #[derive(Deserialize)]
-        struct FieldInstanceHelper {
-            #[serde(rename = "__identifier")]
-            pub identifier: String,
-
-            #[serde(rename = "__type")]
-            pub field_instance_type: String,
-
-            #[serde(rename = "__value")]
-            pub value: serde_json::Value,
-
-            #[serde(rename = "defUid")]
-            pub def_uid: i32,
-
-            #[serde(rename = "realEditorValues")]
-            pub real_editor_values: Vec<Option<serde_json::Value>>,
-        }
-
-        #[derive(Deserialize)]
-        struct PointHelper {
-            cx: i32,
-            cy: i32,
-        }
-
         let helper = FieldInstanceHelper::deserialize(deserializer)?;
 
         let value = match helper.field_instance_type.as_str() {
@@ -165,7 +165,7 @@ impl<'de> Deserialize<'de> for FieldInstance {
     }
 }
 
-#[derive(PartialEq, Debug, Clone, Serialize)]
+#[derive(PartialEq, Debug, Clone)]
 pub enum FieldValue {
     Integer(Option<i32>),
     Float(Option<f32>),
@@ -183,4 +183,22 @@ pub enum FieldValue {
     FilePaths(Vec<Option<String>>),
     Enums(Vec<Option<String>>),
     Points(Vec<Option<IVec2>>),
+}
+
+impl Serialize for FieldValue {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        match self {
+            FieldValue::Integer(i) => i.serialize(serializer),
+            FieldValue::Float(f) => f.serialize(serializer),
+            FieldValue::Bool(b) => b.serialize(serializer),
+            FieldValue::String(s) => s.serialize(serializer),
+            FieldValue::FilePath(p) => p.serialize(serializer),
+            FieldValue::Integers(i) => i.serialize(serializer),
+            FieldValue::Floats(f) => f.serialize(serializer),
+            FieldValue::Bools(b) => b.serialize(serializer),
+            FieldValue::Strings(s) => s.serialize(serializer),
+            FieldValue::FilePaths(p) => p.serialize(serializer),
+            _ => 0.serialize(serializer),
+        }
+    }
 }

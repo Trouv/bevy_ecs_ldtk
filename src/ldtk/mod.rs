@@ -16,7 +16,7 @@
 /// 6. [bevy::ecs::Component] has been derived for [EntityInstance]
 /// 7. [FieldInstance] has been moved to its own module, and is re-exported here.
 /// 8. The `layer_instance_type` field of [LayerInstance] has been re-typed to [Type]
-/// 9. Comment at the top of the file has been removed.
+/// 9. Comment at the top of the file has been replaced with this documentation.
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 

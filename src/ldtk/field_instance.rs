@@ -176,14 +176,17 @@ pub enum FieldValue {
     Color(Color),
     FilePath(Option<String>),
     Enum(Option<String>),
+    #[serde(serialize_with = "serialize_point")]
     Point(Option<IVec2>),
     Ints(Vec<Option<i32>>),
     Floats(Vec<Option<f32>>),
     Bools(Vec<bool>),
     Strings(Vec<Option<String>>),
+    #[serde(serialize_with = "serialize_colors")]
     Colors(Vec<Color>),
     FilePaths(Vec<Option<String>>),
     Enums(Vec<Option<String>>),
+    #[serde(serialize_with = "serialize_points")]
     Points(Vec<Option<IVec2>>),
 }
 
@@ -193,4 +196,22 @@ fn serialize_color<S: Serializer>(color: &Color, serializer: S) -> Result<S::Ok,
         hex::encode_upper::<Vec<u8>>(color[0..3].iter().map(|f| (f * 256.) as u8).collect());
     hex_string.insert(0, '#');
     hex_string.serialize(serializer)
+}
+
+fn serialize_colors<S: Serializer>(colors: &Vec<Color>, serializer: S) -> Result<S::Ok, S::Error> {
+    let field_values: Vec<FieldValue> = colors.iter().map(|c| FieldValue::Color(*c)).collect();
+    field_values.serialize(serializer)
+}
+
+fn serialize_point<S: Serializer>(point: &Option<IVec2>, serializer: S) -> Result<S::Ok, S::Error> {
+    let point_helper = point.map(|p| PointHelper { cx: p.x, cy: p.y });
+    point_helper.serialize(serializer)
+}
+
+fn serialize_points<S: Serializer>(
+    points: &Vec<Option<IVec2>>,
+    serializer: S,
+) -> Result<S::Ok, S::Error> {
+    let field_values: Vec<FieldValue> = points.iter().map(|p| FieldValue::Point(*p)).collect();
+    field_values.serialize(serializer)
 }

@@ -18,6 +18,8 @@
 //! 8. [FieldInstance] has been moved to its own module, and is re-exported here.
 //! 9. The `layer_instance_type` field of [LayerInstance] has been re-typed to [Type]
 //! 10. Comment at the top of the file has been replaced with this documentation.
+//! 11. Some "coordinate" fields on [LevelBackgroundPosition], [EntityInstance], and [TileInstance]
+//!     have been changed from vectors to [IVec2] and [Vec2].
 
 use bevy::prelude::{IVec2, Vec2};
 use serde::{Deserialize, Serialize};

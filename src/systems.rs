@@ -2,12 +2,12 @@
 
 use crate::{
     app::{
-        ldtk_entity::{LdtkEntityMap, PhantomLdtkEntity, PhantomLdtkEntityTrait},
-        ldtk_int_cell::{LdtkIntCellMap, PhantomLdtkIntCell, PhantomLdtkIntCellTrait},
+        LdtkEntityMap, LdtkIntCellMap, PhantomLdtkEntity, PhantomLdtkEntityTrait,
+        PhantomLdtkIntCell, PhantomLdtkIntCellTrait,
     },
     assets::{LdtkAsset, LdtkExternalLevel, TilesetMap},
     components::*,
-    ldtk::{EntityDefinition, TileInstance, TilesetDefinition, Type},
+    ldtk::{EntityDefinition, Level, TileInstance, TilesetDefinition, Type},
     tile_makers::*,
     utils::*,
 };
@@ -252,7 +252,7 @@ fn spawn_level(
                         let transform = calculate_transform_from_entity_instance(
                             entity_instance,
                             entity_definition_map,
-                            level.px_hei as u32,
+                            level.px_hei,
                             layer_id as f32,
                         );
                         // Note: entities do not seem to be affected visually by layer offsets in
@@ -280,6 +280,7 @@ fn spawn_level(
                         .evaluate(
                             &mut entity_commands,
                             entity_instance,
+                            layer_instance,
                             tileset,
                             tileset_definition,
                             asset_server,
@@ -407,13 +408,13 @@ fn spawn_level(
                                     let tile_entity =
                                         layer_builder.get_tile_entity(commands, tile_pos).unwrap();
 
-                                    let mut transform = calculate_transform_from_tile_pos(
+                                    let mut translation = tile_pos_to_translation_centered(
                                         tile_pos,
-                                        layer_instance.grid_size as u32,
-                                        layer_id as f32,
-                                    );
+                                        IVec2::splat(layer_instance.grid_size),
+                                    )
+                                    .extend(layer_id as f32);
 
-                                    transform.translation /= layer_scale;
+                                    translation /= layer_scale;
 
                                     let mut entity_commands = commands.entity(tile_entity);
 
@@ -426,10 +427,14 @@ fn spawn_level(
                                         &default_ldtk_int_cell,
                                         ldtk_int_cell_map,
                                     )
-                                    .evaluate(&mut entity_commands, IntGridCell { value: *value });
+                                    .evaluate(
+                                        &mut entity_commands,
+                                        IntGridCell { value: *value },
+                                        layer_instance,
+                                    );
 
                                     entity_commands
-                                        .insert(transform)
+                                        .insert(Transform::from_translation(translation))
                                         .insert(GlobalTransform::default())
                                         .insert(Parent(layer_entity));
                                 }

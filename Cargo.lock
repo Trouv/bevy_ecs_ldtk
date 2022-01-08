@@ -342,6 +342,8 @@ dependencies = [
  "bevy",
  "bevy_ecs_ldtk_macros",
  "bevy_ecs_tilemap",
+ "hex",
+ "regex",
  "serde",
  "serde_json",
 ]

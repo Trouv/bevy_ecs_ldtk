@@ -26,7 +26,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     asset_server.watch_for_changes().unwrap();
 
-    let ldtk_handle = asset_server.load("Typical_2D_platformer_example.ldtk");
+    let ldtk_handle = asset_server.load("levels.ldtk");
     let map_entity = commands.spawn().id();
     let transform = Transform::from_xyz(-5.5 * 32., -6. * 32., 0.);
     commands.entity(map_entity).insert_bundle(LdtkMapBundle {
@@ -46,6 +46,7 @@ struct PlayerBundle {
 impl LdtkEntity for PlayerBundle {
     fn bundle_entity(
         _: &EntityInstance,
+        _: &LayerInstance,
         _: Option<&Handle<Image>>,
         _: Option<&TilesetDefinition>,
         asset_server: &AssetServer,

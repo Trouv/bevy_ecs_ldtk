@@ -1,19 +1,22 @@
-use crate::components::{IntGridCell, IntGridCellBundle};
+use crate::{
+    components::{IntGridCell, IntGridCellBundle},
+    ldtk::LayerInstance,
+};
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::{collections::HashMap, marker::PhantomData};
 
 #[allow(unused_imports)]
 use crate::app::register_ldtk_objects::RegisterLdtkObjects;
 
-/// Provides a constructor to a bevy [Bundle] which can be used for spawning additional components
-/// on IntGrid tiles.
+/// Provides a constructor which can be used for spawning additional components on IntGrid tiles.
 ///
-/// After implementing this trait on a bundle, you can register it to spawn automatically for a
-/// given int grid value via
-/// [RegisterLdtkObjects] on your [App].
+/// After implementing this trait on a [Bundle], you can register it to spawn automatically for a
+/// given int grid value via [RegisterLdtkObjects] on your [App].
 ///
 /// For common use cases, you'll want to use derive-macro `#[derive(LdtkIntCell)]`, but you can
 /// also provide a custom implementation.
+///
+/// You can also implement this trait on non-[Bundle] types, but only [Bundle]s can be registered.
 ///
 /// If there is an IntGrid tile in the LDtk file whose value is NOT registered, an entity will be
 /// spawned with an [IntGridCell] component, allowing you to flesh it out in your own system.
@@ -56,8 +59,12 @@ use crate::app::register_ldtk_objects::RegisterLdtkObjects;
 /// However, this behavior can be overriden with some field attribute macros...
 ///
 /// ### `#[ldtk_int_cell]`
-/// Indicates that a nested bundle that implements [LdtkIntCell] should be created with
+/// Indicates that a component or bundle that implements [LdtkIntCell] should be created with
 /// [LdtkIntCell::bundle_int_cell], allowing for nested [LdtkIntCell]s.
+///
+/// Note: the [LdtkIntCell] field decorated with this attribute doesn't have to be a [Bundle].
+/// This can be useful if a [Component]'s construction requires the additional access to the world
+/// provided by [LdtkIntCell::bundle_int_cell].
 /// ```
 /// # use bevy::prelude::*;
 /// # use bevy_ecs_ldtk::prelude::*;
@@ -116,7 +123,7 @@ use crate::app::register_ldtk_objects::RegisterLdtkObjects;
 ///     damage: Damage,
 /// }
 /// ```
-pub trait LdtkIntCell: Bundle {
+pub trait LdtkIntCell {
     /// The constructor used by the plugin when spawning additional components on IntGrid tiles.
     /// If you need access to more of the [World], you can create a system that queries for
     /// `Added<IntGridCell>`, and flesh out the entity from there, instead of implementing this
@@ -129,21 +136,21 @@ pub trait LdtkIntCell: Bundle {
     /// So, any custom implementations of these components within this trait will be overwritten.
     /// Furthermore, a [bevy_ecs_tilemap::TileBundle] will be inserted **before** this bundle, so
     /// be careful not to overwrite the components provided by that bundle.
-    fn bundle_int_cell(int_grid_cell: IntGridCell) -> Self;
+    fn bundle_int_cell(int_grid_cell: IntGridCell, layer_instance: &LayerInstance) -> Self;
 }
 
 impl LdtkIntCell for IntGridCellBundle {
-    fn bundle_int_cell(int_grid_cell: IntGridCell) -> Self {
+    fn bundle_int_cell(int_grid_cell: IntGridCell, _: &LayerInstance) -> Self {
         IntGridCellBundle { int_grid_cell }
     }
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Hash)]
-pub struct PhantomLdtkIntCell<B: LdtkIntCell> {
+pub struct PhantomLdtkIntCell<B: LdtkIntCell + Bundle> {
     ldtk_int_cell: PhantomData<B>,
 }
 
-impl<B: LdtkIntCell> PhantomLdtkIntCell<B> {
+impl<B: LdtkIntCell + Bundle> PhantomLdtkIntCell<B> {
     pub fn new() -> Self {
         PhantomLdtkIntCell::<B> {
             ldtk_int_cell: PhantomData,
@@ -156,16 +163,18 @@ pub trait PhantomLdtkIntCellTrait {
         &self,
         entity_commands: &'b mut EntityCommands<'w, 's, 'a>,
         int_grid_cell: IntGridCell,
+        layer_instance: &LayerInstance,
     ) -> &'b mut EntityCommands<'w, 's, 'a>;
 }
 
-impl<B: LdtkIntCell> PhantomLdtkIntCellTrait for PhantomLdtkIntCell<B> {
+impl<B: LdtkIntCell + Bundle> PhantomLdtkIntCellTrait for PhantomLdtkIntCell<B> {
     fn evaluate<'w, 's, 'a, 'b>(
         &self,
         entity_commands: &'b mut EntityCommands<'w, 's, 'a>,
         int_grid_cell: IntGridCell,
+        layer_instance: &LayerInstance,
     ) -> &'b mut EntityCommands<'w, 's, 'a> {
-        entity_commands.insert_bundle(B::bundle_int_cell(int_grid_cell))
+        entity_commands.insert_bundle(B::bundle_int_cell(int_grid_cell, layer_instance))
     }
 }
 

@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_ecs_ldtk::prelude::*;
+use bevy_ecs_ldtk::{prelude::*, utils::ldtk_pixel_coords_to_translation_pivoted};
 use bevy_ecs_tilemap::prelude::*;
 
 use bevy::render::{options::WgpuOptions, render_resource::WgpuLimits};
@@ -25,7 +25,6 @@ fn main() {
         .add_system(detect_climb_range)
         .add_system(ignore_gravity_if_climbing)
         .add_system(patrol)
-        .add_system(patrol_setup)
         .add_system(camera_fit_inside_current_level)
         .register_ldtk_int_cell::<ColliderBundle>(1)
         .register_ldtk_int_cell::<LadderBundle>(2)
@@ -156,6 +155,57 @@ struct Patrol {
     forward: bool,
 }
 
+impl LdtkEntity for Patrol {
+    fn bundle_entity(
+        entity_instance: &EntityInstance,
+        layer_instance: &LayerInstance,
+        _: Option<&Handle<Image>>,
+        _: Option<&TilesetDefinition>,
+        _: &AssetServer,
+        _: &mut Assets<TextureAtlas>,
+    ) -> Patrol {
+        let mut points = Vec::new();
+        points.push(ldtk_pixel_coords_to_translation_pivoted(
+            IVec2::from_slice(entity_instance.px.as_slice()),
+            layer_instance.c_hei * layer_instance.grid_size,
+            IVec2::new(entity_instance.width, entity_instance.height),
+            Vec2::from_slice(entity_instance.pivot.as_slice()),
+        ));
+
+        let ldtk_patrol = entity_instance
+            .field_instances
+            .iter()
+            .find(|f| f.identifier == "patrol".to_string())
+            .unwrap();
+        if let FieldValue::Points(ldtk_points) = &ldtk_patrol.value {
+            for ldtk_point in ldtk_points {
+                if let Some(ldtk_point) = ldtk_point {
+                    // The +1 is necessary here due to the pivot of the entities in the sample
+                    // file.
+                    // The patrols set up in the file look flat and grounded,
+                    // but technically they're not if you consider the pivot,
+                    // which is at the bottom-center for the skulls.
+                    let pixel_coords =
+                        (*ldtk_point + IVec2::new(0, 1)) * IVec2::splat(layer_instance.grid_size);
+
+                    points.push(ldtk_pixel_coords_to_translation_pivoted(
+                        pixel_coords,
+                        layer_instance.c_hei * layer_instance.grid_size,
+                        IVec2::new(entity_instance.width, entity_instance.height),
+                        Vec2::from_slice(entity_instance.pivot.as_slice()),
+                    ));
+                }
+            }
+        }
+
+        Patrol {
+            points,
+            index: 1,
+            forward: true,
+        }
+    }
+}
+
 #[derive(Clone, Default, Bundle, LdtkEntity)]
 struct MobBundle {
     #[sprite_sheet_bundle]
@@ -168,6 +218,7 @@ struct MobBundle {
     ignore_gravity: physics::IgnoreGravity,
     #[from_entity_instance]
     entity_instance: EntityInstance,
+    #[ldtk_entity]
     patrol: Patrol,
 }
 
@@ -249,47 +300,6 @@ fn ignore_gravity_if_climbing(
                 commands.entity(entity).remove::<physics::IgnoreGravity>();
             }
         }
-    }
-}
-
-fn patrol_setup(
-    mut query: Query<(&mut Patrol, &EntityInstance, &Transform), Added<EntityInstance>>,
-) {
-    for (mut patrol, entity_instance, transform) in query.iter_mut() {
-        patrol.points.push(transform.translation.truncate());
-
-        let ldtk_patrol = entity_instance
-            .field_instances
-            .iter()
-            .find(|f| f.identifier == "patrol".to_string())
-            .unwrap();
-        if let Some(serde_json::Value::Array(ldtk_points)) = &ldtk_patrol.value {
-            for ldtk_point in ldtk_points {
-                if let serde_json::Value::Object(ldtk_point) = ldtk_point {
-                    if let (
-                        Some(serde_json::Value::Number(x)),
-                        Some(serde_json::Value::Number(y)),
-                    ) = (ldtk_point.get("cx"), ldtk_point.get("cy"))
-                    {
-                        if let (Some(x), Some(y)) = (x.as_i64(), y.as_i64()) {
-                            let mut grid_offset = IVec2::new(x as i32, y as i32)
-                                - IVec2::from_slice(entity_instance.grid.as_slice());
-
-                            grid_offset.y = -grid_offset.y;
-
-                            let pixel_offset = grid_offset.as_vec2() * Vec2::splat(16.);
-
-                            patrol
-                                .points
-                                .push(Vec2::from(transform.translation.truncate()) + pixel_offset);
-                        }
-                    }
-                }
-            }
-        }
-
-        patrol.forward = true;
-        patrol.index = 1;
     }
 }
 

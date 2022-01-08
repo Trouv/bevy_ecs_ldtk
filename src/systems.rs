@@ -7,7 +7,7 @@ use crate::{
     },
     assets::{LdtkAsset, LdtkExternalLevel, TilesetMap},
     components::*,
-    ldtk::{EntityDefinition, TileInstance, TilesetDefinition, Type},
+    ldtk::{EntityDefinition, Level, TileInstance, TilesetDefinition, Type},
     tile_makers::*,
     utils::*,
 };

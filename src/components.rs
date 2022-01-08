@@ -1,9 +1,19 @@
 //! [Component]s and [Bundle]s used by the plugin.
 
-pub use crate::ldtk::{EntityInstance, Level};
+pub use crate::ldtk::EntityInstance;
+
+use crate::ldtk::Level;
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 
+#[allow(unused_imports)]
+use crate::prelude::LdtkIntCell;
+
+/// Component added to any `IntGrid` tile by default.
+///
+/// When loading levels, you can flesh out `IntGrid` entities in your own system by querying for
+/// `Added<IntGridCell>`.
+/// Or, you can hook into the entity's spawning process using [LdtkIntCell].
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug, Default, Hash, Component)]
 pub struct IntGridCell {
     pub value: i32,

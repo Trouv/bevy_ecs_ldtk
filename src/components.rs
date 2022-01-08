@@ -1,3 +1,5 @@
+//! [Component]s and [Bundle]s used by the plugin.
+
 pub use crate::ldtk::{EntityInstance, Level};
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
@@ -8,12 +10,12 @@ pub struct IntGridCell {
 }
 
 #[derive(Clone, Default, Bundle)]
-pub struct IntGridCellBundle {
+pub(crate) struct IntGridCellBundle {
     pub int_grid_cell: IntGridCell,
 }
 
 #[derive(Clone, Bundle, Default)]
-pub struct EntityInstanceBundle {
+pub(crate) struct EntityInstanceBundle {
     pub entity_instance: EntityInstance,
 }
 

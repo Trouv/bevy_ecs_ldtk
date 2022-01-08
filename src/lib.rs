@@ -13,6 +13,8 @@ pub mod utils;
 pub use bevy_ecs_ldtk_macros::*;
 
 pub mod plugin {
+    //! Provides [LdtkPlugin] and its scheduling-related dependencies.
+
     use super::*;
 
     /// [SystemLabel] used by the plugin for scheduling its systems.
@@ -25,6 +27,12 @@ pub mod plugin {
         Processing,
     }
 
+    /// Adds the default systems, assets, and resources used by `bevy_ecs_ldtk`.
+    ///
+    /// Add it to your [App] to gain LDtk functionality!
+    ///
+    /// All systems are added to [CoreStage::PreUpdate], and labeled with
+    /// [LdtkSystemLabel::Processing].
     #[derive(Copy, Clone, Debug, Default)]
     pub struct LdtkPlugin;
 
@@ -52,6 +60,8 @@ pub mod plugin {
 }
 
 pub mod prelude {
+    //! `use bevy_ecs_ldtk::prelude::*;` to import commonly used items.
+
     #[cfg(feature = "derive")]
     pub use crate::{LdtkEntity, LdtkIntCell};
 
@@ -61,10 +71,7 @@ pub mod prelude {
             register_ldtk_objects::RegisterLdtkObjects,
         },
         assets::{LdtkAsset, LdtkExternalLevel},
-        components::{
-            EntityInstance, EntityInstanceBundle, IntGridCell, IntGridCellBundle, LdtkMapBundle,
-            LevelSelection,
-        },
+        components::{EntityInstance, IntGridCell, LdtkMapBundle, LevelSelection},
         ldtk::{self, FieldValue, LayerInstance, TilesetDefinition},
         plugin::LdtkPlugin,
     };

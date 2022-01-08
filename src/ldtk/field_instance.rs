@@ -59,7 +59,7 @@ impl<'de> Deserialize<'de> for FieldInstance {
         let helper = FieldInstanceHelper::deserialize(deserializer)?;
 
         let value = match helper.field_instance_type.as_str() {
-            "Integer" => FieldValue::Integer(
+            "Int" => FieldValue::Int(
                 Option::<i32>::deserialize(helper.value).map_err(de::Error::custom)?,
             ),
             "Float" => FieldValue::Float(
@@ -90,7 +90,7 @@ impl<'de> Deserialize<'de> for FieldInstance {
 
                 FieldValue::Point(point_helper.map(|p| IVec2::new(p.cx, p.cy)))
             }
-            "Array<Integer>" => FieldValue::Integers(
+            "Array<Int>" => FieldValue::Ints(
                 Vec::<Option<i32>>::deserialize(helper.value).map_err(de::Error::custom)?,
             ),
             "Array<Float>" => FieldValue::Floats(
@@ -165,17 +165,19 @@ impl<'de> Deserialize<'de> for FieldInstance {
     }
 }
 
-#[derive(PartialEq, Debug, Clone)]
+#[derive(PartialEq, Debug, Clone, Serialize)]
+#[serde(untagged)]
 pub enum FieldValue {
-    Integer(Option<i32>),
+    Int(Option<i32>),
     Float(Option<f32>),
     Bool(bool),
     String(Option<String>),
+    #[serde(serialize_with = "serialize_color")]
     Color(Color),
     FilePath(Option<String>),
     Enum(Option<String>),
     Point(Option<IVec2>),
-    Integers(Vec<Option<i32>>),
+    Ints(Vec<Option<i32>>),
     Floats(Vec<Option<f32>>),
     Bools(Vec<bool>),
     Strings(Vec<Option<String>>),
@@ -185,20 +187,10 @@ pub enum FieldValue {
     Points(Vec<Option<IVec2>>),
 }
 
-impl Serialize for FieldValue {
-    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        match self {
-            FieldValue::Integer(i) => i.serialize(serializer),
-            FieldValue::Float(f) => f.serialize(serializer),
-            FieldValue::Bool(b) => b.serialize(serializer),
-            FieldValue::String(s) => s.serialize(serializer),
-            FieldValue::FilePath(p) => p.serialize(serializer),
-            FieldValue::Integers(i) => i.serialize(serializer),
-            FieldValue::Floats(f) => f.serialize(serializer),
-            FieldValue::Bools(b) => b.serialize(serializer),
-            FieldValue::Strings(s) => s.serialize(serializer),
-            FieldValue::FilePaths(p) => p.serialize(serializer),
-            _ => 0.serialize(serializer),
-        }
-    }
+fn serialize_color<S: Serializer>(color: &Color, serializer: S) -> Result<S::Ok, S::Error> {
+    let color = color.as_rgba_f32();
+    let mut hex_string =
+        hex::encode_upper::<Vec<u8>>(color[0..3].iter().map(|f| (f * 256.) as u8).collect());
+    hex_string.insert(0, '#');
+    hex_string.serialize(serializer)
 }

@@ -9,7 +9,7 @@
 		"url": "https://ldtk.io"
 	},
 	"jsonVersion": "0.9.3",
-	"nextUid": 14,
+	"nextUid": 23,
 	"worldLayout": "Free",
 	"worldGridWidth": 256,
 	"worldGridHeight": 256,
@@ -273,6 +273,166 @@
 					"acceptFileTypes": null,
 					"defaultOverride": null,
 					"textLanguageMode": null
+				},
+				{
+					"identifier": "Float2",
+					"__type": "Array<Float>",
+					"uid": 15,
+					"type": "F_Float",
+					"isArray": true,
+					"canBeNull": false,
+					"arrayMinLength": null,
+					"arrayMaxLength": null,
+					"editorDisplayMode": "Hidden",
+					"editorDisplayPos": "Above",
+					"editorAlwaysShow": false,
+					"editorCutLongValues": true,
+					"min": null,
+					"max": null,
+					"regex": null,
+					"acceptFileTypes": null,
+					"defaultOverride": null,
+					"textLanguageMode": null
+				},
+				{
+					"identifier": "Boolean2",
+					"__type": "Array<Bool>",
+					"uid": 16,
+					"type": "F_Bool",
+					"isArray": true,
+					"canBeNull": false,
+					"arrayMinLength": null,
+					"arrayMaxLength": null,
+					"editorDisplayMode": "Hidden",
+					"editorDisplayPos": "Above",
+					"editorAlwaysShow": false,
+					"editorCutLongValues": true,
+					"min": null,
+					"max": null,
+					"regex": null,
+					"acceptFileTypes": null,
+					"defaultOverride": null,
+					"textLanguageMode": null
+				},
+				{
+					"identifier": "String2",
+					"__type": "Array<String>",
+					"uid": 17,
+					"type": "F_String",
+					"isArray": true,
+					"canBeNull": true,
+					"arrayMinLength": null,
+					"arrayMaxLength": null,
+					"editorDisplayMode": "Hidden",
+					"editorDisplayPos": "Above",
+					"editorAlwaysShow": false,
+					"editorCutLongValues": true,
+					"min": null,
+					"max": null,
+					"regex": null,
+					"acceptFileTypes": null,
+					"defaultOverride": null,
+					"textLanguageMode": null
+				},
+				{
+					"identifier": "Multilines2",
+					"__type": "Array<String>",
+					"uid": 18,
+					"type": "F_Text",
+					"isArray": true,
+					"canBeNull": true,
+					"arrayMinLength": null,
+					"arrayMaxLength": null,
+					"editorDisplayMode": "Hidden",
+					"editorDisplayPos": "Above",
+					"editorAlwaysShow": false,
+					"editorCutLongValues": true,
+					"min": null,
+					"max": null,
+					"regex": null,
+					"acceptFileTypes": null,
+					"defaultOverride": null,
+					"textLanguageMode": null
+				},
+				{
+					"identifier": "File_path2",
+					"__type": "Array<FilePath>",
+					"uid": 19,
+					"type": "F_Path",
+					"isArray": true,
+					"canBeNull": true,
+					"arrayMinLength": null,
+					"arrayMaxLength": null,
+					"editorDisplayMode": "Hidden",
+					"editorDisplayPos": "Above",
+					"editorAlwaysShow": false,
+					"editorCutLongValues": true,
+					"min": null,
+					"max": null,
+					"regex": null,
+					"acceptFileTypes": null,
+					"defaultOverride": null,
+					"textLanguageMode": null
+				},
+				{
+					"identifier": "Color2",
+					"__type": "Array<Color>",
+					"uid": 20,
+					"type": "F_Color",
+					"isArray": true,
+					"canBeNull": false,
+					"arrayMinLength": null,
+					"arrayMaxLength": null,
+					"editorDisplayMode": "Hidden",
+					"editorDisplayPos": "Above",
+					"editorAlwaysShow": false,
+					"editorCutLongValues": true,
+					"min": null,
+					"max": null,
+					"regex": null,
+					"acceptFileTypes": null,
+					"defaultOverride": null,
+					"textLanguageMode": null
+				},
+				{
+					"identifier": "Enum2",
+					"__type": "Array<LocalEnum.Enum>",
+					"uid": 21,
+					"type": { "id": "F_Enum", "params": [2] },
+					"isArray": true,
+					"canBeNull": false,
+					"arrayMinLength": null,
+					"arrayMaxLength": null,
+					"editorDisplayMode": "Hidden",
+					"editorDisplayPos": "Above",
+					"editorAlwaysShow": false,
+					"editorCutLongValues": true,
+					"min": null,
+					"max": null,
+					"regex": null,
+					"acceptFileTypes": null,
+					"defaultOverride": null,
+					"textLanguageMode": null
+				},
+				{
+					"identifier": "Point2",
+					"__type": "Array<Point>",
+					"uid": 22,
+					"type": "F_Point",
+					"isArray": true,
+					"canBeNull": true,
+					"arrayMinLength": null,
+					"arrayMaxLength": null,
+					"editorDisplayMode": "Hidden",
+					"editorDisplayPos": "Above",
+					"editorAlwaysShow": false,
+					"editorCutLongValues": true,
+					"min": null,
+					"max": null,
+					"regex": null,
+					"acceptFileTypes": null,
+					"defaultOverride": null,
+					"textLanguageMode": null
 				}
 			]
 		}
@@ -417,6 +577,95 @@
 									"__type": "Array<Int>",
 									"defUid": 12,
 									"realEditorValues": [ { "id": "V_Int", "params": [106] }, { "id": "V_Int", "params": [107] } ]
+								},
+								{
+									"__identifier": "Float2",
+									"__value": [10.8,10.9],
+									"__type": "Array<Float>",
+									"defUid": 15,
+									"realEditorValues": [ { "id": "V_Float", "params": [10.8] }, { "id": "V_Float", "params": [10.9] } ]
+								},
+								{
+									"__identifier": "Boolean2",
+									"__value": [ true, false ],
+									"__type": "Array<Bool>",
+									"defUid": 16,
+									"realEditorValues": [ {
+										"id": "V_Bool",
+										"params": [ true ]
+									}, null ]
+								},
+								{
+									"__identifier": "String2",
+									"__value": [ "Hello!", "Goodbye." ],
+									"__type": "Array<String>",
+									"defUid": 17,
+									"realEditorValues": [ {
+										"id": "V_String",
+										"params": ["Hello!"]
+									}, {
+										"id": "V_String",
+										"params": ["Goodbye."]
+									} ]
+								},
+								{
+									"__identifier": "Multilines2",
+									"__value": [ "Hello\nMultilines", "Goodbye\nMultilines" ],
+									"__type": "Array<String>",
+									"defUid": 18,
+									"realEditorValues": [ {
+										"id": "V_String",
+										"params": ["Hello\nMultilines"]
+									}, {
+										"id": "V_String",
+										"params": ["Goodbye\nMultilines"]
+									} ]
+								},
+								{
+									"__identifier": "File_path2",
+									"__value": [ "field_instances.ldtk", "field_instances.ldtk" ],
+									"__type": "Array<FilePath>",
+									"defUid": 19,
+									"realEditorValues": [ {
+										"id": "V_String",
+										"params": ["field_instances.ldtk"]
+									}, {
+										"id": "V_String",
+										"params": ["field_instances.ldtk"]
+									} ]
+								},
+								{
+									"__identifier": "Color2",
+									"__value": [ "#957373", "#200707" ],
+									"__type": "Array<Color>",
+									"defUid": 20,
+									"realEditorValues": [ { "id": "V_Int", "params": [9794419] }, { "id": "V_Int", "params": [2098951] } ]
+								},
+								{
+									"__identifier": "Enum2",
+									"__value": [ "First", "Second" ],
+									"__type": "Array<LocalEnum.Enum>",
+									"defUid": 21,
+									"realEditorValues": [ {
+										"id": "V_String",
+										"params": ["First"]
+									}, {
+										"id": "V_String",
+										"params": ["Second"]
+									} ]
+								},
+								{
+									"__identifier": "Point2",
+									"__value": [ { "cx": 2, "cy": 7 }, { "cx": 11, "cy": 9 } ],
+									"__type": "Array<Point>",
+									"defUid": 22,
+									"realEditorValues": [ {
+										"id": "V_String",
+										"params": ["2,7"]
+									}, {
+										"id": "V_String",
+										"params": ["11,9"]
+									} ]
 								}
 							]
 						},
@@ -448,7 +697,75 @@
 									}]
 								},
 								{ "__identifier": "Point", "__value": null, "__type": "Point", "defUid": 11, "realEditorValues": [] },
-								{ "__identifier": "ListOfInts", "__value": [], "__type": "Array<Int>", "defUid": 12, "realEditorValues": [] }
+								{
+									"__identifier": "ListOfInts",
+									"__value": [null],
+									"__type": "Array<Int>",
+									"defUid": 12,
+									"realEditorValues": [null]
+								},
+								{
+									"__identifier": "Float2",
+									"__value": [0],
+									"__type": "Array<Float>",
+									"defUid": 15,
+									"realEditorValues": [null]
+								},
+								{
+									"__identifier": "Boolean2",
+									"__value": [ false ],
+									"__type": "Array<Bool>",
+									"defUid": 16,
+									"realEditorValues": [null]
+								},
+								{
+									"__identifier": "String2",
+									"__value": [null],
+									"__type": "Array<String>",
+									"defUid": 17,
+									"realEditorValues": [null]
+								},
+								{
+									"__identifier": "Multilines2",
+									"__value": [null],
+									"__type": "Array<String>",
+									"defUid": 18,
+									"realEditorValues": [null]
+								},
+								{
+									"__identifier": "File_path2",
+									"__value": [null],
+									"__type": "Array<FilePath>",
+									"defUid": 19,
+									"realEditorValues": [null]
+								},
+								{
+									"__identifier": "Color2",
+									"__value": ["#000000"],
+									"__type": "Array<Color>",
+									"defUid": 20,
+									"realEditorValues": [null]
+								},
+								{
+									"__identifier": "Enum2",
+									"__value": ["First"],
+									"__type": "Array<LocalEnum.Enum>",
+									"defUid": 21,
+									"realEditorValues": [{
+										"id": "V_String",
+										"params": ["First"]
+									}]
+								},
+								{
+									"__identifier": "Point2",
+									"__value": [{ "cx": 8, "cy": 9 }],
+									"__type": "Array<Point>",
+									"defUid": 22,
+									"realEditorValues": [{
+										"id": "V_String",
+										"params": [null]
+									}]
+								}
 							]
 						}
 					]

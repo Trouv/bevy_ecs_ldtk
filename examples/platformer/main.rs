@@ -168,31 +168,23 @@ impl LdtkEntity for Patrol {
             .iter()
             .find(|f| f.identifier == "patrol".to_string())
             .unwrap();
-        if let Some(serde_json::Value::Array(ldtk_points)) = &ldtk_patrol.value {
+        if let FieldValue::Points(ldtk_points) = &ldtk_patrol.value {
             for ldtk_point in ldtk_points {
-                if let serde_json::Value::Object(ldtk_point) = ldtk_point {
-                    if let (
-                        Some(serde_json::Value::Number(x)),
-                        Some(serde_json::Value::Number(y)),
-                    ) = (ldtk_point.get("cx"), ldtk_point.get("cy"))
-                    {
-                        if let (Some(x), Some(y)) = (x.as_i64(), y.as_i64()) {
-                            // The +1 is necessary here due to the pivot of the entities in the
-                            // sample file.
-                            // The patrols set up in the file look flat and grounded,
-                            // but technically they're not if you consider the pivot,
-                            // which is at the bottom-center for the skulls.
-                            let pixel_coords = IVec2::new(x as i32, y as i32 + 1)
-                                * IVec2::splat(layer_instance.grid_size);
+                if let Some(ldtk_point) = ldtk_point {
+                    // The +1 is necessary here due to the pivot of the entities in the sample
+                    // file.
+                    // The patrols set up in the file look flat and grounded,
+                    // but technically they're not if you consider the pivot,
+                    // which is at the bottom-center for the skulls.
+                    let pixel_coords =
+                        (*ldtk_point + IVec2::new(0, 1)) * IVec2::splat(layer_instance.grid_size);
 
-                            points.push(ldtk_pixel_coords_to_translation_pivoted(
-                                pixel_coords,
-                                layer_instance.c_hei * layer_instance.grid_size,
-                                IVec2::new(entity_instance.width, entity_instance.height),
-                                Vec2::from_slice(entity_instance.pivot.as_slice()),
-                            ));
-                        }
-                    }
+                    points.push(ldtk_pixel_coords_to_translation_pivoted(
+                        pixel_coords,
+                        layer_instance.c_hei * layer_instance.grid_size,
+                        IVec2::new(entity_instance.width, entity_instance.height),
+                        Vec2::from_slice(entity_instance.pivot.as_slice()),
+                    ));
                 }
             }
         }

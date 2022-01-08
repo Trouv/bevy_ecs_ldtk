@@ -1,5 +1,9 @@
 //! Types and traits for hooking into the ldtk loading process via [bevy::app::App].
 
-pub mod ldtk_entity;
-pub mod ldtk_int_cell;
-pub mod register_ldtk_objects;
+mod ldtk_entity;
+mod ldtk_int_cell;
+mod register_ldtk_objects;
+
+pub use ldtk_entity::*;
+pub use ldtk_int_cell::*;
+pub use register_ldtk_objects::*;

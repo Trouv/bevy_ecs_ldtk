@@ -13,13 +13,17 @@
 //! 4. [i64] and [f64] have been changed to [i32] and [f32].
 //! 5. [LimitBehavior], [LimitScope], [RenderMode], and [TileRenderMode] have been given custom
 //!    [Default] implementations.
-//! 6. `Component` has been derived for [EntityInstance]
-//! 7. [FieldInstance] has been moved to its own module, and is re-exported here.
-//! 8. The `layer_instance_type` field of [LayerInstance] has been re-typed to [Type]
-//! 9. Comment at the top of the file has been replaced with this documentation.
+//! 6. `Component` has been derived for [EntityInstance].
+//! 7. Documentation added for [EntityInstance], which required the unused import of [LdtkEntity].
+//! 8. [FieldInstance] has been moved to its own module, and is re-exported here.
+//! 9. The `layer_instance_type` field of [LayerInstance] has been re-typed to [Type]
+//! 10. Comment at the top of the file has been replaced with this documentation.
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+
+#[allow(unused_imports)]
+use crate::prelude::LdtkEntity;
 
 mod field_instance;
 
@@ -906,6 +910,11 @@ pub struct TileInstance {
     pub t: i32,
 }
 
+/// Component added to any LDtk Entity by default.
+///
+/// When loading levels, you can flesh out LDtk entities in your own system by querying for
+/// `Added<EntityInstance>`.
+/// Or, you can hook into the entity's spawning process using [LdtkEntity].
 #[derive(PartialEq, Debug, Default, Clone, Serialize, Deserialize, bevy::prelude::Component)]
 pub struct EntityInstance {
     /// Grid-based coordinates (`[x,y]` format)

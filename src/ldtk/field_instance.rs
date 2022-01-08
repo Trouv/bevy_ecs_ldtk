@@ -1,5 +1,7 @@
 use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
 
+#[allow(unused_imports)]
+use super::{EntityInstance, Level};
 use bevy::{prelude::*, render::color::HexColorError};
 use regex::Regex;
 
@@ -13,8 +15,7 @@ pub struct FieldInstance {
     #[serde(rename = "__type")]
     pub field_instance_type: String,
 
-    /// Actual value of the field instance. The value type may vary, depending on `__type`
-    /// (Integer, Boolean, String etc.)<br/>  It can also be an `Array` of those same types.
+    /// Actual value of the field instance.
     #[serde(rename = "__value")]
     pub value: FieldValue,
 
@@ -167,10 +168,16 @@ impl<'de> Deserialize<'de> for FieldInstance {
 
 #[derive(PartialEq, Debug, Clone, Serialize)]
 #[serde(untagged)]
+/// The actual value of a field instance on a [Level] or [EntityInstance].
+///
+/// This has been re-typed for this plugin.
+/// In LDtk's [QuickType loader](https://ldtk.io/files/quicktype/LdtkJson.rs),
+/// this is just a [serde_json::Value].
 pub enum FieldValue {
     Int(Option<i32>),
     Float(Option<f32>),
     Bool(bool),
+    /// Represents either a String or a Multilines
     String(Option<String>),
     #[serde(serialize_with = "serialize_color")]
     Color(Color),
@@ -181,6 +188,7 @@ pub enum FieldValue {
     Ints(Vec<Option<i32>>),
     Floats(Vec<Option<f32>>),
     Bools(Vec<bool>),
+    /// Represents either Strings or Multilines
     Strings(Vec<Option<String>>),
     #[serde(serialize_with = "serialize_colors")]
     Colors(Vec<Color>),

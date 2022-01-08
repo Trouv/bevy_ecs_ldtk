@@ -157,10 +157,10 @@ impl LdtkEntity for Patrol {
     ) -> Patrol {
         let mut points = Vec::new();
         points.push(ldtk_pixel_coords_to_translation_pivoted(
-            IVec2::from_slice(entity_instance.px.as_slice()),
+            entity_instance.px,
             layer_instance.c_hei * layer_instance.grid_size,
             IVec2::new(entity_instance.width, entity_instance.height),
-            Vec2::from_slice(entity_instance.pivot.as_slice()),
+            entity_instance.pivot,
         ));
 
         let ldtk_patrol = entity_instance
@@ -183,7 +183,7 @@ impl LdtkEntity for Patrol {
                         pixel_coords,
                         layer_instance.c_hei * layer_instance.grid_size,
                         IVec2::new(entity_instance.width, entity_instance.height),
-                        Vec2::from_slice(entity_instance.pivot.as_slice()),
+                        entity_instance.pivot,
                     ));
                 }
             }

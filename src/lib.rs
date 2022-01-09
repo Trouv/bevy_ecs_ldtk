@@ -51,7 +51,7 @@ pub mod plugin {
                 )
                 .add_system_to_stage(
                     CoreStage::PreUpdate,
-                    systems::determine_changed_ldtks
+                    systems::process_ldtk_world
                         .chain(systems::process_changed_ldtks)
                         .label(LdtkSystemLabel::Processing),
                 )

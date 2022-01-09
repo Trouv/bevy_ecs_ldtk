@@ -71,28 +71,29 @@ pub fn process_external_levels(
     }
 }
 
-/// Reads [LdtkAsset] events, and determines which ldtk assets need to be re-processed as a result.
-///
-/// Meant to be used in a chain with [process_changed_ldtks].
-pub fn determine_changed_ldtks(
+/// Detects [LdtkAsset] events and spawns levels as children of the [LdtkWorldBundle].
+pub fn process_ldtk_world(
+    mut commands: Commands,
     mut ldtk_events: EventReader<AssetEvent<LdtkAsset>>,
     new_ldtks: Query<&Handle<LdtkAsset>, Added<Handle<LdtkAsset>>>,
-) -> Vec<Handle<LdtkAsset>> {
+    ldtk_world_query: Query<(Entity, &Handle<LdtkAsset>, &LevelSelection)>,
+    ldtk_assets: Res<Assets<LdtkAsset>>,
+) {
     // This function uses code from the bevy_ecs_tilemap ldtk example
     // https://github.com/StarArawn/bevy_ecs_tilemap/blob/main/examples/ldtk/ldtk.rs
     let mut changed_ldtks = Vec::new();
     for event in ldtk_events.iter() {
         match event {
             AssetEvent::Created { handle } => {
-                info!("Ldtk added!");
+                debug!("LDtk asset creation detected.");
                 changed_ldtks.push(handle.clone());
             }
             AssetEvent::Modified { handle } => {
-                info!("Ldtk changed!");
+                debug!("LDtk asset modification detected.");
                 changed_ldtks.push(handle.clone());
             }
             AssetEvent::Removed { handle } => {
-                info!("Ldtk removed!");
+                debug!("LDtk asset removal detected.");
                 // if mesh was modified and removed in the same update, ignore the modification
                 // events are ordered so future modification events are ok
                 changed_ldtks = changed_ldtks
@@ -107,7 +108,35 @@ pub fn determine_changed_ldtks(
         changed_ldtks.push(new_ldtk_handle.clone());
     }
 
-    changed_ldtks
+    for changed_ldtk in changed_ldtks {
+        for (ldtk_entity, ldtk_handle, level_selection) in ldtk_world_query
+            .iter()
+            .filter(|(_, l, _)| **l == changed_ldtk)
+        {
+            commands.entity(ldtk_entity).despawn_descendants();
+
+            if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
+                for (i, level) in ldtk_asset
+                    .project
+                    .levels
+                    .iter()
+                    .enumerate()
+                    .filter(|(i, l)| level_selection.is_match(i, l))
+                {
+                    let level_entity = commands.spawn().id();
+                    commands
+                        .entity(level_entity)
+                        .insert_bundle(LevelBundle {
+                            level_handle: ldtk_asset.level_handles[i].clone(),
+                            map: Map::new(i as u16, level_entity),
+                            transform: Transform::default(),
+                            global_transform: GlobalTransform::default(),
+                        })
+                        .insert(Parent(ldtk_entity));
+                }
+            }
+        }
+    }
 }
 
 /// Performs all the spawning of levels, layers, chunks, bundles, entities, tiles, etc. when an

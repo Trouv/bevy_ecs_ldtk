@@ -54,10 +54,12 @@ impl AssetLoader for LdtkLoader {
                 }
             } else {
                 for level in &project.levels {
-                    let label = level.identifier;
-                    let level = LdtkLevel { level: *level };
+                    let label = level.identifier.as_ref();
+                    let level = LdtkLevel {
+                        level: level.clone(),
+                    };
                     let level_handle =
-                        load_context.set_labeled_asset(&label, LoadedAsset::new(level));
+                        load_context.set_labeled_asset(label, LoadedAsset::new(level));
 
                     level_handles.push(level_handle);
                 }

@@ -121,14 +121,14 @@ pub fn process_ldtk_world(
             .iter()
             .filter(|(_, l, _, _)| **l == changed_ldtk)
         {
-            //if let Some(children) = children {
-            //for child in children.iter() {
-            //if let Ok(mut map) = ldtk_level_query.get_mut(*child) {
-            //clear_map(&mut commands, &mut map, &layer_query, &chunk_query);
-            //}
-            //commands.entity(*child).despawn_descendants();
-            //}
-            //}
+            if let Some(children) = children {
+                for child in children.iter() {
+                    if let Ok(mut map) = ldtk_level_query.get_mut(*child) {
+                        clear_map(&mut commands, &mut map, &layer_query, &chunk_query);
+                    }
+                    commands.entity(*child).despawn_descendants();
+                }
+            }
 
             if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
                 for (i, _) in ldtk_asset
@@ -190,15 +190,6 @@ fn clear_map(
     //}
 }
 
-pub fn level_spawn_frame_delay(
-    query: Query<Entity, Or<(Added<Handle<LdtkLevel>>, Changed<GlobalTransform>)>>,
-    mut writer: EventWriter<LevelSpawnEvent>,
-) {
-    query.for_each(|level_entity| {
-        writer.send(LevelSpawnEvent { level_entity });
-    })
-}
-
 /// Performs all the spawning of levels, layers, chunks, bundles, entities, tiles, etc. when an
 /// LdtkLevelBundle is added.
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
@@ -212,45 +203,43 @@ pub fn process_ldtk_levels(
     ldtk_entity_map: NonSend<LdtkEntityMap>,
     ldtk_int_cell_map: NonSend<LdtkIntCellMap>,
     ldtk_query: Query<&Handle<LdtkAsset>>,
-    level_query: Query<(Entity, &Handle<LdtkLevel>, &Parent, &GlobalTransform)>,
-    mut level_spawn_events: EventReader<LevelSpawnEvent>,
+    level_query: Query<
+        (Entity, &Handle<LdtkLevel>, &Parent, &GlobalTransform),
+        Added<Handle<LdtkLevel>>,
+    >,
 ) {
     // This function uses code from the bevy_ecs_tilemap ldtk example
     // https://github.com/StarArawn/bevy_ecs_tilemap/blob/main/examples/ldtk/ldtk.rs
 
-    for level_spawn_event in level_spawn_events.iter() {
-        if let Ok((ldtk_entity, level_handle, parent, global_transform)) =
-            level_query.get(level_spawn_event.level_entity)
-        {
-            info!("{:?}", global_transform);
-            if let Ok(ldtk_handle) = ldtk_query.get(parent.0) {
-                if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
-                    let tileset_definition_map: HashMap<i32, &TilesetDefinition> = ldtk_asset
-                        .project
-                        .defs
-                        .tilesets
-                        .iter()
-                        .map(|t| (t.uid, t))
-                        .collect();
+    for (ldtk_entity, level_handle, parent, global_transform) in level_query.iter() {
+        info!("{:?}", global_transform);
+        if let Ok(ldtk_handle) = ldtk_query.get(parent.0) {
+            if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
+                let tileset_definition_map: HashMap<i32, &TilesetDefinition> = ldtk_asset
+                    .project
+                    .defs
+                    .tilesets
+                    .iter()
+                    .map(|t| (t.uid, t))
+                    .collect();
 
-                    let entity_definition_map =
-                        create_entity_definition_map(&ldtk_asset.project.defs.entities);
+                let entity_definition_map =
+                    create_entity_definition_map(&ldtk_asset.project.defs.entities);
 
-                    if let Some(level) = level_assets.get(level_handle) {
-                        spawn_level(
-                            &level.level,
-                            &mut commands,
-                            &asset_server,
-                            &mut texture_atlases,
-                            &mut meshes,
-                            &ldtk_entity_map,
-                            &ldtk_int_cell_map,
-                            &entity_definition_map,
-                            &ldtk_asset.tileset_map,
-                            &tileset_definition_map,
-                            ldtk_entity,
-                        );
-                    }
+                if let Some(level) = level_assets.get(level_handle) {
+                    spawn_level(
+                        &level.level,
+                        &mut commands,
+                        &asset_server,
+                        &mut texture_atlases,
+                        &mut meshes,
+                        &ldtk_entity_map,
+                        &ldtk_int_cell_map,
+                        &entity_definition_map,
+                        &ldtk_asset.tileset_map,
+                        &tileset_definition_map,
+                        ldtk_entity,
+                    );
                 }
             }
         }

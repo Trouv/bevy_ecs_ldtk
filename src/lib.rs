@@ -51,13 +51,10 @@ pub mod plugin {
                 .add_event::<components::LevelSpawnEvent>()
                 .add_system_to_stage(
                     CoreStage::PreUpdate,
-                    systems::process_external_levels.label(LdtkSystemLabel::PreSpawn),
+                    systems::process_ldtk_world
+                        .label(LdtkSystemLabel::PreSpawn)
+                        .before(LdtkSystemLabel::LevelSpawning),
                 )
-                .add_system_to_stage(
-                    CoreStage::Update,
-                    systems::level_spawn_frame_delay.label(LdtkSystemLabel::FrameDelay),
-                )
-                .add_system(systems::process_ldtk_world)
                 .add_system_to_stage(
                     CoreStage::PreUpdate,
                     systems::process_ldtk_levels.label(LdtkSystemLabel::LevelSpawning),

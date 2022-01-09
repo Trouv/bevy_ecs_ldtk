@@ -5,7 +5,7 @@ use crate::{
         LdtkEntityMap, LdtkIntCellMap, PhantomLdtkEntity, PhantomLdtkEntityTrait,
         PhantomLdtkIntCell, PhantomLdtkIntCellTrait,
     },
-    assets::{LdtkAsset, LdtkExternalLevel, TilesetMap},
+    assets::{LdtkAsset, LdtkLevel, TilesetMap},
     components::*,
     ldtk::{EntityDefinition, Level, TileInstance, TilesetDefinition, Type},
     tile_makers::*,
@@ -26,13 +26,13 @@ const CHUNK_SIZE: ChunkSize = ChunkSize(32, 32);
 /// Note: this plugin currently doesn't support hot-reloading of external levels.
 /// See <https://github.com/Trouv/bevy_ecs_ldtk/issues/1> for details.
 pub fn process_external_levels(
-    mut level_events: EventReader<AssetEvent<LdtkExternalLevel>>,
-    level_assets: Res<Assets<LdtkExternalLevel>>,
+    mut level_events: EventReader<AssetEvent<LdtkLevel>>,
+    level_assets: Res<Assets<LdtkLevel>>,
     mut ldtk_assets: ResMut<Assets<LdtkAsset>>,
 ) {
     for event in level_events.iter() {
         // creation and deletion events should be handled by the ldtk asset events
-        let mut changed_levels = Vec::<Handle<LdtkExternalLevel>>::new();
+        let mut changed_levels = Vec::<Handle<LdtkLevel>>::new();
         match event {
             AssetEvent::Created { handle } => {
                 info!("External Level added!");
@@ -49,7 +49,7 @@ pub fn process_external_levels(
         for level_handle in changed_levels {
             for (ldtk_handle, ldtk_asset) in ldtk_assets.iter() {
                 for (i, _) in ldtk_asset
-                    .external_levels
+                    .level_handles
                     .iter()
                     .enumerate()
                     .filter(|(_, h)| **h == level_handle)

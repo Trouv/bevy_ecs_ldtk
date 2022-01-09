@@ -43,7 +43,7 @@ pub mod plugin {
                 .init_non_send_resource::<app::LdtkIntCellMap>()
                 .add_asset::<assets::LdtkAsset>()
                 .init_asset_loader::<assets::LdtkLoader>()
-                .add_asset::<assets::LdtkExternalLevel>()
+                .add_asset::<assets::LdtkLevel>()
                 .init_asset_loader::<assets::LdtkLevelLoader>()
                 .add_system_to_stage(
                     CoreStage::PreUpdate,
@@ -71,8 +71,8 @@ pub mod prelude {
 
     pub use crate::{
         app::{LdtkEntity, LdtkIntCell, RegisterLdtkObjects},
-        assets::{LdtkAsset, LdtkExternalLevel},
-        components::{EntityInstance, IntGridCell, LdtkMapBundle, LevelSelection},
+        assets::{LdtkAsset, LdtkLevel},
+        components::{EntityInstance, IntGridCell, LdtkWorldBundle, LevelSelection},
         ldtk::{self, FieldValue, LayerInstance, TilesetDefinition},
         plugin::LdtkPlugin,
     };

@@ -52,11 +52,18 @@ impl LevelSelection {
     }
 }
 
+#[derive(Clone, Bundle)]
+pub struct LevelBundle {
+    pub level_handle: Handle<crate::assets::LdtkLevel>,
+    pub map: Map,
+    pub transform: Transform,
+    pub global_transform: GlobalTransform,
+}
+
 #[derive(Clone, Default, Bundle)]
-pub struct LdtkMapBundle {
+pub struct LdtkWorldBundle {
     pub ldtk_handle: Handle<crate::assets::LdtkAsset>,
     pub level_selection: LevelSelection,
-    pub map: Map,
     pub transform: Transform,
     pub global_transform: GlobalTransform,
 }

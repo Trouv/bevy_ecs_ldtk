@@ -55,7 +55,6 @@ impl LevelSelection {
 #[derive(Clone, Bundle)]
 pub struct LevelBundle {
     pub level_handle: Handle<crate::assets::LdtkLevel>,
-    pub map: Map,
     pub transform: Transform,
     pub global_transform: GlobalTransform,
 }
@@ -66,4 +65,8 @@ pub struct LdtkWorldBundle {
     pub level_selection: LevelSelection,
     pub transform: Transform,
     pub global_transform: GlobalTransform,
+}
+
+pub struct LevelSpawnEvent {
+    pub level_entity: Entity,
 }

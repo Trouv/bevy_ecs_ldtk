@@ -26,6 +26,7 @@ pub mod plugin {
     pub enum LdtkSystemLabel {
         PreSpawn,
         LevelSpawning,
+        FrameDelay,
         Other,
     }
 
@@ -47,14 +48,16 @@ pub mod plugin {
                 .init_asset_loader::<assets::LdtkLoader>()
                 .add_asset::<assets::LdtkLevel>()
                 .init_asset_loader::<assets::LdtkLevelLoader>()
-                //.add_system_to_stage(
-                //CoreStage::PreUpdate,
-                //systems::process_external_levels.label(LdtkSystemLabel::PreSpawn),
-                //)
+                .add_event::<components::LevelSpawnEvent>()
                 .add_system_to_stage(
                     CoreStage::PreUpdate,
-                    systems::process_ldtk_world.label(LdtkSystemLabel::PreSpawn),
+                    systems::process_external_levels.label(LdtkSystemLabel::PreSpawn),
                 )
+                .add_system_to_stage(
+                    CoreStage::Update,
+                    systems::level_spawn_frame_delay.label(LdtkSystemLabel::FrameDelay),
+                )
+                .add_system(systems::process_ldtk_world)
                 .add_system_to_stage(
                     CoreStage::PreUpdate,
                     systems::process_ldtk_levels.label(LdtkSystemLabel::LevelSpawning),

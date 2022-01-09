@@ -24,7 +24,9 @@ pub mod plugin {
     /// variants.
     #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash, SystemLabel)]
     pub enum LdtkSystemLabel {
-        Processing,
+        PreSpawn,
+        LevelSpawning,
+        Other,
     }
 
     /// Adds the default systems, assets, and resources used by `bevy_ecs_ldtk`.
@@ -45,19 +47,21 @@ pub mod plugin {
                 .init_asset_loader::<assets::LdtkLoader>()
                 .add_asset::<assets::LdtkLevel>()
                 .init_asset_loader::<assets::LdtkLevelLoader>()
+                //.add_system_to_stage(
+                //CoreStage::PreUpdate,
+                //systems::process_external_levels.label(LdtkSystemLabel::PreSpawn),
+                //)
                 .add_system_to_stage(
                     CoreStage::PreUpdate,
-                    systems::process_external_levels.label(LdtkSystemLabel::Processing),
+                    systems::process_ldtk_world.label(LdtkSystemLabel::PreSpawn),
                 )
                 .add_system_to_stage(
                     CoreStage::PreUpdate,
-                    systems::process_ldtk_world
-                        .chain(systems::process_changed_ldtks)
-                        .label(LdtkSystemLabel::Processing),
+                    systems::process_ldtk_levels.label(LdtkSystemLabel::LevelSpawning),
                 )
                 .add_system_to_stage(
                     CoreStage::PreUpdate,
-                    systems::set_ldtk_texture_filters_to_nearest.label(LdtkSystemLabel::Processing),
+                    systems::set_ldtk_texture_filters_to_nearest.label(LdtkSystemLabel::Other),
                 );
         }
     }

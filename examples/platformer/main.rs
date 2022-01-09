@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 use bevy_ecs_ldtk::{prelude::*, utils::ldtk_pixel_coords_to_translation_pivoted};
-use bevy_ecs_tilemap::prelude::*;
 
 use bevy::render::{options::WgpuOptions, render_resource::WgpuLimits};
 
@@ -44,10 +43,8 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     asset_server.watch_for_changes().unwrap();
 
     let ldtk_handle = asset_server.load("Typical_2D_platformer_example.ldtk");
-    let map_entity = commands.spawn().id();
-    commands.entity(map_entity).insert_bundle(LdtkMapBundle {
+    commands.spawn_bundle(LdtkWorldBundle {
         ldtk_handle,
-        map: Map::new(0u16, map_entity),
         ..Default::default()
     });
 }

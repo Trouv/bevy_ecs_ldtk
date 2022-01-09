@@ -2,10 +2,19 @@ use bevy::prelude::*;
 use bevy_ecs_ldtk::{prelude::*, utils::ldtk_pixel_coords_to_translation_pivoted};
 use bevy_ecs_tilemap::prelude::*;
 
+use bevy::render::{options::WgpuOptions, render_resource::WgpuLimits};
+
 use std::collections::HashSet;
 
 fn main() {
     App::new()
+        .insert_resource(WgpuOptions {
+            limits: WgpuLimits {
+                max_texture_array_layers: 2048,
+                ..Default::default()
+            },
+            ..Default::default()
+        })
         .add_plugins(DefaultPlugins)
         .add_plugin(LdtkPlugin)
         .add_plugin(physics::BasicPhysicsPlugin)
@@ -29,7 +38,8 @@ fn main() {
 mod physics;
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+    let camera = OrthographicCameraBundle::new_2d();
+    commands.spawn_bundle(camera);
 
     asset_server.watch_for_changes().unwrap();
 
@@ -375,14 +385,14 @@ fn camera_fit_inside_current_level(
                 orthographic_projection.left = 0.;
                 if level_ratio > ASPECT_RATIO {
                     // level is wider than the screen
-                    orthographic_projection.top = level.px_hei as f32;
+                    orthographic_projection.top = (level.px_hei as f32 / 9.).round() * 9.;
                     orthographic_projection.right = orthographic_projection.top * ASPECT_RATIO;
                     camera_transform.translation.x = (player_translation.x
                         - orthographic_projection.right / 2.)
                         .clamp(0., level.px_wid as f32 - orthographic_projection.right);
                 } else {
                     // level is taller than the screen
-                    orthographic_projection.right = level.px_wid as f32;
+                    orthographic_projection.right = (level.px_wid as f32 / 16.).round() * 16.;
                     orthographic_projection.top = orthographic_projection.right / ASPECT_RATIO;
                     camera_transform.translation.y = (player_translation.y
                         - orthographic_projection.top / 2.)

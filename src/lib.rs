@@ -54,6 +54,10 @@ pub mod plugin {
                     systems::determine_changed_ldtks
                         .chain(systems::process_changed_ldtks)
                         .label(LdtkSystemLabel::Processing),
+                )
+                .add_system_to_stage(
+                    CoreStage::PreUpdate,
+                    systems::set_ldtk_texture_filters_to_nearest.label(LdtkSystemLabel::Processing),
                 );
         }
     }

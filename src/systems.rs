@@ -125,8 +125,10 @@ pub fn process_ldtk_world(
                 for child in children.iter() {
                     if let Ok(mut map) = ldtk_level_query.get_mut(*child) {
                         clear_map(&mut commands, &mut map, &layer_query, &chunk_query);
+                        map.despawn(&mut commands);
+                    } else {
+                        commands.entity(*child).despawn_recursive();
                     }
-                    commands.entity(*child).despawn_descendants();
                 }
             }
 
@@ -183,11 +185,6 @@ fn clear_map(
             map.remove_layer(commands, layer_id);
         }
     }
-    //if let Some(children) = map_children {
-    //for child in children.iter() {
-    //commands.entity(*child).despawn_recursive();
-    //}
-    //}
 }
 
 /// Performs all the spawning of levels, layers, chunks, bundles, entities, tiles, etc. when an
@@ -267,50 +264,51 @@ fn spawn_level(
         for layer_instance in layer_instances.iter().rev() {
             match layer_instance.layer_instance_type {
                 Type::Entities => {
-                    for entity_instance in &layer_instance.entity_instances {
-                        let transform = calculate_transform_from_entity_instance(
-                            entity_instance,
-                            entity_definition_map,
-                            level.px_hei,
-                            layer_id as f32,
-                        );
-                        // Note: entities do not seem to be affected visually by layer offsets in
-                        // the editor, so no layer offset is added to the transform here.
+                    commands.entity(ldtk_entity).with_children(|commands| {
+                        for entity_instance in &layer_instance.entity_instances {
+                            let transform = calculate_transform_from_entity_instance(
+                                entity_instance,
+                                entity_definition_map,
+                                level.px_hei,
+                                layer_id as f32,
+                            );
+                            // Note: entities do not seem to be affected visually by layer offsets in
+                            // the editor, so no layer offset is added to the transform here.
 
-                        let mut entity_commands = commands.spawn();
+                            let mut entity_commands = commands.spawn();
 
-                        let (tileset, tileset_definition) = match &entity_instance.tile {
-                            Some(t) => (
-                                tileset_map.get(&t.tileset_uid),
-                                tileset_definition_map.get(&t.tileset_uid).copied(),
-                            ),
-                            None => (None, None),
-                        };
+                            let (tileset, tileset_definition) = match &entity_instance.tile {
+                                Some(t) => (
+                                    tileset_map.get(&t.tileset_uid),
+                                    tileset_definition_map.get(&t.tileset_uid).copied(),
+                                ),
+                                None => (None, None),
+                            };
 
-                        let default_ldtk_entity: Box<dyn PhantomLdtkEntityTrait> =
-                            Box::new(PhantomLdtkEntity::<EntityInstanceBundle>::new());
+                            let default_ldtk_entity: Box<dyn PhantomLdtkEntityTrait> =
+                                Box::new(PhantomLdtkEntity::<EntityInstanceBundle>::new());
 
-                        ldtk_map_get_or_default(
-                            layer_instance.identifier.clone(),
-                            entity_instance.identifier.clone(),
-                            &default_ldtk_entity,
-                            ldtk_entity_map,
-                        )
-                        .evaluate(
-                            &mut entity_commands,
-                            entity_instance,
-                            layer_instance,
-                            tileset,
-                            tileset_definition,
-                            asset_server,
-                            texture_atlases,
-                        );
+                            ldtk_map_get_or_default(
+                                layer_instance.identifier.clone(),
+                                entity_instance.identifier.clone(),
+                                &default_ldtk_entity,
+                                ldtk_entity_map,
+                            )
+                            .evaluate(
+                                &mut entity_commands,
+                                entity_instance,
+                                layer_instance,
+                                tileset,
+                                tileset_definition,
+                                asset_server,
+                                texture_atlases,
+                            );
 
-                        entity_commands
-                            .insert(transform)
-                            .insert(GlobalTransform::default())
-                            .insert(Parent(ldtk_entity));
-                    }
+                            entity_commands
+                                .insert(transform)
+                                .insert(GlobalTransform::default());
+                        }
+                    });
                 }
                 _ => {
                     // The remaining layers have a lot of shared code.

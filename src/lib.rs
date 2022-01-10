@@ -50,13 +50,11 @@ pub mod plugin {
                 .init_asset_loader::<assets::LdtkLevelLoader>()
                 .add_event::<components::LevelSpawnEvent>()
                 .add_system_to_stage(
-                    CoreStage::PreUpdate,
-                    systems::process_ldtk_world
-                        .label(LdtkSystemLabel::PreSpawn)
-                        .before(LdtkSystemLabel::LevelSpawning),
+                    CoreStage::Update,
+                    systems::process_ldtk_world.label(LdtkSystemLabel::PreSpawn),
                 )
                 .add_system_to_stage(
-                    CoreStage::PreUpdate,
+                    CoreStage::PostUpdate,
                     systems::process_ldtk_levels.label(LdtkSystemLabel::LevelSpawning),
                 )
                 .add_system_to_stage(

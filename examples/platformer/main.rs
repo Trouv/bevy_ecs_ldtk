@@ -25,6 +25,8 @@ fn main() {
         .add_system(ignore_gravity_if_climbing)
         .add_system(patrol)
         .add_system(camera_fit_inside_current_level)
+        .add_system(debug_asset_events)
+        .add_system(debug_player_count)
         .register_ldtk_int_cell::<ColliderBundle>(1)
         .register_ldtk_int_cell::<LadderBundle>(2)
         .register_ldtk_int_cell::<ColliderBundle>(3)
@@ -398,4 +400,13 @@ fn camera_fit_inside_current_level(
             }
         }
     }
+}
+
+fn debug_asset_events(mut reader: EventReader<AssetEvent<Image>>) {
+    for event in reader.iter() {
+        println!("{:?}", event);
+    }
+}
+fn debug_player_count(query: Query<&Player>) {
+    println!("There are {} players", query.iter().len());
 }

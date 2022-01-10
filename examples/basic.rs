@@ -18,6 +18,7 @@ fn main() {
         .add_startup_system(setup)
         .register_ldtk_entity_for_layer::<PlayerBundle>("Entities", "Willo")
         .add_system(debug_int_grid)
+        .add_system(debug_global_transform)
         .run();
 }
 
@@ -27,11 +28,9 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     asset_server.watch_for_changes().unwrap();
 
     let ldtk_handle = asset_server.load("levels.ldtk");
-    let map_entity = commands.spawn().id();
     let transform = Transform::from_xyz(-5.5 * 32., -6. * 32., 0.);
-    commands.entity(map_entity).insert_bundle(LdtkMapBundle {
+    commands.spawn_bundle(LdtkWorldBundle {
         ldtk_handle,
-        map: Map::new(0u16, map_entity),
         transform,
         ..Default::default()
     });
@@ -52,6 +51,7 @@ impl LdtkEntity for PlayerBundle {
         asset_server: &AssetServer,
         _: &mut Assets<TextureAtlas>,
     ) -> Self {
+        println!("Player spawning");
         PlayerBundle {
             sprite_bundle: SpriteBundle {
                 texture: asset_server.load("player.png"),
@@ -81,4 +81,19 @@ fn debug_int_grid(
 
         println!("{} spawned at {:?}", cell.value, tile_pos);
     })
+}
+
+fn debug_global_transform(
+    level_query: Query<&GlobalTransform, Without<Handle<LdtkAsset>>>,
+    world_query: Query<&GlobalTransform, With<Handle<LdtkAsset>>>,
+    mut frame: Local<u32>,
+) {
+    println!("On frame {}", *frame);
+    for transform in level_query.iter() {
+        println!("the level's transform is {:?}", transform);
+    }
+    for transform in world_query.iter() {
+        println!("the worlds's transform is {:?}", transform);
+    }
+    *frame += 1;
 }

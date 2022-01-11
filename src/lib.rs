@@ -64,6 +64,10 @@ pub mod plugin {
                 .add_system_to_stage(
                     CoreStage::PreUpdate,
                     systems::set_ldtk_texture_filters_to_nearest.label(LdtkSystemLabel::Other),
+                )
+                .add_system_to_stage(
+                    CoreStage::PreUpdate,
+                    systems::worldly_adoption.label(LdtkSystemLabel::Other),
                 );
         }
     }
@@ -78,7 +82,7 @@ pub mod prelude {
     pub use crate::{
         app::{LdtkEntity, LdtkIntCell, RegisterLdtkObjects},
         assets::{LdtkAsset, LdtkLevel},
-        components::{EntityInstance, IntGridCell, LdtkWorldBundle, LevelSet},
+        components::{EntityInstance, IntGridCell, LdtkWorldBundle, LevelSet, Worldly},
         ldtk::{self, FieldValue, LayerInstance, TilesetDefinition},
         plugin::LdtkPlugin,
         resources::{LdtkSettings, LevelSelection},

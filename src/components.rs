@@ -23,6 +23,9 @@ pub struct LevelSet {
     pub uids: HashSet<i32>,
 }
 
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Component)]
+pub struct Worldly;
+
 #[derive(Clone, Default, Bundle)]
 pub(crate) struct IntGridCellBundle {
     pub int_grid_cell: IntGridCell,

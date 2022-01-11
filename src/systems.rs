@@ -548,6 +548,18 @@ fn layer_grid_tiles(grid_tiles: Vec<TileInstance>) -> Vec<Vec<TileInstance>> {
     layered_grid_tiles
 }
 
+pub fn worldly_adoption(
+    mut worldly_query: Query<(&mut Transform, &mut Parent), Added<Worldly>>,
+    transform_query: Query<(&Transform, &Parent), Without<Worldly>>,
+) {
+    for (mut transform, mut parent) in worldly_query.iter_mut() {
+        if let Ok((level_transform, level_parent)) = transform_query.get(parent.0) {
+            *transform = level_transform.mul_transform(*transform);
+            parent.0 = level_parent.0
+        }
+    }
+}
+
 pub fn set_ldtk_texture_filters_to_nearest(
     mut texture_events: EventReader<AssetEvent<Image>>,
     mut textures: ResMut<Assets<Image>>,

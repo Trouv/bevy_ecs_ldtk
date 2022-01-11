@@ -5,6 +5,7 @@ pub mod app;
 pub mod assets;
 pub mod components;
 pub mod ldtk;
+pub mod resources;
 pub mod systems;
 mod tile_makers;
 pub mod utils;
@@ -24,6 +25,7 @@ pub mod plugin {
     /// variants.
     #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash, SystemLabel)]
     pub enum LdtkSystemLabel {
+        LevelSelection,
         PreSpawn,
         LevelSpawning,
         FrameDelay,
@@ -44,14 +46,16 @@ pub mod plugin {
             app.add_plugin(TilemapPlugin)
                 .init_non_send_resource::<app::LdtkEntityMap>()
                 .init_non_send_resource::<app::LdtkIntCellMap>()
+                .init_resource::<resources::LdtkSettings>()
                 .add_asset::<assets::LdtkAsset>()
                 .init_asset_loader::<assets::LdtkLoader>()
                 .add_asset::<assets::LdtkLevel>()
                 .init_asset_loader::<assets::LdtkLevelLoader>()
-                .add_event::<components::LevelSpawnEvent>()
                 .add_system_to_stage(
                     CoreStage::Update,
-                    systems::process_ldtk_world.label(LdtkSystemLabel::PreSpawn),
+                    systems::process_ldtk_world
+                        .label(LdtkSystemLabel::PreSpawn)
+                        .after(LdtkSystemLabel::LevelSelection),
                 )
                 .add_system_to_stage(
                     CoreStage::PostUpdate,
@@ -74,8 +78,9 @@ pub mod prelude {
     pub use crate::{
         app::{LdtkEntity, LdtkIntCell, RegisterLdtkObjects},
         assets::{LdtkAsset, LdtkLevel},
-        components::{EntityInstance, IntGridCell, LdtkWorldBundle, LevelSelection},
+        components::{EntityInstance, IntGridCell, LdtkWorldBundle, LevelSet},
         ldtk::{self, FieldValue, LayerInstance, TilesetDefinition},
         plugin::LdtkPlugin,
+        resources::{LdtkSettings, LevelSelection},
     };
 }

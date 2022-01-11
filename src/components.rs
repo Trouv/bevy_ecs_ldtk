@@ -1,10 +1,9 @@
 //! [Component]s and [Bundle]s used by the plugin.
 
 pub use crate::ldtk::EntityInstance;
-
-use crate::ldtk::Level;
 use bevy::prelude::*;
-use bevy_ecs_tilemap::prelude::*;
+
+use std::collections::HashSet;
 
 #[allow(unused_imports)]
 use crate::prelude::LdtkIntCell;
@@ -19,6 +18,11 @@ pub struct IntGridCell {
     pub value: i32,
 }
 
+#[derive(Clone, Eq, PartialEq, Debug, Default, Component)]
+pub struct LevelSet {
+    pub uids: HashSet<i32>,
+}
+
 #[derive(Clone, Default, Bundle)]
 pub(crate) struct IntGridCellBundle {
     pub int_grid_cell: IntGridCell,
@@ -27,29 +31,6 @@ pub(crate) struct IntGridCellBundle {
 #[derive(Clone, Bundle, Default)]
 pub(crate) struct EntityInstanceBundle {
     pub entity_instance: EntityInstance,
-}
-
-#[derive(Clone, Eq, PartialEq, Debug, Component)]
-pub enum LevelSelection {
-    Identifier(String),
-    Index(usize),
-    Uid(i32),
-}
-
-impl Default for LevelSelection {
-    fn default() -> Self {
-        LevelSelection::Index(0)
-    }
-}
-
-impl LevelSelection {
-    pub fn is_match(&self, index: &usize, level: &Level) -> bool {
-        match self {
-            LevelSelection::Identifier(s) => *s == level.identifier,
-            LevelSelection::Index(i) => *i == *index,
-            LevelSelection::Uid(u) => *u == level.uid,
-        }
-    }
 }
 
 #[derive(Clone, Bundle)]
@@ -62,11 +43,7 @@ pub struct LevelBundle {
 #[derive(Clone, Default, Bundle)]
 pub struct LdtkWorldBundle {
     pub ldtk_handle: Handle<crate::assets::LdtkAsset>,
-    pub level_selection: LevelSelection,
+    pub level_set: LevelSet,
     pub transform: Transform,
     pub global_transform: GlobalTransform,
-}
-
-pub struct LevelSpawnEvent {
-    pub level_entity: Entity,
 }

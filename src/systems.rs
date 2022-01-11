@@ -8,6 +8,7 @@ use crate::{
     assets::{LdtkAsset, LdtkLevel, TilesetMap},
     components::*,
     ldtk::{EntityDefinition, Level, TileInstance, TilesetDefinition, Type},
+    resources::{LdtkSettings, LevelSelection},
     tile_makers::*,
     utils::*,
 };
@@ -21,50 +22,35 @@ use std::collections::HashMap;
 
 const CHUNK_SIZE: ChunkSize = ChunkSize(32, 32);
 
-/// After external levels are loaded, this updates the corresponding [LdtkAsset]'s levels.
-///
-/// Note: this plugin currently doesn't support hot-reloading of external levels.
-/// See <https://github.com/Trouv/bevy_ecs_ldtk/issues/1> for details.
-pub fn process_external_levels(
-    mut level_events: EventReader<AssetEvent<LdtkLevel>>,
-    level_assets: Res<Assets<LdtkLevel>>,
-    mut ldtk_assets: ResMut<Assets<LdtkAsset>>,
+pub fn choose_levels(
+    level_selection: Option<Res<LevelSelection>>,
+    ldtk_settings: Res<LdtkSettings>,
+    ldtk_assets: Res<Assets<LdtkAsset>>,
+    mut level_set_query: Query<(&Handle<LdtkAsset>, &mut LevelSet)>,
 ) {
-    for event in level_events.iter() {
-        // creation and deletion events should be handled by the ldtk asset events
-        let mut changed_levels = Vec::<Handle<LdtkLevel>>::new();
-        match event {
-            AssetEvent::Created { handle } => {
-                info!("External Level added!");
-                changed_levels.push(handle.clone());
-            }
-            AssetEvent::Modified { handle } => {
-                info!("External Level changed!");
-                changed_levels.push(handle.clone());
-            }
-            _ => (),
-        }
+    if let Some(level_selection) = level_selection {
+        if level_selection.is_changed() {
+            info!("Choosing levels");
+            for (ldtk_handle, mut level_set) in level_set_query.iter_mut() {
+                if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
+                    if let Some((_, level)) = ldtk_asset
+                        .project
+                        .levels
+                        .iter()
+                        .enumerate()
+                        .find(|(i, l)| level_selection.is_match(i, l))
+                    {
+                        info!("Levels chosen. Inserting in LevelSet.");
+                        level_set.uids.insert(level.uid);
 
-        let mut levels_to_update = Vec::new();
-        for level_handle in changed_levels {
-            for (ldtk_handle, ldtk_asset) in ldtk_assets.iter() {
-                for (i, _) in ldtk_asset
-                    .level_handles
-                    .iter()
-                    .enumerate()
-                    .filter(|(_, h)| **h == level_handle)
-                {
-                    levels_to_update.push((ldtk_handle, level_handle.clone(), i));
-                }
-            }
-        }
-
-        for (ldtk_handle, level_handle, level_index) in levels_to_update {
-            if let Some(level) = level_assets.get(level_handle) {
-                if let Some(ldtk_asset) = ldtk_assets.get_mut(ldtk_handle) {
-                    if let Some(ldtk_level) = ldtk_asset.project.levels.get_mut(level_index) {
-                        *ldtk_level = level.level.clone();
+                        if ldtk_settings.load_level_neighbors {
+                            level_set
+                                .uids
+                                .extend(level.neighbours.iter().map(|n| n.level_uid));
+                        }
                     }
+                } else {
+                    warn!("Attempted to choose levels based on LevelSelection, but the LdtkAsset wasn't loaded.")
                 }
             }
         }
@@ -77,13 +63,10 @@ pub fn process_ldtk_world(
     mut ldtk_events: EventReader<AssetEvent<LdtkAsset>>,
     new_ldtks: Query<&Handle<LdtkAsset>, Added<Handle<LdtkAsset>>>,
     mut ldtk_level_query: Query<&mut Map, With<Handle<LdtkLevel>>>,
-    ldtk_world_query: Query<(
-        Entity,
-        &Handle<LdtkAsset>,
-        &LevelSelection,
-        Option<&Children>,
-    )>,
+    mut ldtk_world_query: Query<(Entity, &Handle<LdtkAsset>, &mut LevelSet, Option<&Children>)>,
+    level_selection: Option<Res<LevelSelection>>,
     ldtk_assets: Res<Assets<LdtkAsset>>,
+    ldtk_settings: Res<LdtkSettings>,
     layer_query: Query<&Layer>,
     chunk_query: Query<&Chunk>,
 ) {
@@ -117,10 +100,12 @@ pub fn process_ldtk_world(
     }
 
     for changed_ldtk in changed_ldtks {
-        for (ldtk_entity, ldtk_handle, level_selection, children) in ldtk_world_query
-            .iter()
+        info!("Ldtk changes detected.");
+        for (ldtk_entity, ldtk_handle, mut level_set, children) in ldtk_world_query
+            .iter_mut()
             .filter(|(_, l, _, _)| **l == changed_ldtk)
         {
+            info!("Ldtk world entity detected.");
             if let Some(children) = children {
                 for child in children.iter() {
                     if let Ok(mut map) = ldtk_level_query.get_mut(*child) {
@@ -133,21 +118,64 @@ pub fn process_ldtk_world(
             }
 
             if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
-                for (i, _) in ldtk_asset
-                    .project
-                    .levels
-                    .iter()
-                    .enumerate()
-                    .filter(|(i, l)| level_selection.is_match(i, l))
-                {
-                    commands.entity(ldtk_entity).with_children(|c| {
-                        c.spawn_bundle(LevelBundle {
-                            level_handle: ldtk_asset.level_handles[i].clone(),
-                            transform: Transform::default(),
-                            global_transform: GlobalTransform::default(),
-                        });
-                    });
+                if let Some(level_selection) = &level_selection {
+                    if let Some((_, level)) = ldtk_asset
+                        .project
+                        .levels
+                        .iter()
+                        .enumerate()
+                        .find(|(i, l)| level_selection.is_match(i, l))
+                    {
+                        level_set.uids.clear();
+
+                        info!("Levels chosen. Inserting in LevelSet.");
+                        level_set.uids.insert(level.uid);
+
+                        if ldtk_settings.load_level_neighbors {
+                            level_set
+                                .uids
+                                .extend(level.neighbours.iter().map(|n| n.level_uid));
+                        }
+                    }
                 }
+
+                info!("Ldtk asset found.");
+                commands.entity(ldtk_entity).with_children(|c| {
+                    for level_uid in &level_set.uids {
+                        info!("spawning level {}", level_uid);
+                        if let Some(level_handle) = ldtk_asset.level_map.get(level_uid) {
+                            let mut translation = Vec3::ZERO;
+
+                            if ldtk_settings.use_level_world_translations {
+                                let mut world_height = 0;
+                                for level in &ldtk_asset.project.levels {
+                                    world_height = world_height.max(level.world_y + level.px_hei);
+                                }
+
+                                if let Some(level) = ldtk_asset
+                                    .project
+                                    .levels
+                                    .iter()
+                                    .find(|l| l.uid == *level_uid)
+                                {
+                                    let level_coords = ldtk_pixel_coords_to_translation(
+                                        IVec2::new(level.world_x, level.world_y + level.px_hei),
+                                        world_height,
+                                    );
+                                    translation.x = level_coords.x;
+                                    translation.y = level_coords.y;
+                                }
+                            }
+
+                            info!("Spawning level");
+                            c.spawn_bundle(LevelBundle {
+                                level_handle: level_handle.clone(),
+                                transform: Transform::from_translation(translation),
+                                global_transform: GlobalTransform::default(),
+                            });
+                        }
+                    }
+                });
             }
         }
     }

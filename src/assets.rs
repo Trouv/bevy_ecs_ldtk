@@ -20,13 +20,14 @@ fn ldtk_path_to_asset_path<'a, 'b>(
 }
 
 pub type TilesetMap = HashMap<i32, Handle<Image>>;
+pub type LevelMap = HashMap<i32, Handle<LdtkLevel>>;
 
 #[derive(TypeUuid)]
 #[uuid = "ecfb87b7-9cd9-4970-8482-f2f68b770d31"]
 pub struct LdtkAsset {
     pub project: LdtkJson,
     pub tileset_map: TilesetMap,
-    pub level_handles: Vec<Handle<LdtkLevel>>,
+    pub level_map: LevelMap,
 }
 
 #[derive(Copy, Clone, Debug, Default)]
@@ -42,26 +43,26 @@ impl AssetLoader for LdtkLoader {
             let project: LdtkJson = serde_json::from_slice(bytes)?;
 
             let mut external_level_paths = Vec::new();
-            let mut level_handles = Vec::new();
+            let mut level_map = HashMap::new();
             if project.external_levels {
                 for level in &project.levels {
                     if let Some(external_rel_path) = &level.external_rel_path {
                         let asset_path = ldtk_path_to_asset_path(load_context, external_rel_path);
 
                         external_level_paths.push(asset_path.clone());
-                        level_handles.push(load_context.get_handle(asset_path));
+                        level_map.insert(level.uid, load_context.get_handle(asset_path));
                     }
                 }
             } else {
                 for level in &project.levels {
                     let label = level.identifier.as_ref();
-                    let level = LdtkLevel {
+                    let ldtk_level = LdtkLevel {
                         level: level.clone(),
                     };
                     let level_handle =
-                        load_context.set_labeled_asset(label, LoadedAsset::new(level));
+                        load_context.set_labeled_asset(label, LoadedAsset::new(ldtk_level));
 
-                    level_handles.push(level_handle);
+                    level_map.insert(level.uid, level_handle);
                 }
             }
 
@@ -77,7 +78,7 @@ impl AssetLoader for LdtkLoader {
             let ldtk_asset = LdtkAsset {
                 project,
                 tileset_map,
-                level_handles,
+                level_map,
             };
             load_context.set_default_asset(
                 LoadedAsset::new(ldtk_asset)

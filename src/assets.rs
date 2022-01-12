@@ -30,6 +30,17 @@ pub struct LdtkAsset {
     pub level_map: LevelMap,
 }
 
+impl LdtkAsset {
+    pub fn world_height(&self) -> i32 {
+        let mut world_height = 0;
+        for level in &self.project.levels {
+            world_height = world_height.max(level.world_y + level.px_hei);
+        }
+
+        world_height
+    }
+}
+
 #[derive(Copy, Clone, Debug, Default)]
 pub struct LdtkLoader;
 

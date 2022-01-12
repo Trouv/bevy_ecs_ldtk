@@ -195,11 +195,6 @@ fn pre_spawn_level(
         let mut translation = Vec3::ZERO;
 
         if ldtk_settings.use_level_world_translations {
-            let mut world_height = 0;
-            for level in &ldtk_asset.project.levels {
-                world_height = world_height.max(level.world_y + level.px_hei);
-            }
-
             if let Some(level) = ldtk_asset
                 .project
                 .levels
@@ -208,7 +203,7 @@ fn pre_spawn_level(
             {
                 let level_coords = ldtk_pixel_coords_to_translation(
                     IVec2::new(level.world_x, level.world_y + level.px_hei),
-                    world_height,
+                    ldtk_asset.world_height(),
                 );
                 translation.x = level_coords.x;
                 translation.y = level_coords.y;

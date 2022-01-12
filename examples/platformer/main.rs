@@ -19,9 +19,9 @@ fn main() {
         .add_plugin(physics::BasicPhysicsPlugin)
         .insert_resource(physics::Gravity { value: -2000. })
         .insert_resource(physics::MaxVelocity { value: 700. })
-        .insert_resource(LevelSelection::Identifier("Bottom".to_string()))
+        .insert_resource(LevelSelection::Uid(0))
         .insert_resource(LdtkSettings {
-            load_level_neighbors: true,
+            load_level_neighbors: false,
             use_level_world_translations: true,
         })
         .add_startup_system(setup)
@@ -29,9 +29,9 @@ fn main() {
         .add_system(detect_climb_range)
         .add_system(ignore_gravity_if_climbing)
         .add_system(patrol)
-        //.add_system(camera_fit_inside_current_level)
-        .add_system(debug_asset_events)
-        .add_system(debug_player_count)
+        .add_system(camera_fit_inside_current_level)
+        .add_system(debug_collision)
+        .add_system(update_level_selection)
         .register_ldtk_int_cell::<ColliderBundle>(1)
         .register_ldtk_int_cell::<LadderBundle>(2)
         .register_ldtk_int_cell::<ColliderBundle>(3)
@@ -44,8 +44,7 @@ fn main() {
 mod physics;
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let mut camera = OrthographicCameraBundle::new_2d();
-    camera.orthographic_projection.scale = 2.;
+    let camera = OrthographicCameraBundle::new_2d();
     commands.spawn_bundle(camera);
 
     asset_server.watch_for_changes().unwrap();
@@ -131,6 +130,7 @@ struct PlayerBundle {
     #[bundle]
     collider_bundle: ColliderBundle,
     player: Player,
+    #[ldtk_entity]
     worldly: Worldly,
     climber: Climber,
 }
@@ -192,11 +192,11 @@ impl LdtkEntity for Patrol {
                     // The patrols set up in the file look flat and grounded,
                     // but technically they're not if you consider the pivot,
                     // which is at the bottom-center for the skulls.
-                    let pixel_coords =
-                        (*ldtk_point + IVec2::new(0, 1)) * IVec2::splat(layer_instance.grid_size);
+                    let pixel_coords = (ldtk_point.as_vec2() + Vec2::new(0.5, 1.))
+                        * Vec2::splat(layer_instance.grid_size as f32);
 
                     points.push(ldtk_pixel_coords_to_translation_pivoted(
-                        pixel_coords,
+                        pixel_coords.as_ivec2(),
                         layer_instance.c_hei * layer_instance.grid_size,
                         IVec2::new(entity_instance.width, entity_instance.height),
                         entity_instance.pivot,
@@ -353,64 +353,105 @@ fn patrol(mut query: Query<(&mut Transform, &mut physics::Velocity, &mut Patrol)
 
 const ASPECT_RATIO: f32 = 16. / 9.;
 
-//fn camera_fit_inside_current_level(
-//mut transform_query_set: QuerySet<(
-//QueryState<(
-//&mut bevy::render::camera::OrthographicProjection,
-//&mut Transform,
-//)>,
-//QueryState<&Transform, With<Player>>,
-//)>,
-//ldtk_map_query: Query<(&Handle<LdtkAsset>)>,
-//ldtk_assets: Res<Assets<LdtkAsset>>,
-//) {
-//let (ldtk_handle, level_selection) = ldtk_map_query.single();
+fn camera_fit_inside_current_level(
+    mut camera_query: Query<
+        (
+            &mut bevy::render::camera::OrthographicProjection,
+            &mut Transform,
+        ),
+        Without<Player>,
+    >,
+    player_query: Query<&Transform, With<Player>>,
+    level_query: Query<
+        (&Transform, &Handle<LdtkLevel>),
+        (Without<OrthographicProjection>, Without<Player>),
+    >,
+    level_selection: Res<LevelSelection>,
+    ldtk_levels: Res<Assets<LdtkLevel>>,
+) {
+    if let Ok(Transform {
+        translation: player_translation,
+        ..
+    }) = player_query.get_single()
+    {
+        let player_translation = player_translation.clone();
 
-//if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
-//if let Some((_, level)) = ldtk_asset
-//.project
-//.levels
-//.iter()
-//.enumerate()
-//.find(|(i, l)| level_selection.is_match(i, l))
-//{
-//if let Ok(Transform {
-//translation: player_translation,
-//..
-//}) = transform_query_set.q1().get_single()
-//{
-//let player_translation = player_translation.clone();
-//let mut camera_query = transform_query_set.q0();
+        let (mut orthographic_projection, mut camera_transform) = camera_query.single_mut();
 
-//let (mut orthographic_projection, mut camera_transform) = camera_query.single_mut();
+        for (level_transform, level_handle) in level_query.iter() {
+            if let Some(ldtk_level) = ldtk_levels.get(level_handle) {
+                let level = &ldtk_level.level;
+                if level_selection.is_match(&0, &level) {
+                    let level_ratio = level.px_wid as f32 / ldtk_level.level.px_hei as f32;
 
-//let level_ratio = level.px_wid as f32 / level.px_hei as f32;
+                    orthographic_projection.scaling_mode = bevy::render::camera::ScalingMode::None;
+                    orthographic_projection.bottom = 0.;
+                    orthographic_projection.left = 0.;
+                    if level_ratio > ASPECT_RATIO {
+                        // level is wider than the screen
+                        orthographic_projection.top = (level.px_hei as f32 / 9.).round() * 9.;
+                        orthographic_projection.right = orthographic_projection.top * ASPECT_RATIO;
+                        camera_transform.translation.x = (player_translation.x
+                            - level_transform.translation.x
+                            - orthographic_projection.right / 2.)
+                            .clamp(0., level.px_wid as f32 - orthographic_projection.right);
+                        camera_transform.translation.y = 0.;
+                    } else {
+                        // level is taller than the screen
+                        orthographic_projection.right = (level.px_wid as f32 / 16.).round() * 16.;
+                        orthographic_projection.top = orthographic_projection.right / ASPECT_RATIO;
+                        camera_transform.translation.y = (player_translation.y
+                            - level_transform.translation.y
+                            - orthographic_projection.top / 2.)
+                            .clamp(0., level.px_hei as f32 - orthographic_projection.top);
+                        camera_transform.translation.x = 0.;
+                    }
 
-//orthographic_projection.scaling_mode = bevy::render::camera::ScalingMode::None;
-//orthographic_projection.bottom = 0.;
-//orthographic_projection.left = 0.;
-//if level_ratio > ASPECT_RATIO {
-//// level is wider than the screen
-//orthographic_projection.top = (level.px_hei as f32 / 9.).round() * 9.;
-//orthographic_projection.right = orthographic_projection.top * ASPECT_RATIO;
-//camera_transform.translation.x = (player_translation.x
-//- orthographic_projection.right / 2.)
-//.clamp(0., level.px_wid as f32 - orthographic_projection.right);
-//} else {
-//// level is taller than the screen
-//orthographic_projection.right = (level.px_wid as f32 / 16.).round() * 16.;
-//orthographic_projection.top = orthographic_projection.right / ASPECT_RATIO;
-//camera_transform.translation.y = (player_translation.y
-//- orthographic_projection.top / 2.)
-//.clamp(0., level.px_hei as f32 - orthographic_projection.top);
-//}
-//}
-//}
-//}
-//}
+                    camera_transform.translation.x += level_transform.translation.x;
+                    camera_transform.translation.y += level_transform.translation.y;
+                }
+            }
+        }
+    }
+}
 
-fn debug_asset_events(mut reader: EventReader<AssetEvent<Image>>) {
-    for event in reader.iter() {
-        println!("{:?}", event);
+fn update_level_selection(
+    level_query: Query<(&Handle<LdtkLevel>, &Transform), Without<Player>>,
+    player_query: Query<&Transform, With<Player>>,
+    mut level_selection: ResMut<LevelSelection>,
+    ldtk_levels: Res<Assets<LdtkLevel>>,
+) {
+    for (level_handle, level_transform) in level_query.iter() {
+        if let Some(ldtk_level) = ldtk_levels.get(level_handle) {
+            let level_bounds = Rect {
+                bottom: level_transform.translation.y,
+                top: level_transform.translation.y + ldtk_level.level.px_hei as f32,
+                left: level_transform.translation.x,
+                right: level_transform.translation.x + ldtk_level.level.px_wid as f32,
+            };
+
+            for player_transform in player_query.iter() {
+                if player_transform.translation.x < level_bounds.right
+                    && player_transform.translation.x > level_bounds.left
+                    && player_transform.translation.y < level_bounds.top
+                    && player_transform.translation.y > level_bounds.bottom
+                {
+                    if !level_selection.is_match(&0, &ldtk_level.level) {
+                        *level_selection = LevelSelection::Uid(ldtk_level.level.uid);
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn debug_collision(
+    mut reader: EventReader<physics::CollisionEvent>,
+    player_query: Query<Entity, With<Player>>,
+) {
+    for collision in reader.iter() {
+        if collision.entity == player_query.single() {
+            println!("{:?}", collision);
+        }
     }
 }

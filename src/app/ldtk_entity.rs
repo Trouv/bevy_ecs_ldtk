@@ -1,5 +1,5 @@
 use crate::{
-    components::EntityInstanceBundle,
+    components::{EntityInstanceBundle, Worldly},
     ldtk::{EntityInstance, LayerInstance, TilesetDefinition},
 };
 use bevy::{ecs::system::EntityCommands, prelude::*};
@@ -284,6 +284,24 @@ impl LdtkEntity for SpriteSheetBundle {
                 warn!("EntityInstance needs a tile, an associated tileset, and an associated tileset definition to be bundled as a SpriteSheetBundle");
                 SpriteSheetBundle::default()
             }
+        }
+    }
+}
+
+impl LdtkEntity for Worldly {
+    fn bundle_entity(
+        entity_instance: &EntityInstance,
+        layer_instance: &LayerInstance,
+        _: Option<&Handle<Image>>,
+        _: Option<&TilesetDefinition>,
+        _: &AssetServer,
+        _: &mut Assets<TextureAtlas>,
+    ) -> Worldly {
+        Worldly {
+            spawn_level: layer_instance.level_id,
+            spawn_layer: layer_instance.layer_def_uid,
+            entity_def_uid: entity_instance.def_uid,
+            spawn_px: entity_instance.px,
         }
     }
 }

@@ -2,7 +2,7 @@
 
 use crate::{
     app::{
-        LdtkEntityMap, LdtkIntCellMap, PhantomLdtkEntity, PhantomLdtkEntityTrait,
+        LdtkEntity, LdtkEntityMap, LdtkIntCellMap, PhantomLdtkEntity, PhantomLdtkEntityTrait,
         PhantomLdtkIntCell, PhantomLdtkIntCellTrait,
     },
     assets::{LdtkAsset, LdtkLevel, TilesetMap},
@@ -39,6 +39,8 @@ pub fn choose_levels(
                         .enumerate()
                         .find(|(i, l)| level_selection.is_match(i, l))
                     {
+                        level_set.uids.clear();
+
                         info!("Levels chosen. Inserting in LevelSet.");
                         level_set.uids.insert(level.uid);
 
@@ -269,6 +271,7 @@ pub fn process_ldtk_levels(
         (Entity, &Handle<LdtkLevel>, &Parent, &GlobalTransform),
         Added<Handle<LdtkLevel>>,
     >,
+    worldly_query: Query<&Worldly>,
 ) {
     // This function uses code from the bevy_ecs_tilemap ldtk example
     // https://github.com/StarArawn/bevy_ecs_tilemap/blob/main/examples/ldtk/ldtk.rs
@@ -288,6 +291,8 @@ pub fn process_ldtk_levels(
                 let entity_definition_map =
                     create_entity_definition_map(&ldtk_asset.project.defs.entities);
 
+                let worldly_set = worldly_query.iter().map(|w| w.clone()).collect();
+
                 if let Some(level) = level_assets.get(level_handle) {
                     spawn_level(
                         &level.level,
@@ -300,6 +305,7 @@ pub fn process_ldtk_levels(
                         &entity_definition_map,
                         &ldtk_asset.tileset_map,
                         &tileset_definition_map,
+                        worldly_set,
                         ldtk_entity,
                     );
                 }
@@ -320,6 +326,7 @@ fn spawn_level(
     entity_definition_map: &HashMap<i32, &EntityDefinition>,
     tileset_map: &TilesetMap,
     tileset_definition_map: &HashMap<i32, &TilesetDefinition>,
+    worldly_set: HashSet<Worldly>,
     ldtk_entity: Entity,
 ) {
     let mut map = Map::new(level.uid as u16, ldtk_entity);
@@ -350,17 +357,7 @@ fn spawn_level(
                                 None => (None, None),
                             };
 
-                            let default_ldtk_entity: Box<dyn PhantomLdtkEntityTrait> =
-                                Box::new(PhantomLdtkEntity::<EntityInstanceBundle>::new());
-
-                            ldtk_map_get_or_default(
-                                layer_instance.identifier.clone(),
-                                entity_instance.identifier.clone(),
-                                &default_ldtk_entity,
-                                ldtk_entity_map,
-                            )
-                            .evaluate(
-                                &mut entity_commands,
+                            let predicted_worldly = Worldly::bundle_entity(
                                 entity_instance,
                                 layer_instance,
                                 tileset,
@@ -369,9 +366,30 @@ fn spawn_level(
                                 texture_atlases,
                             );
 
-                            entity_commands
-                                .insert(transform)
-                                .insert(GlobalTransform::default());
+                            if !worldly_set.contains(&predicted_worldly) {
+                                let default_ldtk_entity: Box<dyn PhantomLdtkEntityTrait> =
+                                    Box::new(PhantomLdtkEntity::<EntityInstanceBundle>::new());
+
+                                ldtk_map_get_or_default(
+                                    layer_instance.identifier.clone(),
+                                    entity_instance.identifier.clone(),
+                                    &default_ldtk_entity,
+                                    ldtk_entity_map,
+                                )
+                                .evaluate(
+                                    &mut entity_commands,
+                                    entity_instance,
+                                    layer_instance,
+                                    tileset,
+                                    tileset_definition,
+                                    asset_server,
+                                    texture_atlases,
+                                );
+
+                                entity_commands
+                                    .insert(transform)
+                                    .insert(GlobalTransform::default());
+                            }
                         }
                     });
                 }

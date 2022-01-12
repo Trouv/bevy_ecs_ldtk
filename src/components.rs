@@ -23,8 +23,13 @@ pub struct LevelSet {
     pub uids: HashSet<i32>,
 }
 
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Component)]
-pub struct Worldly;
+#[derive(Clone, Eq, PartialEq, Debug, Default, Hash, Component)]
+pub struct Worldly {
+    pub spawn_level: i32,
+    pub spawn_layer: i32,
+    pub entity_def_uid: i32,
+    pub spawn_px: IVec2,
+}
 
 #[derive(Clone, Default, Bundle)]
 pub(crate) struct IntGridCellBundle {

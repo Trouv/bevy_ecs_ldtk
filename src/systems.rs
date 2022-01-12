@@ -18,7 +18,7 @@ use bevy::{
     render::{render_resource::TextureUsages, texture::DEFAULT_IMAGE_HANDLE},
 };
 use bevy_ecs_tilemap::prelude::*;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 const CHUNK_SIZE: ChunkSize = ChunkSize(32, 32);
 
@@ -30,7 +30,6 @@ pub fn choose_levels(
 ) {
     if let Some(level_selection) = level_selection {
         if level_selection.is_changed() {
-            info!("Choosing levels");
             for (ldtk_handle, mut level_set) in level_set_query.iter_mut() {
                 if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
                     if let Some((_, level)) = ldtk_asset
@@ -49,10 +48,46 @@ pub fn choose_levels(
                                 .extend(level.neighbours.iter().map(|n| n.level_uid));
                         }
                     }
-                } else {
-                    warn!("Attempted to choose levels based on LevelSelection, but the LdtkAsset wasn't loaded.")
                 }
             }
+        }
+    }
+}
+
+pub fn apply_level_set(
+    mut commands: Commands,
+    ldtk_world_query: Query<(Entity, &LevelSet, &Children, &Handle<LdtkAsset>), Changed<LevelSet>>,
+    ldtk_level_query: Query<&Handle<LdtkLevel>>,
+    ldtk_assets: Res<Assets<LdtkAsset>>,
+    level_assets: Res<Assets<LdtkLevel>>,
+    ldtk_settings: Res<LdtkSettings>,
+    mut map_query: MapQuery,
+) {
+    for (world_entity, level_set, children, ldtk_asset_handle) in ldtk_world_query.iter() {
+        let mut previous_level_map = HashMap::new();
+        for child in children.iter() {
+            if let Ok(level_handle) = ldtk_level_query.get(*child) {
+                if let Some(ldtk_level) = level_assets.get(level_handle) {
+                    previous_level_map.insert(ldtk_level.level.uid, child);
+                }
+            }
+        }
+
+        let previous_uids: HashSet<i32> = previous_level_map.keys().map(|u| *u).collect();
+
+        let uids_to_spawn = level_set.uids.difference(&previous_uids);
+        if uids_to_spawn.clone().count() > 0 {
+            if let Some(ldtk_asset) = ldtk_assets.get(ldtk_asset_handle) {
+                commands.entity(world_entity).with_children(|c| {
+                    for uid in uids_to_spawn {
+                        pre_spawn_level(c, ldtk_asset, *uid, &ldtk_settings);
+                    }
+                });
+            }
+        }
+
+        for uid in previous_uids.difference(&level_set.uids) {
+            map_query.despawn(&mut commands, *uid as u16);
         }
     }
 }
@@ -142,42 +177,49 @@ pub fn process_ldtk_world(
                 info!("Ldtk asset found.");
                 commands.entity(ldtk_entity).with_children(|c| {
                     for level_uid in &level_set.uids {
-                        info!("spawning level {}", level_uid);
-                        if let Some(level_handle) = ldtk_asset.level_map.get(level_uid) {
-                            let mut translation = Vec3::ZERO;
-
-                            if ldtk_settings.use_level_world_translations {
-                                let mut world_height = 0;
-                                for level in &ldtk_asset.project.levels {
-                                    world_height = world_height.max(level.world_y + level.px_hei);
-                                }
-
-                                if let Some(level) = ldtk_asset
-                                    .project
-                                    .levels
-                                    .iter()
-                                    .find(|l| l.uid == *level_uid)
-                                {
-                                    let level_coords = ldtk_pixel_coords_to_translation(
-                                        IVec2::new(level.world_x, level.world_y + level.px_hei),
-                                        world_height,
-                                    );
-                                    translation.x = level_coords.x;
-                                    translation.y = level_coords.y;
-                                }
-                            }
-
-                            info!("Spawning level");
-                            c.spawn_bundle(LevelBundle {
-                                level_handle: level_handle.clone(),
-                                transform: Transform::from_translation(translation),
-                                global_transform: GlobalTransform::default(),
-                            });
-                        }
+                        pre_spawn_level(c, ldtk_asset, *level_uid, &ldtk_settings)
                     }
                 });
             }
         }
+    }
+}
+
+fn pre_spawn_level(
+    child_builder: &mut ChildBuilder,
+    ldtk_asset: &LdtkAsset,
+    level_uid: i32,
+    ldtk_settings: &LdtkSettings,
+) {
+    if let Some(level_handle) = ldtk_asset.level_map.get(&level_uid) {
+        let mut translation = Vec3::ZERO;
+
+        if ldtk_settings.use_level_world_translations {
+            let mut world_height = 0;
+            for level in &ldtk_asset.project.levels {
+                world_height = world_height.max(level.world_y + level.px_hei);
+            }
+
+            if let Some(level) = ldtk_asset
+                .project
+                .levels
+                .iter()
+                .find(|l| l.uid == level_uid)
+            {
+                let level_coords = ldtk_pixel_coords_to_translation(
+                    IVec2::new(level.world_x, level.world_y + level.px_hei),
+                    world_height,
+                );
+                translation.x = level_coords.x;
+                translation.y = level_coords.y;
+            }
+        }
+
+        child_builder.spawn_bundle(LevelBundle {
+            level_handle: level_handle.clone(),
+            transform: Transform::from_translation(translation),
+            global_transform: GlobalTransform::default(),
+        });
     }
 }
 

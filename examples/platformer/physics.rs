@@ -76,7 +76,7 @@ pub struct Velocity {
 pub struct IgnoreGravity;
 
 pub fn detect_collision(
-    query: Query<(Entity, &Transform, &RectangleCollider)>,
+    query: Query<(Entity, &GlobalTransform, &RectangleCollider)>,
     mut writer: EventWriter<CollisionEvent>,
 ) {
     let mut collider_rectangles = Vec::new();

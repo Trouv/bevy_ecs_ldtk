@@ -19,12 +19,17 @@ fn main() {
         .add_plugin(physics::BasicPhysicsPlugin)
         .insert_resource(physics::Gravity { value: -2000. })
         .insert_resource(physics::MaxVelocity { value: 700. })
+        .insert_resource(LevelSelection::Identifier("Bottom".to_string()))
+        .insert_resource(LdtkSettings {
+            load_level_neighbors: true,
+            use_level_world_translations: true,
+        })
         .add_startup_system(setup)
         .add_system(movement)
         .add_system(detect_climb_range)
         .add_system(ignore_gravity_if_climbing)
         .add_system(patrol)
-        .add_system(camera_fit_inside_current_level)
+        //.add_system(camera_fit_inside_current_level)
         .add_system(debug_asset_events)
         .add_system(debug_player_count)
         .register_ldtk_int_cell::<ColliderBundle>(1)
@@ -39,7 +44,8 @@ fn main() {
 mod physics;
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let camera = OrthographicCameraBundle::new_2d();
+    let mut camera = OrthographicCameraBundle::new_2d();
+    camera.orthographic_projection.scale = 2.;
     commands.spawn_bundle(camera);
 
     asset_server.watch_for_changes().unwrap();
@@ -125,6 +131,7 @@ struct PlayerBundle {
     #[bundle]
     collider_bundle: ColliderBundle,
     player: Player,
+    worldly: Worldly,
     climber: Climber,
 }
 
@@ -346,67 +353,64 @@ fn patrol(mut query: Query<(&mut Transform, &mut physics::Velocity, &mut Patrol)
 
 const ASPECT_RATIO: f32 = 16. / 9.;
 
-fn camera_fit_inside_current_level(
-    mut transform_query_set: QuerySet<(
-        QueryState<(
-            &mut bevy::render::camera::OrthographicProjection,
-            &mut Transform,
-        )>,
-        QueryState<&Transform, With<Player>>,
-    )>,
-    ldtk_map_query: Query<(&Handle<LdtkAsset>, &LevelSelection)>,
-    ldtk_assets: Res<Assets<LdtkAsset>>,
-) {
-    let (ldtk_handle, level_selection) = ldtk_map_query.single();
+//fn camera_fit_inside_current_level(
+//mut transform_query_set: QuerySet<(
+//QueryState<(
+//&mut bevy::render::camera::OrthographicProjection,
+//&mut Transform,
+//)>,
+//QueryState<&Transform, With<Player>>,
+//)>,
+//ldtk_map_query: Query<(&Handle<LdtkAsset>)>,
+//ldtk_assets: Res<Assets<LdtkAsset>>,
+//) {
+//let (ldtk_handle, level_selection) = ldtk_map_query.single();
 
-    if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
-        if let Some((_, level)) = ldtk_asset
-            .project
-            .levels
-            .iter()
-            .enumerate()
-            .find(|(i, l)| level_selection.is_match(i, l))
-        {
-            if let Ok(Transform {
-                translation: player_translation,
-                ..
-            }) = transform_query_set.q1().get_single()
-            {
-                let player_translation = player_translation.clone();
-                let mut camera_query = transform_query_set.q0();
+//if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
+//if let Some((_, level)) = ldtk_asset
+//.project
+//.levels
+//.iter()
+//.enumerate()
+//.find(|(i, l)| level_selection.is_match(i, l))
+//{
+//if let Ok(Transform {
+//translation: player_translation,
+//..
+//}) = transform_query_set.q1().get_single()
+//{
+//let player_translation = player_translation.clone();
+//let mut camera_query = transform_query_set.q0();
 
-                let (mut orthographic_projection, mut camera_transform) = camera_query.single_mut();
+//let (mut orthographic_projection, mut camera_transform) = camera_query.single_mut();
 
-                let level_ratio = level.px_wid as f32 / level.px_hei as f32;
+//let level_ratio = level.px_wid as f32 / level.px_hei as f32;
 
-                orthographic_projection.scaling_mode = bevy::render::camera::ScalingMode::None;
-                orthographic_projection.bottom = 0.;
-                orthographic_projection.left = 0.;
-                if level_ratio > ASPECT_RATIO {
-                    // level is wider than the screen
-                    orthographic_projection.top = (level.px_hei as f32 / 9.).round() * 9.;
-                    orthographic_projection.right = orthographic_projection.top * ASPECT_RATIO;
-                    camera_transform.translation.x = (player_translation.x
-                        - orthographic_projection.right / 2.)
-                        .clamp(0., level.px_wid as f32 - orthographic_projection.right);
-                } else {
-                    // level is taller than the screen
-                    orthographic_projection.right = (level.px_wid as f32 / 16.).round() * 16.;
-                    orthographic_projection.top = orthographic_projection.right / ASPECT_RATIO;
-                    camera_transform.translation.y = (player_translation.y
-                        - orthographic_projection.top / 2.)
-                        .clamp(0., level.px_hei as f32 - orthographic_projection.top);
-                }
-            }
-        }
-    }
-}
+//orthographic_projection.scaling_mode = bevy::render::camera::ScalingMode::None;
+//orthographic_projection.bottom = 0.;
+//orthographic_projection.left = 0.;
+//if level_ratio > ASPECT_RATIO {
+//// level is wider than the screen
+//orthographic_projection.top = (level.px_hei as f32 / 9.).round() * 9.;
+//orthographic_projection.right = orthographic_projection.top * ASPECT_RATIO;
+//camera_transform.translation.x = (player_translation.x
+//- orthographic_projection.right / 2.)
+//.clamp(0., level.px_wid as f32 - orthographic_projection.right);
+//} else {
+//// level is taller than the screen
+//orthographic_projection.right = (level.px_wid as f32 / 16.).round() * 16.;
+//orthographic_projection.top = orthographic_projection.right / ASPECT_RATIO;
+//camera_transform.translation.y = (player_translation.y
+//- orthographic_projection.top / 2.)
+//.clamp(0., level.px_hei as f32 - orthographic_projection.top);
+//}
+//}
+//}
+//}
+//}
 
 fn debug_asset_events(mut reader: EventReader<AssetEvent<Image>>) {
     for event in reader.iter() {
         println!("{:?}", event);
     }
-}
-fn debug_player_count(query: Query<&Player>) {
-    println!("There are {} players", query.iter().len());
 }

@@ -8,7 +8,7 @@ use crate::{
     assets::{LdtkAsset, LdtkLevel, TilesetMap},
     components::*,
     ldtk::{EntityDefinition, Level, TileInstance, TilesetDefinition, Type},
-    resources::{LdtkSettings, LevelSelection},
+    resources::{LdtkSettings, LevelEvent, LevelSelection},
     tile_makers::*,
     utils::*,
 };
@@ -64,6 +64,7 @@ pub fn apply_level_set(
     level_assets: Res<Assets<LdtkLevel>>,
     ldtk_settings: Res<LdtkSettings>,
     mut map_query: MapQuery,
+    mut level_events: EventWriter<LevelEvent>,
 ) {
     for (world_entity, level_set, children, ldtk_asset_handle) in ldtk_world_query.iter() {
         let mut previous_level_map = HashMap::new();
@@ -82,6 +83,7 @@ pub fn apply_level_set(
             if let Some(ldtk_asset) = ldtk_assets.get(ldtk_asset_handle) {
                 commands.entity(world_entity).with_children(|c| {
                     for uid in uids_to_spawn {
+                        level_events.send(LevelEvent::SpawnTriggered(*uid));
                         pre_spawn_level(c, ldtk_asset, *uid, &ldtk_settings);
                     }
                 });
@@ -90,6 +92,7 @@ pub fn apply_level_set(
 
         for uid in previous_uids.difference(&level_set.uids) {
             map_query.despawn(&mut commands, *uid as u16);
+            level_events.send(LevelEvent::Despawned(*uid));
         }
     }
 }
@@ -98,6 +101,7 @@ pub fn apply_level_set(
 pub fn process_ldtk_world(
     mut commands: Commands,
     mut ldtk_events: EventReader<AssetEvent<LdtkAsset>>,
+    mut level_events: EventWriter<LevelEvent>,
     new_ldtks: Query<&Handle<LdtkAsset>, Added<Handle<LdtkAsset>>>,
     mut ldtk_level_query: Query<&mut Map, With<Handle<LdtkLevel>>>,
     mut ldtk_world_query: Query<(Entity, &Handle<LdtkAsset>, &mut LevelSet, Option<&Children>)>,
@@ -148,6 +152,7 @@ pub fn process_ldtk_world(
                     if let Ok(mut map) = ldtk_level_query.get_mut(*child) {
                         clear_map(&mut commands, &mut map, &layer_query, &chunk_query);
                         map.despawn(&mut commands);
+                        level_events.send(LevelEvent::Despawned(map.id as i32));
                     } else {
                         commands.entity(*child).despawn_recursive();
                     }
@@ -179,6 +184,7 @@ pub fn process_ldtk_world(
                 info!("Ldtk asset found.");
                 commands.entity(ldtk_entity).with_children(|c| {
                     for level_uid in &level_set.uids {
+                        level_events.send(LevelEvent::SpawnTriggered(*level_uid));
                         pre_spawn_level(c, ldtk_asset, *level_uid, &ldtk_settings)
                     }
                 });
@@ -272,6 +278,7 @@ pub fn process_ldtk_levels(
         Added<Handle<LdtkLevel>>,
     >,
     worldly_query: Query<&Worldly>,
+    mut level_events: EventWriter<LevelEvent>,
 ) {
     // This function uses code from the bevy_ecs_tilemap ldtk example
     // https://github.com/StarArawn/bevy_ecs_tilemap/blob/main/examples/ldtk/ldtk.rs
@@ -308,6 +315,7 @@ pub fn process_ldtk_levels(
                         worldly_set,
                         ldtk_entity,
                     );
+                    level_events.send(LevelEvent::Spawned(level.level.uid));
                 }
             }
         }
@@ -642,5 +650,24 @@ pub fn set_ldtk_texture_filters_to_nearest(
                 }
             }
         }
+    }
+}
+
+pub fn detect_level_spawned_events(mut reader: EventReader<LevelEvent>) -> Vec<i32> {
+    let mut spawned_ids = Vec::new();
+    for event in reader.iter() {
+        if let LevelEvent::Spawned(id) = event {
+            spawned_ids.push(*id);
+        }
+    }
+    spawned_ids
+}
+
+pub fn fire_level_transformed_events(
+    In(spawned_ids): In<Vec<i32>>,
+    mut writer: EventWriter<LevelEvent>,
+) {
+    for id in spawned_ids {
+        writer.send(LevelEvent::Transformed(id));
     }
 }

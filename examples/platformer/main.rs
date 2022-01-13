@@ -3,7 +3,7 @@ use bevy_ecs_ldtk::{prelude::*, utils::ldtk_pixel_coords_to_translation_pivoted}
 
 use bevy::render::{options::WgpuOptions, render_resource::WgpuLimits};
 
-use std::collections::HashSet;
+use heron::prelude::*;
 
 fn main() {
     App::new()
@@ -16,32 +16,30 @@ fn main() {
         })
         .add_plugins(DefaultPlugins)
         .add_plugin(LdtkPlugin)
-        .add_plugin(physics::BasicPhysicsPlugin)
-        .insert_resource(physics::Gravity { value: -2000. })
-        .insert_resource(physics::MaxVelocity { value: 700. })
+        .add_plugin(PhysicsPlugin::default())
+        .insert_resource(Gravity::from(Vec3::new(0.0, -2000., 0.0)))
         .insert_resource(LevelSelection::Uid(0))
         .insert_resource(LdtkSettings {
-            load_level_neighbors: false,
+            load_level_neighbors: true,
             use_level_world_translations: true,
         })
         .add_startup_system(setup)
+        .add_system(pause_physics_during_load)
         .add_system(movement)
-        .add_system(detect_climb_range)
-        .add_system(ignore_gravity_if_climbing)
+        //.add_system(detect_climb_range)
+        //.add_system(ignore_gravity_if_climbing)
         .add_system(patrol)
         .add_system(camera_fit_inside_current_level)
-        .add_system(debug_collision)
+        //.add_system(debug_collision)
         .add_system(update_level_selection)
-        .register_ldtk_int_cell::<ColliderBundle>(1)
+        .register_ldtk_int_cell::<WallBundle>(1)
         .register_ldtk_int_cell::<LadderBundle>(2)
-        .register_ldtk_int_cell::<ColliderBundle>(3)
+        .register_ldtk_int_cell::<WallBundle>(3)
         .register_ldtk_entity::<PlayerBundle>("Player")
         .register_ldtk_entity::<MobBundle>("Mob")
         .register_ldtk_entity::<ChestBundle>("Chest")
         .run();
 }
-
-mod physics;
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     let camera = OrthographicCameraBundle::new_2d();
@@ -56,38 +54,57 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
 }
 
-#[derive(Copy, Clone, Debug, Default, Bundle, LdtkIntCell)]
+fn pause_physics_during_load(
+    mut level_events: EventReader<LevelEvent>,
+    mut physics_time: ResMut<PhysicsTime>,
+) {
+    for event in level_events.iter() {
+        println!("{:?}", event);
+
+        match event {
+            LevelEvent::SpawnTriggered(_) => physics_time.set_scale(0.),
+            LevelEvent::Transformed(_) => physics_time.set_scale(1.),
+            _ => (),
+        }
+    }
+}
+
+#[derive(Clone, Debug, Default, Bundle, LdtkIntCell)]
 struct ColliderBundle {
-    collider: physics::RectangleCollider,
-    rigid_body: physics::RigidBody,
-    velocity: physics::Velocity,
+    collider: CollisionShape,
+    rigid_body: RigidBody,
+    velocity: Velocity,
+    rotation_constraints: RotationConstraints,
 }
 
 impl From<EntityInstance> for ColliderBundle {
     fn from(entity_instance: EntityInstance) -> ColliderBundle {
         match entity_instance.identifier.as_ref() {
             "Player" => ColliderBundle {
-                collider: physics::RectangleCollider {
-                    half_width: 6.,
-                    half_height: 16.,
+                collider: CollisionShape::Cuboid {
+                    half_extends: Vec3::new(6., 16., 0.),
+                    border_radius: None,
                 },
-                rigid_body: physics::RigidBody::Dynamic,
+                rigid_body: RigidBody::Dynamic,
+                rotation_constraints: RotationConstraints::lock(),
                 ..Default::default()
             },
             "Mob" => ColliderBundle {
-                collider: physics::RectangleCollider {
-                    half_width: 5.,
-                    half_height: 5.,
+                collider: CollisionShape::Cuboid {
+                    half_extends: Vec3::new(5., 5., 0.),
+                    border_radius: None,
                 },
-                rigid_body: physics::RigidBody::Dynamic,
+                rigid_body: RigidBody::Dynamic,
+                rotation_constraints: RotationConstraints::lock(),
                 ..Default::default()
             },
             "Chest" => ColliderBundle {
-                collider: physics::RectangleCollider {
-                    half_width: 8.,
-                    half_height: 8.,
+                collider: CollisionShape::Cuboid {
+                    half_extends: Vec3::new(8., 8., 0.),
+                    border_radius: None,
                 },
-                rigid_body: physics::RigidBody::Dynamic,
+                rigid_body: RigidBody::Dynamic,
+                rotation_constraints: RotationConstraints::lock(),
                 ..Default::default()
             },
             _ => ColliderBundle::default(),
@@ -98,12 +115,31 @@ impl From<EntityInstance> for ColliderBundle {
 impl From<IntGridCell> for ColliderBundle {
     fn from(int_grid_cell: IntGridCell) -> ColliderBundle {
         match int_grid_cell.value {
-            2 => ColliderBundle {
-                collider: physics::RectangleCollider {
-                    half_width: 8.,
-                    half_height: 8.,
+            1 => ColliderBundle {
+                collider: CollisionShape::Cuboid {
+                    half_extends: Vec3::new(8., 8., 0.),
+                    border_radius: None,
                 },
-                rigid_body: physics::RigidBody::Sensor,
+                rigid_body: RigidBody::Static,
+                rotation_constraints: RotationConstraints::lock(),
+                ..Default::default()
+            },
+            2 => ColliderBundle {
+                collider: CollisionShape::Cuboid {
+                    half_extends: Vec3::new(8., 8., 0.),
+                    border_radius: None,
+                },
+                rigid_body: RigidBody::Sensor,
+                rotation_constraints: RotationConstraints::lock(),
+                ..Default::default()
+            },
+            3 => ColliderBundle {
+                collider: CollisionShape::Cuboid {
+                    half_extends: Vec3::new(8., 8., 0.),
+                    border_radius: None,
+                },
+                rigid_body: RigidBody::Static,
+                rotation_constraints: RotationConstraints::lock(),
                 ..Default::default()
             },
             _ => ColliderBundle::default(),
@@ -144,7 +180,14 @@ impl Default for Climber {
     }
 }
 
-#[derive(Copy, Clone, Debug, Default, Bundle, LdtkIntCell)]
+#[derive(Clone, Debug, Default, Bundle, LdtkIntCell)]
+struct WallBundle {
+    #[from_int_grid_cell]
+    #[bundle]
+    collider_bundle: ColliderBundle,
+}
+
+#[derive(Clone, Debug, Default, Bundle, LdtkIntCell)]
 struct LadderBundle {
     #[from_int_grid_cell]
     #[bundle]
@@ -222,7 +265,6 @@ struct MobBundle {
     #[bundle]
     collider_bundle: ColliderBundle,
     enemy: Enemy,
-    ignore_gravity: physics::IgnoreGravity,
     #[from_entity_instance]
     entity_instance: EntityInstance,
     #[ldtk_entity]
@@ -241,13 +283,13 @@ struct ChestBundle {
 
 fn movement(
     input: Res<Input<KeyCode>>,
-    mut query: Query<(&mut physics::Velocity, &mut Climber), With<Player>>,
+    mut query: Query<(&mut Velocity, &mut Climber), With<Player>>,
 ) {
     for (mut velocity, mut climber) in query.iter_mut() {
         let right = if input.pressed(KeyCode::D) { 1. } else { 0. };
         let left = if input.pressed(KeyCode::A) { 1. } else { 0. };
 
-        velocity.value.x = (right - left) * 200.;
+        velocity.linear.x = (right - left) * 200.;
 
         if *climber == Climber::InClimbRange
             && (input.just_pressed(KeyCode::W) || input.just_pressed(KeyCode::S))
@@ -259,58 +301,58 @@ fn movement(
             let up = if input.pressed(KeyCode::W) { 1. } else { 0. };
             let down = if input.pressed(KeyCode::S) { 1. } else { 0. };
 
-            velocity.value.y = (up - down) * 200.;
+            velocity.linear.y = (up - down) * 200.;
         }
 
         if input.just_pressed(KeyCode::Space) {
-            velocity.value.y = 450.;
+            velocity.linear.y = 450.;
             *climber = Climber::InClimbRange;
         }
     }
 }
 
-fn detect_climb_range(
-    mut climbers: Query<(Entity, &mut Climber)>,
-    climbables: Query<&Climbable>,
-    mut collisions: EventReader<physics::CollisionEvent>,
-) {
-    let mut climbers_in_range = HashSet::new();
-    for collision in collisions.iter() {
-        if climbers.get_mut(collision.entity).is_ok()
-            && climbables
-                .get_component::<Climbable>(collision.other_entity)
-                .is_ok()
-        {
-            climbers_in_range.insert(collision.entity);
-        }
-    }
+//fn detect_climb_range(
+//mut climbers: Query<(Entity, &mut Climber)>,
+//climbables: Query<&Climbable>,
+//mut collisions: EventReader<CollisionEvent>,
+//) {
+//let mut climbers_in_range = HashSet::new();
+//for collision in collisions.iter() {
+//if climbers.get_mut(collision.entity).is_ok()
+//&& climbables
+//.get_component::<Climbable>(collision.other_entity)
+//.is_ok()
+//{
+//climbers_in_range.insert(collision.entity);
+//}
+//}
 
-    for (entity, mut climber) in climbers.iter_mut() {
-        if !climbers_in_range.contains(&entity) {
-            *climber = Climber::OutOfClimbRange;
-        } else if *climber != Climber::Climbing {
-            *climber = Climber::InClimbRange;
-        }
-    }
-}
+//for (entity, mut climber) in climbers.iter_mut() {
+//if !climbers_in_range.contains(&entity) {
+//*climber = Climber::OutOfClimbRange;
+//} else if *climber != Climber::Climbing {
+//*climber = Climber::InClimbRange;
+//}
+//}
+//}
 
-fn ignore_gravity_if_climbing(
-    mut commands: Commands,
-    query: Query<(Entity, &Climber), Changed<Climber>>,
-) {
-    for (entity, climber) in query.iter() {
-        match *climber {
-            Climber::Climbing => {
-                commands.entity(entity).insert(physics::IgnoreGravity);
-            }
-            _ => {
-                commands.entity(entity).remove::<physics::IgnoreGravity>();
-            }
-        }
-    }
-}
+//fn ignore_gravity_if_climbing(
+//mut commands: Commands,
+//query: Query<(Entity, &Climber), Changed<Climber>>,
+//) {
+//for (entity, climber) in query.iter() {
+//match *climber {
+//Climber::Climbing => {
+//commands.entity(entity).insert(IgnoreGravity);
+//}
+//_ => {
+//commands.entity(entity).remove::<IgnoreGravity>();
+//}
+//}
+//}
+//}
 
-fn patrol(mut query: Query<(&mut Transform, &mut physics::Velocity, &mut Patrol)>) {
+fn patrol(mut query: Query<(&mut Transform, &mut Velocity, &mut Patrol)>) {
     for (mut transform, mut velocity, mut patrol) in query.iter_mut() {
         if patrol.points.len() <= 1 {
             continue;
@@ -323,7 +365,7 @@ fn patrol(mut query: Query<(&mut Transform, &mut physics::Velocity, &mut Patrol)
             0.,
         ));
 
-        if new_velocity.dot(velocity.value) < 0. {
+        if new_velocity.dot(velocity.linear) < 0. {
             if patrol.index == 0 {
                 patrol.forward = true;
             } else if patrol.index == patrol.points.len() - 1 {
@@ -347,7 +389,7 @@ fn patrol(mut query: Query<(&mut Transform, &mut physics::Velocity, &mut Patrol)
             ));
         }
 
-        velocity.value = new_velocity;
+        velocity.linear = new_velocity;
     }
 }
 
@@ -441,17 +483,6 @@ fn update_level_selection(
                     }
                 }
             }
-        }
-    }
-}
-
-fn debug_collision(
-    mut reader: EventReader<physics::CollisionEvent>,
-    player_query: Query<Entity, With<Player>>,
-) {
-    for collision in reader.iter() {
-        if collision.entity == player_query.single() {
-            println!("{:?}", collision);
         }
     }
 }

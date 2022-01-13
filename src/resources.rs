@@ -28,3 +28,11 @@ pub struct LdtkSettings {
     pub use_level_world_translations: bool,
     pub load_level_neighbors: bool,
 }
+
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Hash)]
+pub enum LevelEvent {
+    SpawnTriggered(i32),
+    Spawned(i32),
+    Transformed(i32),
+    Despawned(i32),
+}

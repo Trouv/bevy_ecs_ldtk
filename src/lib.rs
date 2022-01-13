@@ -51,6 +51,7 @@ pub mod plugin {
                 .init_asset_loader::<assets::LdtkLoader>()
                 .add_asset::<assets::LdtkLevel>()
                 .init_asset_loader::<assets::LdtkLevelLoader>()
+                .add_event::<resources::LevelEvent>()
                 .add_system_to_stage(
                     CoreStage::Update,
                     systems::choose_levels.label(LdtkSystemLabel::LevelSelection),
@@ -64,6 +65,13 @@ pub mod plugin {
                     systems::apply_level_set
                         .label(LdtkSystemLabel::PreSpawn)
                         .after(LdtkSystemLabel::LevelSelection),
+                )
+                .add_system_to_stage(
+                    CoreStage::PostUpdate,
+                    systems::detect_level_spawned_events
+                        .chain(systems::fire_level_transformed_events)
+                        .label(LdtkSystemLabel::Other)
+                        .before(LdtkSystemLabel::LevelSpawning),
                 )
                 .add_system_to_stage(
                     CoreStage::PostUpdate,
@@ -93,6 +101,6 @@ pub mod prelude {
         components::{EntityInstance, IntGridCell, LdtkWorldBundle, LevelSet, Worldly},
         ldtk::{self, FieldValue, LayerInstance, TilesetDefinition},
         plugin::LdtkPlugin,
-        resources::{LdtkSettings, LevelSelection},
+        resources::{LdtkSettings, LevelEvent, LevelSelection},
     };
 }

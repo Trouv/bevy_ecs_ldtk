@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use bevy_ecs_ldtk::{prelude::*, utils::ldtk_pixel_coords_to_translation_pivoted};
 
 use bevy::render::{options::WgpuOptions, render_resource::WgpuLimits};
+use std::collections::HashSet;
 
 use heron::prelude::*;
 
@@ -26,11 +27,10 @@ fn main() {
         .add_startup_system(setup)
         .add_system(pause_physics_during_load)
         .add_system(movement)
-        //.add_system(detect_climb_range)
-        //.add_system(ignore_gravity_if_climbing)
+        .add_system(detect_climb_range)
+        .add_system(ignore_gravity_if_climbing)
         .add_system(patrol)
         .add_system(camera_fit_inside_current_level)
-        //.add_system(debug_collision)
         .add_system(update_level_selection)
         .register_ldtk_int_cell::<WallBundle>(1)
         .register_ldtk_int_cell::<LadderBundle>(2)
@@ -94,7 +94,7 @@ impl From<EntityInstance> for ColliderBundle {
                     half_extends: Vec3::new(5., 5., 0.),
                     border_radius: None,
                 },
-                rigid_body: RigidBody::Dynamic,
+                rigid_body: RigidBody::KinematicVelocityBased,
                 rotation_constraints: RotationConstraints::lock(),
                 ..Default::default()
             },
@@ -150,11 +150,10 @@ impl From<IntGridCell> for ColliderBundle {
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Component)]
 struct Player;
 
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Component)]
-enum Climber {
-    OutOfClimbRange,
-    InClimbRange,
-    Climbing,
+#[derive(Clone, Eq, PartialEq, Debug, Default, Component)]
+struct Climber {
+    climbing: bool,
+    intersecting_climbables: HashSet<Entity>,
 }
 
 #[derive(Clone, Default, Bundle, LdtkEntity)]
@@ -171,21 +170,15 @@ struct PlayerBundle {
     climber: Climber,
 }
 
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Component)]
-struct Climbable;
-
-impl Default for Climber {
-    fn default() -> Climber {
-        Climber::OutOfClimbRange
-    }
-}
-
 #[derive(Clone, Debug, Default, Bundle, LdtkIntCell)]
 struct WallBundle {
     #[from_int_grid_cell]
     #[bundle]
     collider_bundle: ColliderBundle,
 }
+
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Component)]
+struct Climbable;
 
 #[derive(Clone, Debug, Default, Bundle, LdtkIntCell)]
 struct LadderBundle {
@@ -291,13 +284,13 @@ fn movement(
 
         velocity.linear.x = (right - left) * 200.;
 
-        if *climber == Climber::InClimbRange
-            && (input.just_pressed(KeyCode::W) || input.just_pressed(KeyCode::S))
-        {
-            *climber = Climber::Climbing;
+        if climber.intersecting_climbables.is_empty() {
+            climber.climbing = false;
+        } else if input.just_pressed(KeyCode::W) || input.just_pressed(KeyCode::S) {
+            climber.climbing = true;
         }
 
-        if *climber == Climber::Climbing {
+        if climber.climbing {
             let up = if input.pressed(KeyCode::W) { 1. } else { 0. };
             let down = if input.pressed(KeyCode::S) { 1. } else { 0. };
 
@@ -306,51 +299,70 @@ fn movement(
 
         if input.just_pressed(KeyCode::Space) {
             velocity.linear.y = 450.;
-            *climber = Climber::InClimbRange;
+            climber.climbing = false;
         }
     }
 }
 
-//fn detect_climb_range(
-//mut climbers: Query<(Entity, &mut Climber)>,
-//climbables: Query<&Climbable>,
-//mut collisions: EventReader<CollisionEvent>,
-//) {
-//let mut climbers_in_range = HashSet::new();
-//for collision in collisions.iter() {
-//if climbers.get_mut(collision.entity).is_ok()
-//&& climbables
-//.get_component::<Climbable>(collision.other_entity)
-//.is_ok()
-//{
-//climbers_in_range.insert(collision.entity);
-//}
-//}
+fn detect_climb_range(
+    mut climbers: Query<&mut Climber>,
+    climbables: Query<&Climbable>,
+    mut collisions: EventReader<CollisionEvent>,
+) {
+    for collision in collisions.iter() {
+        match collision {
+            CollisionEvent::Started(collider_a, collider_b) => {
+                if let Ok(mut climber) = climbers.get_mut(collider_a.rigid_body_entity()) {
+                    if climbables.get(collider_b.rigid_body_entity()).is_ok() {
+                        climber
+                            .intersecting_climbables
+                            .insert(collider_b.rigid_body_entity());
+                    }
+                }
 
-//for (entity, mut climber) in climbers.iter_mut() {
-//if !climbers_in_range.contains(&entity) {
-//*climber = Climber::OutOfClimbRange;
-//} else if *climber != Climber::Climbing {
-//*climber = Climber::InClimbRange;
-//}
-//}
-//}
+                if let Ok(mut climber) = climbers.get_mut(collider_b.rigid_body_entity()) {
+                    if climbables.get(collider_a.rigid_body_entity()).is_ok() {
+                        climber
+                            .intersecting_climbables
+                            .insert(collider_a.rigid_body_entity());
+                    }
+                }
+            }
+            CollisionEvent::Stopped(collider_a, collider_b) => {
+                if let Ok(mut climber) = climbers.get_mut(collider_a.rigid_body_entity()) {
+                    if climbables.get(collider_b.rigid_body_entity()).is_ok() {
+                        climber
+                            .intersecting_climbables
+                            .remove(&collider_b.rigid_body_entity());
+                    }
+                }
 
-//fn ignore_gravity_if_climbing(
-//mut commands: Commands,
-//query: Query<(Entity, &Climber), Changed<Climber>>,
-//) {
-//for (entity, climber) in query.iter() {
-//match *climber {
-//Climber::Climbing => {
-//commands.entity(entity).insert(IgnoreGravity);
-//}
-//_ => {
-//commands.entity(entity).remove::<IgnoreGravity>();
-//}
-//}
-//}
-//}
+                if let Ok(mut climber) = climbers.get_mut(collider_b.rigid_body_entity()) {
+                    if climbables.get(collider_a.rigid_body_entity()).is_ok() {
+                        climber
+                            .intersecting_climbables
+                            .remove(&collider_a.rigid_body_entity());
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn ignore_gravity_if_climbing(
+    mut commands: Commands,
+    query: Query<(Entity, &Climber), Changed<Climber>>,
+) {
+    for (entity, climber) in query.iter() {
+        if climber.climbing {
+            commands
+                .entity(entity)
+                .insert(RigidBody::KinematicVelocityBased);
+        } else {
+            commands.entity(entity).insert(RigidBody::Dynamic);
+        }
+    }
+}
 
 fn patrol(mut query: Query<(&mut Transform, &mut Velocity, &mut Patrol)>) {
     for (mut transform, mut velocity, mut patrol) in query.iter_mut() {

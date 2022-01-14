@@ -1,3 +1,5 @@
+//! Assets and AssetLoaders for loading ldtk files.
+
 use crate::{
     ldtk::{LdtkJson, Level},
     resources::LevelSelection,
@@ -9,6 +11,9 @@ use bevy::{
     utils::BoxedFuture,
 };
 use std::{collections::HashMap, path::Path};
+
+#[allow(unused_imports)]
+use crate::components::LdtkWorldBundle;
 
 fn ldtk_path_to_asset_path<'a, 'b>(
     load_context: &LoadContext<'a>,
@@ -22,9 +27,16 @@ fn ldtk_path_to_asset_path<'a, 'b>(
         .into()
 }
 
+/// Used in [LdtkAsset]. Key is the tileset definition uid.
 pub type TilesetMap = HashMap<i32, Handle<Image>>;
+
+/// Used in [LdtkAsset]. Key is the level uid.
 pub type LevelMap = HashMap<i32, Handle<LdtkLevel>>;
 
+/// Main asset for loading ldtk files.
+///
+/// Load your ldtk project with the asset server, then insert the handle into the
+/// [LdtkWorldBundle].
 #[derive(TypeUuid)]
 #[uuid = "ecfb87b7-9cd9-4970-8482-f2f68b770d31"]
 pub struct LdtkAsset {
@@ -117,6 +129,12 @@ impl AssetLoader for LdtkLoader {
     }
 }
 
+/// Secondary asset for loading ldtk files, specific to level data.
+///
+/// Loaded as a labeled asset when loading a standalone ldtk file with [LdtkAsset].
+/// The label is just the level's identifier.
+///
+/// Loaded as a dependency to the [LdtkAsset] when loading an ldtk file with external levels.
 #[derive(TypeUuid)]
 #[uuid = "5448469b-2134-44f5-a86c-a7b829f70a0c"]
 pub struct LdtkLevel {

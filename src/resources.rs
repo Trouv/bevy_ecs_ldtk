@@ -5,10 +5,24 @@ use crate::ldtk::Level;
 #[allow(unused_imports)]
 use bevy::prelude::GlobalTransform;
 
+#[allow(unused_imports)]
+use crate::components::{LdtkWorldBundle, LevelSet};
+
+/// Resource for choosing which level(s) to spawn.
+///
+/// Updating this will despawn the current level and spawn the new one (unless they are the same).
+/// You can also load the selected level's neighbors using the [LdtkSettings] resource.
+///
+/// This resource works by updating the [LdtkWorldBundle]'s [LevelSet] component.
+/// If you need more control over the spawned levels than this resource provides,
+/// you can choose not to insert this resource and interface with [LevelSet] directly instead.
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub enum LevelSelection {
+    /// Spawn level with the given identifier.
     Identifier(String),
+    /// Spawn level from its index in the LDtk file's list of levels.
     Index(usize),
+    /// Spawn level with the given level `uid`.
     Uid(i32),
 }
 
@@ -28,9 +42,18 @@ impl LevelSelection {
     }
 }
 
+/// Settings resource for the plugin.
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default)]
 pub struct LdtkSettings {
+    /// Newly spawned levels will be spawned with translations like their location in the LDtk
+    /// world.
+    ///
+    /// Useful for "2d free map" and "GridVania" layouts.
     pub use_level_world_translations: bool,
+    /// When used with the [LevelSelection] resource, levels in the `__level_neighbors` list of
+    /// the selected level will be spawned in addition to the selected level.
+    ///
+    /// This is best used with [LdtkSettings::use_level_world_translations].
     pub load_level_neighbors: bool,
 }
 

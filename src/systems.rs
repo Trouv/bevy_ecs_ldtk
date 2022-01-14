@@ -206,18 +206,19 @@ fn pre_spawn_level(
             }
         }
 
-        child_builder.spawn_bundle(LevelBundle {
-            level_handle: level_handle.clone(),
-            transform: Transform::from_translation(translation),
-            global_transform: GlobalTransform::default(),
-        });
+        child_builder
+            .spawn()
+            .insert(level_handle.clone())
+            .insert_bundle((
+                Transform::from_translation(translation),
+                GlobalTransform::default(),
+            ));
     }
 }
 
 fn clear_map(
     commands: &mut Commands,
     map: &mut Map,
-    //map_children: &Option<&Children>,
     layer_query: &Query<&Layer>,
     chunk_query: &Query<&Chunk>,
 ) {

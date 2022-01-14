@@ -2,18 +2,23 @@ use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 
 pub mod app;
-pub mod assets;
-pub mod components;
+mod assets;
+mod components;
 pub mod ldtk;
-pub mod resources;
+mod resources;
 pub mod systems;
 mod tile_makers;
 pub mod utils;
 
+pub use assets::*;
+pub use components::*;
+pub use plugin::*;
+pub use resources::*;
+
 #[cfg(feature = "derive")]
 pub use bevy_ecs_ldtk_macros::*;
 
-pub mod plugin {
+mod plugin {
     //! Provides [LdtkPlugin] and its scheduling-related dependencies.
 
     use super::*;
@@ -85,9 +90,6 @@ pub mod plugin {
 pub mod prelude {
     //! `use bevy_ecs_ldtk::prelude::*;` to import commonly used items.
 
-    #[cfg(feature = "derive")]
-    pub use crate::{LdtkEntity, LdtkIntCell};
-
     pub use crate::{
         app::{LdtkEntity, LdtkIntCell, RegisterLdtkObjects},
         assets::{LdtkAsset, LdtkLevel},
@@ -96,4 +98,7 @@ pub mod prelude {
         plugin::LdtkPlugin,
         resources::{LdtkSettings, LevelEvent, LevelSelection},
     };
+
+    #[cfg(feature = "derive")]
+    pub use crate::{LdtkEntity, LdtkIntCell};
 }

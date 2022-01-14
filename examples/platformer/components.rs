@@ -15,6 +15,8 @@ pub struct ColliderBundle {
 
 impl From<EntityInstance> for ColliderBundle {
     fn from(entity_instance: EntityInstance) -> ColliderBundle {
+        let rotation_constraints = RotationConstraints::lock();
+
         match entity_instance.identifier.as_ref() {
             "Player" => ColliderBundle {
                 collider: CollisionShape::Cuboid {
@@ -22,7 +24,7 @@ impl From<EntityInstance> for ColliderBundle {
                     border_radius: None,
                 },
                 rigid_body: RigidBody::Dynamic,
-                rotation_constraints: RotationConstraints::lock(),
+                rotation_constraints,
                 ..Default::default()
             },
             "Mob" => ColliderBundle {
@@ -31,7 +33,7 @@ impl From<EntityInstance> for ColliderBundle {
                     border_radius: None,
                 },
                 rigid_body: RigidBody::KinematicVelocityBased,
-                rotation_constraints: RotationConstraints::lock(),
+                rotation_constraints,
                 ..Default::default()
             },
             "Chest" => ColliderBundle {
@@ -40,7 +42,7 @@ impl From<EntityInstance> for ColliderBundle {
                     border_radius: None,
                 },
                 rigid_body: RigidBody::Dynamic,
-                rotation_constraints: RotationConstraints::lock(),
+                rotation_constraints,
                 ..Default::default()
             },
             _ => ColliderBundle::default(),
@@ -50,6 +52,8 @@ impl From<EntityInstance> for ColliderBundle {
 
 impl From<IntGridCell> for ColliderBundle {
     fn from(int_grid_cell: IntGridCell) -> ColliderBundle {
+        let rotation_constraints = RotationConstraints::lock();
+
         match int_grid_cell.value {
             1 => ColliderBundle {
                 collider: CollisionShape::Cuboid {
@@ -57,7 +61,7 @@ impl From<IntGridCell> for ColliderBundle {
                     border_radius: None,
                 },
                 rigid_body: RigidBody::Static,
-                rotation_constraints: RotationConstraints::lock(),
+                rotation_constraints,
                 ..Default::default()
             },
             2 => ColliderBundle {
@@ -66,7 +70,7 @@ impl From<IntGridCell> for ColliderBundle {
                     border_radius: None,
                 },
                 rigid_body: RigidBody::Sensor,
-                rotation_constraints: RotationConstraints::lock(),
+                rotation_constraints,
                 ..Default::default()
             },
             3 => ColliderBundle {
@@ -75,7 +79,7 @@ impl From<IntGridCell> for ColliderBundle {
                     border_radius: None,
                 },
                 rigid_body: RigidBody::Static,
-                rotation_constraints: RotationConstraints::lock(),
+                rotation_constraints,
                 ..Default::default()
             },
             _ => ColliderBundle::default(),

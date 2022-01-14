@@ -32,13 +32,7 @@ pub fn choose_levels(
         if level_selection.is_changed() {
             for (ldtk_handle, mut level_set) in level_set_query.iter_mut() {
                 if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
-                    if let Some((_, level)) = ldtk_asset
-                        .project
-                        .levels
-                        .iter()
-                        .enumerate()
-                        .find(|(i, l)| level_selection.is_match(i, l))
-                    {
+                    if let Some(level) = ldtk_asset.get_level(&level_selection) {
                         level_set.uids.clear();
 
                         info!("Levels chosen. Inserting in LevelSet.");
@@ -161,13 +155,7 @@ pub fn process_ldtk_world(
 
             if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
                 if let Some(level_selection) = &level_selection {
-                    if let Some((_, level)) = ldtk_asset
-                        .project
-                        .levels
-                        .iter()
-                        .enumerate()
-                        .find(|(i, l)| level_selection.is_match(i, l))
-                    {
+                    if let Some(level) = ldtk_asset.get_level(level_selection) {
                         level_set.uids.clear();
 
                         info!("Levels chosen. Inserting in LevelSet.");

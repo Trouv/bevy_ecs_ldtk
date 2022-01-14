@@ -1,4 +1,7 @@
-use crate::ldtk::{LdtkJson, Level};
+use crate::{
+    ldtk::{LdtkJson, Level},
+    resources::LevelSelection,
+};
 use bevy::{
     asset::{AssetLoader, AssetPath, LoadContext, LoadedAsset},
     prelude::*,
@@ -38,6 +41,15 @@ impl LdtkAsset {
         }
 
         world_height
+    }
+
+    pub fn get_level(&self, level_selection: &LevelSelection) -> Option<&Level> {
+        self.project
+            .levels
+            .iter()
+            .enumerate()
+            .find(|(i, l)| level_selection.is_match(i, l))
+            .map(|(_, l)| l)
     }
 }
 

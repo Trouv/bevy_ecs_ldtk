@@ -17,7 +17,7 @@ base.
 - Support for loading external levels
 - Hot reloading (except for external levels)
 - Solutions for easily loading/unloading levels, changing levels, loading level neighbors...
-- Low-boilerplate solutions for spawning bundles for ldtk Entities and IntGrid
+- Low-boilerplate solutions for spawning bundles for LDtk Entities and IntGrid
   tiles using derive macros (other options available)
 - `serde` types for LDtk based off LDtk's [QuickType
   loader](https://ldtk.io/files/quicktype/LdtkJson.rs), but with several QoL

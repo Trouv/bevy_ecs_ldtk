@@ -653,6 +653,9 @@ pub fn set_ldtk_texture_filters_to_nearest(
     }
 }
 
+/// Returns the `uid`s of levels that have spawned in this update.
+///
+/// Mean to be used in a chain with [fire_level_transformed_events].
 pub fn detect_level_spawned_events(mut reader: EventReader<LevelEvent>) -> Vec<i32> {
     let mut spawned_ids = Vec::new();
     for event in reader.iter() {
@@ -663,6 +666,10 @@ pub fn detect_level_spawned_events(mut reader: EventReader<LevelEvent>) -> Vec<i
     spawned_ids
 }
 
+/// Fires [LevelEvent::Transformed] events for all the entities that spawned in the previous
+/// update.
+///
+/// Meant to be used in a chain with [detect_level_spawned_events].
 pub fn fire_level_transformed_events(
     In(spawned_ids): In<Vec<i32>>,
     mut writer: EventWriter<LevelEvent>,

@@ -1,3 +1,5 @@
+//! Resources and events used by the plugin.
+
 use crate::ldtk::Level;
 
 #[allow(unused_imports)]

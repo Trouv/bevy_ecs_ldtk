@@ -19,10 +19,6 @@ pub mod plugin {
     use super::*;
 
     /// [SystemLabel] used by the plugin for scheduling its systems.
-    ///
-    /// Exposed to the public api so users can address scheduling irregularities if necessary.
-    /// Is a single-variant enum instead of a unit struct to leave room for potential future
-    /// variants.
     #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash, SystemLabel)]
     pub enum LdtkSystemLabel {
         LevelSelection,
@@ -35,9 +31,6 @@ pub mod plugin {
     /// Adds the default systems, assets, and resources used by `bevy_ecs_ldtk`.
     ///
     /// Add it to your [App] to gain LDtk functionality!
-    ///
-    /// All systems are added to [CoreStage::PreUpdate], and labeled with
-    /// [LdtkSystemLabel::Processing].
     #[derive(Copy, Clone, Debug, Default)]
     pub struct LdtkPlugin;
 
@@ -53,18 +46,26 @@ pub mod plugin {
                 .init_asset_loader::<assets::LdtkLevelLoader>()
                 .add_event::<resources::LevelEvent>()
                 .add_system_to_stage(
-                    CoreStage::Update,
-                    systems::choose_levels.label(LdtkSystemLabel::LevelSelection),
-                )
-                .add_system_to_stage(
-                    CoreStage::Update,
+                    CoreStage::PreUpdate,
                     systems::process_ldtk_world.label(LdtkSystemLabel::PreSpawn),
                 )
                 .add_system_to_stage(
-                    CoreStage::Update,
+                    CoreStage::PreUpdate,
+                    systems::choose_levels.label(LdtkSystemLabel::LevelSelection),
+                )
+                .add_system_to_stage(
+                    CoreStage::PreUpdate,
                     systems::apply_level_set
                         .label(LdtkSystemLabel::PreSpawn)
                         .after(LdtkSystemLabel::LevelSelection),
+                )
+                .add_system_to_stage(
+                    CoreStage::PreUpdate,
+                    systems::set_ldtk_texture_filters_to_nearest.label(LdtkSystemLabel::Other),
+                )
+                .add_system_to_stage(
+                    CoreStage::PreUpdate,
+                    systems::worldly_adoption.label(LdtkSystemLabel::Other),
                 )
                 .add_system_to_stage(
                     CoreStage::PostUpdate,
@@ -76,14 +77,6 @@ pub mod plugin {
                 .add_system_to_stage(
                     CoreStage::PostUpdate,
                     systems::process_ldtk_levels.label(LdtkSystemLabel::LevelSpawning),
-                )
-                .add_system_to_stage(
-                    CoreStage::PreUpdate,
-                    systems::set_ldtk_texture_filters_to_nearest.label(LdtkSystemLabel::Other),
-                )
-                .add_system_to_stage(
-                    CoreStage::PreUpdate,
-                    systems::worldly_adoption.label(LdtkSystemLabel::Other),
                 );
         }
     }

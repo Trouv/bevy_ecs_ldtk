@@ -1,3 +1,6 @@
+// This example shows off the most in-depth implementation of a game with `bevy_ecs_ldtk`.
+// This is pretty slow due to the naive usage of `bevy_heron`, please run with `--release`.
+
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 

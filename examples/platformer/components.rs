@@ -105,7 +105,7 @@ pub struct PlayerBundle {
     #[bundle]
     pub collider_bundle: ColliderBundle,
     pub player: Player,
-    #[ldtk_entity]
+    #[worldly]
     pub worldly: Worldly,
     pub climber: Climber,
 }

@@ -125,6 +125,30 @@ use crate::app::register_ldtk_objects::RegisterLdtkObjects;
 /// }
 /// ```
 ///
+/// ### `#[worldly]`
+/// Indicates that a component is [Worldly].
+///
+/// [Worldly] entities don't despawn when their birth level despawns, and they don't respawn when
+/// their birth level respawns.
+/// This is useful for entities that travel across multiple levels, like a player.
+/// ```
+/// # use bevy::prelude::*;
+/// # use bevy_ecs_ldtk::prelude::*;
+/// # #[derive(Component, Default)]
+/// # struct Player;
+/// # #[derive(Component, Default)]
+/// # struct BleedDamage;
+/// #[derive(Bundle, LdtkEntity)]
+/// pub struct PlayerBundle {
+///     player: Player,
+///     #[sprite_sheet_bundle]
+///     #[bundle]
+///     sprite_sheet_bundle: SpriteSheetBundle,
+///     #[worldly]
+///     worldly: Worldly,
+/// }
+/// ```
+///
 /// ### `#[ldtk_entity]`
 /// Indicates that a component or bundle that implements [LdtkEntity] should be created with
 /// [LdtkEntity::bundle_entity], allowing for nested [LdtkEntity]s.

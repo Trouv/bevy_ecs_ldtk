@@ -22,8 +22,6 @@ pub fn pause_physics_during_load(
     mut physics_time: ResMut<PhysicsTime>,
 ) {
     for event in level_events.iter() {
-        println!("{:?}", event);
-
         match event {
             LevelEvent::SpawnTriggered(_) => physics_time.set_scale(0.),
             LevelEvent::Transformed(_) => physics_time.set_scale(1.),

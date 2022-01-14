@@ -51,6 +51,9 @@ pub struct LevelSet {
 /// despawns/respawns.
 /// For this purpose, it uses the values stored in this component to uniquely identify ldtk
 /// entities.
+///
+/// Implements [LdtkEntity], and can be added to an [LdtkEntity] bundle with the `#[worldly]` field
+/// attribute. See [LdtkEntity#worldly] for more details.
 #[derive(Clone, Eq, PartialEq, Debug, Default, Hash, Component)]
 pub struct Worldly {
     pub spawn_level: i32,

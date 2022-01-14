@@ -1,10 +1,11 @@
 use bevy::prelude::*;
-use bevy_ecs_ldtk::{prelude::*, utils::ldtk_pixel_coords_to_translation_pivoted};
+use bevy_ecs_ldtk::prelude::*;
 
 use bevy::render::{options::WgpuOptions, render_resource::WgpuLimits};
-use std::collections::HashSet;
 
 use heron::prelude::*;
+
+mod components;
 
 fn main() {
     App::new()
@@ -32,12 +33,12 @@ fn main() {
         .add_system(patrol)
         .add_system(camera_fit_inside_current_level)
         .add_system(update_level_selection)
-        .register_ldtk_int_cell::<WallBundle>(1)
-        .register_ldtk_int_cell::<LadderBundle>(2)
-        .register_ldtk_int_cell::<WallBundle>(3)
-        .register_ldtk_entity::<PlayerBundle>("Player")
-        .register_ldtk_entity::<MobBundle>("Mob")
-        .register_ldtk_entity::<ChestBundle>("Chest")
+        .register_ldtk_int_cell::<components::WallBundle>(1)
+        .register_ldtk_int_cell::<components::LadderBundle>(2)
+        .register_ldtk_int_cell::<components::WallBundle>(3)
+        .register_ldtk_entity::<components::PlayerBundle>("Player")
+        .register_ldtk_entity::<components::MobBundle>("Mob")
+        .register_ldtk_entity::<components::ChestBundle>("Chest")
         .run();
 }
 
@@ -67,211 +68,6 @@ fn pause_physics_during_load(
             _ => (),
         }
     }
-}
-
-#[derive(Clone, Debug, Default, Bundle, LdtkIntCell)]
-struct ColliderBundle {
-    collider: CollisionShape,
-    rigid_body: RigidBody,
-    velocity: Velocity,
-    rotation_constraints: RotationConstraints,
-}
-
-impl From<EntityInstance> for ColliderBundle {
-    fn from(entity_instance: EntityInstance) -> ColliderBundle {
-        match entity_instance.identifier.as_ref() {
-            "Player" => ColliderBundle {
-                collider: CollisionShape::Cuboid {
-                    half_extends: Vec3::new(6., 16., 0.),
-                    border_radius: None,
-                },
-                rigid_body: RigidBody::Dynamic,
-                rotation_constraints: RotationConstraints::lock(),
-                ..Default::default()
-            },
-            "Mob" => ColliderBundle {
-                collider: CollisionShape::Cuboid {
-                    half_extends: Vec3::new(5., 5., 0.),
-                    border_radius: None,
-                },
-                rigid_body: RigidBody::KinematicVelocityBased,
-                rotation_constraints: RotationConstraints::lock(),
-                ..Default::default()
-            },
-            "Chest" => ColliderBundle {
-                collider: CollisionShape::Cuboid {
-                    half_extends: Vec3::new(8., 8., 0.),
-                    border_radius: None,
-                },
-                rigid_body: RigidBody::Dynamic,
-                rotation_constraints: RotationConstraints::lock(),
-                ..Default::default()
-            },
-            _ => ColliderBundle::default(),
-        }
-    }
-}
-
-impl From<IntGridCell> for ColliderBundle {
-    fn from(int_grid_cell: IntGridCell) -> ColliderBundle {
-        match int_grid_cell.value {
-            1 => ColliderBundle {
-                collider: CollisionShape::Cuboid {
-                    half_extends: Vec3::new(8., 8., 0.),
-                    border_radius: None,
-                },
-                rigid_body: RigidBody::Static,
-                rotation_constraints: RotationConstraints::lock(),
-                ..Default::default()
-            },
-            2 => ColliderBundle {
-                collider: CollisionShape::Cuboid {
-                    half_extends: Vec3::new(8., 8., 0.),
-                    border_radius: None,
-                },
-                rigid_body: RigidBody::Sensor,
-                rotation_constraints: RotationConstraints::lock(),
-                ..Default::default()
-            },
-            3 => ColliderBundle {
-                collider: CollisionShape::Cuboid {
-                    half_extends: Vec3::new(8., 8., 0.),
-                    border_radius: None,
-                },
-                rigid_body: RigidBody::Static,
-                rotation_constraints: RotationConstraints::lock(),
-                ..Default::default()
-            },
-            _ => ColliderBundle::default(),
-        }
-    }
-}
-
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Component)]
-struct Player;
-
-#[derive(Clone, Eq, PartialEq, Debug, Default, Component)]
-struct Climber {
-    climbing: bool,
-    intersecting_climbables: HashSet<Entity>,
-}
-
-#[derive(Clone, Default, Bundle, LdtkEntity)]
-struct PlayerBundle {
-    #[sprite_bundle("player.png")]
-    #[bundle]
-    sprite_bundle: SpriteBundle,
-    #[from_entity_instance]
-    #[bundle]
-    collider_bundle: ColliderBundle,
-    player: Player,
-    #[ldtk_entity]
-    worldly: Worldly,
-    climber: Climber,
-}
-
-#[derive(Clone, Debug, Default, Bundle, LdtkIntCell)]
-struct WallBundle {
-    #[from_int_grid_cell]
-    #[bundle]
-    collider_bundle: ColliderBundle,
-}
-
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Component)]
-struct Climbable;
-
-#[derive(Clone, Debug, Default, Bundle, LdtkIntCell)]
-struct LadderBundle {
-    #[from_int_grid_cell]
-    #[bundle]
-    collider_bundle: ColliderBundle,
-    climbable: Climbable,
-}
-
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Component)]
-struct Enemy;
-
-#[derive(Clone, PartialEq, Debug, Default, Component)]
-struct Patrol {
-    points: Vec<Vec2>,
-    index: usize,
-    forward: bool,
-}
-
-impl LdtkEntity for Patrol {
-    fn bundle_entity(
-        entity_instance: &EntityInstance,
-        layer_instance: &LayerInstance,
-        _: Option<&Handle<Image>>,
-        _: Option<&TilesetDefinition>,
-        _: &AssetServer,
-        _: &mut Assets<TextureAtlas>,
-    ) -> Patrol {
-        let mut points = Vec::new();
-        points.push(ldtk_pixel_coords_to_translation_pivoted(
-            entity_instance.px,
-            layer_instance.c_hei * layer_instance.grid_size,
-            IVec2::new(entity_instance.width, entity_instance.height),
-            entity_instance.pivot,
-        ));
-
-        let ldtk_patrol = entity_instance
-            .field_instances
-            .iter()
-            .find(|f| f.identifier == "patrol".to_string())
-            .unwrap();
-        if let FieldValue::Points(ldtk_points) = &ldtk_patrol.value {
-            for ldtk_point in ldtk_points {
-                if let Some(ldtk_point) = ldtk_point {
-                    // The +1 is necessary here due to the pivot of the entities in the sample
-                    // file.
-                    // The patrols set up in the file look flat and grounded,
-                    // but technically they're not if you consider the pivot,
-                    // which is at the bottom-center for the skulls.
-                    let pixel_coords = (ldtk_point.as_vec2() + Vec2::new(0.5, 1.))
-                        * Vec2::splat(layer_instance.grid_size as f32);
-
-                    points.push(ldtk_pixel_coords_to_translation_pivoted(
-                        pixel_coords.as_ivec2(),
-                        layer_instance.c_hei * layer_instance.grid_size,
-                        IVec2::new(entity_instance.width, entity_instance.height),
-                        entity_instance.pivot,
-                    ));
-                }
-            }
-        }
-
-        Patrol {
-            points,
-            index: 1,
-            forward: true,
-        }
-    }
-}
-
-#[derive(Clone, Default, Bundle, LdtkEntity)]
-struct MobBundle {
-    #[sprite_sheet_bundle]
-    #[bundle]
-    sprite_sheet_bundle: SpriteSheetBundle,
-    #[from_entity_instance]
-    #[bundle]
-    collider_bundle: ColliderBundle,
-    enemy: Enemy,
-    #[from_entity_instance]
-    entity_instance: EntityInstance,
-    #[ldtk_entity]
-    patrol: Patrol,
-}
-
-#[derive(Clone, Default, Bundle, LdtkEntity)]
-struct ChestBundle {
-    #[sprite_sheet_bundle]
-    #[bundle]
-    sprite_sheet_bundle: SpriteSheetBundle,
-    #[from_entity_instance]
-    #[bundle]
-    collider_bundle: ColliderBundle,
 }
 
 fn movement(

@@ -1,4 +1,9 @@
-use crate::ldtk::{LdtkJson, Level};
+//! Assets and AssetLoaders for loading ldtk files.
+
+use crate::{
+    ldtk::{LdtkJson, Level},
+    resources::LevelSelection,
+};
 use bevy::{
     asset::{AssetLoader, AssetPath, LoadContext, LoadedAsset},
     prelude::*,
@@ -6,6 +11,9 @@ use bevy::{
     utils::BoxedFuture,
 };
 use std::{collections::HashMap, path::Path};
+
+#[allow(unused_imports)]
+use crate::components::LdtkWorldBundle;
 
 fn ldtk_path_to_asset_path<'a, 'b>(
     load_context: &LoadContext<'a>,
@@ -19,14 +27,42 @@ fn ldtk_path_to_asset_path<'a, 'b>(
         .into()
 }
 
+/// Used in [LdtkAsset]. Key is the tileset definition uid.
 pub type TilesetMap = HashMap<i32, Handle<Image>>;
 
+/// Used in [LdtkAsset]. Key is the level uid.
+pub type LevelMap = HashMap<i32, Handle<LdtkLevel>>;
+
+/// Main asset for loading ldtk files.
+///
+/// Load your ldtk project with the asset server, then insert the handle into the
+/// [LdtkWorldBundle].
 #[derive(TypeUuid)]
 #[uuid = "ecfb87b7-9cd9-4970-8482-f2f68b770d31"]
 pub struct LdtkAsset {
     pub project: LdtkJson,
     pub tileset_map: TilesetMap,
-    pub external_levels: Vec<Handle<LdtkExternalLevel>>,
+    pub level_map: LevelMap,
+}
+
+impl LdtkAsset {
+    pub fn world_height(&self) -> i32 {
+        let mut world_height = 0;
+        for level in &self.project.levels {
+            world_height = world_height.max(level.world_y + level.px_hei);
+        }
+
+        world_height
+    }
+
+    pub fn get_level(&self, level_selection: &LevelSelection) -> Option<&Level> {
+        self.project
+            .levels
+            .iter()
+            .enumerate()
+            .find(|(i, l)| level_selection.is_match(i, l))
+            .map(|(_, l)| l)
+    }
 }
 
 #[derive(Copy, Clone, Debug, Default)]
@@ -42,15 +78,26 @@ impl AssetLoader for LdtkLoader {
             let project: LdtkJson = serde_json::from_slice(bytes)?;
 
             let mut external_level_paths = Vec::new();
-            let mut external_level_handles = Vec::new();
+            let mut level_map = HashMap::new();
             if project.external_levels {
                 for level in &project.levels {
                     if let Some(external_rel_path) = &level.external_rel_path {
                         let asset_path = ldtk_path_to_asset_path(load_context, external_rel_path);
 
                         external_level_paths.push(asset_path.clone());
-                        external_level_handles.push(load_context.get_handle(asset_path));
+                        level_map.insert(level.uid, load_context.get_handle(asset_path));
                     }
+                }
+            } else {
+                for level in &project.levels {
+                    let label = level.identifier.as_ref();
+                    let ldtk_level = LdtkLevel {
+                        level: level.clone(),
+                    };
+                    let level_handle =
+                        load_context.set_labeled_asset(label, LoadedAsset::new(ldtk_level));
+
+                    level_map.insert(level.uid, level_handle);
                 }
             }
 
@@ -66,7 +113,7 @@ impl AssetLoader for LdtkLoader {
             let ldtk_asset = LdtkAsset {
                 project,
                 tileset_map,
-                external_levels: external_level_handles,
+                level_map,
             };
             load_context.set_default_asset(
                 LoadedAsset::new(ldtk_asset)
@@ -82,9 +129,15 @@ impl AssetLoader for LdtkLoader {
     }
 }
 
+/// Secondary asset for loading ldtk files, specific to level data.
+///
+/// Loaded as a labeled asset when loading a standalone ldtk file with [LdtkAsset].
+/// The label is just the level's identifier.
+///
+/// Loaded as a dependency to the [LdtkAsset] when loading an ldtk file with external levels.
 #[derive(TypeUuid)]
 #[uuid = "5448469b-2134-44f5-a86c-a7b829f70a0c"]
-pub struct LdtkExternalLevel {
+pub struct LdtkLevel {
     pub level: Level,
 }
 
@@ -98,7 +151,7 @@ impl AssetLoader for LdtkLevelLoader {
         load_context: &'a mut LoadContext,
     ) -> BoxedFuture<'a, anyhow::Result<()>> {
         Box::pin(async move {
-            let ldtk_level = LdtkExternalLevel {
+            let ldtk_level = LdtkLevel {
                 level: serde_json::from_slice(bytes)?,
             };
             load_context.set_default_asset(LoadedAsset::new(ldtk_level));

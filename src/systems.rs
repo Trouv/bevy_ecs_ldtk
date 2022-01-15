@@ -2,12 +2,13 @@
 
 use crate::{
     app::{
-        LdtkEntityMap, LdtkIntCellMap, PhantomLdtkEntity, PhantomLdtkEntityTrait,
+        LdtkEntity, LdtkEntityMap, LdtkIntCellMap, PhantomLdtkEntity, PhantomLdtkEntityTrait,
         PhantomLdtkIntCell, PhantomLdtkIntCellTrait,
     },
-    assets::{LdtkAsset, LdtkExternalLevel, TilesetMap},
+    assets::{LdtkAsset, LdtkLevel, TilesetMap},
     components::*,
     ldtk::{EntityDefinition, Level, TileInstance, TilesetDefinition, Type},
+    resources::{LdtkSettings, LevelEvent, LevelSelection},
     tile_makers::*,
     utils::*,
 };
@@ -17,53 +18,31 @@ use bevy::{
     render::{render_resource::TextureUsages, texture::DEFAULT_IMAGE_HANDLE},
 };
 use bevy_ecs_tilemap::prelude::*;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 const CHUNK_SIZE: ChunkSize = ChunkSize(32, 32);
 
-/// After external levels are loaded, this updates the corresponding [LdtkAsset]'s levels.
-///
-/// Note: this plugin currently doesn't support hot-reloading of external levels.
-/// See <https://github.com/Trouv/bevy_ecs_ldtk/issues/1> for details.
-pub fn process_external_levels(
-    mut level_events: EventReader<AssetEvent<LdtkExternalLevel>>,
-    level_assets: Res<Assets<LdtkExternalLevel>>,
-    mut ldtk_assets: ResMut<Assets<LdtkAsset>>,
+pub fn choose_levels(
+    level_selection: Option<Res<LevelSelection>>,
+    ldtk_settings: Res<LdtkSettings>,
+    ldtk_assets: Res<Assets<LdtkAsset>>,
+    mut level_set_query: Query<(&Handle<LdtkAsset>, &mut LevelSet)>,
 ) {
-    for event in level_events.iter() {
-        // creation and deletion events should be handled by the ldtk asset events
-        let mut changed_levels = Vec::<Handle<LdtkExternalLevel>>::new();
-        match event {
-            AssetEvent::Created { handle } => {
-                info!("External Level added!");
-                changed_levels.push(handle.clone());
-            }
-            AssetEvent::Modified { handle } => {
-                info!("External Level changed!");
-                changed_levels.push(handle.clone());
-            }
-            _ => (),
-        }
+    if let Some(level_selection) = level_selection {
+        if level_selection.is_changed() {
+            for (ldtk_handle, mut level_set) in level_set_query.iter_mut() {
+                if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
+                    if let Some(level) = ldtk_asset.get_level(&level_selection) {
+                        level_set.uids.clear();
 
-        let mut levels_to_update = Vec::new();
-        for level_handle in changed_levels {
-            for (ldtk_handle, ldtk_asset) in ldtk_assets.iter() {
-                for (i, _) in ldtk_asset
-                    .external_levels
-                    .iter()
-                    .enumerate()
-                    .filter(|(_, h)| **h == level_handle)
-                {
-                    levels_to_update.push((ldtk_handle, level_handle.clone(), i));
-                }
-            }
-        }
+                        info!("Levels chosen. Inserting in LevelSet.");
+                        level_set.uids.insert(level.uid);
 
-        for (ldtk_handle, level_handle, level_index) in levels_to_update {
-            if let Some(level) = level_assets.get(level_handle) {
-                if let Some(ldtk_asset) = ldtk_assets.get_mut(ldtk_handle) {
-                    if let Some(ldtk_level) = ldtk_asset.project.levels.get_mut(level_index) {
-                        *ldtk_level = level.level.clone();
+                        if ldtk_settings.load_level_neighbors {
+                            level_set
+                                .uids
+                                .extend(level.neighbours.iter().map(|n| n.level_uid));
+                        }
                     }
                 }
             }
@@ -71,28 +50,79 @@ pub fn process_external_levels(
     }
 }
 
-/// Reads [LdtkAsset] events, and determines which ldtk assets need to be re-processed as a result.
-///
-/// Meant to be used in a chain with [process_changed_ldtks].
-pub fn determine_changed_ldtks(
+#[allow(clippy::too_many_arguments)]
+pub fn apply_level_set(
+    mut commands: Commands,
+    ldtk_world_query: Query<(Entity, &LevelSet, &Children, &Handle<LdtkAsset>), Changed<LevelSet>>,
+    ldtk_level_query: Query<&Handle<LdtkLevel>>,
+    ldtk_assets: Res<Assets<LdtkAsset>>,
+    level_assets: Res<Assets<LdtkLevel>>,
+    ldtk_settings: Res<LdtkSettings>,
+    mut map_query: MapQuery,
+    mut level_events: EventWriter<LevelEvent>,
+) {
+    for (world_entity, level_set, children, ldtk_asset_handle) in ldtk_world_query.iter() {
+        let mut previous_level_map = HashMap::new();
+        for child in children.iter() {
+            if let Ok(level_handle) = ldtk_level_query.get(*child) {
+                if let Some(ldtk_level) = level_assets.get(level_handle) {
+                    previous_level_map.insert(ldtk_level.level.uid, child);
+                }
+            }
+        }
+
+        let previous_uids: HashSet<i32> = previous_level_map.keys().copied().collect();
+
+        let uids_to_spawn = level_set.uids.difference(&previous_uids);
+        if uids_to_spawn.clone().count() > 0 {
+            if let Some(ldtk_asset) = ldtk_assets.get(ldtk_asset_handle) {
+                commands.entity(world_entity).with_children(|c| {
+                    for uid in uids_to_spawn {
+                        level_events.send(LevelEvent::SpawnTriggered(*uid));
+                        pre_spawn_level(c, ldtk_asset, *uid, &ldtk_settings);
+                    }
+                });
+            }
+        }
+
+        for uid in previous_uids.difference(&level_set.uids) {
+            map_query.despawn(&mut commands, *uid as u16);
+            level_events.send(LevelEvent::Despawned(*uid));
+        }
+    }
+}
+
+/// Detects [LdtkAsset] events and spawns levels as children of the [LdtkWorldBundle].
+
+#[allow(clippy::too_many_arguments)]
+pub fn process_ldtk_world(
+    mut commands: Commands,
     mut ldtk_events: EventReader<AssetEvent<LdtkAsset>>,
+    mut level_events: EventWriter<LevelEvent>,
     new_ldtks: Query<&Handle<LdtkAsset>, Added<Handle<LdtkAsset>>>,
-) -> Vec<Handle<LdtkAsset>> {
+    mut ldtk_level_query: Query<&mut Map, With<Handle<LdtkLevel>>>,
+    mut ldtk_world_query: Query<(Entity, &Handle<LdtkAsset>, &mut LevelSet, Option<&Children>)>,
+    level_selection: Option<Res<LevelSelection>>,
+    ldtk_assets: Res<Assets<LdtkAsset>>,
+    ldtk_settings: Res<LdtkSettings>,
+    layer_query: Query<&Layer>,
+    chunk_query: Query<&Chunk>,
+) {
     // This function uses code from the bevy_ecs_tilemap ldtk example
     // https://github.com/StarArawn/bevy_ecs_tilemap/blob/main/examples/ldtk/ldtk.rs
     let mut changed_ldtks = Vec::new();
     for event in ldtk_events.iter() {
         match event {
             AssetEvent::Created { handle } => {
-                info!("Ldtk added!");
+                info!("LDtk asset creation detected.");
                 changed_ldtks.push(handle.clone());
             }
             AssetEvent::Modified { handle } => {
-                info!("Ldtk changed!");
+                info!("LDtk asset modification detected.");
                 changed_ldtks.push(handle.clone());
             }
             AssetEvent::Removed { handle } => {
-                info!("Ldtk removed!");
+                info!("LDtk asset removal detected.");
                 // if mesh was modified and removed in the same update, ignore the modification
                 // events are ordered so future modification events are ok
                 changed_ldtks = changed_ldtks
@@ -107,92 +137,91 @@ pub fn determine_changed_ldtks(
         changed_ldtks.push(new_ldtk_handle.clone());
     }
 
-    changed_ldtks
-}
-
-/// Performs all the spawning of levels, layers, chunks, bundles, entities, tiles, etc. when an
-/// [LdtkAsset] is loaded or changed.
-///
-/// Meant to be used in a chain with [determine_changed_ldtks]
-#[allow(clippy::too_many_arguments, clippy::type_complexity)]
-pub fn process_changed_ldtks(
-    In(changed_ldtks): In<Vec<Handle<LdtkAsset>>>,
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
-    ldtk_assets: Res<Assets<LdtkAsset>>,
-    ldtk_entity_map: NonSend<LdtkEntityMap>,
-    ldtk_int_cell_map: NonSend<LdtkIntCellMap>,
-    mut ldtk_map_query: Query<(
-        Entity,
-        &Handle<LdtkAsset>,
-        &LevelSelection,
-        &mut Map,
-        Option<&Children>,
-    )>,
-    layer_query: Query<&Layer>,
-    chunk_query: Query<&Chunk>,
-) {
-    // This function uses code from the bevy_ecs_tilemap ldtk example
-    // https://github.com/StarArawn/bevy_ecs_tilemap/blob/main/examples/ldtk/ldtk.rs
-
-    for changed_ldtk in changed_ldtks.iter() {
-        for (ldtk_entity, ldtk_handle, level_selection, mut map, children) in ldtk_map_query
+    for changed_ldtk in changed_ldtks {
+        info!("Ldtk changes detected.");
+        for (ldtk_entity, ldtk_handle, mut level_set, children) in ldtk_world_query
             .iter_mut()
-            .filter(|(_, l, _, _, _)| changed_ldtk == *l)
+            .filter(|(_, l, _, _)| **l == changed_ldtk)
         {
-            if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
-                clear_map(
-                    &mut commands,
-                    &mut map,
-                    &children,
-                    &layer_query,
-                    &chunk_query,
-                );
-
-                let tileset_definition_map: HashMap<i32, &TilesetDefinition> = ldtk_asset
-                    .project
-                    .defs
-                    .tilesets
-                    .iter()
-                    .map(|t| (t.uid, t))
-                    .collect();
-
-                let entity_definition_map =
-                    create_entity_definition_map(&ldtk_asset.project.defs.entities);
-
-                for (_, level) in ldtk_asset
-                    .project
-                    .levels
-                    .iter()
-                    .enumerate()
-                    .filter(|(i, l)| level_selection.is_match(i, l))
-                {
-                    spawn_level(
-                        level,
-                        &mut commands,
-                        &asset_server,
-                        &mut texture_atlases,
-                        &mut meshes,
-                        &ldtk_entity_map,
-                        &ldtk_int_cell_map,
-                        &entity_definition_map,
-                        &ldtk_asset.tileset_map,
-                        &tileset_definition_map,
-                        &mut map,
-                        ldtk_entity,
-                    );
+            info!("Ldtk world entity detected.");
+            if let Some(children) = children {
+                for child in children.iter() {
+                    if let Ok(mut map) = ldtk_level_query.get_mut(*child) {
+                        clear_map(&mut commands, &mut map, &layer_query, &chunk_query);
+                        map.despawn(&mut commands);
+                        level_events.send(LevelEvent::Despawned(map.id as i32));
+                    } else {
+                        commands.entity(*child).despawn_recursive();
+                    }
                 }
             }
+
+            if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
+                if let Some(level_selection) = &level_selection {
+                    if let Some(level) = ldtk_asset.get_level(level_selection) {
+                        level_set.uids.clear();
+
+                        info!("Levels chosen. Inserting in LevelSet.");
+                        level_set.uids.insert(level.uid);
+
+                        if ldtk_settings.load_level_neighbors {
+                            level_set
+                                .uids
+                                .extend(level.neighbours.iter().map(|n| n.level_uid));
+                        }
+                    }
+                }
+
+                info!("Ldtk asset found.");
+                commands.entity(ldtk_entity).with_children(|c| {
+                    for level_uid in &level_set.uids {
+                        level_events.send(LevelEvent::SpawnTriggered(*level_uid));
+                        pre_spawn_level(c, ldtk_asset, *level_uid, &ldtk_settings)
+                    }
+                });
+            }
         }
+    }
+}
+
+fn pre_spawn_level(
+    child_builder: &mut ChildBuilder,
+    ldtk_asset: &LdtkAsset,
+    level_uid: i32,
+    ldtk_settings: &LdtkSettings,
+) {
+    if let Some(level_handle) = ldtk_asset.level_map.get(&level_uid) {
+        let mut translation = Vec3::ZERO;
+
+        if ldtk_settings.use_level_world_translations {
+            if let Some(level) = ldtk_asset
+                .project
+                .levels
+                .iter()
+                .find(|l| l.uid == level_uid)
+            {
+                let level_coords = ldtk_pixel_coords_to_translation(
+                    IVec2::new(level.world_x, level.world_y + level.px_hei),
+                    ldtk_asset.world_height(),
+                );
+                translation.x = level_coords.x;
+                translation.y = level_coords.y;
+            }
+        }
+
+        child_builder
+            .spawn()
+            .insert(level_handle.clone())
+            .insert_bundle((
+                Transform::from_translation(translation),
+                GlobalTransform::default(),
+            ));
     }
 }
 
 fn clear_map(
     commands: &mut Commands,
     map: &mut Map,
-    map_children: &Option<&Children>,
     layer_query: &Query<&Layer>,
     chunk_query: &Query<&Chunk>,
 ) {
@@ -221,9 +250,66 @@ fn clear_map(
             map.remove_layer(commands, layer_id);
         }
     }
-    if let Some(children) = map_children {
-        for child in children.iter() {
-            commands.entity(*child).despawn_recursive();
+}
+
+/// Performs all the spawning of levels, layers, chunks, bundles, entities, tiles, etc. when an
+/// LdtkLevelBundle is added.
+#[allow(clippy::too_many_arguments, clippy::type_complexity)]
+pub fn process_ldtk_levels(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    ldtk_assets: Res<Assets<LdtkAsset>>,
+    level_assets: Res<Assets<LdtkLevel>>,
+    ldtk_entity_map: NonSend<LdtkEntityMap>,
+    ldtk_int_cell_map: NonSend<LdtkIntCellMap>,
+    ldtk_query: Query<&Handle<LdtkAsset>>,
+    level_query: Query<
+        (Entity, &Handle<LdtkLevel>, &Parent, &GlobalTransform),
+        Added<Handle<LdtkLevel>>,
+    >,
+    worldly_query: Query<&Worldly>,
+    mut level_events: EventWriter<LevelEvent>,
+) {
+    // This function uses code from the bevy_ecs_tilemap ldtk example
+    // https://github.com/StarArawn/bevy_ecs_tilemap/blob/main/examples/ldtk/ldtk.rs
+
+    for (ldtk_entity, level_handle, parent, global_transform) in level_query.iter() {
+        info!("{:?}", global_transform);
+        if let Ok(ldtk_handle) = ldtk_query.get(parent.0) {
+            if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
+                let tileset_definition_map: HashMap<i32, &TilesetDefinition> = ldtk_asset
+                    .project
+                    .defs
+                    .tilesets
+                    .iter()
+                    .map(|t| (t.uid, t))
+                    .collect();
+
+                let entity_definition_map =
+                    create_entity_definition_map(&ldtk_asset.project.defs.entities);
+
+                let worldly_set = worldly_query.iter().cloned().collect();
+
+                if let Some(level) = level_assets.get(level_handle) {
+                    spawn_level(
+                        &level.level,
+                        &mut commands,
+                        &asset_server,
+                        &mut texture_atlases,
+                        &mut meshes,
+                        &ldtk_entity_map,
+                        &ldtk_int_cell_map,
+                        &entity_definition_map,
+                        &ldtk_asset.tileset_map,
+                        &tileset_definition_map,
+                        worldly_set,
+                        ldtk_entity,
+                    );
+                    level_events.send(LevelEvent::Spawned(level.level.uid));
+                }
+            }
         }
     }
 }
@@ -240,58 +326,72 @@ fn spawn_level(
     entity_definition_map: &HashMap<i32, &EntityDefinition>,
     tileset_map: &TilesetMap,
     tileset_definition_map: &HashMap<i32, &TilesetDefinition>,
-    map: &mut Map,
+    worldly_set: HashSet<Worldly>,
     ldtk_entity: Entity,
 ) {
+    let mut map = Map::new(level.uid as u16, ldtk_entity);
+
     if let Some(layer_instances) = &level.layer_instances {
         let mut layer_id = 0;
         for layer_instance in layer_instances.iter().rev() {
             match layer_instance.layer_instance_type {
                 Type::Entities => {
-                    for entity_instance in &layer_instance.entity_instances {
-                        let transform = calculate_transform_from_entity_instance(
-                            entity_instance,
-                            entity_definition_map,
-                            level.px_hei,
-                            layer_id as f32,
-                        );
-                        // Note: entities do not seem to be affected visually by layer offsets in
-                        // the editor, so no layer offset is added to the transform here.
+                    commands.entity(ldtk_entity).with_children(|commands| {
+                        for entity_instance in &layer_instance.entity_instances {
+                            let transform = calculate_transform_from_entity_instance(
+                                entity_instance,
+                                entity_definition_map,
+                                level.px_hei,
+                                layer_id as f32,
+                            );
+                            // Note: entities do not seem to be affected visually by layer offsets in
+                            // the editor, so no layer offset is added to the transform here.
 
-                        let mut entity_commands = commands.spawn();
+                            let mut entity_commands = commands.spawn();
 
-                        let (tileset, tileset_definition) = match &entity_instance.tile {
-                            Some(t) => (
-                                tileset_map.get(&t.tileset_uid),
-                                tileset_definition_map.get(&t.tileset_uid).copied(),
-                            ),
-                            None => (None, None),
-                        };
+                            let (tileset, tileset_definition) = match &entity_instance.tile {
+                                Some(t) => (
+                                    tileset_map.get(&t.tileset_uid),
+                                    tileset_definition_map.get(&t.tileset_uid).copied(),
+                                ),
+                                None => (None, None),
+                            };
 
-                        let default_ldtk_entity: Box<dyn PhantomLdtkEntityTrait> =
-                            Box::new(PhantomLdtkEntity::<EntityInstanceBundle>::new());
+                            let predicted_worldly = Worldly::bundle_entity(
+                                entity_instance,
+                                layer_instance,
+                                tileset,
+                                tileset_definition,
+                                asset_server,
+                                texture_atlases,
+                            );
 
-                        ldtk_map_get_or_default(
-                            layer_instance.identifier.clone(),
-                            entity_instance.identifier.clone(),
-                            &default_ldtk_entity,
-                            ldtk_entity_map,
-                        )
-                        .evaluate(
-                            &mut entity_commands,
-                            entity_instance,
-                            layer_instance,
-                            tileset,
-                            tileset_definition,
-                            asset_server,
-                            texture_atlases,
-                        );
+                            if !worldly_set.contains(&predicted_worldly) {
+                                let default_ldtk_entity: Box<dyn PhantomLdtkEntityTrait> =
+                                    Box::new(PhantomLdtkEntity::<EntityInstanceBundle>::new());
 
-                        entity_commands
-                            .insert(transform)
-                            .insert(GlobalTransform::default())
-                            .insert(Parent(ldtk_entity));
-                    }
+                                ldtk_map_get_or_default(
+                                    layer_instance.identifier.clone(),
+                                    entity_instance.identifier.clone(),
+                                    &default_ldtk_entity,
+                                    ldtk_entity_map,
+                                )
+                                .evaluate(
+                                    &mut entity_commands,
+                                    entity_instance,
+                                    layer_instance,
+                                    tileset,
+                                    tileset_definition,
+                                    asset_server,
+                                    texture_atlases,
+                                );
+
+                                entity_commands
+                                    .insert(transform)
+                                    .insert(GlobalTransform::default());
+                            }
+                        }
+                    });
                 }
                 _ => {
                     // The remaining layers have a lot of shared code.
@@ -481,6 +581,7 @@ fn spawn_level(
             }
         }
     }
+    commands.entity(ldtk_entity).insert(map);
 }
 
 fn layer_grid_tiles(grid_tiles: Vec<TileInstance>) -> Vec<Vec<TileInstance>> {
@@ -500,6 +601,18 @@ fn layer_grid_tiles(grid_tiles: Vec<TileInstance>) -> Vec<Vec<TileInstance>> {
     }
 
     layered_grid_tiles
+}
+
+pub fn worldly_adoption(
+    mut worldly_query: Query<(&mut Transform, &mut Parent), Added<Worldly>>,
+    transform_query: Query<(&Transform, &Parent), Without<Worldly>>,
+) {
+    for (mut transform, mut parent) in worldly_query.iter_mut() {
+        if let Ok((level_transform, level_parent)) = transform_query.get(parent.0) {
+            *transform = level_transform.mul_transform(*transform);
+            parent.0 = level_parent.0
+        }
+    }
 }
 
 pub fn set_ldtk_texture_filters_to_nearest(
@@ -529,5 +642,31 @@ pub fn set_ldtk_texture_filters_to_nearest(
                 }
             }
         }
+    }
+}
+
+/// Returns the `uid`s of levels that have spawned in this update.
+///
+/// Mean to be used in a chain with [fire_level_transformed_events].
+pub fn detect_level_spawned_events(mut reader: EventReader<LevelEvent>) -> Vec<i32> {
+    let mut spawned_ids = Vec::new();
+    for event in reader.iter() {
+        if let LevelEvent::Spawned(id) = event {
+            spawned_ids.push(*id);
+        }
+    }
+    spawned_ids
+}
+
+/// Fires [LevelEvent::Transformed] events for all the entities that spawned in the previous
+/// update.
+///
+/// Meant to be used in a chain with [detect_level_spawned_events].
+pub fn fire_level_transformed_events(
+    In(spawned_ids): In<Vec<i32>>,
+    mut writer: EventWriter<LevelEvent>,
+) {
+    for id in spawned_ids {
+        writer.send(LevelEvent::Transformed(id));
     }
 }

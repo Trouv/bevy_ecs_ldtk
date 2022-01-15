@@ -1,11 +1,11 @@
 use bevy::{prelude::*, render::texture::DEFAULT_IMAGE_HANDLE};
 use bevy_ecs_ldtk::prelude::*;
-use bevy_ecs_tilemap::prelude::*;
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(LdtkPlugin)
+        .insert_resource(LevelSelection::default())
         .add_startup_system(setup)
         .register_ldtk_entity::<EntityWithFieldsBundle>("EntityWithFields")
         .run();
@@ -19,9 +19,8 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     let ldtk_handle = asset_server.load("field_instances.ldtk");
     let map_entity = commands.spawn().id();
 
-    commands.entity(map_entity).insert_bundle(LdtkMapBundle {
+    commands.entity(map_entity).insert_bundle(LdtkWorldBundle {
         ldtk_handle,
-        map: Map::new(0u16, map_entity),
         ..Default::default()
     });
 }

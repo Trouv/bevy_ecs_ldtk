@@ -9,21 +9,32 @@
 An ECS-friendly ldtk plugin for [bevy](https://github.com/bevyengine/bevy).
 Uses [bevy_ecs_tilemap](https://github.com/StarArawn/bevy_ecs_tilemap) as a
 base.
-Not released yet, still in development.
-
-bevy_ecs_tilemap once supported ldtk loading, but this was removed to keep the
-plugin small and focused (see:
-https://github.com/StarArawn/bevy_ecs_tilemap/issues/84).
-This plugin aims to be a more complete solution to ldtk in bevy.
 
 ![platformer-example](repo/platformer-example.gif)
 
-In addition to drawing Tile/AutoTile layers, this crate provides derive macros
-and `App` extensions for conveniently inserting your bundles for Entity and
-IntGrid layers.
-For example, `App::register_ldtk_entity()` and `#[derive(LdtkEntity)]` can be
-used for spawning your bundles for particular Entity identifiers in an ldtk
-file:
+`cargo run --example platformer --release`
+
+### Features
+- Support for all layer types
+- Support for loading external levels
+- Hot reloading (except for external levels)
+- Solutions for easily loading/unloading levels, changing levels, loading level neighbors...
+- Low-boilerplate solutions for spawning bundles for LDtk Entities and IntGrid
+  tiles using derive macros (other options available)
+- `serde` types for LDtk based off LDtk's [QuickType
+  loader](https://ldtk.io/files/quicktype/LdtkJson.rs), but with several QoL
+  improvements
+
+### Getting Started
+The goal of this plugin is to make it as easy as possible to use LDtk with bevy
+for common use cases, while providing solutions to handle more difficult cases.
+You only need a few things to get started:
+1. Add the `LdtkPlugin` to the `App`
+2. Insert the `LevelSelection` resource into the `App` to pick your level
+3. Spawn an `LdtkWorldBundle`
+4. Optionally, use `#[derive(LdtkEntity)]` and `#[derive(LdtkIntCell)]` on
+   bundles and register them to the `App` to automatically spawn those bundles
+   on Entity and IntGrid layers.
 
 ```rust
 use bevy::prelude::*;
@@ -31,10 +42,21 @@ use bevy_ecs_ldtk::prelude::*;
 
 fn main() {
     App::empty()
+        .add_plugins(DefaultPlugins)
         .add_plugin(LdtkPlugin)
+        .add_startup_system(setup)
+        .insert_resource(LevelSelection::Index(0))
         .register_ldtk_entity::<MyBundle>("my_entity_identifier")
-        // add other systems, plugins, resources...
         .run();
+}
+
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+
+    commands.spawn_bundle(LdtkWorldBundle {
+        ldtk_handle: asset_server.load("my_project.ldtk"),
+        ..Default::default()
+    });
 }
 
 #[derive(Bundle, LdtkEntity)]
@@ -42,45 +64,23 @@ pub struct MyBundle {
     a: ComponentA,
     b: ComponentB,
     #[sprite_bundle]
+    #[bundle]
     sprite_bundle: SpriteBundle,
 }
 ```
 
-There are other attributes available to `#[derive(LdtkEntity)]`, see the documentation for more details.
+There are other attributes available to `#[derive(LdtkEntity)]` and `#[derive(LdtkIntCell)]`, see the documentation for more details.
 
-Similar options are available for adding components to IntGrid tiles, through
-`App::register_ldtk_int_cell()` and `#[derive(LdtkIntCell)]`
+By default, LDtk Entities and IntGrid tiles get spawned with `EntityInstance`
+and `IntGridCell` components respectfully.
+So, you can flesh out these entities in a system that queries for
+`Added<EntityInstance>` or `Added<IntGridCell>` if you need more access to the
+world, or if you just don't want to use the `LdtkEntity` and `LdtkIntCell`
+traits.
 
-Or, if you need more control, you can either `impl LdtkEntity`/`impl
-LdtkIntCell` for your bundle, or just create a system that queries for
-`Added<EntityInstance>`/`Added<IntGridCell>` and flesh out the entity from
-there.
-
-### Goals
-- [x] Supports all layer types
-  - [x] tile layers
-    - rendered with bevy_ecs_tilemap
-  - [x] auto tile layers
-    - rendered with bevy_ecs_tilemap
-  - [x] intgrid layers
-    - intgrid values accessible as components on tiles
-  - [x] entity layers
-    - new entities spawned at the correct location for users to flesh out in their own systems
-    - [x] fields accessible from components on new entities
-- [x] support for external levels
-- [ ] hot-reloading for ldtk and its dependencies
-  - [x] hot-reloading for tile layers
-  - [x] hot-reloading for auto tile layers
-  - [x] hot-reloading for intgrid layers
-  - [x] hot-reloading for entity layers
-  - [x] hot-reloading for tilesets
-  - [ ] hot-reloading for external levels (see: https://github.com/Trouv/bevy_ecs_ldtk/issues/1)
-- [x] derive macros for registering bundles to spawn for specific intgrid-layer and entity-layer values
-  - [x] derive macros for entities
-  - [x] derive macros for intgrid
-- [ ] support for optionally loading level-neighbors
-
-Once most of these goals are met, and bevy has reached 0.6, this crate will have its first release.
+To load a new level, you can just update the `LevelSelection` resource.
+Be sure to check out the `LdtkSettings` resource and the `LevelSet` component
+for additional level-loading options.
 
 ### Compatibility
 | bevy | bevy_ecs_tilemap | bevy_ecs_ldtk |

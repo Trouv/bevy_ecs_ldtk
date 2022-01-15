@@ -23,11 +23,9 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     asset_server.watch_for_changes().unwrap();
 
     let ldtk_handle = asset_server.load("levels.ldtk");
-    let map_entity = commands.spawn().id();
     let transform = Transform::from_xyz(-5.5 * 32., -6. * 32., 0.);
-    commands.entity(map_entity).insert_bundle(LdtkMapBundle {
+    commands.spawn_bundle(LdtkWorldBundle {
         ldtk_handle,
-        map: Map::new(0u16, map_entity),
         transform,
         ..Default::default()
     });

@@ -1,5 +1,5 @@
 use crate::{
-    components::EntityInstanceBundle,
+    components::{EntityInstanceBundle, Worldly},
     ldtk::{EntityInstance, LayerInstance, TilesetDefinition},
 };
 use bevy::{ecs::system::EntityCommands, prelude::*};
@@ -122,6 +122,30 @@ use crate::app::register_ldtk_objects::RegisterLdtkObjects;
 ///     #[bundle]
 ///     #[sprite_sheet_bundle]
 ///     sprite_sheet: SpriteSheetBundle,
+/// }
+/// ```
+///
+/// ### `#[worldly]`
+/// Indicates that a component is [Worldly].
+///
+/// [Worldly] entities don't despawn when their birth level despawns, and they don't respawn when
+/// their birth level respawns.
+/// This is useful for entities that travel across multiple levels, like a player.
+/// ```
+/// # use bevy::prelude::*;
+/// # use bevy_ecs_ldtk::prelude::*;
+/// # #[derive(Component, Default)]
+/// # struct Player;
+/// # #[derive(Component, Default)]
+/// # struct BleedDamage;
+/// #[derive(Bundle, LdtkEntity)]
+/// pub struct PlayerBundle {
+///     player: Player,
+///     #[sprite_sheet_bundle]
+///     #[bundle]
+///     sprite_sheet_bundle: SpriteSheetBundle,
+///     #[worldly]
+///     worldly: Worldly,
 /// }
 /// ```
 ///
@@ -284,6 +308,24 @@ impl LdtkEntity for SpriteSheetBundle {
                 warn!("EntityInstance needs a tile, an associated tileset, and an associated tileset definition to be bundled as a SpriteSheetBundle");
                 SpriteSheetBundle::default()
             }
+        }
+    }
+}
+
+impl LdtkEntity for Worldly {
+    fn bundle_entity(
+        entity_instance: &EntityInstance,
+        layer_instance: &LayerInstance,
+        _: Option<&Handle<Image>>,
+        _: Option<&TilesetDefinition>,
+        _: &AssetServer,
+        _: &mut Assets<TextureAtlas>,
+    ) -> Worldly {
+        Worldly {
+            spawn_level: layer_instance.level_id,
+            spawn_layer: layer_instance.layer_def_uid,
+            entity_def_uid: entity_instance.def_uid,
+            spawn_px: entity_instance.px,
         }
     }
 }

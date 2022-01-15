@@ -5,6 +5,7 @@ use syn;
 
 static SPRITE_BUNDLE_ATTRIBUTE_NAME: &str = "sprite_bundle";
 static SPRITE_SHEET_BUNDLE_ATTRIBUTE_NAME: &str = "sprite_sheet_bundle";
+static WORLDLY_ATRIBUTE_NAME: &str = "worldly";
 static LDTK_ENTITY_ATTRIBUTE_NAME: &str = "ldtk_entity";
 static FROM_ENTITY_INSTANCE_ATTRIBUTE_NAME: &str = "from_entity_instance";
 
@@ -43,6 +44,15 @@ pub fn expand_ldtk_entity_derive(ast: &syn::DeriveInput) -> proc_macro::TokenStr
             field_constructions.push(expand_sprite_sheet_bundle_attribute(
                 attribute, field_name, field_type,
             ));
+            continue;
+        }
+
+        let worldly = field
+            .attrs
+            .iter()
+            .find(|a| *a.path.get_ident().as_ref().unwrap() == WORLDLY_ATRIBUTE_NAME);
+        if let Some(attribute) = worldly {
+            field_constructions.push(expand_worldly_attribute(attribute, field_name, field_type));
             continue;
         }
 
@@ -216,6 +226,24 @@ fn expand_sprite_sheet_bundle_attribute(
             }
         },
         _ => panic!("#[sprite_sheet_bundle...] attribute should take the form #[sprite_sheet_bundle(\"asset/path.png\", tile_width, tile_height, columns, rows, padding, index)] or #[sprite_sheet_bundle]"),
+    }
+}
+
+fn expand_worldly_attribute(
+    attribute: &syn::Attribute,
+    field_name: &syn::Ident,
+    field_type: &syn::Type,
+) -> proc_macro2::TokenStream {
+    match attribute
+        .parse_meta()
+        .expect("Cannot parse #[worldly] attribute")
+    {
+        syn::Meta::Path(_) => {
+            quote! {
+                #field_name: #field_type::bundle_entity(entity_instance, layer_instance, tileset, tileset_definition, asset_server, texture_atlases),
+            }
+        }
+        _ => panic!("#[worldly] attribute should take the form #[worldly]"),
     }
 }
 

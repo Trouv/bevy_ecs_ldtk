@@ -1,7 +1,7 @@
 //! Utility functions used internally by the plugin that have been exposed to the public api.
 
 #[allow(unused_imports)]
-use crate::components::*;
+use crate::components::IntGridCell;
 
 use crate::ldtk::*;
 use bevy::prelude::*;
@@ -55,8 +55,7 @@ pub fn create_entity_definition_map(
 ///
 /// The `entity_definition_map` should be a map of [EntityDefinition] uids to [EntityDefinition]s.
 ///
-/// Internally, this transform is used to place [EntityInstance]s, as children of the
-/// [LdtkMapBundle].
+/// Internally, this transform is used to place [EntityInstance]s as children of the level.
 pub fn calculate_transform_from_entity_instance(
     entity_instance: &EntityInstance,
     entity_definition_map: &HashMap<i32, &EntityDefinition>,
@@ -140,7 +139,7 @@ pub fn ldtk_grid_coords_to_translation_centered(
 ///
 /// Assumes that the bottom-left corner of the origin tile is at [Vec2::ZERO].
 ///
-/// Internally, this transform is used to place [IntGridCell]s, as children of the [LdtkMapBundle].
+/// Internally, this transform is used to place [IntGridCell]s as children of the level.
 pub fn tile_pos_to_translation_centered(tile_pos: TilePos, tile_size: IVec2) -> Vec2 {
     let tile_coords: UVec2 = tile_pos.into();
     let tile_size = tile_size.as_vec2();

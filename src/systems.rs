@@ -50,6 +50,7 @@ pub fn choose_levels(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn apply_level_set(
     mut commands: Commands,
     ldtk_world_query: Query<(Entity, &LevelSet, &Children, &Handle<LdtkAsset>), Changed<LevelSet>>,
@@ -70,7 +71,7 @@ pub fn apply_level_set(
             }
         }
 
-        let previous_uids: HashSet<i32> = previous_level_map.keys().map(|u| *u).collect();
+        let previous_uids: HashSet<i32> = previous_level_map.keys().copied().collect();
 
         let uids_to_spawn = level_set.uids.difference(&previous_uids);
         if uids_to_spawn.clone().count() > 0 {
@@ -92,6 +93,8 @@ pub fn apply_level_set(
 }
 
 /// Detects [LdtkAsset] events and spawns levels as children of the [LdtkWorldBundle].
+
+#[allow(clippy::too_many_arguments)]
 pub fn process_ldtk_world(
     mut commands: Commands,
     mut ldtk_events: EventReader<AssetEvent<LdtkAsset>>,
@@ -287,7 +290,7 @@ pub fn process_ldtk_levels(
                 let entity_definition_map =
                     create_entity_definition_map(&ldtk_asset.project.defs.entities);
 
-                let worldly_set = worldly_query.iter().map(|w| w.clone()).collect();
+                let worldly_set = worldly_query.iter().cloned().collect();
 
                 if let Some(level) = level_assets.get(level_handle) {
                     spawn_level(

@@ -35,6 +35,10 @@
 //!     });
 //! }
 //!
+//! # #[derive(Component, Default)]
+//! # struct ComponentA;
+//! # #[derive(Component, Default)]
+//! # struct ComponentB;
 //! #[derive(Bundle, LdtkEntity)]
 //! pub struct MyBundle {
 //!     a: ComponentA,

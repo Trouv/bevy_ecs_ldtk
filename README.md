@@ -10,6 +10,7 @@ An ECS-friendly ldtk plugin for [bevy](https://github.com/bevyengine/bevy).
 Uses [bevy_ecs_tilemap](https://github.com/StarArawn/bevy_ecs_tilemap) as a
 base.
 
+`cargo run --example platformer --release`
 ![platformer-example](repo/platformer-example.gif)
 
 ### Features

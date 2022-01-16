@@ -8,6 +8,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(LdtkPlugin)
         .add_startup_system(setup)
+        .insert_resource(LevelSelection::default())
         .register_ldtk_entity_for_layer::<PlayerBundle>("Entities", "Willo")
         .register_ldtk_entity::<TableBundle>("Table")
         .register_ldtk_entity::<SBlockBundle>("S")

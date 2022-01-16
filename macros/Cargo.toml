@@ -1,7 +1,12 @@
 [package]
 name = "bevy_ecs_ldtk_macros"
+description = "Derive macros for bevy_ecs_ldtk."
 version = "0.1.0"
 edition = "2021"
+authors = ["Trevor Lovell <trevorlovelldesign@gmail.com>"]
+license = "MIT OR Apache-2.0"
+keywords = ["bevy", "ldtk", "game", "gamedev", "map-editor"]
+categories = ["Game development"]
 
 [dependencies]
 syn = "1.0"

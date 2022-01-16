@@ -23,6 +23,7 @@ hex = "0.4"
 [dev-dependencies]
 bevy = "0.6"
 heron = { version = "1.0.1-rc.1", features = ["2d"] }
+rand = "0.8"
 
 [features]
 default = ["derive"]

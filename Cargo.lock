@@ -344,6 +344,7 @@ dependencies = [
  "bevy_ecs_tilemap",
  "heron",
  "hex",
+ "rand",
  "regex",
  "serde",
  "serde_json",

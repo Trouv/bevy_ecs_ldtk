@@ -2,12 +2,12 @@ use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 
 fn main() {
-    App::empty()
+    App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(LdtkPlugin)
         .add_startup_system(setup)
         .insert_resource(LevelSelection::Index(0))
-        .register_ldtk_entity::<MyBundle>("my_entity_identifier")
+        .register_ldtk_entity::<MyBundle>("MyEntityIdentifier")
         .run();
 }
 
@@ -30,7 +30,7 @@ struct ComponentB;
 pub struct MyBundle {
     a: ComponentA,
     b: ComponentB,
-    #[sprite_bundle]
+    #[sprite_sheet_bundle]
     #[bundle]
-    sprite_bundle: SpriteBundle,
+    sprite_bundle: SpriteSheetBundle,
 }

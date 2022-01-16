@@ -35,7 +35,6 @@ pub fn choose_levels(
                     if let Some(level) = ldtk_asset.get_level(&level_selection) {
                         level_set.uids.clear();
 
-                        info!("Levels chosen. Inserting in LevelSet.");
                         level_set.uids.insert(level.uid);
 
                         if ldtk_settings.load_level_neighbors {
@@ -114,7 +113,7 @@ pub fn process_ldtk_world(
     for event in ldtk_events.iter() {
         match event {
             AssetEvent::Created { handle } => {
-                info!("LDtk asset creation detected.");
+                debug!("LDtk asset creation detected.");
                 changed_ldtks.push(handle.clone());
             }
             AssetEvent::Modified { handle } => {
@@ -127,7 +126,7 @@ pub fn process_ldtk_world(
                 // events are ordered so future modification events are ok
                 changed_ldtks = changed_ldtks
                     .into_iter()
-                    .filter(|changed_handle| changed_handle == handle)
+                    .filter(|changed_handle| changed_handle != handle)
                     .collect();
             }
         }
@@ -138,12 +137,10 @@ pub fn process_ldtk_world(
     }
 
     for changed_ldtk in changed_ldtks {
-        info!("Ldtk changes detected.");
         for (ldtk_entity, ldtk_handle, mut level_set, children) in ldtk_world_query
             .iter_mut()
             .filter(|(_, l, _, _)| **l == changed_ldtk)
         {
-            info!("Ldtk world entity detected.");
             if let Some(children) = children {
                 for child in children.iter() {
                     if let Ok(mut map) = ldtk_level_query.get_mut(*child) {
@@ -161,7 +158,6 @@ pub fn process_ldtk_world(
                     if let Some(level) = ldtk_asset.get_level(level_selection) {
                         level_set.uids.clear();
 
-                        info!("Levels chosen. Inserting in LevelSet.");
                         level_set.uids.insert(level.uid);
 
                         if ldtk_settings.load_level_neighbors {
@@ -172,7 +168,6 @@ pub fn process_ldtk_world(
                     }
                 }
 
-                info!("Ldtk asset found.");
                 commands.entity(ldtk_entity).with_children(|c| {
                     for level_uid in &level_set.uids {
                         level_events.send(LevelEvent::SpawnTriggered(*level_uid));
@@ -265,18 +260,14 @@ pub fn process_ldtk_levels(
     ldtk_entity_map: NonSend<LdtkEntityMap>,
     ldtk_int_cell_map: NonSend<LdtkIntCellMap>,
     ldtk_query: Query<&Handle<LdtkAsset>>,
-    level_query: Query<
-        (Entity, &Handle<LdtkLevel>, &Parent, &GlobalTransform),
-        Added<Handle<LdtkLevel>>,
-    >,
+    level_query: Query<(Entity, &Handle<LdtkLevel>, &Parent), Added<Handle<LdtkLevel>>>,
     worldly_query: Query<&Worldly>,
     mut level_events: EventWriter<LevelEvent>,
 ) {
     // This function uses code from the bevy_ecs_tilemap ldtk example
     // https://github.com/StarArawn/bevy_ecs_tilemap/blob/main/examples/ldtk/ldtk.rs
 
-    for (ldtk_entity, level_handle, parent, global_transform) in level_query.iter() {
-        info!("{:?}", global_transform);
+    for (ldtk_entity, level_handle, parent) in level_query.iter() {
         if let Ok(ldtk_handle) = ldtk_query.get(parent.0) {
             if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
                 let tileset_definition_map: HashMap<i32, &TilesetDefinition> = ldtk_asset
@@ -432,7 +423,15 @@ fn spawn_level(
 
                     if let Some(tileset_definition) = tileset_definition {
                         settings.grid_size = Vec2::splat(layer_instance.grid_size as f32);
-                        settings.tile_spacing = Vec2::splat(tileset_definition.spacing as f32);
+                        if tileset_definition.spacing != 0 {
+                            warn!(
+                                "Tile spacing currently not supported for AutoTile and Tile layers"
+                            );
+
+                            // This causes a crash after bevy_ecs_tilemap switched to texture
+                            // arrays
+                            //settings.tile_spacing = Vec2::splat(tileset_definition.spacing as f32);
+                        }
                     }
 
                     // The change to the settings.grid_size above is supposed to help handle cases

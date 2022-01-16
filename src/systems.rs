@@ -432,7 +432,15 @@ fn spawn_level(
 
                     if let Some(tileset_definition) = tileset_definition {
                         settings.grid_size = Vec2::splat(layer_instance.grid_size as f32);
-                        settings.tile_spacing = Vec2::splat(tileset_definition.spacing as f32);
+                        if tileset_definition.spacing != 0 {
+                            warn!(
+                                "Tile spacing currently not supported for AutoTile and Tile layers"
+                            );
+
+                            // This causes a crash after bevy_ecs_tilemap switched to texture
+                            // arrays
+                            //settings.tile_spacing = Vec2::splat(tileset_definition.spacing as f32);
+                        }
                     }
 
                     // The change to the settings.grid_size above is supposed to help handle cases

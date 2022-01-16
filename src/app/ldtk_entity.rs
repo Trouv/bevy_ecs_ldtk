@@ -297,9 +297,11 @@ impl LdtkEntity for SpriteSheetBundle {
                     Vec2::splat(tileset_definition.spacing as f32),
                 )),
                 sprite: TextureAtlasSprite {
-                    index: (tile.src_rect[1] / tile.src_rect[3]) as usize
+                    index: (tile.src_rect[1] / (tile.src_rect[3] + tileset_definition.spacing))
+                        as usize
                         * tileset_definition.c_wid as usize
-                        + (tile.src_rect[0] / tile.src_rect[2]) as usize,
+                        + (tile.src_rect[0] / (tile.src_rect[2] + tileset_definition.spacing))
+                            as usize,
                     ..Default::default()
                 },
                 ..Default::default()

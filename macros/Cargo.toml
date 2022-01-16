@@ -6,7 +6,7 @@ edition = "2021"
 authors = ["Trevor Lovell <trevorlovelldesign@gmail.com>"]
 license = "MIT OR Apache-2.0"
 keywords = ["bevy", "ldtk", "game", "gamedev", "map-editor"]
-categories = ["Game development"]
+categories = ["game-development"]
 
 [dependencies]
 syn = "1.0"

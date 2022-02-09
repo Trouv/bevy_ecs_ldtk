@@ -62,6 +62,37 @@ pub struct Worldly {
     pub spawn_px: IVec2,
 }
 
+/// [Component] that stores grid-based coordinate information.
+///
+/// Can be added to an [LdtkEntity] or [LdtkIntCell] bundle with the `#[grid_coords]` attribute.
+/// Then, it will be spawned with the initial grid-based position of the entity or IntGrid tile.
+/// See [LdtkEntity#grid_coords]
+///
+/// Note that the plugin will not automatically update the entity's [Transform] when this component
+/// is updated, nor visa versa.
+/// This is left up to the user since there's plenty of scenarios where this behavior needs to be
+/// custom.
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Hash, Component)]
+pub struct GridCoords {
+    pub x: i32,
+    pub y: i32,
+}
+
+impl From<IVec2> for GridCoords {
+    fn from(i_vec_2: IVec2) -> Self {
+        GridCoords {
+            x: i_vec_2.x,
+            y: i_vec_2.y,
+        }
+    }
+}
+
+impl From<GridCoords> for IVec2 {
+    fn from(grid_coords: GridCoords) -> Self {
+        IVec2::new(grid_coords.x, grid_coords.y)
+    }
+}
+
 #[derive(Clone, Default, Bundle)]
 pub(crate) struct IntGridCellBundle {
     pub int_grid_cell: IntGridCell,

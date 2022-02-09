@@ -79,7 +79,7 @@ pub fn expand_ldtk_entity_derive(ast: &syn::DeriveInput) -> proc_macro::TokenStr
         }
 
         field_constructions.push(quote! {
-            #field_name: #field_type::default(),
+            #field_name: <#field_type as std::default::Default>::default(),
         });
     }
 
@@ -143,7 +143,7 @@ fn expand_sprite_bundle_attribute(
         },
         syn::Meta::Path(_) => {
             quote! {
-                #field_name: #field_type::bundle_entity(entity_instance, layer_instance, tileset, tileset_definition, asset_server, texture_atlases),
+                #field_name: <#field_type as bevy_ecs_ldtk::prelude::LdtkEntity>::bundle_entity(entity_instance, layer_instance, tileset, tileset_definition, asset_server, texture_atlases),
             }
         },
         _ => panic!("#[sprite_bundle...] attribute should take the form #[sprite_bundle(\"asset/path.png\")] or #[sprite_bundle]"),
@@ -222,7 +222,7 @@ fn expand_sprite_sheet_bundle_attribute(
         },
         syn::Meta::Path(_) => {
             quote! {
-                #field_name: #field_type::bundle_entity(entity_instance, layer_instance, tileset, tileset_definition, asset_server, texture_atlases),
+                #field_name: <#field_type as bevy_ecs_ldtk::prelude::LdtkEntity>::bundle_entity(entity_instance, layer_instance, tileset, tileset_definition, asset_server, texture_atlases),
             }
         },
         _ => panic!("#[sprite_sheet_bundle...] attribute should take the form #[sprite_sheet_bundle(\"asset/path.png\", tile_width, tile_height, columns, rows, padding, index)] or #[sprite_sheet_bundle]"),
@@ -240,7 +240,7 @@ fn expand_worldly_attribute(
     {
         syn::Meta::Path(_) => {
             quote! {
-                #field_name: #field_type::bundle_entity(entity_instance, layer_instance, tileset, tileset_definition, asset_server, texture_atlases),
+                #field_name: <#field_type as bevy_ecs_ldtk::prelude::LdtkEntity>::bundle_entity(entity_instance, layer_instance, tileset, tileset_definition, asset_server, texture_atlases),
             }
         }
         _ => panic!("#[worldly] attribute should take the form #[worldly]"),
@@ -258,7 +258,7 @@ fn expand_ldtk_entity_attribute(
     {
         syn::Meta::Path(_) => {
             quote! {
-                #field_name: #field_type::bundle_entity(entity_instance, layer_instance, tileset, tileset_definition, asset_server, texture_atlases),
+                #field_name: <#field_type as bevy_ecs_ldtk::prelude::LdtkEntity>::bundle_entity(entity_instance, layer_instance, tileset, tileset_definition, asset_server, texture_atlases),
             }
         }
         _ => panic!("#[ldtk_entity] attribute should take the form #[ldtk_entity]"),
@@ -276,7 +276,7 @@ fn expand_from_entity_instance_attribute(
     {
         syn::Meta::Path(_) => {
             quote! {
-                #field_name: #field_type::from(entity_instance.clone()),
+                #field_name: <#field_type as From<bevy_ecs_ldtk::prelude::EntityInstance>>::from(entity_instance.clone()),
             }
         }
         _ => {

@@ -1,7 +1,7 @@
 //! Utility functions used internally by the plugin that have been exposed to the public api.
 
 #[allow(unused_imports)]
-use crate::components::IntGridCell;
+use crate::components::{GridCoords, IntGridCell};
 
 use crate::ldtk::*;
 use bevy::prelude::*;
@@ -110,6 +110,16 @@ pub fn ldtk_grid_coords_to_tile_pos(ldtk_coords: IVec2, ldtk_grid_height: i32) -
     let tile_coords =
         ldtk_coord_conversion_origin_adjusted(ldtk_coords, ldtk_grid_height).as_uvec2();
     TilePos(tile_coords.x, tile_coords.y)
+}
+
+/// Performs LDtk grid coordinate to [GridCoords] conversion.
+///
+/// This conversion is performed so that both the LDtk grid coords and the resulting [GridCoords]
+/// refer to the same tile.
+/// This is different from them referring to the same position in space, because the tile is
+/// referenced by its top-left corner in LDtk, and by its bottom-left corner with [GridCoords].
+pub fn ldtk_grid_coords_to_grid_coords(ldtk_coords: IVec2, ldtk_grid_height: i32) -> GridCoords {
+    ldtk_coord_conversion_origin_adjusted(ldtk_coords, ldtk_grid_height).into()
 }
 
 /// Performs [TilePos] to LDtk grid coordinate conversion.

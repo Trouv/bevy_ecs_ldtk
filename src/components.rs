@@ -1,6 +1,6 @@
 //! [Component]s and [Bundle]s used by the plugin.
 
-pub use crate::ldtk::EntityInstance;
+pub use crate::ldtk::{EntityInstance, LayerInstance};
 use bevy::prelude::*;
 
 use std::collections::HashSet;
@@ -10,6 +10,7 @@ use crate::{
     assets::LdtkLevel,
     prelude::{LdtkEntity, LdtkIntCell},
     resources::{LdtkSettings, LevelSelection},
+    utils::ldtk_grid_coords_to_grid_coords,
 };
 
 #[allow(unused_imports)]
@@ -90,6 +91,19 @@ impl From<IVec2> for GridCoords {
 impl From<GridCoords> for IVec2 {
     fn from(grid_coords: GridCoords) -> Self {
         IVec2::new(grid_coords.x, grid_coords.y)
+    }
+}
+
+impl GridCoords {
+    pub fn from_entity_info(
+        entity_instance: &EntityInstance,
+        layer_instance: &LayerInstance,
+    ) -> GridCoords {
+        ldtk_grid_coords_to_grid_coords(entity_instance.grid, layer_instance.c_hei)
+    }
+
+    pub fn from_int_cell_info() -> GridCoords {
+        GridCoords::default()
     }
 }
 

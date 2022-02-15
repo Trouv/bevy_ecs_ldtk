@@ -28,6 +28,7 @@ rand = "0.8"
 [features]
 default = ["derive"]
 derive = ["bevy_ecs_ldtk_macros"]
+atlas = ["bevy_ecs_tilemap/atlas"]
 
 [[example]]
 name = "platformer"

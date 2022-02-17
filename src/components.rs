@@ -13,6 +13,8 @@ use crate::{
     utils::ldtk_grid_coords_to_grid_coords,
 };
 
+use bevy_ecs_tilemap::{TileBundle, TileBundleTrait, TileParent, TilePos};
+
 #[allow(unused_imports)]
 use bevy_ecs_tilemap::Map;
 
@@ -94,6 +96,15 @@ impl From<GridCoords> for IVec2 {
     }
 }
 
+impl From<TilePos> for GridCoords {
+    fn from(tile_pos: TilePos) -> Self {
+        GridCoords {
+            x: tile_pos.0 as i32,
+            y: tile_pos.1 as i32,
+        }
+    }
+}
+
 impl GridCoords {
     pub fn from_entity_info(
         entity_instance: &EntityInstance,
@@ -104,6 +115,23 @@ impl GridCoords {
 
     pub fn from_int_cell_info() -> GridCoords {
         GridCoords::default()
+    }
+}
+
+#[derive(Clone, Default, Bundle)]
+pub struct TileGridBundle {
+    #[bundle]
+    pub tile_bundle: TileBundle,
+    pub grid_coords: GridCoords,
+}
+
+impl TileBundleTrait for TileGridBundle {
+    fn get_tile_pos_mut(&mut self) -> &mut TilePos {
+        self.tile_bundle.get_tile_pos_mut()
+    }
+
+    fn get_tile_parent(&mut self) -> &mut TileParent {
+        self.tile_bundle.get_tile_parent()
     }
 }
 

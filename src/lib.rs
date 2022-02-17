@@ -190,7 +190,7 @@ pub mod prelude {
     pub use crate::{
         app::{LdtkEntity, LdtkIntCell, RegisterLdtkObjects},
         assets::{LdtkAsset, LdtkLevel},
-        components::{EntityInstance, IntGridCell, LdtkWorldBundle, LevelSet, Worldly},
+        components::{EntityInstance, GridCoords, IntGridCell, LdtkWorldBundle, LevelSet, Worldly},
         ldtk::{self, FieldValue, LayerInstance, TilesetDefinition},
         plugin::LdtkPlugin,
         resources::{LdtkSettings, LevelEvent, LevelSelection},

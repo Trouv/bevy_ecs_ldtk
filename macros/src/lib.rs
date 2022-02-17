@@ -10,6 +10,7 @@ mod ldtk_int_cell;
         sprite_bundle,
         sprite_sheet_bundle,
         worldly,
+        grid_coords,
         ldtk_entity,
         from_entity_instance
     )

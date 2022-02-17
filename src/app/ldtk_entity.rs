@@ -1,5 +1,5 @@
 use crate::{
-    components::{EntityInstanceBundle, Worldly},
+    components::{EntityInstanceBundle, GridCoords, Worldly},
     ldtk::{EntityInstance, LayerInstance, TilesetDefinition},
 };
 use bevy::{ecs::system::EntityCommands, prelude::*};
@@ -329,6 +329,19 @@ impl LdtkEntity for Worldly {
             entity_def_uid: entity_instance.def_uid,
             spawn_px: entity_instance.px,
         }
+    }
+}
+
+impl LdtkEntity for GridCoords {
+    fn bundle_entity(
+        entity_instance: &EntityInstance,
+        layer_instance: &LayerInstance,
+        _: Option<&Handle<Image>>,
+        _: Option<&TilesetDefinition>,
+        _: &AssetServer,
+        _: &mut Assets<TextureAtlas>,
+    ) -> Self {
+        GridCoords::from_entity_info(entity_instance, layer_instance)
     }
 }
 

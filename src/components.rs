@@ -112,10 +112,6 @@ impl GridCoords {
     ) -> GridCoords {
         ldtk_grid_coords_to_grid_coords(entity_instance.grid, layer_instance.c_hei)
     }
-
-    pub fn from_int_cell_info() -> GridCoords {
-        GridCoords::default()
-    }
 }
 
 #[derive(Clone, Default, Bundle)]

@@ -3,7 +3,10 @@
 pub use crate::ldtk::{EntityInstance, LayerInstance};
 use bevy::prelude::*;
 
-use std::collections::HashSet;
+use std::{
+    collections::HashSet,
+    ops::{Add, AddAssign, Sub, SubAssign},
+};
 
 #[allow(unused_imports)]
 use crate::{
@@ -104,6 +107,40 @@ impl From<TilePos> for GridCoords {
             x: tile_pos.0 as i32,
             y: tile_pos.1 as i32,
         }
+    }
+}
+
+impl Add<GridCoords> for GridCoords {
+    type Output = GridCoords;
+    fn add(self, rhs: GridCoords) -> Self::Output {
+        GridCoords {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+        }
+    }
+}
+
+impl AddAssign<GridCoords> for GridCoords {
+    fn add_assign(&mut self, rhs: GridCoords) {
+        self.x += rhs.x;
+        self.y += rhs.y;
+    }
+}
+
+impl Sub<GridCoords> for GridCoords {
+    type Output = GridCoords;
+    fn sub(self, rhs: GridCoords) -> Self::Output {
+        GridCoords {
+            x: self.x - rhs.x,
+            y: self.y - rhs.y,
+        }
+    }
+}
+
+impl SubAssign<GridCoords> for GridCoords {
+    fn sub_assign(&mut self, rhs: GridCoords) {
+        self.x -= rhs.x;
+        self.y -= rhs.y;
     }
 }
 

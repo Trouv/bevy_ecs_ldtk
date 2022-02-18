@@ -117,7 +117,7 @@ impl GridCoords {
 }
 
 #[derive(Clone, Default, Bundle)]
-pub struct TileGridBundle {
+pub(crate) struct TileGridBundle {
     #[bundle]
     pub tile_bundle: TileBundle,
     pub grid_coords: GridCoords,

@@ -149,6 +149,30 @@ use crate::app::register_ldtk_objects::RegisterLdtkObjects;
 /// }
 /// ```
 ///
+/// ### `#[grid_coords]`
+/// Indicates that a [GridCoords] component should be created with the entity's initial grid-based
+/// position in LDtk.
+///
+/// See the [GridCoords] documentation for more details about this component.
+/// ```
+/// # use bevy::prelude::*;
+/// # use bevy_ecs_ldtk::prelude::*;
+/// # #[derive(Component, Default)]
+/// # struct Block;
+/// # #[derive(Component, Default)]
+/// # struct Movable;
+/// #[derive(Bundle, LdtkEntity)]
+/// pub struct BlockBundle {
+///     block: Block,
+///     movable: Movable;
+///     #[sprite_sheet_bundle]
+///     #[bundle]
+///     sprite_sheet_bundle: SpriteSheetBundle,
+///     #[grid_coords]
+///     grid_coords: GridCoords,
+/// }
+/// ```
+///
 /// ### `#[ldtk_entity]`
 /// Indicates that a component or bundle that implements [LdtkEntity] should be created with
 /// [LdtkEntity::bundle_entity], allowing for nested [LdtkEntity]s.

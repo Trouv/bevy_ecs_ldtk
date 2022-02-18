@@ -67,9 +67,11 @@ pub struct Worldly {
 
 /// [Component] that stores grid-based coordinate information.
 ///
-/// Can be added to an [LdtkEntity] or [LdtkIntCell] bundle with the `#[grid_coords]` attribute.
-/// Then, it will be spawned with the initial grid-based position of the entity or IntGrid tile.
-/// See [LdtkEntity#grid_coords]
+/// For Tile, AutoTile, and IntGrid layers, all tiles have this component by default.
+///
+/// Can be added to an [LdtkEntity] bundle with the `#[grid_coords]` attribute.
+/// Then, it will be spawned with the initial grid-based position of the entity in LDtk.
+/// See [LdtkEntity#grid_coords] for attribute macro usage.
 ///
 /// Note that the plugin will not automatically update the entity's [Transform] when this component
 /// is updated, nor visa versa.

@@ -55,30 +55,12 @@ impl From<IntGridCell> for ColliderBundle {
         let rotation_constraints = RotationConstraints::lock();
 
         match int_grid_cell.value {
-            1 => ColliderBundle {
-                collider: CollisionShape::Cuboid {
-                    half_extends: Vec3::new(8., 8., 0.),
-                    border_radius: None,
-                },
-                rigid_body: RigidBody::Static,
-                rotation_constraints,
-                ..Default::default()
-            },
             2 => ColliderBundle {
                 collider: CollisionShape::Cuboid {
                     half_extends: Vec3::new(8., 8., 0.),
                     border_radius: None,
                 },
                 rigid_body: RigidBody::Sensor,
-                rotation_constraints,
-                ..Default::default()
-            },
-            3 => ColliderBundle {
-                collider: CollisionShape::Cuboid {
-                    half_extends: Vec3::new(8., 8., 0.),
-                    border_radius: None,
-                },
-                rigid_body: RigidBody::Static,
                 rotation_constraints,
                 ..Default::default()
             },
@@ -110,11 +92,12 @@ pub struct PlayerBundle {
     pub climber: Climber,
 }
 
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Component)]
+pub struct Wall;
+
 #[derive(Clone, Debug, Default, Bundle, LdtkIntCell)]
 pub struct WallBundle {
-    #[from_int_grid_cell]
-    #[bundle]
-    pub collider_bundle: ColliderBundle,
+    wall: Wall,
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Component)]

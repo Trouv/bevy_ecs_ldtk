@@ -31,6 +31,7 @@ fn main() {
         })
         .add_startup_system(systems::setup)
         .add_system(systems::pause_physics_during_load)
+        .add_system(systems::spawn_wall_collision)
         .add_system(systems::movement)
         .add_system(systems::detect_climb_range)
         .add_system(systems::ignore_gravity_if_climbing)

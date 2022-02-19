@@ -262,7 +262,7 @@ fn expand_worldly_attribute(
 fn expand_grid_coords_attribute(
     attribute: &syn::Attribute,
     field_name: &syn::Ident,
-    field_type: &syn::Type,
+    _: &syn::Type,
 ) -> proc_macro2::TokenStream {
     match attribute
         .parse_meta()
@@ -270,7 +270,7 @@ fn expand_grid_coords_attribute(
     {
         syn::Meta::Path(_) => {
             quote! {
-                #field_name: <#field_type as bevy_ecs_ldtk::prelude::GridCoords>::from_entity_info(entity_instance, layer_instance),
+                #field_name: bevy_ecs_ldtk::prelude::GridCoords::from_entity_info(entity_instance, layer_instance),
             }
         }
         _ => panic!("#[grid_coords] attribute should take the form #[grid_coords]"),

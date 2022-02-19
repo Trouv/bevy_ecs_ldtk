@@ -164,7 +164,7 @@ use crate::app::register_ldtk_objects::RegisterLdtkObjects;
 /// #[derive(Bundle, LdtkEntity)]
 /// pub struct BlockBundle {
 ///     block: Block,
-///     movable: Movable;
+///     movable: Movable,
 ///     #[sprite_sheet_bundle]
 ///     #[bundle]
 ///     sprite_sheet_bundle: SpriteSheetBundle,

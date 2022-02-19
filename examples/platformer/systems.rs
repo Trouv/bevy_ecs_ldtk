@@ -133,7 +133,7 @@ pub fn spawn_wall_collision(
                     let mut row_plates: Vec<Plate> = Vec::new();
                     let mut plate_start = None;
 
-                    // + 1 to the width so the algorithm "terminates" plates that touch the top
+                    // + 1 to the width so the algorithm "terminates" plates that touch the right
                     // edge
                     for x in 0..width + 1 {
                         match (plate_start, level_walls.contains(&GridCoords { x, y })) {

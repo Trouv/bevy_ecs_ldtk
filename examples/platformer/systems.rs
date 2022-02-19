@@ -70,24 +70,47 @@ struct Plate {
     length: i32,
 }
 
+/// Spawns heron collisions for the walls of a level
+///
+/// You could just insert a ColliderBundle in to the WallBundle,
+/// but this spawns a different collider for EVERY wall tile.
+/// This approach leads to bad performance.
+///
+/// Instead, by flagging the wall tiles and spawning the collisions later,
+/// we can minimize the amount of colliding entities.
+///
+/// The algorithm used here is a nice compromise between simplicity, speed,
+/// and a small number of rectangle colliders.
+/// In basic terms, it will:
+/// 1. consider where the walls are
+/// 2. combine wall tiles into flat "plates" in each individual row
+/// 3. combine the plates into rectangles across multiple rows wherever possible
+/// 4. spawn colliders for each rectangle
 pub fn spawn_wall_collision(
     mut commands: Commands,
-    wall_query: Query<(&GridCoords, &Parent), With<Wall>>,
+    wall_query: Query<(&GridCoords, &Parent), Added<Wall>>,
+    parent_query: Query<&Parent, Without<Wall>>,
     level_query: Query<(Entity, &Handle<LdtkLevel>)>,
     levels: Res<Assets<LdtkLevel>>,
 ) {
+    // consider where the walls are
+    // storing them as GridCoords in a HashSet for quick, easy lookup
     let mut level_to_wall_locations: HashMap<Entity, HashSet<GridCoords>> = HashMap::new();
 
     wall_query.for_each(|(&grid_coords, &Parent(parent))| {
-        level_to_wall_locations
-            .entry(parent)
-            .or_insert(HashSet::new())
-            .insert(grid_coords);
+        // the intgrid tiles' direct parents will be bevy_ecs_tilemap chunks, not the level
+        // To get the level, you need their grandparents, which is where parent_query comes in
+        if let Ok(&Parent(level_entity)) = parent_query.get(parent) {
+            level_to_wall_locations
+                .entry(level_entity)
+                .or_insert(HashSet::new())
+                .insert(grid_coords);
+        }
     });
 
     if !wall_query.is_empty() {
-        level_query.for_each(|(entity, level_handle)| {
-            if let Some(level_walls) = level_to_wall_locations.get(&entity) {
+        level_query.for_each(|(level_entity, level_handle)| {
+            if let Some(level_walls) = level_to_wall_locations.get(&level_entity) {
                 let level = levels
                     .get(level_handle)
                     .expect("Level should be loaded by this point");
@@ -103,12 +126,15 @@ pub fn spawn_wall_collision(
                     .clone()
                     .expect("Level asset should have layers")[0];
 
-                // generate "plates" for every row in the level
+                // combine wall tiles into flat "plates" in each individual row
                 let mut plate_stack: Vec<Vec<Plate>> = Vec::new();
 
                 for y in 0..height {
                     let mut row_plates: Vec<Plate> = Vec::new();
                     let mut plate_start = None;
+
+                    // + 1 to the width so the algorithm "terminates" plates that touch the top
+                    // edge
                     for x in 0..width + 1 {
                         match (plate_start, level_walls.contains(&GridCoords { x, y })) {
                             (Some(s), false) => {
@@ -126,10 +152,12 @@ pub fn spawn_wall_collision(
                     plate_stack.push(row_plates);
                 }
 
+                // combine "plates" into rectangles across multiple rows
                 let mut wall_rects: Vec<Rect<i32>> = Vec::new();
                 let mut previous_rects: HashMap<Plate, Rect<i32>> = HashMap::new();
 
-                // Give it one extra empty row to terminate all the final rects
+                // an extra empty row so the algorithm "terminates" the rects that touch the top
+                // edge
                 plate_stack.push(Vec::new());
 
                 for (y, row) in plate_stack.iter().enumerate() {
@@ -150,7 +178,7 @@ pub fn spawn_wall_collision(
                                     bottom: y as i32,
                                     top: y as i32,
                                     left: plate.start_index,
-                                    right: plate.start_index + plate.length,
+                                    right: plate.start_index + plate.length - 1,
                                 },
                             );
                         }
@@ -161,6 +189,7 @@ pub fn spawn_wall_collision(
                     previous_rects = current_rects;
                 }
 
+                // spawn colliders for every rectangle
                 for wall_rect in wall_rects {
                     commands
                         .spawn()
@@ -178,11 +207,12 @@ pub fn spawn_wall_collision(
                         })
                         .insert(RigidBody::Static)
                         .insert(Transform::from_xyz(
-                            (wall_rect.left * grid_size) as f32,
-                            (wall_rect.bottom * grid_size) as f32,
+                            (wall_rect.left + wall_rect.right + 1) as f32 * grid_size as f32 / 2.,
+                            (wall_rect.bottom + wall_rect.top + 1) as f32 * grid_size as f32 / 2.,
                             0.,
                         ))
-                        .insert(GlobalTransform::default());
+                        .insert(GlobalTransform::default())
+                        .insert(Parent(level_entity));
                 }
             }
         });

@@ -11,6 +11,7 @@ pub struct ColliderBundle {
     pub rigid_body: RigidBody,
     pub velocity: Velocity,
     pub rotation_constraints: RotationConstraints,
+    pub physic_material: PhysicMaterial,
 }
 
 impl From<EntityInstance> for ColliderBundle {
@@ -43,6 +44,11 @@ impl From<EntityInstance> for ColliderBundle {
                 },
                 rigid_body: RigidBody::Dynamic,
                 rotation_constraints,
+                physic_material: PhysicMaterial {
+                    friction: 0.5,
+                    density: 15.0,
+                    ..Default::default()
+                },
                 ..Default::default()
             },
             _ => ColliderBundle::default(),
@@ -54,17 +60,8 @@ impl From<IntGridCell> for ColliderBundle {
     fn from(int_grid_cell: IntGridCell) -> ColliderBundle {
         let rotation_constraints = RotationConstraints::lock();
 
-        match int_grid_cell.value {
-            1 => ColliderBundle {
-                collider: CollisionShape::Cuboid {
-                    half_extends: Vec3::new(8., 8., 0.),
-                    border_radius: None,
-                },
-                rigid_body: RigidBody::Static,
-                rotation_constraints,
-                ..Default::default()
-            },
-            2 => ColliderBundle {
+        if int_grid_cell.value == 2 {
+            ColliderBundle {
                 collider: CollisionShape::Cuboid {
                     half_extends: Vec3::new(8., 8., 0.),
                     border_radius: None,
@@ -72,17 +69,9 @@ impl From<IntGridCell> for ColliderBundle {
                 rigid_body: RigidBody::Sensor,
                 rotation_constraints,
                 ..Default::default()
-            },
-            3 => ColliderBundle {
-                collider: CollisionShape::Cuboid {
-                    half_extends: Vec3::new(8., 8., 0.),
-                    border_radius: None,
-                },
-                rigid_body: RigidBody::Static,
-                rotation_constraints,
-                ..Default::default()
-            },
-            _ => ColliderBundle::default(),
+            }
+        } else {
+            ColliderBundle::default()
         }
     }
 }
@@ -110,11 +99,12 @@ pub struct PlayerBundle {
     pub climber: Climber,
 }
 
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Component)]
+pub struct Wall;
+
 #[derive(Clone, Debug, Default, Bundle, LdtkIntCell)]
 pub struct WallBundle {
-    #[from_int_grid_cell]
-    #[bundle]
-    pub collider_bundle: ColliderBundle,
+    wall: Wall,
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Component)]
@@ -198,8 +188,6 @@ pub struct MobBundle {
     #[bundle]
     pub collider_bundle: ColliderBundle,
     pub enemy: Enemy,
-    #[from_entity_instance]
-    pub entity_instance: EntityInstance,
     #[ldtk_entity]
     pub patrol: Patrol,
 }

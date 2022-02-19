@@ -1,5 +1,5 @@
 use crate::{
-    components::{EntityInstanceBundle, Worldly},
+    components::{EntityInstanceBundle, GridCoords, Worldly},
     ldtk::{EntityInstance, LayerInstance, TilesetDefinition},
 };
 use bevy::{ecs::system::EntityCommands, prelude::*};
@@ -146,6 +146,30 @@ use crate::app::register_ldtk_objects::RegisterLdtkObjects;
 ///     sprite_sheet_bundle: SpriteSheetBundle,
 ///     #[worldly]
 ///     worldly: Worldly,
+/// }
+/// ```
+///
+/// ### `#[grid_coords]`
+/// Indicates that a [GridCoords] component should be created with the entity's initial grid-based
+/// position in LDtk.
+///
+/// See the [GridCoords] documentation for more details about this component.
+/// ```
+/// # use bevy::prelude::*;
+/// # use bevy_ecs_ldtk::prelude::*;
+/// # #[derive(Component, Default)]
+/// # struct Block;
+/// # #[derive(Component, Default)]
+/// # struct Movable;
+/// #[derive(Bundle, LdtkEntity)]
+/// pub struct BlockBundle {
+///     block: Block,
+///     movable: Movable,
+///     #[sprite_sheet_bundle]
+///     #[bundle]
+///     sprite_sheet_bundle: SpriteSheetBundle,
+///     #[grid_coords]
+///     grid_coords: GridCoords,
 /// }
 /// ```
 ///
@@ -329,6 +353,19 @@ impl LdtkEntity for Worldly {
             entity_def_uid: entity_instance.def_uid,
             spawn_px: entity_instance.px,
         }
+    }
+}
+
+impl LdtkEntity for GridCoords {
+    fn bundle_entity(
+        entity_instance: &EntityInstance,
+        layer_instance: &LayerInstance,
+        _: Option<&Handle<Image>>,
+        _: Option<&TilesetDefinition>,
+        _: &AssetServer,
+        _: &mut Assets<TextureAtlas>,
+    ) -> Self {
+        GridCoords::from_entity_info(entity_instance, layer_instance)
     }
 }
 

@@ -5,7 +5,8 @@ use syn;
 
 static SPRITE_BUNDLE_ATTRIBUTE_NAME: &str = "sprite_bundle";
 static SPRITE_SHEET_BUNDLE_ATTRIBUTE_NAME: &str = "sprite_sheet_bundle";
-static WORLDLY_ATRIBUTE_NAME: &str = "worldly";
+static WORLDLY_ATTRIBUTE_NAME: &str = "worldly";
+static GRID_COORDS_ATTRIBUTE_NAME: &str = "grid_coords";
 static LDTK_ENTITY_ATTRIBUTE_NAME: &str = "ldtk_entity";
 static FROM_ENTITY_INSTANCE_ATTRIBUTE_NAME: &str = "from_entity_instance";
 
@@ -50,9 +51,20 @@ pub fn expand_ldtk_entity_derive(ast: &syn::DeriveInput) -> proc_macro::TokenStr
         let worldly = field
             .attrs
             .iter()
-            .find(|a| *a.path.get_ident().as_ref().unwrap() == WORLDLY_ATRIBUTE_NAME);
+            .find(|a| *a.path.get_ident().as_ref().unwrap() == WORLDLY_ATTRIBUTE_NAME);
         if let Some(attribute) = worldly {
             field_constructions.push(expand_worldly_attribute(attribute, field_name, field_type));
+            continue;
+        }
+
+        let grid_coords = field
+            .attrs
+            .iter()
+            .find(|a| *a.path.get_ident().as_ref().unwrap() == GRID_COORDS_ATTRIBUTE_NAME);
+        if let Some(attribute) = grid_coords {
+            field_constructions.push(expand_grid_coords_attribute(
+                attribute, field_name, field_type,
+            ));
             continue;
         }
 
@@ -244,6 +256,24 @@ fn expand_worldly_attribute(
             }
         }
         _ => panic!("#[worldly] attribute should take the form #[worldly]"),
+    }
+}
+
+fn expand_grid_coords_attribute(
+    attribute: &syn::Attribute,
+    field_name: &syn::Ident,
+    _: &syn::Type,
+) -> proc_macro2::TokenStream {
+    match attribute
+        .parse_meta()
+        .expect("Cannot parse #[grid_coords] attribute")
+    {
+        syn::Meta::Path(_) => {
+            quote! {
+                #field_name: bevy_ecs_ldtk::prelude::GridCoords::from_entity_info(entity_instance, layer_instance),
+            }
+        }
+        _ => panic!("#[grid_coords] attribute should take the form #[grid_coords]"),
     }
 }
 

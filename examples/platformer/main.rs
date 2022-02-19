@@ -1,5 +1,5 @@
 // This example shows off a more in-depth implementation of a game with `bevy_ecs_ldtk`.
-// This is pretty slow due to the naive usage of `bevy_heron`, please run with `--release`.
+// Please run with `--release`.
 
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
@@ -31,6 +31,7 @@ fn main() {
         })
         .add_startup_system(systems::setup)
         .add_system(systems::pause_physics_during_load)
+        .add_system(systems::spawn_wall_collision)
         .add_system(systems::movement)
         .add_system(systems::detect_climb_range)
         .add_system(systems::ignore_gravity_if_climbing)

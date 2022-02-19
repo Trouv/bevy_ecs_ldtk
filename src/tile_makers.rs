@@ -13,7 +13,7 @@
 //! Tile bundle makers can be used with [LayerBuilder::new_batch] and [set_all_tiles_with_func] to
 //! spawn many tiles at once.
 
-use crate::{ldtk::TileInstance, utils::*};
+use crate::{components::TileGridBundle, ldtk::TileInstance, utils::*};
 use bevy_ecs_tilemap::prelude::*;
 
 use std::collections::HashMap;
@@ -21,7 +21,7 @@ use std::collections::HashMap;
 /// A tile maker that always returns an invisible tile.
 ///
 /// Used for spawning IntGrid layers without AutoTile functionality.
-pub fn tile_pos_to_invisible_tile(_: TilePos) -> Option<Tile> {
+pub(crate) fn tile_pos_to_invisible_tile(_: TilePos) -> Option<Tile> {
     Some(Tile {
         visible: false,
         ..Default::default()
@@ -31,7 +31,7 @@ pub fn tile_pos_to_invisible_tile(_: TilePos) -> Option<Tile> {
 /// Creates a tile maker that matches the tileset visuals of an ldtk layer.
 ///
 /// Used for spawning Tile, AutoTile and IntGrid layers with AutoTile functionality.
-pub fn tile_pos_to_tile_maker(
+pub(crate) fn tile_pos_to_tile_maker(
     layer_height_in_tiles: i32,
     layer_grid_size: i32,
     grid_tiles: Vec<TileInstance>,
@@ -75,12 +75,12 @@ pub fn tile_pos_to_tile_maker(
 /// cell in the int grid is not zero.
 ///
 /// Used for spawning IntGrid layers without AutoTile functionality.
-pub fn tile_pos_to_tile_bundle_if_int_grid_nonzero_maker(
+pub(crate) fn tile_pos_to_tile_bundle_if_int_grid_nonzero_maker(
     mut tile_maker: impl FnMut(TilePos) -> Option<Tile>,
     int_grid_csv: &[i32],
     layer_width_in_tiles: i32,
     layer_height_in_tiles: i32,
-) -> impl FnMut(TilePos) -> Option<TileBundle> {
+) -> impl FnMut(TilePos) -> Option<TileGridBundle> {
     let nonzero_map: HashMap<TilePos, bool> = int_grid_csv
         .iter()
         .enumerate()
@@ -93,11 +93,14 @@ pub fn tile_pos_to_tile_bundle_if_int_grid_nonzero_maker(
             )
         })
         .collect();
-    move |tile_pos: TilePos| -> Option<TileBundle> {
+    move |tile_pos: TilePos| -> Option<TileGridBundle> {
         match nonzero_map.get(&tile_pos) {
-            Some(nonzero) if *nonzero => tile_maker(tile_pos).map(|tile| TileBundle {
-                tile,
-                ..Default::default()
+            Some(nonzero) if *nonzero => tile_maker(tile_pos).map(|tile| TileGridBundle {
+                grid_coords: tile_pos.into(),
+                tile_bundle: TileBundle {
+                    tile,
+                    ..Default::default()
+                },
             }),
             _ => None,
         }
@@ -107,13 +110,16 @@ pub fn tile_pos_to_tile_bundle_if_int_grid_nonzero_maker(
 /// Returns a tile bundle maker that returns the bundled result of the provided tile maker.
 ///
 /// Used for spawning Tile, AutoTile, and IntGrid layers with AutoTile functionality.
-pub fn tile_pos_to_tile_bundle_maker(
+pub(crate) fn tile_pos_to_tile_bundle_maker(
     mut tile_maker: impl FnMut(TilePos) -> Option<Tile>,
-) -> impl FnMut(TilePos) -> Option<TileBundle> {
-    move |tile_pos: TilePos| -> Option<TileBundle> {
-        tile_maker(tile_pos).map(|tile| TileBundle {
-            tile,
-            ..Default::default()
+) -> impl FnMut(TilePos) -> Option<TileGridBundle> {
+    move |tile_pos: TilePos| -> Option<TileGridBundle> {
+        tile_maker(tile_pos).map(|tile| TileGridBundle {
+            grid_coords: tile_pos.into(),
+            tile_bundle: TileBundle {
+                tile,
+                ..Default::default()
+            },
         })
     }
 }

@@ -458,12 +458,13 @@ fn spawn_level(
                             // LayerBuilder::new_batch().
                             // So, the actual LayerBuilder usage diverges greatly here
 
-                            let (mut layer_builder, layer_entity) = LayerBuilder::<TileBundle>::new(
-                                commands,
-                                settings,
-                                map.id,
-                                layer_id as u16,
-                            );
+                            let (mut layer_builder, layer_entity) =
+                                LayerBuilder::<TileGridBundle>::new(
+                                    commands,
+                                    settings,
+                                    map.id,
+                                    layer_id as u16,
+                                );
 
                             match tileset_definition {
                                 Some(_) => {
@@ -552,7 +553,7 @@ fn spawn_level(
                                 grid_tiles,
                             );
 
-                            LayerBuilder::<TileBundle>::new_batch(
+                            LayerBuilder::<TileGridBundle>::new_batch(
                                 commands,
                                 settings,
                                 meshes,

@@ -5,7 +5,7 @@ use bevy::prelude::*;
 
 use std::{
     collections::HashSet,
-    ops::{Add, AddAssign, Sub, SubAssign},
+    ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign},
 };
 
 #[allow(unused_imports)]
@@ -141,6 +141,23 @@ impl SubAssign<GridCoords> for GridCoords {
     fn sub_assign(&mut self, rhs: GridCoords) {
         self.x -= rhs.x;
         self.y -= rhs.y;
+    }
+}
+
+impl Mul<GridCoords> for GridCoords {
+    type Output = GridCoords;
+    fn mul(self, rhs: GridCoords) -> Self::Output {
+        GridCoords {
+            x: self.x * rhs.x,
+            y: self.y * rhs.y,
+        }
+    }
+}
+
+impl MulAssign<GridCoords> for GridCoords {
+    fn mul_assign(&mut self, rhs: GridCoords) {
+        self.x *= rhs.x;
+        self.y *= rhs.y;
     }
 }
 

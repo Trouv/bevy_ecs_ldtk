@@ -24,7 +24,7 @@ base.
 - `serde` types for LDtk based off LDtk's [QuickType
   loader](https://ldtk.io/files/quicktype/LdtkJson.rs), but with several QoL
   improvements
-- Support for Wasm through "atlas" feature
+- Support for Wasm (and tile spacing) through "atlas" feature
 
 ### Getting Started
 The goal of this plugin is to make it as easy as possible to use LDtk with bevy

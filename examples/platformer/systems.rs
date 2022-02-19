@@ -206,6 +206,10 @@ pub fn spawn_wall_collision(
                             border_radius: None,
                         })
                         .insert(RigidBody::Static)
+                        .insert(PhysicMaterial {
+                            friction: 0.1,
+                            ..Default::default()
+                        })
                         .insert(Transform::from_xyz(
                             (wall_rect.left + wall_rect.right + 1) as f32 * grid_size as f32 / 2.,
                             (wall_rect.bottom + wall_rect.top + 1) as f32 * grid_size as f32 / 2.,

@@ -90,6 +90,7 @@ pub struct PlayerBundle {
     #[worldly]
     pub worldly: Worldly,
     pub climber: Climber,
+    pub physic_material: PhysicMaterial,
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Component)]

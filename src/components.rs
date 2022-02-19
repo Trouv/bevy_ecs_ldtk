@@ -78,7 +78,7 @@ pub struct Worldly {
 ///
 /// Note that the plugin will not automatically update the entity's [Transform] when this component
 /// is updated, nor visa versa.
-/// This is left up to the user since there's plenty of scenarios where this behavior needs to be
+/// This is left up to the user since there are plenty of scenarios where this behavior needs to be
 /// custom.
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Hash, Component)]
 pub struct GridCoords {

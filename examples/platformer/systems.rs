@@ -62,14 +62,6 @@ pub fn movement(
     }
 }
 
-/// Represents a wide wall that is 1 tile tall
-/// Used to spawn wall collisions
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Hash)]
-struct Plate {
-    start_index: i32,
-    length: i32,
-}
-
 /// Spawns heron collisions for the walls of a level
 ///
 /// You could just insert a ColliderBundle in to the WallBundle,
@@ -93,6 +85,14 @@ pub fn spawn_wall_collision(
     level_query: Query<(Entity, &Handle<LdtkLevel>)>,
     levels: Res<Assets<LdtkLevel>>,
 ) {
+    /// Represents a wide wall that is 1 tile tall
+    /// Used to spawn wall collisions
+    #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Hash)]
+    struct Plate {
+        left: i32,
+        right: i32,
+    }
+
     // consider where the walls are
     // storing them as GridCoords in a HashSet for quick, easy lookup
     let mut level_to_wall_locations: HashMap<Entity, HashSet<GridCoords>> = HashMap::new();
@@ -139,8 +139,8 @@ pub fn spawn_wall_collision(
                         match (plate_start, level_walls.contains(&GridCoords { x, y })) {
                             (Some(s), false) => {
                                 row_plates.push(Plate {
-                                    start_index: s,
-                                    length: x - s,
+                                    left: s,
+                                    right: x - 1,
                                 });
                                 plate_start = None;
                             }
@@ -177,8 +177,8 @@ pub fn spawn_wall_collision(
                                 Rect {
                                     bottom: y as i32,
                                     top: y as i32,
-                                    left: plate.start_index,
-                                    right: plate.start_index + plate.length - 1,
+                                    left: plate.left,
+                                    right: plate.right,
                                 },
                             );
                         }
@@ -216,6 +216,9 @@ pub fn spawn_wall_collision(
                             0.,
                         ))
                         .insert(GlobalTransform::default())
+                        // Making the collider a child of the level serves two purposes:
+                        // 1. Adjusts the transforms to be relative to the level for free
+                        // 2. the colliders will be despawned automatically when levels unload
                         .insert(Parent(level_entity));
                 }
             }

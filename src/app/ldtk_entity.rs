@@ -330,12 +330,7 @@ impl LdtkEntity for Worldly {
         _: &AssetServer,
         _: &mut Assets<TextureAtlas>,
     ) -> Worldly {
-        Worldly {
-            spawn_level: layer_instance.level_id,
-            spawn_layer: layer_instance.layer_def_uid,
-            entity_def_uid: entity_instance.def_uid,
-            spawn_px: entity_instance.px,
-        }
+        Worldly::from_entity_info(entity_instance, layer_instance)
     }
 }
 

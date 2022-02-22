@@ -244,7 +244,7 @@ fn expand_sprite_sheet_bundle_attribute(
 fn expand_worldly_attribute(
     attribute: &syn::Attribute,
     field_name: &syn::Ident,
-    field_type: &syn::Type,
+    _: &syn::Type,
 ) -> proc_macro2::TokenStream {
     match attribute
         .parse_meta()
@@ -252,7 +252,7 @@ fn expand_worldly_attribute(
     {
         syn::Meta::Path(_) => {
             quote! {
-                #field_name: <#field_type as bevy_ecs_ldtk::prelude::LdtkEntity>::bundle_entity(entity_instance, layer_instance, tileset, tileset_definition, asset_server, texture_atlases),
+                #field_name: bevy_ecs_ldtk::prelude::Worldly::from_entity_info(entity_instance, layer_instance),
             }
         }
         _ => panic!("#[worldly] attribute should take the form #[worldly]"),

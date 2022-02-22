@@ -68,6 +68,20 @@ pub struct Worldly {
     pub spawn_px: IVec2,
 }
 
+impl Worldly {
+    pub fn from_entity_info(
+        entity_instance: &EntityInstance,
+        layer_instance: &LayerInstance,
+    ) -> Worldly {
+        Worldly {
+            spawn_level: layer_instance.level_id,
+            spawn_layer: layer_instance.layer_def_uid,
+            entity_def_uid: entity_instance.def_uid,
+            spawn_px: entity_instance.px,
+        }
+    }
+}
+
 /// [Component] that stores grid-based coordinate information.
 ///
 /// For Tile, AutoTile, and IntGrid layers, all tiles have this component by default.

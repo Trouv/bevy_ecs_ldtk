@@ -246,6 +246,41 @@ where
     try_each_optional_permutation(a, b, |x, y| map.get(&(x, y))).unwrap_or(default)
 }
 
+/// Creates a [SpriteSheetBundle] from the entity information available to the [LdtkEntity] method.
+///
+/// Used for the `#[sprite_sheet_bundle]` attribute macro for `#[derive(LdtkEntity)]`.
+/// See [LdtkEntity#sprite_sheet_bundle] for more info.
+pub fn sprite_sheet_bundle_from_entity_info(
+    entity_instance: &EntityInstance,
+    tileset: Option<&Handle<Image>>,
+    tileset_definition: Option<&TilesetDefinition>,
+    texture_atlases: &mut Assets<TextureAtlas>,
+) -> SpriteSheetBundle {
+    match (tileset, &entity_instance.tile, tileset_definition) {
+        (Some(tileset), Some(tile), Some(tileset_definition)) => SpriteSheetBundle {
+            texture_atlas: texture_atlases.add(TextureAtlas::from_grid_with_padding(
+                tileset.clone(),
+                Vec2::new(tile.src_rect[2] as f32, tile.src_rect[3] as f32),
+                tileset_definition.c_wid as usize,
+                tileset_definition.c_hei as usize,
+                Vec2::splat(tileset_definition.spacing as f32),
+            )),
+            sprite: TextureAtlasSprite {
+                index: (tile.src_rect[1] / (tile.src_rect[3] + tileset_definition.spacing))
+                    as usize
+                    * tileset_definition.c_wid as usize
+                    + (tile.src_rect[0] / (tile.src_rect[2] + tileset_definition.spacing)) as usize,
+                ..Default::default()
+            },
+            ..Default::default()
+        },
+        _ => {
+            warn!("EntityInstance needs a tile, an associated tileset, and an associated tileset definition to be bundled as a SpriteSheetBundle");
+            SpriteSheetBundle::default()
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

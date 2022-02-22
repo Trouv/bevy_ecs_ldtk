@@ -234,7 +234,7 @@ fn expand_sprite_sheet_bundle_attribute(
         },
         syn::Meta::Path(_) => {
             quote! {
-                #field_name: <#field_type as bevy_ecs_ldtk::prelude::LdtkEntity>::bundle_entity(entity_instance, layer_instance, tileset, tileset_definition, asset_server, texture_atlases),
+                #field_name: bevy_ecs_ldtk::utils::sprite_sheet_bundle_from_entity_info(entity_instance, tileset, tileset_definition, texture_atlases),
             }
         },
         _ => panic!("#[sprite_sheet_bundle...] attribute should take the form #[sprite_sheet_bundle(\"asset/path.png\", tile_width, tile_height, columns, rows, padding, index)] or #[sprite_sheet_bundle]"),

@@ -1,7 +1,10 @@
 //! Utility functions used internally by the plugin that have been exposed to the public api.
 
 #[allow(unused_imports)]
-use crate::components::{GridCoords, IntGridCell};
+use crate::{
+    app::LdtkEntity,
+    components::{GridCoords, IntGridCell},
+};
 
 use crate::ldtk::*;
 use bevy::prelude::*;
@@ -246,7 +249,8 @@ where
     try_each_optional_permutation(a, b, |x, y| map.get(&(x, y))).unwrap_or(default)
 }
 
-/// Creates a [SpriteSheetBundle] from the entity information available to the [LdtkEntity] method.
+/// Creates a [SpriteSheetBundle] from the entity information available to the
+/// [LdtkEntity::bundle_entity] method.
 ///
 /// Used for the `#[sprite_sheet_bundle]` attribute macro for `#[derive(LdtkEntity)]`.
 /// See [LdtkEntity#sprite_sheet_bundle] for more info.
@@ -278,6 +282,26 @@ pub fn sprite_sheet_bundle_from_entity_info(
             warn!("EntityInstance needs a tile, an associated tileset, and an associated tileset definition to be bundled as a SpriteSheetBundle");
             SpriteSheetBundle::default()
         }
+    }
+}
+
+/// Creates a [SpriteBundle] from the entity information available to the
+/// [LdtkEntity::bundle_entity] method.
+///
+/// Used for the `#[sprite_bundle]` attribute macro for `#[derive(LdtkEntity)]`.
+/// See [LdtkEntity#sprite_bundle] for more info.
+pub fn sprite_bundle_from_entity_info(tileset: Option<&Handle<Image>>) -> SpriteBundle {
+    let tileset = match tileset {
+        Some(tileset) => tileset.clone(),
+        None => {
+            warn!("EntityInstance needs a tileset to be bundled as a SpriteBundle");
+            return SpriteBundle::default();
+        }
+    };
+
+    SpriteBundle {
+        texture: tileset,
+        ..Default::default()
     }
 }
 

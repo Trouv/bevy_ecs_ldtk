@@ -288,18 +288,7 @@ impl LdtkEntity for SpriteBundle {
         _: &AssetServer,
         _: &mut Assets<TextureAtlas>,
     ) -> Self {
-        let tileset = match tileset {
-            Some(tileset) => tileset.clone(),
-            None => {
-                warn!("EntityInstance needs a tileset to be bundled as a SpriteBundle");
-                return SpriteBundle::default();
-            }
-        };
-
-        SpriteBundle {
-            texture: tileset,
-            ..Default::default()
-        }
+        utils::sprite_bundle_from_entity_info(tileset)
     }
 }
 

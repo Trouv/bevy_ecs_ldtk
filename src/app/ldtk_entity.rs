@@ -1,6 +1,7 @@
 use crate::{
     components::{EntityInstanceBundle, GridCoords, Worldly},
     ldtk::{EntityInstance, LayerInstance, TilesetDefinition},
+    utils,
 };
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::{collections::HashMap, marker::PhantomData};
@@ -287,18 +288,7 @@ impl LdtkEntity for SpriteBundle {
         _: &AssetServer,
         _: &mut Assets<TextureAtlas>,
     ) -> Self {
-        let tileset = match tileset {
-            Some(tileset) => tileset.clone(),
-            None => {
-                warn!("EntityInstance needs a tileset to be bundled as a SpriteBundle");
-                return SpriteBundle::default();
-            }
-        };
-
-        SpriteBundle {
-            texture: tileset,
-            ..Default::default()
-        }
+        utils::sprite_bundle_from_entity_info(tileset)
     }
 }
 
@@ -311,30 +301,12 @@ impl LdtkEntity for SpriteSheetBundle {
         _: &AssetServer,
         texture_atlases: &mut Assets<TextureAtlas>,
     ) -> Self {
-        match (tileset, &entity_instance.tile, tileset_definition) {
-            (Some(tileset), Some(tile), Some(tileset_definition)) => SpriteSheetBundle {
-                texture_atlas: texture_atlases.add(TextureAtlas::from_grid_with_padding(
-                    tileset.clone(),
-                    Vec2::new(tile.src_rect[2] as f32, tile.src_rect[3] as f32),
-                    tileset_definition.c_wid as usize,
-                    tileset_definition.c_hei as usize,
-                    Vec2::splat(tileset_definition.spacing as f32),
-                )),
-                sprite: TextureAtlasSprite {
-                    index: (tile.src_rect[1] / (tile.src_rect[3] + tileset_definition.spacing))
-                        as usize
-                        * tileset_definition.c_wid as usize
-                        + (tile.src_rect[0] / (tile.src_rect[2] + tileset_definition.spacing))
-                            as usize,
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
-            _ => {
-                warn!("EntityInstance needs a tile, an associated tileset, and an associated tileset definition to be bundled as a SpriteSheetBundle");
-                SpriteSheetBundle::default()
-            }
-        }
+        utils::sprite_sheet_bundle_from_entity_info(
+            entity_instance,
+            tileset,
+            tileset_definition,
+            texture_atlases,
+        )
     }
 }
 
@@ -347,12 +319,7 @@ impl LdtkEntity for Worldly {
         _: &AssetServer,
         _: &mut Assets<TextureAtlas>,
     ) -> Worldly {
-        Worldly {
-            spawn_level: layer_instance.level_id,
-            spawn_layer: layer_instance.layer_def_uid,
-            entity_def_uid: entity_instance.def_uid,
-            spawn_px: entity_instance.px,
-        }
+        Worldly::from_entity_info(entity_instance, layer_instance)
     }
 }
 

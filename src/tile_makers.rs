@@ -123,7 +123,6 @@ pub(crate) fn tile_pos_to_tile_bundle_maker(
         })
     }
 }
-
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -68,6 +68,25 @@ pub struct Worldly {
     pub spawn_px: IVec2,
 }
 
+impl Worldly {
+    /// Creates a [Worldly] from the entity information available to the
+    /// [LdtkEntity::bundle_entity] method.
+    ///
+    /// Used for the `#[worldly]` attribute macro for `#[derive(LdtkEntity)]`.
+    /// See [LdtkEntity#worldly] for more info.
+    pub fn from_entity_info(
+        entity_instance: &EntityInstance,
+        layer_instance: &LayerInstance,
+    ) -> Worldly {
+        Worldly {
+            spawn_level: layer_instance.level_id,
+            spawn_layer: layer_instance.layer_def_uid,
+            entity_def_uid: entity_instance.def_uid,
+            spawn_px: entity_instance.px,
+        }
+    }
+}
+
 /// [Component] that stores grid-based coordinate information.
 ///
 /// For Tile, AutoTile, and IntGrid layers, all tiles have this component by default.
@@ -162,6 +181,11 @@ impl MulAssign<GridCoords> for GridCoords {
 }
 
 impl GridCoords {
+    /// Creates a [GridCoords] from the entity information available to the
+    /// [LdtkEntity::bundle_entity] method.
+    ///
+    /// Used for the `#[grid_coords]` attribute macro for `#[derive(LdtkEntity)]`.
+    /// See [LdtkEntity#grid_coords] for more info.
     pub fn from_entity_info(
         entity_instance: &EntityInstance,
         layer_instance: &LayerInstance,

@@ -181,7 +181,7 @@ pub enum FieldValue {
     Bool(bool),
     /// Represents either a String or a Multilines
     String(Option<String>),
-    #[serde(serialize_with = "color::serialize_color")]
+    #[serde(serialize_with = "color::serialize")]
     Color(Color),
     FilePath(Option<String>),
     Enum(Option<String>),

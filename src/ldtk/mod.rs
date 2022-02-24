@@ -49,7 +49,7 @@ pub struct LdtkJson {
     pub backup_on_save: bool,
 
     /// Project background color
-    #[serde(rename = "bgColor", deserialize_with = "color::deserialize_color")]
+    #[serde(rename = "bgColor", with = "color")]
     pub bg_color: Color,
 
     /// Default grid size for new layers
@@ -57,8 +57,8 @@ pub struct LdtkJson {
     pub default_grid_size: i32,
 
     /// Default background color of levels
-    #[serde(rename = "defaultLevelBgColor")]
-    pub default_level_bg_color: String,
+    #[serde(rename = "defaultLevelBgColor", with = "color")]
+    pub default_level_bg_color: Color,
 
     /// Default new level height
     #[serde(rename = "defaultLevelHeight")]
@@ -185,8 +185,8 @@ pub struct Definitions {
 #[derive(PartialEq, Debug, Default, Clone, Serialize, Deserialize)]
 pub struct EntityDefinition {
     /// Base entity color
-    #[serde(rename = "color")]
-    pub color: String,
+    #[serde(rename = "color", with = "color")]
+    pub color: Color,
 
     /// Array of field definitions
     #[serde(rename = "fieldDefs")]
@@ -589,10 +589,10 @@ pub struct AutoLayerRuleDefinition {
 }
 
 /// IntGrid value definition
-#[derive(Eq, PartialEq, Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Default, Clone, Serialize, Deserialize)]
 pub struct IntGridValueDefinition {
-    #[serde(rename = "color")]
-    pub color: String,
+    #[serde(rename = "color", with = "color")]
+    pub color: Color,
 
     /// Unique String identifier
     #[serde(rename = "identifier")]
@@ -682,8 +682,8 @@ pub struct TilesetDefinition {
 pub struct Level {
     /// Background color of the level (same as `bgColor`, except the default value is
     /// automatically used here if its value is `null`)
-    #[serde(rename = "__bgColor")]
-    pub bg_color: String,
+    #[serde(rename = "__bgColor", with = "color")]
+    pub bg_color: Color,
 
     /// Position informations of the background image, if there is one.
     #[serde(rename = "__bgPos")]
@@ -697,8 +697,8 @@ pub struct Level {
 
     /// Background color of the level. If `null`, the project `defaultLevelBgColor` should be
     /// used.
-    #[serde(rename = "bgColor")]
-    pub level_bg_color: Option<String>,
+    #[serde(rename = "bgColor", with = "color::optional")]
+    pub level_bg_color: Option<Color>,
 
     /// Background image X pivot (0-1)
     #[serde(rename = "bgPivotX")]

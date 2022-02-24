@@ -21,7 +21,7 @@
 //! 11. Some "coordinate" fields on [LevelBackgroundPosition], [EntityInstance], and [TileInstance]
 //!     have been changed from vectors to [IVec2] and [Vec2].
 
-use bevy::prelude::{IVec2, Vec2};
+use bevy::prelude::{Color, IVec2, Vec2};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -49,8 +49,8 @@ pub struct LdtkJson {
     pub backup_on_save: bool,
 
     /// Project background color
-    #[serde(rename = "bgColor")]
-    pub bg_color: String,
+    #[serde(rename = "bgColor", deserialize_with = "color::deserialize_color")]
+    pub bg_color: Color,
 
     /// Default grid size for new layers
     #[serde(rename = "defaultGridSize")]

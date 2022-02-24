@@ -103,7 +103,7 @@ pub fn process_ldtk_world(
     level_selection: Option<Res<LevelSelection>>,
     ldtk_assets: Res<Assets<LdtkAsset>>,
     ldtk_settings: Res<LdtkSettings>,
-    mut clear_color: ResMut<ClearColor>,
+    mut clear_color: Option<ResMut<ClearColor>>,
     layer_query: Query<&Layer>,
     chunk_query: Query<&Chunk>,
 ) {
@@ -154,7 +154,13 @@ pub fn process_ldtk_world(
             }
 
             if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
-                clear_color.0 = ldtk_asset.project.bg_color;
+                if ldtk_settings.set_clear_color {
+                    if let Some(clear_color) = &mut clear_color {
+                        clear_color.0 = ldtk_asset.project.bg_color;
+                    } else {
+                        commands.insert_resource(ClearColor(ldtk_asset.project.bg_color));
+                    }
+                }
 
                 if let Some(level_selection) = &level_selection {
                     if let Some(level) = ldtk_asset.get_level(level_selection) {

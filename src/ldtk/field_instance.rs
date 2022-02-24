@@ -5,6 +5,8 @@ use super::{EntityInstance, Level};
 use bevy::{prelude::*, render::color::HexColorError};
 use regex::Regex;
 
+use crate::ldtk::color;
+
 #[derive(PartialEq, Debug, Clone, Serialize)]
 pub struct FieldInstance {
     /// Field definition identifier
@@ -179,7 +181,7 @@ pub enum FieldValue {
     Bool(bool),
     /// Represents either a String or a Multilines
     String(Option<String>),
-    #[serde(serialize_with = "serialize_color")]
+    #[serde(serialize_with = "color::serialize_color")]
     Color(Color),
     FilePath(Option<String>),
     Enum(Option<String>),
@@ -196,14 +198,6 @@ pub enum FieldValue {
     Enums(Vec<Option<String>>),
     #[serde(serialize_with = "serialize_points")]
     Points(Vec<Option<IVec2>>),
-}
-
-fn serialize_color<S: Serializer>(color: &Color, serializer: S) -> Result<S::Ok, S::Error> {
-    let color = color.as_rgba_f32();
-    let mut hex_string =
-        hex::encode_upper::<Vec<u8>>(color[0..3].iter().map(|f| (f * 256.) as u8).collect());
-    hex_string.insert(0, '#');
-    hex_string.serialize(serializer)
 }
 
 fn serialize_colors<S: Serializer>(colors: &[Color], serializer: S) -> Result<S::Ok, S::Error> {

@@ -13,7 +13,12 @@
 //! Tile bundle makers can be used with [LayerBuilder::new_batch] and [set_all_tiles_with_func] to
 //! spawn many tiles at once.
 
-use crate::{components::TileGridBundle, ldtk::TileInstance, utils::*};
+use crate::{
+    components::TileGridBundle,
+    ldtk::{IntGridValueDefinition, TileInstance},
+    utils::*,
+};
+use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 
 use std::collections::HashMap;
@@ -68,6 +73,27 @@ pub(crate) fn tile_pos_to_tile_maker(
             }
             None => None,
         }
+    }
+}
+
+/// Creates a tile maker that matches the colors of an ldtk IntGrid layer.
+pub(crate) fn tile_pos_to_int_grid_colored_tile_maker(
+    int_grid_csv: &[i32],
+    int_grid_value_defs: &[IntGridValueDefinition],
+    layer_width_in_tiles: i32,
+    layer_height_in_tiles: i32,
+) -> impl FnMut(TilePos) -> Option<Tile> {
+    let color_map: HashMap<TilePos, Color> = int_grid_csv.iter().enumerate().filter(|(_, v)| **v != 0).map(|(i, v)| {(
+                int_grid_index_to_tile_pos(i, layer_width_in_tiles as u32, layer_height_in_tiles as u32).expect(
+                    "int_grid_csv indices should be within the bounds of 0..(layer_width * layer_height)",
+                ),
+                int_grid_value_defs.iter().find(|d| d.value == *v).expect("Int grid values should have an associated IntGridValueDefinition").color)}).collect();
+
+    move |tile_pos: TilePos| -> Option<Tile> {
+        color_map.get(&tile_pos).map(|&color| Tile {
+            color,
+            ..Default::default()
+        })
     }
 }
 

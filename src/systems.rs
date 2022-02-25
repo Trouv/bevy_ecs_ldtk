@@ -7,7 +7,7 @@ use crate::{
     },
     assets::{LdtkAsset, LdtkLevel, TilesetMap},
     components::*,
-    ldtk::{EntityDefinition, Level, TileInstance, TilesetDefinition, Type},
+    ldtk::{EntityDefinition, LayerDefinition, Level, TileInstance, TilesetDefinition, Type},
     resources::{LdtkSettings, LevelEvent, LevelSelection},
     tile_makers::*,
     utils::*,
@@ -287,6 +287,9 @@ pub fn process_ldtk_levels(
                 let entity_definition_map =
                     create_entity_definition_map(&ldtk_asset.project.defs.entities);
 
+                let layer_definition_map =
+                    create_layer_definition_map(&ldtk_asset.project.defs.layers);
+
                 let worldly_set = worldly_query.iter().cloned().collect();
 
                 if let Some(level) = level_assets.get(level_handle) {
@@ -300,6 +303,7 @@ pub fn process_ldtk_levels(
                         &ldtk_entity_map,
                         &ldtk_int_cell_map,
                         &entity_definition_map,
+                        &layer_definition_map,
                         &ldtk_asset.tileset_map,
                         &tileset_definition_map,
                         worldly_set,
@@ -323,6 +327,7 @@ fn spawn_level(
     ldtk_entity_map: &LdtkEntityMap,
     ldtk_int_cell_map: &LdtkIntCellMap,
     entity_definition_map: &HashMap<i32, &EntityDefinition>,
+    layer_definition_map: &HashMap<i32, &LayerDefinition>,
     tileset_map: &TilesetMap,
     tileset_definition_map: &HashMap<i32, &TilesetDefinition>,
     worldly_set: HashSet<Worldly>,
@@ -471,7 +476,10 @@ fn spawn_level(
                             tileset_definition.px_wid as f32,
                             tileset_definition.px_hei as f32,
                         ),
-                        None => TextureSize(0., 0.),
+                        None => TextureSize(
+                            layer_instance.grid_size as f32,
+                            layer_instance.grid_size as f32,
+                        ),
                     };
 
                     let mut settings =
@@ -541,13 +549,20 @@ fn spawn_level(
                                     );
                                 }
                                 None => {
+                                    let int_grid_value_defs = &layer_definition_map
+                                        .get(&layer_instance.layer_def_uid)
+                                        .expect("Encountered layer without definition")
+                                        .int_grid_values;
+
                                     set_all_tiles_with_func(
                                         &mut layer_builder,
-                                        tile_pos_to_tile_bundle_if_int_grid_nonzero_maker(
-                                            tile_pos_to_invisible_tile,
-                                            &layer_instance.int_grid_csv,
-                                            layer_instance.c_wid,
-                                            layer_instance.c_hei,
+                                        tile_pos_to_tile_bundle_maker(
+                                            tile_pos_to_int_grid_colored_tile_maker(
+                                                &layer_instance.int_grid_csv,
+                                                int_grid_value_defs,
+                                                layer_instance.c_wid,
+                                                layer_instance.c_hei,
+                                            ),
                                         ),
                                     );
                                 }
@@ -697,7 +712,6 @@ pub fn set_ldtk_texture_filters_to_nearest(
 
             if set_texture_filters_to_nearest {
                 if let Some(mut texture) = textures.get_mut(handle) {
-                    println!("{:?}", texture);
                     texture.texture_descriptor.usage = TextureUsages::TEXTURE_BINDING
                         | TextureUsages::COPY_SRC
                         | TextureUsages::COPY_DST;

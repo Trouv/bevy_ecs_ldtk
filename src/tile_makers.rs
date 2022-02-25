@@ -23,16 +23,6 @@ use bevy_ecs_tilemap::prelude::*;
 
 use std::collections::HashMap;
 
-/// A tile maker that always returns an invisible tile.
-///
-/// Used for spawning IntGrid layers without AutoTile functionality.
-pub(crate) fn tile_pos_to_invisible_tile(_: TilePos) -> Option<Tile> {
-    Some(Tile {
-        visible: false,
-        ..Default::default()
-    })
-}
-
 /// Creates a tile maker that matches the tileset visuals of an ldtk layer.
 ///
 /// Used for spawning Tile, AutoTile and IntGrid layers with AutoTile functionality.
@@ -97,42 +87,6 @@ pub(crate) fn tile_pos_to_int_grid_colored_tile_maker(
     }
 }
 
-/// Returns a tile bundle maker that returns the bundled results of the provided tile maker if that
-/// cell in the int grid is not zero.
-///
-/// Used for spawning IntGrid layers without AutoTile functionality.
-pub(crate) fn tile_pos_to_tile_bundle_if_int_grid_nonzero_maker(
-    mut tile_maker: impl FnMut(TilePos) -> Option<Tile>,
-    int_grid_csv: &[i32],
-    layer_width_in_tiles: i32,
-    layer_height_in_tiles: i32,
-) -> impl FnMut(TilePos) -> Option<TileGridBundle> {
-    let nonzero_map: HashMap<TilePos, bool> = int_grid_csv
-        .iter()
-        .enumerate()
-        .map(|(i, v)| {
-            (
-                int_grid_index_to_tile_pos(i, layer_width_in_tiles as u32, layer_height_in_tiles as u32).expect(
-                    "int_grid_csv indices should be within the bounds of 0..(layer_width * layer_height)",
-                ),
-                *v != 0,
-            )
-        })
-        .collect();
-    move |tile_pos: TilePos| -> Option<TileGridBundle> {
-        match nonzero_map.get(&tile_pos) {
-            Some(nonzero) if *nonzero => tile_maker(tile_pos).map(|tile| TileGridBundle {
-                grid_coords: tile_pos.into(),
-                tile_bundle: TileBundle {
-                    tile,
-                    ..Default::default()
-                },
-            }),
-            _ => None,
-        }
-    }
-}
-
 /// Returns a tile bundle maker that returns the bundled result of the provided tile maker.
 ///
 /// Used for spawning Tile, AutoTile, and IntGrid layers with AutoTile functionality.
@@ -152,7 +106,6 @@ pub(crate) fn tile_pos_to_tile_bundle_maker(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use bevy::prelude::*;
 
     #[test]
     fn test_tile_pos_to_tile_maker() {
@@ -237,24 +190,5 @@ mod tests {
 
         assert!(tile_maker(TilePos(2, 1)).unwrap().flip_x);
         assert!(tile_maker(TilePos(2, 1)).unwrap().flip_y);
-    }
-
-    #[test]
-    fn test_tile_pos_to_tile_bundle_if_int_grid_nonzero_maker() {
-        let int_grid_csv = vec![0, 1, 2, -1, 0, 3];
-
-        let mut tile_bundle_maker = tile_pos_to_tile_bundle_if_int_grid_nonzero_maker(
-            tile_pos_to_invisible_tile,
-            &int_grid_csv,
-            3,
-            2,
-        );
-
-        assert!(tile_bundle_maker(TilePos(0, 0)).is_some());
-        assert!(tile_bundle_maker(TilePos(1, 0)).is_none());
-        assert!(tile_bundle_maker(TilePos(2, 0)).is_some());
-        assert!(tile_bundle_maker(TilePos(0, 1)).is_none());
-        assert!(tile_bundle_maker(TilePos(1, 1)).is_some());
-        assert!(tile_bundle_maker(TilePos(2, 1)).is_some());
     }
 }

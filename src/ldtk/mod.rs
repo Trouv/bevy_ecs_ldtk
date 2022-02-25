@@ -20,6 +20,8 @@
 //! 10. Comment at the top of the file has been replaced with this documentation.
 //! 11. Some "coordinate" fields on [LevelBackgroundPosition], [EntityInstance], and [TileInstance]
 //!     have been changed from vectors to [IVec2] and [Vec2].
+//! 12. Some "color" fields on [LdtkJson], [EntityDefinition], [IntGridValueDefinition], and
+//!     [Level] have been changed from [String]s to [Color].
 
 use bevy::prelude::{Color, IVec2, Vec2};
 use serde::{Deserialize, Serialize};

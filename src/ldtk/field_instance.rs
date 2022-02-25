@@ -2,7 +2,7 @@ use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
 
 #[allow(unused_imports)]
 use super::{EntityInstance, Level};
-use bevy::{prelude::*, render::color::HexColorError};
+use bevy::prelude::*;
 use regex::Regex;
 
 use crate::ldtk::color;
@@ -54,6 +54,9 @@ struct PointHelper {
     cy: i32,
 }
 
+#[derive(Deserialize)]
+struct ColorHelper(#[serde(with = "color")] Color);
+
 impl<'de> Deserialize<'de> for FieldInstance {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -73,16 +76,9 @@ impl<'de> Deserialize<'de> for FieldInstance {
                 Option::<String>::deserialize(helper.value).map_err(de::Error::custom)?,
             ),
             "Color" => {
-                let value = String::deserialize(helper.value).map_err(de::Error::custom)?;
+                let value = color::deserialize(helper.value).map_err(de::Error::custom)?;
 
-                let hex = match value.strip_prefix('#') {
-                    Some(h) => h.to_string(),
-                    None => value,
-                };
-
-                FieldValue::Color(
-                    Color::hex(hex).map_err(|_| de::Error::custom("Encountered HexColorError"))?,
-                )
+                FieldValue::Color(value)
             }
             "FilePath" => FieldValue::FilePath(
                 Option::<String>::deserialize(helper.value).map_err(de::Error::custom)?,
@@ -106,22 +102,10 @@ impl<'de> Deserialize<'de> for FieldInstance {
                 Vec::<Option<String>>::deserialize(helper.value).map_err(de::Error::custom)?,
             ),
             "Array<Color>" => {
-                let values = Vec::<String>::deserialize(helper.value).map_err(de::Error::custom)?;
+                let helpers =
+                    Vec::<ColorHelper>::deserialize(helper.value).map_err(de::Error::custom)?;
 
-                let colors = values
-                    .into_iter()
-                    .map(|value| {
-                        let hex = match value.strip_prefix('#') {
-                            Some(h) => h.to_string(),
-                            None => value,
-                        };
-
-                        Color::hex(hex)
-                    })
-                    .collect::<Result<Vec<Color>, HexColorError>>()
-                    .map_err(|_| de::Error::custom("Encountered HexColorError"))?;
-
-                FieldValue::Colors(colors)
+                FieldValue::Colors(helpers.iter().map(|h| h.0).collect())
             }
             "Array<FilePath>" => FieldValue::Strings(
                 Vec::<Option<String>>::deserialize(helper.value).map_err(de::Error::custom)?,
@@ -181,7 +165,7 @@ pub enum FieldValue {
     Bool(bool),
     /// Represents either a String or a Multilines
     String(Option<String>),
-    #[serde(serialize_with = "color::serialize")]
+    #[serde(with = "color")]
     Color(Color),
     FilePath(Option<String>),
     Enum(Option<String>),

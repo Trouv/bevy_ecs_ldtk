@@ -54,6 +54,13 @@ pub fn create_entity_definition_map(
     entity_definitions.iter().map(|e| (e.uid, e)).collect()
 }
 
+/// Simple conversion from a list of [LayerDefinition]s to a map using their Uids as the keys.
+pub fn create_layer_definition_map(
+    layer_definitions: &[LayerDefinition],
+) -> HashMap<i32, &LayerDefinition> {
+    layer_definitions.iter().map(|l| (l.uid, l)).collect()
+}
+
 /// Performs [EntityInstance] to [Transform] conversion
 ///
 /// The `entity_definition_map` should be a map of [EntityDefinition] uids to [EntityDefinition]s.

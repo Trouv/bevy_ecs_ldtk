@@ -43,18 +43,37 @@ impl LevelSelection {
 }
 
 /// Settings resource for the plugin.
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Default)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub struct LdtkSettings {
     /// Newly spawned levels will be spawned with translations like their location in the LDtk
     /// world.
     ///
     /// Useful for "2d free map" and "GridVania" layouts.
+    ///
+    /// Defaults to `false`.
     pub use_level_world_translations: bool,
     /// When used with the [LevelSelection] resource, levels in the `__level_neighbors` list of
     /// the selected level will be spawned in addition to the selected level.
     ///
     /// This is best used with [LdtkSettings::use_level_world_translations].
+    ///
+    /// Defaults to `false`.
     pub load_level_neighbors: bool,
+    /// Bevy's ClearColor resource will be set to the background color of the LDtk project.
+    /// The change occurs while processing the `LdtkAsset`.
+    ///
+    /// Defaults to `true`.
+    pub set_clear_color: bool,
+}
+
+impl Default for LdtkSettings {
+    fn default() -> LdtkSettings {
+        LdtkSettings {
+            use_level_world_translations: false,
+            load_level_neighbors: false,
+            set_clear_color: true,
+        }
+    }
 }
 
 /// Events fired by the plugin related to level spawning/despawning.

@@ -28,6 +28,7 @@ fn main() {
         .insert_resource(LdtkSettings {
             load_level_neighbors: true,
             use_level_world_translations: true,
+            ..Default::default()
         })
         .add_startup_system(systems::setup)
         .add_system(systems::pause_physics_during_load)

@@ -1,7 +1,7 @@
 [package]
 name = "bevy_ecs_ldtk"
 description = "An ECS-friendly ldtk plugin for bevy."
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 authors = ["Trevor Lovell <trevorlovelldesign@gmail.com>"]
 repository = "https://github.com/Trouv/bevy_ecs_ldtk"
@@ -11,7 +11,7 @@ categories = ["game-development"]
 exclude = ["assets/*", "repo/*", "scripts/*"]
 
 [dependencies]
-bevy_ecs_ldtk_macros = { version = "0.1", optional = true, path = "macros" }
+bevy_ecs_ldtk_macros = { version = "0.2", optional = true, path = "macros" }
 bevy_ecs_tilemap = "0.5"
 bevy = { version = "0.6", default-features = false }
 anyhow = "1.0"

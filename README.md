@@ -86,6 +86,7 @@ for additional level-loading options.
 ### Compatibility
 | bevy | bevy_ecs_tilemap | bevy_ecs_ldtk |
 | --- | --- | --- |
+| 0.6 | 0.5 | 0.2 |
 | 0.6 | 0.5 | 0.1 |
 
 ### Asset Credits

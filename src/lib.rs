@@ -147,6 +147,8 @@ mod plugin {
                 .add_asset::<assets::LdtkLevel>()
                 .init_asset_loader::<assets::LdtkLevelLoader>()
                 .add_event::<resources::LevelEvent>()
+                //.dd_startup_system(systems::create_white_image)
+                //.add_system(systems::set_white_image_texture_usages)
                 .add_system_to_stage(
                     CoreStage::PreUpdate,
                     systems::process_ldtk_world.label(LdtkSystemLabel::PreSpawn),

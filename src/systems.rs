@@ -13,10 +13,7 @@ use crate::{
     utils::*,
 };
 
-use bevy::{
-    prelude::*,
-    render::{render_resource::TextureUsages, texture::DEFAULT_IMAGE_HANDLE},
-};
+use bevy::{prelude::*, render::render_resource::*};
 use bevy_ecs_tilemap::prelude::*;
 use std::collections::{HashMap, HashSet};
 
@@ -261,6 +258,7 @@ fn clear_map(
 pub fn process_ldtk_levels(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    mut images: ResMut<Assets<Image>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     ldtk_assets: Res<Assets<LdtkAsset>>,
@@ -296,6 +294,7 @@ pub fn process_ldtk_levels(
                         &level.level,
                         &mut commands,
                         &asset_server,
+                        &mut images,
                         &mut texture_atlases,
                         &mut meshes,
                         &ldtk_entity_map,
@@ -318,6 +317,7 @@ fn spawn_level(
     level: &Level,
     commands: &mut Commands,
     asset_server: &AssetServer,
+    images: &mut Assets<Image>,
     texture_atlases: &mut Assets<TextureAtlas>,
     meshes: &mut ResMut<Assets<Mesh>>,
     ldtk_entity_map: &LdtkEntityMap,
@@ -332,6 +332,54 @@ fn spawn_level(
 
     if let Some(layer_instances) = &level.layer_instances {
         let mut layer_id = 0;
+
+        // creating an image to use for the background color, and for intgrid colors
+        let mut white_image = Image::new_fill(
+            Extent3d {
+                width: level.px_wid as u32,
+                height: level.px_hei as u32,
+                depth_or_array_layers: 1,
+            },
+            TextureDimension::D2,
+            &[255, 255, 255, 255],
+            TextureFormat::Rgba8UnormSrgb,
+        );
+        white_image.texture_descriptor.usage =
+            TextureUsages::TEXTURE_BINDING | TextureUsages::COPY_SRC | TextureUsages::COPY_DST;
+
+        let white_image_handle = images.add(white_image);
+
+        {
+            let settings = LayerSettings::new(
+                MapSize(1, 1),
+                ChunkSize(1, 1),
+                TileSize(level.px_wid as f32, level.px_hei as f32),
+                TextureSize(level.px_wid as f32, level.px_hei as f32),
+            );
+
+            let (mut layer_builder, layer_entity) =
+                LayerBuilder::<TileBundle>::new(commands, settings, map.id, layer_id);
+
+            match layer_builder.set_tile(
+                TilePos(0, 0),
+                TileBundle {
+                    tile: Tile {
+                        color: level.bg_color,
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                },
+            ) {
+                Ok(()) => (),
+                Err(_) => warn!("Encountered error when setting background tile"),
+            }
+
+            let layer_bundle = layer_builder.build(commands, meshes, white_image_handle.clone());
+            commands.entity(layer_entity).insert_bundle(layer_bundle);
+            map.add_layer(commands, layer_id, layer_entity);
+            layer_id += 1;
+        }
+
         for layer_instance in layer_instances.iter().rev() {
             match layer_instance.layer_instance_type {
                 Type::Entities => {
@@ -459,7 +507,7 @@ fn spawn_level(
                         Some(tileset_definition) => {
                             tileset_map.get(&tileset_definition.uid).unwrap().clone()
                         }
-                        None => DEFAULT_IMAGE_HANDLE.typed(),
+                        None => white_image_handle.clone(),
                     };
 
                     let mut grid_tiles = layer_instance.grid_tiles.clone();
@@ -649,6 +697,7 @@ pub fn set_ldtk_texture_filters_to_nearest(
 
             if set_texture_filters_to_nearest {
                 if let Some(mut texture) = textures.get_mut(handle) {
+                    println!("{:?}", texture);
                     texture.texture_descriptor.usage = TextureUsages::TEXTURE_BINDING
                         | TextureUsages::COPY_SRC
                         | TextureUsages::COPY_DST;

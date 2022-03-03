@@ -543,9 +543,19 @@ fn spawn_level(
                                         grid_tiles,
                                     );
 
+                                    let invisible_tile_maker =
+                                        invisible_tile_if_intgrid_nonzero_maker(
+                                            &layer_instance.int_grid_csv,
+                                            layer_instance.c_wid,
+                                            layer_instance.c_hei,
+                                        );
+
                                     set_all_tiles_with_func(
                                         &mut layer_builder,
-                                        tile_pos_to_tile_bundle_maker(tile_maker),
+                                        tile_pos_to_tile_bundle_maker(composed_tile_maker(
+                                            tile_maker,
+                                            invisible_tile_maker,
+                                        )),
                                     );
                                 }
                                 None => {

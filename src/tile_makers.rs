@@ -21,7 +21,7 @@ use crate::{
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 /// Creates a tile maker that matches the tileset visuals of an ldtk layer.
 ///
@@ -66,6 +66,35 @@ pub(crate) fn tile_pos_to_tile_maker(
     }
 }
 
+pub(crate) fn invisible_tile_if_intgrid_nonzero_maker(
+    int_grid_csv: &[i32],
+    layer_width_in_tiles: i32,
+    layer_height_in_tiles: i32,
+) -> impl FnMut(TilePos) -> Option<Tile> {
+    let int_grid_map: HashSet<TilePos> = int_grid_csv.iter().enumerate().filter(|(_, v)| **v != 0).map(|(i, _)| {
+        int_grid_index_to_tile_pos(i, layer_width_in_tiles as u32, layer_height_in_tiles as u32).expect("int_grid_csv indices should be within the bounds of 0..(layer_width * layer_height)",)}).collect();
+
+    move |tile_pos: TilePos| -> Option<Tile> {
+        if int_grid_map.contains(&tile_pos) {
+            Some(Tile {
+                visible: false,
+                ..Default::default()
+            })
+        } else {
+            None
+        }
+    }
+}
+
+pub(crate) fn composed_tile_maker(
+    mut tile_maker_a: impl FnMut(TilePos) -> Option<Tile>,
+    mut tile_maker_b: impl FnMut(TilePos) -> Option<Tile>,
+) -> impl FnMut(TilePos) -> Option<Tile> {
+    move |tile_pos: TilePos| -> Option<Tile> {
+        tile_maker_a(tile_pos).or_else(|| tile_maker_b(tile_pos))
+    }
+}
+
 /// Creates a tile maker that matches the colors of an ldtk IntGrid layer.
 pub(crate) fn tile_pos_to_int_grid_colored_tile_maker(
     int_grid_csv: &[i32],
@@ -103,6 +132,7 @@ pub(crate) fn tile_pos_to_tile_bundle_maker(
         })
     }
 }
+
 #[cfg(test)]
 mod tests {
     use super::*;

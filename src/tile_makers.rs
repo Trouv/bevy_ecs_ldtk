@@ -21,15 +21,40 @@ use crate::{
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
+
+/// Tile maker that always creates an invisible tile.
+///
+/// This function doesn't return a tile maker, it IS one,
+/// contrasting many of the other functions in this module.
+pub(crate) fn tile_pos_to_invisible_tile(_: TilePos) -> Option<Tile> {
+    Some(Tile {
+        visible: false,
+        ..Default::default()
+    })
+}
+
+/// Makes a Hashmap from TilePos to intgrid values. Doesn't insert 0s.
+pub(crate) fn tile_pos_to_int_grid_map(
+    int_grid_csv: &[i32],
+    layer_width_in_tiles: i32,
+    layer_height_in_tiles: i32,
+) -> HashMap<TilePos, i32> {
+    int_grid_csv.iter().enumerate().filter(|(_, v)| **v != 0).map(|(i, v)| {
+        (
+            int_grid_index_to_tile_pos(i, layer_width_in_tiles as u32, layer_height_in_tiles as u32).expect("int_grid_csv indices should be within the bounds of 0..(layer_width * layer_height)",),
+            *v,
+        )
+    }).collect()
+}
 
 /// Creates a tile maker that matches the tileset visuals of an ldtk layer.
 ///
 /// Used for spawning Tile, AutoTile and IntGrid layers with AutoTile functionality.
 pub(crate) fn tile_pos_to_tile_maker(
+    grid_tiles: &[TileInstance],
     layer_height_in_tiles: i32,
     layer_grid_size: i32,
-    grid_tiles: Vec<TileInstance>,
 ) -> impl FnMut(TilePos) -> Option<Tile> {
     let grid_tile_map: HashMap<TilePos, TileInstance> = grid_tiles
         .into_iter()
@@ -39,7 +64,7 @@ pub(crate) fn tile_pos_to_tile_maker(
                     (t.px[0] / layer_grid_size) as u32,
                     layer_height_in_tiles as u32 - (t.px[1] / layer_grid_size) as u32 - 1,
                 ),
-                t,
+                t.clone(),
             )
         })
         .collect();
@@ -66,36 +91,59 @@ pub(crate) fn tile_pos_to_tile_maker(
     }
 }
 
-pub(crate) fn invisible_tile_if_intgrid_nonzero_maker(
+/// Creates a tile maker that returns the result of the provided tile maker IF the int grid value
+/// for that tile position is nonzero.
+/// If that int grid position is zero, the tile maker returns None.
+///
+/// Used for spawning IntGrid layers with AutoTile functionality.
+pub(crate) fn tile_pos_to_tile_if_int_grid_nonzero_maker(
+    mut tile_maker: impl FnMut(TilePos) -> Option<Tile>,
     int_grid_csv: &[i32],
     layer_width_in_tiles: i32,
     layer_height_in_tiles: i32,
 ) -> impl FnMut(TilePos) -> Option<Tile> {
-    let int_grid_map: HashSet<TilePos> = int_grid_csv.iter().enumerate().filter(|(_, v)| **v != 0).map(|(i, _)| {
-        int_grid_index_to_tile_pos(i, layer_width_in_tiles as u32, layer_height_in_tiles as u32).expect("int_grid_csv indices should be within the bounds of 0..(layer_width * layer_height)",)}).collect();
+    let int_grid_map =
+        tile_pos_to_int_grid_map(int_grid_csv, layer_width_in_tiles, layer_height_in_tiles);
 
     move |tile_pos: TilePos| -> Option<Tile> {
-        if int_grid_map.contains(&tile_pos) {
-            Some(Tile {
-                visible: false,
-                ..Default::default()
-            })
-        } else {
-            None
-        }
+        int_grid_map
+            .get(&tile_pos)
+            .map(|_| tile_maker(tile_pos))
+            .flatten()
     }
 }
 
-pub(crate) fn composed_tile_maker(
-    mut tile_maker_a: impl FnMut(TilePos) -> Option<Tile>,
-    mut tile_maker_b: impl FnMut(TilePos) -> Option<Tile>,
+/// Creates a tile maker that returns one of the following:
+/// 1. Returns a tile that matches the tileset visual of the ldtk layer, if it exists
+/// 2. Returns an invisible tile, if the corresponding intgrid position is nonzero,
+/// 3. Returns none
+///
+/// Used for spawning IntGrid layers with AutoTile functionality.
+pub(crate) fn tile_pos_to_int_grid_with_grid_tiles_tile_maker(
+    grid_tiles: &[TileInstance],
+    int_grid_csv: &[i32],
+    layer_width_in_tiles: i32,
+    layer_height_in_tiles: i32,
+    layer_grid_size: i32,
 ) -> impl FnMut(TilePos) -> Option<Tile> {
+    // Creating the tile makers outside of the returned tile maker so we only do it once.
+    let mut auto_tile_maker =
+        tile_pos_to_tile_maker(grid_tiles, layer_height_in_tiles, layer_grid_size);
+    let mut invisible_tile_maker = tile_pos_to_tile_if_int_grid_nonzero_maker(
+        tile_pos_to_invisible_tile,
+        int_grid_csv,
+        layer_width_in_tiles,
+        layer_height_in_tiles,
+    );
+
     move |tile_pos: TilePos| -> Option<Tile> {
-        tile_maker_a(tile_pos).or_else(|| tile_maker_b(tile_pos))
+        auto_tile_maker(tile_pos).or_else(|| invisible_tile_maker(tile_pos))
     }
 }
 
 /// Creates a tile maker that matches the colors of an ldtk IntGrid layer.
+///
+/// Used for spawning IntGrid layers without AutoTile functionality.
 pub(crate) fn tile_pos_to_int_grid_colored_tile_maker(
     int_grid_csv: &[i32],
     int_grid_value_defs: &[IntGridValueDefinition],
@@ -118,7 +166,7 @@ pub(crate) fn tile_pos_to_int_grid_colored_tile_maker(
 
 /// Returns a tile bundle maker that returns the bundled result of the provided tile maker.
 ///
-/// Used for spawning Tile, AutoTile, and IntGrid layers with AutoTile functionality.
+/// Used for spawning Tile, AutoTile, and IntGrid layers.
 pub(crate) fn tile_pos_to_tile_bundle_maker(
     mut tile_maker: impl FnMut(TilePos) -> Option<Tile>,
 ) -> impl FnMut(TilePos) -> Option<TileGridBundle> {
@@ -166,7 +214,7 @@ mod tests {
             },
         ];
 
-        let mut tile_maker = tile_pos_to_tile_maker(2, 32, grid_tiles);
+        let mut tile_maker = tile_pos_to_tile_maker(&grid_tiles, 2, 32);
 
         assert_eq!(tile_maker(TilePos(0, 0)).unwrap().texture_index, 2);
         assert_eq!(tile_maker(TilePos(1, 0)).unwrap().texture_index, 1);
@@ -207,7 +255,7 @@ mod tests {
             },
         ];
 
-        let mut tile_maker = tile_pos_to_tile_maker(2, 32, grid_tiles);
+        let mut tile_maker = tile_pos_to_tile_maker(&grid_tiles, 2, 32);
 
         assert!(!tile_maker(TilePos(0, 0)).unwrap().flip_x);
         assert!(tile_maker(TilePos(0, 0)).unwrap().flip_y);

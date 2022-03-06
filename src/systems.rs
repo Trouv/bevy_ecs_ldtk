@@ -537,15 +537,17 @@ fn spawn_level(
 
                             match tileset_definition {
                                 Some(_) => {
-                                    let tile_maker = tile_pos_to_tile_maker(
-                                        layer_instance.c_hei,
-                                        layer_instance.grid_size,
-                                        grid_tiles,
-                                    );
-
                                     set_all_tiles_with_func(
                                         &mut layer_builder,
-                                        tile_pos_to_tile_bundle_maker(tile_maker),
+                                        tile_pos_to_tile_bundle_maker(
+                                            tile_pos_to_int_grid_with_grid_tiles_tile_maker(
+                                                &grid_tiles,
+                                                &layer_instance.int_grid_csv,
+                                                layer_instance.c_wid,
+                                                layer_instance.c_hei,
+                                                layer_instance.grid_size,
+                                            ),
+                                        ),
                                     );
                                 }
                                 None => {
@@ -624,9 +626,9 @@ fn spawn_level(
                             layer_entity
                         } else {
                             let tile_maker = tile_pos_to_tile_maker(
+                                &grid_tiles,
                                 layer_instance.c_hei,
                                 layer_instance.grid_size,
-                                grid_tiles,
                             );
 
                             LayerBuilder::<TileGridBundle>::new_batch(

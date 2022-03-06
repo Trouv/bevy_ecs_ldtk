@@ -311,4 +311,30 @@ mod tests {
         assert_eq!(tile_maker(TilePos(1, 1)).unwrap().texture_index, 2);
         assert_eq!(tile_maker(TilePos(1, 1)).unwrap().visible, true);
     }
+
+    #[test]
+    fn test_tile_pos_to_int_grid_colored_tile_maker() {
+        let int_grid_defs = vec![
+            IntGridValueDefinition {
+                value: 1,
+                color: Color::RED,
+                ..Default::default()
+            },
+            IntGridValueDefinition {
+                value: 2,
+                color: Color::BLUE,
+                ..Default::default()
+            },
+        ];
+
+        let int_grid_csv = vec![0, 1, 2, 0];
+
+        let mut tile_maker =
+            tile_pos_to_int_grid_colored_tile_maker(&int_grid_csv, &int_grid_defs, 2, 2);
+
+        assert_eq!(tile_maker(TilePos(0, 0)).unwrap().color, Color::BLUE);
+        assert!(tile_maker(TilePos(1, 0)).is_none());
+        assert!(tile_maker(TilePos(0, 1)).is_none());
+        assert_eq!(tile_maker(TilePos(1, 1)).unwrap().color, Color::RED);
+    }
 }

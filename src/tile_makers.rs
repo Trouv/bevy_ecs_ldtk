@@ -150,15 +150,18 @@ pub(crate) fn tile_pos_to_int_grid_colored_tile_maker(
     layer_width_in_tiles: i32,
     layer_height_in_tiles: i32,
 ) -> impl FnMut(TilePos) -> Option<Tile> {
-    let color_map: HashMap<TilePos, Color> = int_grid_csv.iter().enumerate().filter(|(_, v)| **v != 0).map(|(i, v)| {(
-                int_grid_index_to_tile_pos(i, layer_width_in_tiles as u32, layer_height_in_tiles as u32).expect(
-                    "int_grid_csv indices should be within the bounds of 0..(layer_width * layer_height)",
-                ),
-                int_grid_value_defs.iter().find(|d| d.value == *v).expect("Int grid values should have an associated IntGridValueDefinition").color)}).collect();
+    let color_map: HashMap<i32, Color> = int_grid_value_defs
+        .into_iter()
+        .map(|IntGridValueDefinition { value, color, .. }| (*value, *color))
+        .collect();
+    let tile_pos_map =
+        tile_pos_to_int_grid_map(int_grid_csv, layer_width_in_tiles, layer_height_in_tiles);
 
     move |tile_pos: TilePos| -> Option<Tile> {
-        color_map.get(&tile_pos).map(|&color| Tile {
-            color,
+        tile_pos_map.get(&tile_pos).map(|&value| Tile {
+            color: *color_map
+                .get(&value)
+                .expect("Int grid values should have an associated IntGridValueDefinition"),
             ..Default::default()
         })
     }

@@ -57,7 +57,7 @@ pub(crate) fn tile_pos_to_tile_maker(
     layer_grid_size: i32,
 ) -> impl FnMut(TilePos) -> Option<Tile> {
     let grid_tile_map: HashMap<TilePos, TileInstance> = grid_tiles
-        .into_iter()
+        .iter()
         .map(|t| {
             (
                 TilePos(
@@ -108,8 +108,7 @@ pub(crate) fn tile_pos_to_tile_if_int_grid_nonzero_maker(
     move |tile_pos: TilePos| -> Option<Tile> {
         int_grid_map
             .get(&tile_pos)
-            .map(|_| tile_maker(tile_pos))
-            .flatten()
+            .and_then(|_| tile_maker(tile_pos))
     }
 }
 
@@ -151,7 +150,7 @@ pub(crate) fn tile_pos_to_int_grid_colored_tile_maker(
     layer_height_in_tiles: i32,
 ) -> impl FnMut(TilePos) -> Option<Tile> {
     let color_map: HashMap<i32, Color> = int_grid_value_defs
-        .into_iter()
+        .iter()
         .map(|IntGridValueDefinition { value, color, .. }| (*value, *color))
         .collect();
     let tile_pos_map =
@@ -271,5 +270,45 @@ mod tests {
 
         assert!(tile_maker(TilePos(2, 1)).unwrap().flip_x);
         assert!(tile_maker(TilePos(2, 1)).unwrap().flip_y);
+    }
+
+    #[test]
+    fn test_tile_pos_to_int_grid_with_grid_tiles_tile_maker() {
+        // Test is designed to have all permutations of tile/intgrid existence:
+        // 1. tile + nonzero intgrid
+        // 2. tile + zero intgrid
+        // 3. no tile + nonzero intgrid
+        // 4. no tile + zero intgrid
+
+        let grid_tiles = vec![
+            TileInstance {
+                px: IVec2::new(0, 0),
+                src: IVec2::new(0, 0),
+                t: 1,
+                ..Default::default()
+            },
+            TileInstance {
+                px: IVec2::new(32, 0),
+                src: IVec2::new(32, 0),
+                t: 2,
+                ..Default::default()
+            },
+        ];
+
+        let int_grid_csv = vec![1, 0, 2, 0];
+
+        let mut tile_maker =
+            tile_pos_to_int_grid_with_grid_tiles_tile_maker(&grid_tiles, &int_grid_csv, 2, 2, 32);
+
+        assert_eq!(tile_maker(TilePos(0, 0)).unwrap().texture_index, 0);
+        assert_eq!(tile_maker(TilePos(0, 0)).unwrap().visible, false);
+
+        assert!(tile_maker(TilePos(1, 0)).is_none());
+
+        assert_eq!(tile_maker(TilePos(0, 1)).unwrap().texture_index, 1);
+        assert_eq!(tile_maker(TilePos(0, 1)).unwrap().visible, true);
+
+        assert_eq!(tile_maker(TilePos(1, 1)).unwrap().texture_index, 2);
+        assert_eq!(tile_maker(TilePos(1, 1)).unwrap().visible, true);
     }
 }

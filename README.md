@@ -90,5 +90,5 @@ for additional level-loading options.
 | 0.6 | 0.5 | 0.1 |
 
 ### Asset Credits
-- [7Soul's RPG Graphics](https://7soul.itch.io/7souls-rpg-graphics-pack-1-icons), a sprite pack by 7soul, licensed under [CC BY-ND 4.0](https://creativecommons.org/licenses/by-nd/4.0/)
 - [SunnyLand](https://ansimuz.itch.io/sunny-land-pixel-game-art), a texture pack by Ansimuz, licensed under [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)
+- [PIXEL FANTASY RPG ICONS](https://cazwolf.itch.io/caz-pixel-free), an icon pack by Caz, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)

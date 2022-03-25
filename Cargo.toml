@@ -33,3 +33,6 @@ atlas = ["bevy_ecs_tilemap/atlas"]
 [[example]]
 name = "platformer"
 path = "examples/platformer/main.rs"
+
+[patch.crates-io]
+bevy_ecs_tilemap = { git = "https://github.com/StarArawn/bevy_ecs_tilemap", rev = "d5169b6acf96d5f4a88592c3d6d24bde8ad724f6" }

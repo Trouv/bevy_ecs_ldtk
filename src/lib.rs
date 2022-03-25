@@ -1,4 +1,5 @@
-//! An ECS-friendly ldtk plugin for [bevy](https://github.com/bevyengine/bevy). Uses
+//! An ECS-friendly [LDtk](https://ldtk.io/) plugin for 
+//! [bevy](https://github.com/bevyengine/bevy). Uses
 //! [bevy_ecs_tilemap](https://github.com/StarArawn/bevy_ecs_tilemap) as a base.
 //!
 //! ### Getting Started

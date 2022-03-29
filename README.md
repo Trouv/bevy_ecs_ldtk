@@ -84,10 +84,12 @@ Be sure to check out the `LdtkSettings` resource and the `LevelSet` component
 for additional level-loading options.
 
 ### Compatibility
-| bevy | bevy_ecs_tilemap | bevy_ecs_ldtk |
+| bevy | bevy_ecs_tilemap | LDtk | bevy_ecs_ldtk |
 | --- | --- | --- |
-| 0.6 | 0.5 | 0.2 |
-| 0.6 | 0.5 | 0.1 |
+| 0.6 | 0.5 | 0.9 | 0.2 |
+| 0.6 | 0.5 | 0.9 | 0.1 |
+
+*ldtk 1.0 support coming soon, currently being developed on the ldtk-1.0 branch*
 
 ### Asset Credits
 - [7Soul's RPG Graphics](https://7soul.itch.io/7souls-rpg-graphics-pack-1-icons), a sprite pack by 7soul, licensed under [CC BY-ND 4.0](https://creativecommons.org/licenses/by-nd/4.0/)

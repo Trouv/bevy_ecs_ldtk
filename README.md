@@ -85,7 +85,7 @@ for additional level-loading options.
 
 ### Compatibility
 | bevy | bevy_ecs_tilemap | LDtk | bevy_ecs_ldtk |
-| --- | --- | --- |
+| --- | --- | --- | --- |
 | 0.6 | 0.5 | 0.9 | 0.2 |
 | 0.6 | 0.5 | 0.9 | 0.1 |
 

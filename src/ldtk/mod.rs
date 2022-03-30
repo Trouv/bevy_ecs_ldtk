@@ -447,10 +447,10 @@ pub struct FieldDefinition {
     #[serde(rename = "tilesetUid")]
     pub tileset_uid: Option<i32>,
 
-    /// Internal type enum Possible values: `F_Int`, `F_Float`, `F_String`, `F_Text`, `F_Bool`,
-    /// `F_Color`, `F_Enum`, `F_Point`, `F_Path`, `F_EntityRef`, `F_Tile`
+    /// Internal enum representing the possible field types. Possible values: F_Int, F_Float,
+    /// F_String, F_Text, F_Bool, F_Color, F_Enum(...), F_Point, F_Path, F_EntityRef, F_Tile
     #[serde(rename = "type")]
-    pub purple_type: LevelFieldType,
+    pub purple_type: String,
 
     /// Unique Int identifier
     #[serde(rename = "uid")]
@@ -975,7 +975,7 @@ pub struct EntityInstance {
 
     /// The entity "smart" color, guessed from either Entity definition, or one its field
     /// instances.
-    #[serde(rename = "__smartColor")]
+    #[serde(rename = "__smartColor", with = "color")]
     pub smart_color: Color,
 
     /// Array of tags defined in this Entity definition
@@ -1221,8 +1221,8 @@ pub struct Level {
 
     /// The "guessed" color for this level in the editor, decided using either the background
     /// color or an existing custom field.
-    #[serde(rename = "__smartColor")]
-    pub smart_color: String,
+    #[serde(rename = "__smartColor", with = "color")]
+    pub smart_color: Color,
 
     /// Background color of the level. If `null`, the project `defaultLevelBgColor` should be
     /// used.
@@ -1459,44 +1459,6 @@ pub enum EditorDisplayPos {
 
     #[serde(rename = "Center")]
     Center,
-}
-
-/// Internal type enum Possible values: `F_Int`, `F_Float`, `F_String`, `F_Text`, `F_Bool`,
-/// `F_Color`, `F_Enum`, `F_Point`, `F_Path`, `F_EntityRef`, `F_Tile`
-#[derive(Eq, PartialEq, Debug, Clone, Serialize, Deserialize)]
-pub enum LevelFieldType {
-    #[serde(rename = "F_Bool")]
-    FBool,
-
-    #[serde(rename = "F_Color")]
-    FColor,
-
-    #[serde(rename = "F_EntityRef")]
-    FEntityRef,
-
-    #[serde(rename = "F_Enum")]
-    FEnum,
-
-    #[serde(rename = "F_Float")]
-    FFloat,
-
-    #[serde(rename = "F_Int")]
-    FInt,
-
-    #[serde(rename = "F_Path")]
-    FPath,
-
-    #[serde(rename = "F_Point")]
-    FPoint,
-
-    #[serde(rename = "F_String")]
-    FString,
-
-    #[serde(rename = "F_Text")]
-    FText,
-
-    #[serde(rename = "F_Tile")]
-    FTile,
 }
 
 #[derive(Eq, PartialEq, Debug, Clone, Serialize, Deserialize)]

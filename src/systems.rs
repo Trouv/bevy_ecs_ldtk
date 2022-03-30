@@ -7,7 +7,7 @@ use crate::{
     },
     assets::{LdtkAsset, LdtkLevel, TilesetMap},
     components::*,
-    ldtk::{EntityDefinition, LayerDefinition, LayerType, Level, TileInstance, TilesetDefinition},
+    ldtk::{EntityDefinition, LayerDefinition, Level, TileInstance, TilesetDefinition, Type},
     resources::{LdtkSettings, LevelEvent, LevelSelection},
     tile_makers::*,
     utils::*,
@@ -387,7 +387,7 @@ fn spawn_level(
 
         for layer_instance in layer_instances.iter().rev() {
             match layer_instance.layer_instance_type {
-                LayerType::Entities => {
+                Type::Entities => {
                     commands.entity(ldtk_entity).with_children(|commands| {
                         for entity_instance in &layer_instance.entity_instances {
                             let transform = calculate_transform_from_entity_instance(
@@ -522,9 +522,7 @@ fn spawn_level(
                     grid_tiles.extend(layer_instance.auto_layer_tiles.clone());
 
                     for (i, grid_tiles) in layer_grid_tiles(grid_tiles).into_iter().enumerate() {
-                        let layer_entity = if layer_instance.layer_instance_type
-                            == LayerType::IntGrid
-                        {
+                        let layer_entity = if layer_instance.layer_instance_type == Type::IntGrid {
                             // The current spawning of IntGrid layers doesn't allow using
                             // LayerBuilder::new_batch().
                             // So, the actual LayerBuilder usage diverges greatly here

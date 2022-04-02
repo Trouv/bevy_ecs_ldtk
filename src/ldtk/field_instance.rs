@@ -1,7 +1,9 @@
 use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
 
 #[allow(unused_imports)]
-use super::{EntityInstance, FieldInstanceGridPoint, Level, TilesetRectangle};
+use super::{
+    EntityInstance, FieldInstanceEntityReference, FieldInstanceGridPoint, Level, TilesetRectangle,
+};
 use bevy::prelude::*;
 use regex::Regex;
 
@@ -95,6 +97,13 @@ impl<'de> Deserialize<'de> for FieldInstance {
             "FilePath" => FieldValue::FilePath(
                 Option::<String>::deserialize(helper.value).map_err(de::Error::custom)?,
             ),
+            "Tile" => FieldValue::Tile(
+                Option::<TilesetRectangle>::deserialize(helper.value).map_err(de::Error::custom)?,
+            ),
+            "EntityRef" => FieldValue::EntityRef(
+                Option::<FieldInstanceEntityReference>::deserialize(helper.value)
+                    .map_err(de::Error::custom)?,
+            ),
             "Point" => {
                 let point_helper = Option::<FieldInstanceGridPoint>::deserialize(helper.value)
                     .map_err(de::Error::custom)?;
@@ -121,6 +130,14 @@ impl<'de> Deserialize<'de> for FieldInstance {
             }
             "Array<FilePath>" => FieldValue::Strings(
                 Vec::<Option<String>>::deserialize(helper.value).map_err(de::Error::custom)?,
+            ),
+            "Array<Tile>" => FieldValue::Tiles(
+                Vec::<Option<TilesetRectangle>>::deserialize(helper.value)
+                    .map_err(de::Error::custom)?,
+            ),
+            "Array<EntityRef>" => FieldValue::EntityRefs(
+                Vec::<Option<FieldInstanceEntityReference>>::deserialize(helper.value)
+                    .map_err(de::Error::custom)?,
             ),
             "Array<Point>" => {
                 let point_helpers =
@@ -183,6 +200,8 @@ pub enum FieldValue {
     Color(Color),
     FilePath(Option<String>),
     Enum(Option<String>),
+    Tile(Option<TilesetRectangle>),
+    EntityRef(Option<FieldInstanceEntityReference>),
     #[serde(serialize_with = "serialize_point")]
     Point(Option<IVec2>),
     Ints(Vec<Option<i32>>),
@@ -194,6 +213,8 @@ pub enum FieldValue {
     Colors(Vec<Color>),
     FilePaths(Vec<Option<String>>),
     Enums(Vec<Option<String>>),
+    Tiles(Vec<Option<TilesetRectangle>>),
+    EntityRefs(Vec<Option<FieldInstanceEntityReference>>),
     #[serde(serialize_with = "serialize_points")]
     Points(Vec<Option<IVec2>>),
 }

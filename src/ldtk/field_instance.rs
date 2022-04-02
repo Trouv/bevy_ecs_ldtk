@@ -1,7 +1,7 @@
 use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
 
 #[allow(unused_imports)]
-use super::{EntityInstance, Level, TilesetRectangle};
+use super::{EntityInstance, FieldInstanceGridPoint, Level, TilesetRectangle};
 use bevy::prelude::*;
 use regex::Regex;
 
@@ -66,12 +66,6 @@ struct FieldInstanceHelper {
     pub real_editor_values: Vec<Option<serde_json::Value>>,
 }
 
-#[derive(Serialize, Deserialize)]
-struct PointHelper {
-    cx: i32,
-    cy: i32,
-}
-
 #[derive(Deserialize)]
 struct ColorHelper(#[serde(with = "color")] Color);
 
@@ -102,8 +96,8 @@ impl<'de> Deserialize<'de> for FieldInstance {
                 Option::<String>::deserialize(helper.value).map_err(de::Error::custom)?,
             ),
             "Point" => {
-                let point_helper =
-                    Option::<PointHelper>::deserialize(helper.value).map_err(de::Error::custom)?;
+                let point_helper = Option::<FieldInstanceGridPoint>::deserialize(helper.value)
+                    .map_err(de::Error::custom)?;
 
                 FieldValue::Point(point_helper.map(|p| IVec2::new(p.cx, p.cy)))
             }
@@ -129,8 +123,9 @@ impl<'de> Deserialize<'de> for FieldInstance {
                 Vec::<Option<String>>::deserialize(helper.value).map_err(de::Error::custom)?,
             ),
             "Array<Point>" => {
-                let point_helpers = Vec::<Option<PointHelper>>::deserialize(helper.value)
-                    .map_err(de::Error::custom)?;
+                let point_helpers =
+                    Vec::<Option<FieldInstanceGridPoint>>::deserialize(helper.value)
+                        .map_err(de::Error::custom)?;
 
                 let points = point_helpers
                     .into_iter()
@@ -209,7 +204,7 @@ fn serialize_colors<S: Serializer>(colors: &[Color], serializer: S) -> Result<S:
 }
 
 fn serialize_point<S: Serializer>(point: &Option<IVec2>, serializer: S) -> Result<S::Ok, S::Error> {
-    let point_helper = point.map(|p| PointHelper { cx: p.x, cy: p.y });
+    let point_helper = point.map(|p| FieldInstanceGridPoint { cx: p.x, cy: p.y });
     point_helper.serialize(serializer)
 }
 

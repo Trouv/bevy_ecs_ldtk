@@ -22,6 +22,9 @@
 //!     have been changed from vectors to [IVec2] and [Vec2].
 //! 12. Some "color" fields on [LdtkJson], [EntityDefinition], [IntGridValueDefinition], and
 //!     [Level] have been changed from [String]s to [Color].
+//! 13. `FieldInstanceEntityReference` has been renamed to [EntityReference].
+//! 14. `Component` and [Hash] have been derived for [EntityReference] in addition to traits derived
+//!     in step 3.
 
 use bevy::prelude::{Color, IVec2, Vec2};
 use serde::{Deserialize, Serialize};
@@ -897,7 +900,7 @@ pub struct ForcedRefs {
     pub entity_instance: Option<EntityInstance>,
 
     #[serde(rename = "EntityReferenceInfos")]
-    pub entity_reference_infos: Option<FieldInstanceEntityReference>,
+    pub entity_reference_infos: Option<EntityReference>,
 
     #[serde(rename = "EnumDef")]
     pub enum_def: Option<EnumDefinition>,
@@ -1016,8 +1019,10 @@ pub struct EntityInstance {
 }
 
 /// This object is used in Field Instances to describe an EntityRef value.
-#[derive(Eq, PartialEq, Debug, Default, Clone, Serialize, Deserialize)]
-pub struct FieldInstanceEntityReference {
+#[derive(
+    Eq, PartialEq, Debug, Default, Clone, Hash, bevy::prelude::Component, Serialize, Deserialize,
+)]
+pub struct EntityReference {
     /// IID of the refered EntityInstance
     #[serde(rename = "entityIid")]
     pub entity_iid: String,

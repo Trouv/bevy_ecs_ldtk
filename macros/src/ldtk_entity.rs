@@ -252,7 +252,7 @@ fn expand_worldly_attribute(
     {
         syn::Meta::Path(_) => {
             quote! {
-                #field_name: bevy_ecs_ldtk::prelude::Worldly::from_entity_info(entity_instance, layer_instance),
+                #field_name: bevy_ecs_ldtk::prelude::Worldly::from_entity_info(entity_instance),
             }
         }
         _ => panic!("#[worldly] attribute should take the form #[worldly]"),

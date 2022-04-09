@@ -30,14 +30,14 @@ pub fn choose_levels(
             for (ldtk_handle, mut level_set) in level_set_query.iter_mut() {
                 if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
                     if let Some(level) = ldtk_asset.get_level(&level_selection) {
-                        level_set.uids.clear();
+                        level_set.iids.clear();
 
-                        level_set.uids.insert(level.uid);
+                        level_set.iids.insert(level.iid.clone());
 
                         if ldtk_settings.load_level_neighbors {
                             level_set
-                                .uids
-                                .extend(level.neighbours.iter().filter_map(|n| n.level_uid));
+                                .iids
+                                .extend(level.neighbours.iter().map(|n| n.level_iid.clone()));
                         }
                     }
                 }
@@ -50,40 +50,47 @@ pub fn choose_levels(
 pub fn apply_level_set(
     mut commands: Commands,
     ldtk_world_query: Query<(Entity, &LevelSet, &Children, &Handle<LdtkAsset>), Changed<LevelSet>>,
-    ldtk_level_query: Query<&Handle<LdtkLevel>>,
+    mut ldtk_level_query: Query<(&Handle<LdtkLevel>, &mut Map)>,
     ldtk_assets: Res<Assets<LdtkAsset>>,
     level_assets: Res<Assets<LdtkLevel>>,
     ldtk_settings: Res<LdtkSettings>,
-    mut map_query: MapQuery,
     mut level_events: EventWriter<LevelEvent>,
+    layers: Query<&Layer>,
+    chunks: Query<&Chunk>,
 ) {
     for (world_entity, level_set, children, ldtk_asset_handle) in ldtk_world_query.iter() {
-        let mut previous_level_map = HashMap::new();
+        let mut previous_level_maps = HashMap::new();
         for child in children.iter() {
-            if let Ok(level_handle) = ldtk_level_query.get(*child) {
+            if let Ok((level_handle, _)) = ldtk_level_query.get(*child) {
                 if let Some(ldtk_level) = level_assets.get(level_handle) {
-                    previous_level_map.insert(ldtk_level.level.uid, child);
+                    previous_level_maps.insert(ldtk_level.level.iid.clone(), child);
                 }
             }
         }
 
-        let previous_uids: HashSet<i32> = previous_level_map.keys().copied().collect();
+        let previous_iids: HashSet<String> = previous_level_maps.keys().cloned().collect();
 
-        let uids_to_spawn = level_set.uids.difference(&previous_uids);
-        if uids_to_spawn.clone().count() > 0 {
+        let iids_to_spawn = level_set.iids.difference(&previous_iids);
+        if iids_to_spawn.clone().count() > 0 {
             if let Some(ldtk_asset) = ldtk_assets.get(ldtk_asset_handle) {
                 commands.entity(world_entity).with_children(|c| {
-                    for uid in uids_to_spawn {
-                        level_events.send(LevelEvent::SpawnTriggered(*uid));
-                        pre_spawn_level(c, ldtk_asset, *uid, &ldtk_settings);
+                    for iid in iids_to_spawn {
+                        level_events.send(LevelEvent::SpawnTriggered(iid.clone()));
+                        pre_spawn_level(c, ldtk_asset, iid, &ldtk_settings);
                     }
                 });
             }
         }
 
-        for uid in previous_uids.difference(&level_set.uids) {
-            map_query.despawn(&mut commands, *uid as u16);
-            level_events.send(LevelEvent::Despawned(*uid));
+        for iid in previous_iids.difference(&level_set.iids) {
+            let map_entity = previous_level_maps.get(iid).expect(
+                "The set of previous_iids and the keys in previous_level_maps should be the same.",
+            );
+            if let Ok((_, mut map)) = ldtk_level_query.get_mut(**map_entity) {
+                clear_map(&mut commands, &mut map, &layers, &chunks);
+                map.despawn(&mut commands);
+                level_events.send(LevelEvent::Despawned(iid.clone()));
+            }
         }
     }
 }
@@ -138,19 +145,27 @@ pub fn process_ldtk_world(
             .iter_mut()
             .filter(|(_, l, _, _)| **l == changed_ldtk)
         {
-            if let Some(children) = children {
-                for child in children.iter() {
-                    if let Ok(mut map) = ldtk_level_query.get_mut(*child) {
-                        clear_map(&mut commands, &mut map, &layer_query, &chunk_query);
-                        map.despawn(&mut commands);
-                        level_events.send(LevelEvent::Despawned(map.id as i32));
-                    } else {
-                        commands.entity(*child).despawn_recursive();
+            if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
+                if let Some(children) = children {
+                    for child in children.iter() {
+                        if let Ok(mut map) = ldtk_level_query.get_mut(*child) {
+                            clear_map(&mut commands, &mut map, &layer_query, &chunk_query);
+                            map.despawn(&mut commands);
+
+                            if let Some(level) = ldtk_asset
+                                .project
+                                .levels
+                                .iter()
+                                .find(|l| l.uid == map.id as i32)
+                            {
+                                level_events.send(LevelEvent::Despawned(level.iid.clone()));
+                            }
+                        } else {
+                            commands.entity(*child).despawn_recursive();
+                        }
                     }
                 }
-            }
 
-            if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
                 if ldtk_settings.set_clear_color {
                     if let Some(clear_color) = &mut clear_color {
                         clear_color.0 = ldtk_asset.project.bg_color;
@@ -161,22 +176,22 @@ pub fn process_ldtk_world(
 
                 if let Some(level_selection) = &level_selection {
                     if let Some(level) = ldtk_asset.get_level(level_selection) {
-                        level_set.uids.clear();
+                        level_set.iids.clear();
 
-                        level_set.uids.insert(level.uid);
+                        level_set.iids.insert(level.iid.clone());
 
                         if ldtk_settings.load_level_neighbors {
                             level_set
-                                .uids
-                                .extend(level.neighbours.iter().filter_map(|n| n.level_uid));
+                                .iids
+                                .extend(level.neighbours.iter().map(|n| n.level_iid.clone()));
                         }
                     }
                 }
 
                 commands.entity(ldtk_entity).with_children(|c| {
-                    for level_uid in &level_set.uids {
-                        level_events.send(LevelEvent::SpawnTriggered(*level_uid));
-                        pre_spawn_level(c, ldtk_asset, *level_uid, &ldtk_settings)
+                    for level_iid in &level_set.iids {
+                        level_events.send(LevelEvent::SpawnTriggered(level_iid.clone()));
+                        pre_spawn_level(c, ldtk_asset, &level_iid, &ldtk_settings)
                     }
                 });
             }
@@ -187,10 +202,10 @@ pub fn process_ldtk_world(
 fn pre_spawn_level(
     child_builder: &mut ChildBuilder,
     ldtk_asset: &LdtkAsset,
-    level_uid: i32,
+    level_iid: &str,
     ldtk_settings: &LdtkSettings,
 ) {
-    if let Some(level_handle) = ldtk_asset.level_map.get(&level_uid) {
+    if let Some(level_handle) = ldtk_asset.level_map.get(level_iid) {
         let mut translation = Vec3::ZERO;
 
         if ldtk_settings.use_level_world_translations {
@@ -198,7 +213,7 @@ fn pre_spawn_level(
                 .project
                 .levels
                 .iter()
-                .find(|l| l.uid == level_uid)
+                .find(|l| l.iid == level_iid)
             {
                 let level_coords = ldtk_pixel_coords_to_translation(
                     IVec2::new(level.world_x, level.world_y + level.px_hei),
@@ -309,7 +324,7 @@ pub fn process_ldtk_levels(
                         worldly_set,
                         ldtk_entity,
                     );
-                    level_events.send(LevelEvent::Spawned(level.level.uid));
+                    level_events.send(LevelEvent::Spawned(level.level.iid.clone()));
                 }
             }
         }
@@ -723,14 +738,14 @@ pub fn set_ldtk_texture_filters_to_nearest(
     }
 }
 
-/// Returns the `uid`s of levels that have spawned in this update.
+/// Returns the `iid`s of levels that have spawned in this update.
 ///
 /// Mean to be used in a chain with [fire_level_transformed_events].
-pub fn detect_level_spawned_events(mut reader: EventReader<LevelEvent>) -> Vec<i32> {
+pub fn detect_level_spawned_events(mut reader: EventReader<LevelEvent>) -> Vec<String> {
     let mut spawned_ids = Vec::new();
     for event in reader.iter() {
         if let LevelEvent::Spawned(id) = event {
-            spawned_ids.push(*id);
+            spawned_ids.push(id.clone());
         }
     }
     spawned_ids
@@ -741,7 +756,7 @@ pub fn detect_level_spawned_events(mut reader: EventReader<LevelEvent>) -> Vec<i
 ///
 /// Meant to be used in a chain with [detect_level_spawned_events].
 pub fn fire_level_transformed_events(
-    In(spawned_ids): In<Vec<i32>>,
+    In(spawned_ids): In<Vec<String>>,
     mut writer: EventWriter<LevelEvent>,
 ) {
     for id in spawned_ids {

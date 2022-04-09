@@ -42,7 +42,7 @@ pub struct IntGridCell {
 /// Changes to this component are idempotent, so levels won't be respawned greedily.
 #[derive(Clone, Eq, PartialEq, Debug, Default, Component)]
 pub struct LevelSet {
-    pub uids: HashSet<i32>,
+    pub iids: HashSet<String>,
 }
 
 /// [Component] that indicates that an ldtk entity should be a child of the world, not the level.

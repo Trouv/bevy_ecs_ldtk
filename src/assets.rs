@@ -30,8 +30,8 @@ fn ldtk_path_to_asset_path<'a, 'b>(
 /// Used in [LdtkAsset]. Key is the tileset definition uid.
 pub type TilesetMap = HashMap<i32, Handle<Image>>;
 
-/// Used in [LdtkAsset]. Key is the level uid.
-pub type LevelMap = HashMap<i32, Handle<LdtkLevel>>;
+/// Used in [LdtkAsset]. Key is the level iid.
+pub type LevelMap = HashMap<String, Handle<LdtkLevel>>;
 
 /// Main asset for loading ldtk files.
 ///
@@ -85,7 +85,7 @@ impl AssetLoader for LdtkLoader {
                         let asset_path = ldtk_path_to_asset_path(load_context, external_rel_path);
 
                         external_level_paths.push(asset_path.clone());
-                        level_map.insert(level.uid, load_context.get_handle(asset_path));
+                        level_map.insert(level.iid.clone(), load_context.get_handle(asset_path));
                     }
                 }
             } else {
@@ -97,7 +97,7 @@ impl AssetLoader for LdtkLoader {
                     let level_handle =
                         load_context.set_labeled_asset(label, LoadedAsset::new(ldtk_level));
 
-                    level_map.insert(level.uid, level_handle);
+                    level_map.insert(level.iid.clone(), level_handle);
                 }
             }
 

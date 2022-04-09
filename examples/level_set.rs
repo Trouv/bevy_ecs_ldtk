@@ -31,7 +31,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn_bundle(LdtkWorldBundle {
         ldtk_handle: asset_server.load("WorldMap_Free_layout.ldtk"),
         level_set: LevelSet {
-            uids: HashSet::from(LEVEL_UIDS),
+            iids: HashSet::from(LEVEL_UIDS),
         },
         transform: Transform::from_xyz(-232., -496., 0.),
         ..Default::default()
@@ -46,10 +46,10 @@ fn toggle_levels(input: Res<Input<KeyCode>>, mut level_sets: Query<&mut LevelSet
         let level_to_toggle = LEVEL_UIDS.choose(&mut rng).unwrap();
 
         let mut level_set = level_sets.single_mut();
-        if level_set.uids.contains(level_to_toggle) {
-            level_set.uids.remove(level_to_toggle);
+        if level_set.iids.contains(level_to_toggle) {
+            level_set.iids.remove(level_to_toggle);
         } else {
-            level_set.uids.insert(*level_to_toggle);
+            level_set.iids.insert(*level_to_toggle);
         }
     }
 }

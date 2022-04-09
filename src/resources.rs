@@ -22,7 +22,7 @@ pub enum LevelSelection {
     Identifier(String),
     /// Spawn level from its index in the LDtk file's list of levels.
     Index(usize),
-    /// Spawn level with the given level `uid`.
+    /// Spawn level with the given level `iid`.
     Iid(String),
 }
 

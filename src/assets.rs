@@ -48,17 +48,26 @@ pub struct LdtkAsset {
 impl LdtkAsset {
     pub fn world_height(&self) -> i32 {
         let mut world_height = 0;
-        for level in &self.project.levels {
+        for level in self.iter_levels() {
             world_height = world_height.max(level.world_y + level.px_hei);
         }
 
         world_height
     }
 
-    pub fn get_level(&self, level_selection: &LevelSelection) -> Option<&Level> {
+    /// Get an iterator of all the levels in the LDtk file.
+    ///
+    /// This abstraction avoids compatibility issues between pre-multi-world and post-multi-world
+    /// LDtk projects.
+    pub fn iter_levels<'a>(&'a self) -> impl Iterator<Item = &'a Level> {
         self.project
             .levels
             .iter()
+            .chain(self.project.worlds.iter().map(|w| &w.levels).flatten())
+    }
+
+    pub fn get_level(&self, level_selection: &LevelSelection) -> Option<&Level> {
+        self.iter_levels()
             .enumerate()
             .find(|(i, l)| level_selection.is_match(i, l))
             .map(|(_, l)| l)

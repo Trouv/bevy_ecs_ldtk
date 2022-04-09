@@ -209,12 +209,7 @@ fn pre_spawn_level(
         let mut translation = Vec3::ZERO;
 
         if ldtk_settings.use_level_world_translations {
-            if let Some(level) = ldtk_asset
-                .project
-                .levels
-                .iter()
-                .find(|l| l.iid == level_iid)
-            {
+            if let Some(level) = ldtk_asset.get_level(&LevelSelection::Iid(level_iid.to_string())) {
                 let level_coords = ldtk_pixel_coords_to_translation(
                     IVec2::new(level.world_x, level.world_y + level.px_hei),
                     ldtk_asset.world_height(),

@@ -104,10 +104,14 @@ impl AssetLoader for LdtkLoader {
             let mut tileset_rel_paths = Vec::new();
             let mut tileset_map = HashMap::new();
             for tileset in &project.defs.tilesets {
-                let asset_path = ldtk_path_to_asset_path(load_context, &tileset.rel_path);
+                if let Some(tileset_path) = &tileset.rel_path {
+                    let asset_path = ldtk_path_to_asset_path(load_context, tileset_path);
 
-                tileset_rel_paths.push(asset_path.clone());
-                tileset_map.insert(tileset.uid, load_context.get_handle(asset_path));
+                    tileset_rel_paths.push(asset_path.clone());
+                    tileset_map.insert(tileset.uid, load_context.get_handle(asset_path));
+                } else {
+                    warn!("Ignoring LDtk's Internal_Icons. They cannot be displayed due to their license.")
+                }
             }
 
             let ldtk_asset = LdtkAsset {

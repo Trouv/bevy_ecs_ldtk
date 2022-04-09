@@ -22,6 +22,7 @@
 //!     have been changed from vectors to [IVec2] and [Vec2].
 //! 12. Some "color" fields on [LdtkJson], [EntityDefinition], [IntGridValueDefinition], and
 //!     [Level] have been changed from [String]s to [Color].
+//! 13. [TilesetDefinition::rel_path]'s type changed from [String] to [Option<String>].
 
 use bevy::prelude::{Color, IVec2, Vec2};
 use serde::{Deserialize, Serialize};
@@ -830,7 +831,7 @@ pub struct TilesetDefinition {
 
     /// Path to the source file, relative to the current project JSON file
     #[serde(rename = "relPath")]
-    pub rel_path: String,
+    pub rel_path: Option<String>,
 
     /// Array of group of tiles selections, only meant to be used in the editor
     #[serde(rename = "savedSelections")]

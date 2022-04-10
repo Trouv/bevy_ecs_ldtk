@@ -1,7 +1,7 @@
 //! Contains all the types for serializing/deserializing an LDtk file.
 //!
 //! This is mostly based on LDtk's existing rust
-//! [QuickType loader](https://ldtk.io/files/quicktype/LdtkJson.rs).
+//! [QuickType loader](<https://ldtk.io/files/quicktype/LdtkJson.rs>).
 //!
 //! For the most part, changes to the generated module are avoided to make it simpler to maintain
 //! this plugin in the future.
@@ -16,13 +16,13 @@
 //! 6. `Component` has been derived for [EntityInstance].
 //! 7. Documentation added for [EntityInstance], which required the unused import of [LdtkEntity].
 //! 8. [FieldInstance] has been moved to its own module, and is re-exported here.
-//! 9. The `layer_instance_type` field of [LayerInstance] has been re-typed to [LayerType]
-//! 10. Comment at the top of the file has been replaced with this documentation.
-//! 11. Some "coordinate" fields on [LevelBackgroundPosition], [EntityInstance], and [TileInstance]
+//! 9. Comment at the top of the file has been replaced with this documentation.
+//! 10. Some "coordinate" fields on [LevelBackgroundPosition], [EntityInstance], and [TileInstance]
 //!     have been changed from vectors to [IVec2] and [Vec2].
-//! 12. Some "color" fields on [LdtkJson], [EntityDefinition], [IntGridValueDefinition], and
+//! 11. Some "color" fields on [LdtkJson], [EntityDefinition], [IntGridValueDefinition], and
 //!     [Level] have been changed from [String]s to [Color].
-//! 13. [TilesetDefinition::rel_path]'s type changed from [String] to [Option<String>].
+//! 12. [TilesetDefinition::rel_path]'s type changed from [String] to [Option<String>].
+//! 13. All urls in docs have been changed to hyperlinks with `<>`
 
 use bevy::prelude::{Color, IVec2, Vec2};
 use serde::{Deserialize, Serialize};
@@ -36,7 +36,7 @@ mod field_instance;
 
 pub use field_instance::*;
 
-/// This file is a JSON schema of files created by LDtk level editor (https://ldtk.io).
+/// This file is a JSON schema of files created by LDtk level editor (<https://ldtk.io>).
 ///
 /// This is the root of any Project JSON file. It contains:  - the project settings, - an
 /// array of levels, - a group of definitions (that can probably be safely ignored for most
@@ -194,7 +194,7 @@ pub struct LdtkJson {
     /// levels and layout settings. Basically, it's pretty much only about moving the `levels`
     /// array to the `worlds` array, along with world layout related values (eg. `worldGridWidth`
     /// etc).<br/><br/>If you want to start supporting this future update easily, please refer to
-    /// this documentation: https://github.com/deepnight/ldtk/issues/231
+    /// this documentation: <https://github.com/deepnight/ldtk/issues/231>
     #[serde(rename = "worlds")]
     pub worlds: Vec<World>,
 }
@@ -282,7 +282,7 @@ pub struct EntityDefinition {
 
     /// An array of 4 dimensions for the up/right/down/left borders (in this order) when using
     /// 9-slice mode for `tileRenderMode`.<br/>  If the tileRenderMode is not NineSlice, then
-    /// this array is empty.<br/>  See: https://en.wikipedia.org/wiki/9-slice_scaling
+    /// this array is empty.<br/>  See: <https://en.wikipedia.org/wiki/9-slice_scaling>
     #[serde(rename = "nineSliceBorders")]
     pub nine_slice_borders: Vec<i32>,
 

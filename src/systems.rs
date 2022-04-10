@@ -152,11 +152,8 @@ pub fn process_ldtk_world(
                             clear_map(&mut commands, &mut map, &layer_query, &chunk_query);
                             map.despawn(&mut commands);
 
-                            if let Some(level) = ldtk_asset
-                                .project
-                                .levels
-                                .iter()
-                                .find(|l| l.uid == map.id as i32)
+                            if let Some(level) =
+                                ldtk_asset.iter_levels().find(|l| l.uid == map.id as i32)
                             {
                                 level_events.send(LevelEvent::Despawned(level.iid.clone()));
                             }

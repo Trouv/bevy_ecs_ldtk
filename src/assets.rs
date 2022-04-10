@@ -45,6 +45,17 @@ pub struct LdtkAsset {
     pub level_map: LevelMap,
 }
 
+/// Used for [LdtkAsset::iter_levels].
+///
+/// This is not implemented on the [LdtkJson] object directly to avoid alterations to the
+/// mostly-auto-generated ldtk module.
+pub fn iter_levels<'a>(project: &'a LdtkJson) -> impl Iterator<Item = &'a Level> {
+    project
+        .levels
+        .iter()
+        .chain(project.worlds.iter().map(|w| &w.levels).flatten())
+}
+
 impl LdtkAsset {
     pub fn world_height(&self) -> i32 {
         let mut world_height = 0;
@@ -60,10 +71,7 @@ impl LdtkAsset {
     /// This abstraction avoids compatibility issues between pre-multi-world and post-multi-world
     /// LDtk projects.
     pub fn iter_levels<'a>(&'a self) -> impl Iterator<Item = &'a Level> {
-        self.project
-            .levels
-            .iter()
-            .chain(self.project.worlds.iter().map(|w| &w.levels).flatten())
+        iter_levels(&self.project)
     }
 
     pub fn get_level(&self, level_selection: &LevelSelection) -> Option<&Level> {
@@ -89,7 +97,7 @@ impl AssetLoader for LdtkLoader {
             let mut external_level_paths = Vec::new();
             let mut level_map = HashMap::new();
             if project.external_levels {
-                for level in &project.levels {
+                for level in iter_levels(&project) {
                     if let Some(external_rel_path) = &level.external_rel_path {
                         let asset_path = ldtk_path_to_asset_path(load_context, external_rel_path);
 
@@ -98,7 +106,7 @@ impl AssetLoader for LdtkLoader {
                     }
                 }
             } else {
-                for level in &project.levels {
+                for level in iter_levels(&project) {
                     let label = level.identifier.as_ref();
                     let ldtk_level = LdtkLevel {
                         level: level.clone(),

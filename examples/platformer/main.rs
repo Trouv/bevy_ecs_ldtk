@@ -24,9 +24,7 @@ fn main() {
         .add_plugin(LdtkPlugin)
         .add_plugin(PhysicsPlugin::default())
         .insert_resource(Gravity::from(Vec3::new(0.0, -2000., 0.0)))
-        .insert_resource(LevelSelection::Identifier(
-            "Your_typical_2D_platformer".to_string(),
-        ))
+        .insert_resource(LevelSelection::Uid(0))
         .insert_resource(LdtkSettings {
             load_level_neighbors: true,
             use_level_world_translations: true,

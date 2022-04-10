@@ -24,6 +24,8 @@ pub enum LevelSelection {
     Index(usize),
     /// Spawn level with the given level `iid`.
     Iid(String),
+    /// Spawn level with the given level `uid`.
+    Uid(i32),
 }
 
 impl Default for LevelSelection {
@@ -37,7 +39,8 @@ impl LevelSelection {
         match self {
             LevelSelection::Identifier(s) => *s == level.identifier,
             LevelSelection::Index(i) => *i == *index,
-            LevelSelection::Iid(u) => *u == level.iid,
+            LevelSelection::Iid(i) => *i == level.iid,
+            LevelSelection::Uid(u) => *u == level.uid,
         }
     }
 }

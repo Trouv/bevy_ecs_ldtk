@@ -153,7 +153,7 @@ pub fn process_ldtk_world(
                             map.despawn(&mut commands);
 
                             if let Some(level) =
-                                ldtk_asset.iter_levels().find(|l| l.uid == map.id as i32)
+                                ldtk_asset.get_level(&LevelSelection::Uid(map.id as i32))
                             {
                                 level_events.send(LevelEvent::Despawned(level.iid.clone()));
                             }

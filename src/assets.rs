@@ -44,10 +44,10 @@ pub struct LdtkAsset {
 
 impl ldtk::LdtkJson {
     /// Used for [LdtkAsset::iter_levels].
-    pub fn iter_levels<'a>(&'a self) -> impl Iterator<Item = &'a ldtk::Level> {
+    pub fn iter_levels(&self) -> impl Iterator<Item = &ldtk::Level> {
         self.levels
             .iter()
-            .chain(self.worlds.iter().map(|w| &w.levels).flatten())
+            .chain(self.worlds.iter().flat_map(|w| &w.levels))
     }
 }
 
@@ -69,7 +69,7 @@ impl LdtkAsset {
     /// Note: the returned levels are the ones existent in the [LdtkAsset].
     /// These levels will have "incomplete" data if you use LDtk's external levels feature.
     /// To always get full level data, you'll need to access `Assets<LdtkLevel>`.
-    pub fn iter_levels<'a>(&'a self) -> impl Iterator<Item = &'a ldtk::Level> {
+    pub fn iter_levels(&self) -> impl Iterator<Item = &ldtk::Level> {
         self.project.iter_levels()
     }
 

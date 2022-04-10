@@ -188,7 +188,7 @@ pub fn process_ldtk_world(
                 commands.entity(ldtk_entity).with_children(|c| {
                     for level_iid in &level_set.iids {
                         level_events.send(LevelEvent::SpawnTriggered(level_iid.clone()));
-                        pre_spawn_level(c, ldtk_asset, &level_iid, &ldtk_settings)
+                        pre_spawn_level(c, ldtk_asset, level_iid, &ldtk_settings)
                     }
                 });
             }

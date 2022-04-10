@@ -6,7 +6,7 @@
 [![Bevy tracking](https://img.shields.io/badge/Bevy%20tracking-released%20version-lightblue)](https://github.com/bevyengine/bevy/blob/main/docs/plugins_guidelines.md#main-branch-tracking)
 [![CI](https://github.com/Trouv/bevy_ecs_ldtk/actions/workflows/ci.yml/badge.svg)](https://github.com/Trouv/bevy_ecs_ldtk/actions/workflows/ci.yml)
 
-An ECS-friendly ldtk plugin for [bevy](https://github.com/bevyengine/bevy).
+An ECS-friendly [LDtk](https://ldtk.io/) plugin for [bevy](https://github.com/bevyengine/bevy).
 Uses [bevy_ecs_tilemap](https://github.com/StarArawn/bevy_ecs_tilemap) as a
 base.
 
@@ -84,10 +84,12 @@ Be sure to check out the `LdtkSettings` resource and the `LevelSet` component
 for additional level-loading options.
 
 ### Compatibility
-| bevy | bevy_ecs_tilemap | bevy_ecs_ldtk |
-| --- | --- | --- |
-| 0.6 | 0.5 | 0.2 |
-| 0.6 | 0.5 | 0.1 |
+| bevy | bevy_ecs_tilemap | LDtk | bevy_ecs_ldtk |
+| --- | --- | --- | --- |
+| 0.6 | 0.5 | 0.9 | 0.2 |
+| 0.6 | 0.5 | 0.9 | 0.1 |
+
+*ldtk 1.0 support coming soon, currently being developed on the ldtk-1.0 branch*
 
 ### Asset Credits
 - [SunnyLand](https://ansimuz.itch.io/sunny-land-pixel-game-art), a texture pack by Ansimuz, licensed under [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)

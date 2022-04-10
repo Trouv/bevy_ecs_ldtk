@@ -1,9 +1,6 @@
 //! Assets and AssetLoaders for loading ldtk files.
 
-use crate::{
-    ldtk::{LdtkJson, Level},
-    resources::LevelSelection,
-};
+use crate::{ldtk, resources::LevelSelection};
 use bevy::{
     asset::{AssetLoader, AssetPath, LoadContext, LoadedAsset},
     prelude::*,
@@ -40,20 +37,18 @@ pub type LevelMap = HashMap<String, Handle<LdtkLevel>>;
 #[derive(TypeUuid)]
 #[uuid = "ecfb87b7-9cd9-4970-8482-f2f68b770d31"]
 pub struct LdtkAsset {
-    pub project: LdtkJson,
+    pub project: ldtk::LdtkJson,
     pub tileset_map: TilesetMap,
     pub level_map: LevelMap,
 }
 
-/// Used for [LdtkAsset::iter_levels].
-///
-/// This is not implemented on the [LdtkJson] object directly to avoid alterations to the
-/// mostly-auto-generated ldtk module.
-pub fn iter_levels<'a>(project: &'a LdtkJson) -> impl Iterator<Item = &'a Level> {
-    project
-        .levels
-        .iter()
-        .chain(project.worlds.iter().map(|w| &w.levels).flatten())
+impl ldtk::LdtkJson {
+    /// Used for [LdtkAsset::iter_levels].
+    pub fn iter_levels<'a>(&'a self) -> impl Iterator<Item = &'a ldtk::Level> {
+        self.levels
+            .iter()
+            .chain(self.worlds.iter().map(|w| &w.levels).flatten())
+    }
 }
 
 impl LdtkAsset {
@@ -70,11 +65,20 @@ impl LdtkAsset {
     ///
     /// This abstraction avoids compatibility issues between pre-multi-world and post-multi-world
     /// LDtk projects.
-    pub fn iter_levels<'a>(&'a self) -> impl Iterator<Item = &'a Level> {
-        iter_levels(&self.project)
+    ///
+    /// Note: the returned levels are the ones existent in the [LdtkAsset].
+    /// These levels will have "incomplete" data if you use LDtk's external levels feature.
+    /// To always get full level data, you'll need to access `Assets<LdtkLevel>`.
+    pub fn iter_levels<'a>(&'a self) -> impl Iterator<Item = &'a ldtk::Level> {
+        self.project.iter_levels()
     }
 
-    pub fn get_level(&self, level_selection: &LevelSelection) -> Option<&Level> {
+    /// Find a particular level using a [LevelSelection].
+    ///
+    /// Note: the returned level is the one existent in the [LdtkAsset].
+    /// This level will have "incomplete" data if you use LDtk's external levels feature.
+    /// To always get full level data, you'll need to access `Assets<LdtkLevel>`.
+    pub fn get_level(&self, level_selection: &LevelSelection) -> Option<&ldtk::Level> {
         self.iter_levels()
             .enumerate()
             .find(|(i, l)| level_selection.is_match(i, l))
@@ -92,12 +96,12 @@ impl AssetLoader for LdtkLoader {
         load_context: &'a mut LoadContext,
     ) -> BoxedFuture<'a, anyhow::Result<()>> {
         Box::pin(async move {
-            let project: LdtkJson = serde_json::from_slice(bytes)?;
+            let project: ldtk::LdtkJson = serde_json::from_slice(bytes)?;
 
             let mut external_level_paths = Vec::new();
             let mut level_map = HashMap::new();
             if project.external_levels {
-                for level in iter_levels(&project) {
+                for level in project.iter_levels() {
                     if let Some(external_rel_path) = &level.external_rel_path {
                         let asset_path = ldtk_path_to_asset_path(load_context, external_rel_path);
 
@@ -106,7 +110,7 @@ impl AssetLoader for LdtkLoader {
                     }
                 }
             } else {
-                for level in iter_levels(&project) {
+                for level in project.iter_levels() {
                     let label = level.identifier.as_ref();
                     let ldtk_level = LdtkLevel {
                         level: level.clone(),
@@ -159,7 +163,7 @@ impl AssetLoader for LdtkLoader {
 #[derive(TypeUuid)]
 #[uuid = "5448469b-2134-44f5-a86c-a7b829f70a0c"]
 pub struct LdtkLevel {
-    pub level: Level,
+    pub level: ldtk::Level,
 }
 
 #[derive(Copy, Clone, Debug, Default)]

@@ -24,6 +24,7 @@ pub fn choose_levels(
     ldtk_settings: Res<LdtkSettings>,
     ldtk_assets: Res<Assets<LdtkAsset>>,
     mut level_set_query: Query<(&Handle<LdtkAsset>, &mut LevelSet)>,
+    mut clear_color: ResMut<ClearColor>,
 ) {
     if let Some(level_selection) = level_selection {
         if level_selection.is_changed() {
@@ -38,6 +39,10 @@ pub fn choose_levels(
                             level_set
                                 .iids
                                 .extend(level.neighbours.iter().map(|n| n.level_iid.clone()));
+                        }
+
+                        if ldtk_settings.set_clear_color == SetClearColor::FromLevelBackground {
+                            clear_color.0 = level.bg_color;
                         }
                     }
                 }
@@ -107,7 +112,7 @@ pub fn process_ldtk_world(
     level_selection: Option<Res<LevelSelection>>,
     ldtk_assets: Res<Assets<LdtkAsset>>,
     ldtk_settings: Res<LdtkSettings>,
-    mut clear_color: Option<ResMut<ClearColor>>,
+    mut clear_color: ResMut<ClearColor>,
     layer_query: Query<&Layer>,
     chunk_query: Query<&Chunk>,
 ) {
@@ -164,11 +169,7 @@ pub fn process_ldtk_world(
                 }
 
                 if ldtk_settings.set_clear_color == SetClearColor::FromEditorBackground {
-                    if let Some(clear_color) = &mut clear_color {
-                        clear_color.0 = ldtk_asset.project.bg_color;
-                    } else {
-                        commands.insert_resource(ClearColor(ldtk_asset.project.bg_color));
-                    }
+                    clear_color.0 = ldtk_asset.project.bg_color;
                 }
 
                 if let Some(level_selection) = &level_selection {
@@ -181,6 +182,10 @@ pub fn process_ldtk_world(
                             level_set
                                 .iids
                                 .extend(level.neighbours.iter().map(|n| n.level_iid.clone()));
+                        }
+
+                        if ldtk_settings.set_clear_color == SetClearColor::FromLevelBackground {
+                            clear_color.0 = level.bg_color;
                         }
                     }
                 }

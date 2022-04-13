@@ -63,27 +63,32 @@ impl Default for SetClearColor {
     }
 }
 
-/// Settings resource for the plugin.
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Default)]
-pub struct LdtkSettings {
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+pub enum LevelSpawnBehavior {
+    /// Newly spawned levels will be spawned with a translation of zero relative to the
+    /// [LdtkWorldBundle].
+    UseZeroTranslation,
     /// Newly spawned levels will be spawned with translations like their location in the LDtk
     /// world.
     ///
     /// Useful for "2d free map" and "GridVania" layouts.
-    ///
-    /// Defaults to `false`.
-    pub use_level_world_translations: bool,
-    /// When used with the [LevelSelection] resource, levels in the `__level_neighbors` list of
-    /// the selected level will be spawned in addition to the selected level.
-    ///
-    /// This is best used with [LdtkSettings::use_level_world_translations].
-    ///
-    /// Defaults to `false`.
-    pub load_level_neighbors: bool,
-    /// Bevy's ClearColor resource will be set to the background color of the LDtk project.
-    /// The change occurs while processing the `LdtkAsset`.
-    ///
-    /// Defaults to `true`.
+    UseWorldTranslation {
+        /// When used with the [LevelSelection] resource, levels in the `__level_neighbors` list of
+        /// the selected level will be spawned in addition to the selected level.
+        load_level_neighbors: bool,
+    },
+}
+
+impl Default for LevelSpawnBehavior {
+    fn default() -> Self {
+        LevelSpawnBehavior::UseZeroTranslation
+    }
+}
+
+/// Settings resource for the plugin.
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Default)]
+pub struct LdtkSettings {
+    pub level_spawn_behavior: LevelSpawnBehavior,
     pub set_clear_color: SetClearColor,
 }
 

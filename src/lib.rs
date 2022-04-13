@@ -194,7 +194,7 @@ pub mod prelude {
         components::{EntityInstance, GridCoords, IntGridCell, LdtkWorldBundle, LevelSet, Worldly},
         ldtk::{self, FieldValue, LayerInstance, TilesetDefinition},
         plugin::LdtkPlugin,
-        resources::{LdtkSettings, LevelEvent, LevelSelection, SetClearColor},
+        resources::{LdtkSettings, LevelEvent, LevelSelection, LevelSpawnBehavior, SetClearColor},
     };
 
     #[cfg(feature = "derive")]

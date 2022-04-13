@@ -8,7 +8,7 @@ use crate::{
     assets::{LdtkAsset, LdtkLevel, TilesetMap},
     components::*,
     ldtk::{EntityDefinition, LayerDefinition, Level, TileInstance, TilesetDefinition, Type},
-    resources::{LdtkSettings, LevelEvent, LevelSelection, SetClearColor},
+    resources::{LdtkSettings, LevelEvent, LevelSelection, LevelSpawnBehavior, SetClearColor},
     tile_makers::*,
     utils::*,
 };
@@ -35,10 +35,15 @@ pub fn choose_levels(
 
                         level_set.iids.insert(level.iid.clone());
 
-                        if ldtk_settings.load_level_neighbors {
-                            level_set
-                                .iids
-                                .extend(level.neighbours.iter().map(|n| n.level_iid.clone()));
+                        if let LevelSpawnBehavior::UseWorldTranslation {
+                            load_level_neighbors,
+                        } = ldtk_settings.level_spawn_behavior
+                        {
+                            if load_level_neighbors {
+                                level_set
+                                    .iids
+                                    .extend(level.neighbours.iter().map(|n| n.level_iid.clone()));
+                            }
                         }
 
                         if ldtk_settings.set_clear_color == SetClearColor::FromLevelBackground {
@@ -178,10 +183,15 @@ pub fn process_ldtk_world(
 
                         level_set.iids.insert(level.iid.clone());
 
-                        if ldtk_settings.load_level_neighbors {
-                            level_set
-                                .iids
-                                .extend(level.neighbours.iter().map(|n| n.level_iid.clone()));
+                        if let LevelSpawnBehavior::UseWorldTranslation {
+                            load_level_neighbors,
+                        } = ldtk_settings.level_spawn_behavior
+                        {
+                            if load_level_neighbors {
+                                level_set
+                                    .iids
+                                    .extend(level.neighbours.iter().map(|n| n.level_iid.clone()));
+                            }
                         }
 
                         if ldtk_settings.set_clear_color == SetClearColor::FromLevelBackground {
@@ -210,7 +220,7 @@ fn pre_spawn_level(
     if let Some(level_handle) = ldtk_asset.level_map.get(level_iid) {
         let mut translation = Vec3::ZERO;
 
-        if ldtk_settings.use_level_world_translations {
+        if let LevelSpawnBehavior::UseWorldTranslation { .. } = ldtk_settings.level_spawn_behavior {
             if let Some(level) = ldtk_asset.get_level(&LevelSelection::Iid(level_iid.to_string())) {
                 let level_coords = ldtk_pixel_coords_to_translation(
                     IVec2::new(level.world_x, level.world_y + level.px_hei),

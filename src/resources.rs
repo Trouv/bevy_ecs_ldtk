@@ -45,8 +45,26 @@ impl LevelSelection {
     }
 }
 
-/// Settings resource for the plugin.
+/// Option in [LdtkSettings] for determining clear color behavior.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
+pub enum SetClearColor {
+    /// Don't update the clear color at all
+    No,
+    /// Update the clear color to use the background color of the current level
+    /// (determined by [LevelSelection])
+    FromLevelBackground,
+    /// Update the clear color to use the entire editor's background color
+    FromEditorBackground,
+}
+
+impl Default for SetClearColor {
+    fn default() -> Self {
+        Self::No
+    }
+}
+
+/// Settings resource for the plugin.
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Default)]
 pub struct LdtkSettings {
     /// Newly spawned levels will be spawned with translations like their location in the LDtk
     /// world.
@@ -66,17 +84,7 @@ pub struct LdtkSettings {
     /// The change occurs while processing the `LdtkAsset`.
     ///
     /// Defaults to `true`.
-    pub set_clear_color: bool,
-}
-
-impl Default for LdtkSettings {
-    fn default() -> LdtkSettings {
-        LdtkSettings {
-            use_level_world_translations: false,
-            load_level_neighbors: false,
-            set_clear_color: true,
-        }
-    }
+    pub set_clear_color: SetClearColor,
 }
 
 /// Events fired by the plugin related to level spawning/despawning.

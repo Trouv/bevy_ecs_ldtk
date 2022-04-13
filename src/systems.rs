@@ -8,7 +8,7 @@ use crate::{
     assets::{LdtkAsset, LdtkLevel, TilesetMap},
     components::*,
     ldtk::{EntityDefinition, LayerDefinition, Level, TileInstance, TilesetDefinition, Type},
-    resources::{LdtkSettings, LevelEvent, LevelSelection},
+    resources::{LdtkSettings, LevelEvent, LevelSelection, SetClearColor},
     tile_makers::*,
     utils::*,
 };
@@ -163,7 +163,7 @@ pub fn process_ldtk_world(
                     }
                 }
 
-                if ldtk_settings.set_clear_color {
+                if ldtk_settings.set_clear_color == SetClearColor::FromEditorBackground {
                     if let Some(clear_color) = &mut clear_color {
                         clear_color.0 = ldtk_asset.project.bg_color;
                     } else {

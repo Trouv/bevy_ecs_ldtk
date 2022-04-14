@@ -180,7 +180,8 @@ mod plugin {
                 .add_system_to_stage(
                     CoreStage::PostUpdate,
                     systems::process_ldtk_levels.label(LdtkSystemLabel::LevelSpawning),
-                );
+                )
+                .add_system(systems::notify_chunks_when_tileset_updated);
         }
     }
 }

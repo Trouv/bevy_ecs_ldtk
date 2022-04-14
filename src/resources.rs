@@ -85,6 +85,16 @@ impl Default for LevelSpawnBehavior {
     }
 }
 
+pub enum RenderIntGrid {
+    Colors,
+    NoColors,
+}
+
+pub enum LevelBackground {
+    Visible,
+    Invisible,
+}
+
 /// Settings resource for the plugin.
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default)]
 pub struct LdtkSettings {

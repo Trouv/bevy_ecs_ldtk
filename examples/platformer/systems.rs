@@ -32,14 +32,14 @@ pub fn pause_physics_during_load(
     }
 }
 
-pub fn dbg_player_entities(
+pub fn dbg_player_items(
     input: Res<Input<KeyCode>>,
     mut query: Query<(&Items, &EntityInstance), With<Player>>,
 ) {
-    for (items, entitiy_instance) in query.iter_mut() {
+    for (items, entity_instance) in query.iter_mut() {
         if input.just_pressed(KeyCode::P) {
             dbg!(&items);
-            dbg!(&entitiy_instance);
+            dbg!(&entity_instance);
         }
     }
 }

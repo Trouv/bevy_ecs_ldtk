@@ -56,7 +56,7 @@ impl LdtkEntity for EntityWithFieldsBundle {
         if let Some(color_field) = entity_instance
             .field_instances
             .iter()
-            .find(|f| f.identifier == "Color".to_string())
+            .find(|f| f.identifier == *"Color")
         {
             if let FieldValue::Color(color) = color_field.value {
                 sprite.color = color;

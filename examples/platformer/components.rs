@@ -148,7 +148,7 @@ impl LdtkEntity for Patrol {
         let ldtk_patrol = entity_instance
             .field_instances
             .iter()
-            .find(|f| f.identifier == "patrol".to_string())
+            .find(|f| f.identifier == *"patrol")
             .unwrap();
         if let FieldValue::Points(ldtk_points) = &ldtk_patrol.value {
             for ldtk_point in ldtk_points {

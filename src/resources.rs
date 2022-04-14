@@ -85,14 +85,28 @@ impl Default for LevelSpawnBehavior {
     }
 }
 
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum RenderIntGrid {
     Colors,
     NoColors,
 }
 
+impl Default for RenderIntGrid {
+    fn default() -> Self {
+        RenderIntGrid::Colors
+    }
+}
+
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum LevelBackground {
     Visible,
     Invisible,
+}
+
+impl Default for LevelBackground {
+    fn default() -> Self {
+        LevelBackground::Visible
+    }
 }
 
 /// Settings resource for the plugin.
@@ -100,6 +114,8 @@ pub enum LevelBackground {
 pub struct LdtkSettings {
     pub level_spawn_behavior: LevelSpawnBehavior,
     pub set_clear_color: SetClearColor,
+    pub render_int_grid: RenderIntGrid,
+    pub level_background: LevelBackground,
 }
 
 /// Events fired by the plugin related to level spawning/despawning.

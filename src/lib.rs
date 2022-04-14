@@ -195,8 +195,8 @@ pub mod prelude {
         ldtk::{self, FieldValue, LayerInstance, TilesetDefinition},
         plugin::LdtkPlugin,
         resources::{
-            LdtkSettings, LevelBackground, LevelEvent, LevelSelection, LevelSpawnBehavior,
-            RenderIntGrid, SetClearColor,
+            IntGridRendering, LdtkSettings, LevelBackground, LevelEvent, LevelSelection,
+            LevelSpawnBehavior, SetClearColor,
         },
     };
 

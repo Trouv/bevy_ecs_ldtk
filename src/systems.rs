@@ -9,8 +9,8 @@ use crate::{
     components::*,
     ldtk::{EntityDefinition, LayerDefinition, Level, TileInstance, TilesetDefinition, Type},
     resources::{
-        LdtkSettings, LevelBackground, LevelEvent, LevelSelection, LevelSpawnBehavior,
-        RenderIntGrid, SetClearColor,
+        IntGridRendering, LdtkSettings, LevelBackground, LevelEvent, LevelSelection,
+        LevelSpawnBehavior, SetClearColor,
     },
     tile_makers::*,
     utils::*,
@@ -584,8 +584,8 @@ fn spawn_level(
                                         .expect("Encountered layer without definition")
                                         .int_grid_values;
 
-                                    match ldtk_settings.render_int_grid {
-                                        RenderIntGrid::Colors => {
+                                    match ldtk_settings.int_grid_rendering {
+                                        IntGridRendering::Colorful => {
                                             set_all_tiles_with_func(
                                                 &mut layer_builder,
                                                 tile_pos_to_tile_bundle_maker(
@@ -598,7 +598,7 @@ fn spawn_level(
                                                 ),
                                             );
                                         }
-                                        RenderIntGrid::NoColors => {
+                                        IntGridRendering::Invisible => {
                                             set_all_tiles_with_func(
                                                 &mut layer_builder,
                                                 tile_pos_to_tile_bundle_maker(

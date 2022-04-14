@@ -86,14 +86,14 @@ impl Default for LevelSpawnBehavior {
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
-pub enum RenderIntGrid {
-    Colors,
-    NoColors,
+pub enum IntGridRendering {
+    Colorful,
+    Invisible,
 }
 
-impl Default for RenderIntGrid {
+impl Default for IntGridRendering {
     fn default() -> Self {
-        RenderIntGrid::Colors
+        IntGridRendering::Colorful
     }
 }
 
@@ -114,7 +114,7 @@ impl Default for LevelBackground {
 pub struct LdtkSettings {
     pub level_spawn_behavior: LevelSpawnBehavior,
     pub set_clear_color: SetClearColor,
-    pub render_int_grid: RenderIntGrid,
+    pub int_grid_rendering: IntGridRendering,
     pub level_background: LevelBackground,
 }
 

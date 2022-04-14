@@ -17,7 +17,7 @@ base.
 ### Features
 - Support for all layer types
 - Support for loading external levels
-- Hot reloading (except for external levels)
+- Hot reloading (requires double-saving for external levels)
 - Solutions for easily loading/unloading levels, changing levels, loading level neighbors...
 - Low-boilerplate solutions for spawning bundles for LDtk Entities and IntGrid
   tiles using derive macros (other options available)
@@ -89,8 +89,9 @@ for additional level-loading options.
 | 0.6 | 0.5 | 0.9 | 0.2 |
 | 0.6 | 0.5 | 0.9 | 0.1 |
 
-*ldtk 1.0 support coming soon, currently being developed on the ldtk-1.0 branch*
+*ldtk 1.0+ support is coming to 0.3. It's available now if you depend on main.*
 
 ### Asset Credits
-- [7Soul's RPG Graphics](https://7soul.itch.io/7souls-rpg-graphics-pack-1-icons), a sprite pack by 7soul, licensed under [CC BY-ND 4.0](https://creativecommons.org/licenses/by-nd/4.0/)
 - [SunnyLand](https://ansimuz.itch.io/sunny-land-pixel-game-art), a texture pack by Ansimuz, licensed under [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)
+- [PIXEL FANTASY RPG ICONS](https://cazwolf.itch.io/caz-pixel-free), an icon pack by Caz, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
+- [Nuclear Blaze](https://github.com/deepnight/ldtk/blob/master/app/extraFiles/samples/atlas/NuclearBlaze_by_deepnight.aseprite), a tileset by Deepnight, licensed under [MIT](https://mit-license.org/)

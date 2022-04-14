@@ -42,7 +42,7 @@ pub struct IntGridCell {
 /// Changes to this component are idempotent, so levels won't be respawned greedily.
 #[derive(Clone, Eq, PartialEq, Debug, Default, Component)]
 pub struct LevelSet {
-    pub uids: HashSet<i32>,
+    pub iids: HashSet<String>,
 }
 
 /// [Component] that indicates that an ldtk entity should be a child of the world, not the level.
@@ -55,17 +55,14 @@ pub struct LevelSet {
 /// so they can traverse levels without despawning.
 /// Furthermore, this component prevents respawns of the same entity if the level they were born in
 /// despawns/respawns.
-/// For this purpose, it uses the values stored in this component to uniquely identify ldtk
+/// For this purpose, it uses the `iid` stored in this component to uniquely identify ldtk
 /// entities.
 ///
 /// Implements [LdtkEntity], and can be added to an [LdtkEntity] bundle with the `#[worldly]` field
 /// attribute. See [LdtkEntity#worldly] for more details.
 #[derive(Clone, Eq, PartialEq, Debug, Default, Hash, Component)]
 pub struct Worldly {
-    pub spawn_level: i32,
-    pub spawn_layer: i32,
-    pub entity_def_uid: i32,
-    pub spawn_px: IVec2,
+    pub entity_iid: String,
 }
 
 impl Worldly {
@@ -74,15 +71,9 @@ impl Worldly {
     ///
     /// Used for the `#[worldly]` attribute macro for `#[derive(LdtkEntity)]`.
     /// See [LdtkEntity#worldly] for more info.
-    pub fn from_entity_info(
-        entity_instance: &EntityInstance,
-        layer_instance: &LayerInstance,
-    ) -> Worldly {
+    pub fn from_entity_info(entity_instance: &EntityInstance) -> Worldly {
         Worldly {
-            spawn_level: layer_instance.level_id,
-            spawn_layer: layer_instance.layer_def_uid,
-            entity_def_uid: entity_instance.def_uid,
-            spawn_px: entity_instance.px,
+            entity_iid: entity_instance.iid.clone(),
         }
     }
 }

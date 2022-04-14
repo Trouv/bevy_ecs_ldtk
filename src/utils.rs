@@ -75,7 +75,7 @@ pub fn calculate_transform_from_entity_instance(
     let entity_definition = entity_definition_map.get(&entity_instance.def_uid).unwrap();
 
     let def_size = match &entity_instance.tile {
-        Some(tile) => IVec2::new(tile.src_rect[2], tile.src_rect[3]),
+        Some(tile) => IVec2::new(tile.w, tile.h),
         None => IVec2::new(entity_definition.width, entity_definition.height),
     };
 
@@ -271,16 +271,15 @@ pub fn sprite_sheet_bundle_from_entity_info(
         (Some(tileset), Some(tile), Some(tileset_definition)) => SpriteSheetBundle {
             texture_atlas: texture_atlases.add(TextureAtlas::from_grid_with_padding(
                 tileset.clone(),
-                Vec2::new(tile.src_rect[2] as f32, tile.src_rect[3] as f32),
+                Vec2::new(tile.w as f32, tile.h as f32),
                 tileset_definition.c_wid as usize,
                 tileset_definition.c_hei as usize,
                 Vec2::splat(tileset_definition.spacing as f32),
             )),
             sprite: TextureAtlasSprite {
-                index: (tile.src_rect[1] / (tile.src_rect[3] + tileset_definition.spacing))
-                    as usize
+                index: (tile.y / (tile.h + tileset_definition.spacing)) as usize
                     * tileset_definition.c_wid as usize
-                    + (tile.src_rect[0] / (tile.src_rect[2] + tileset_definition.spacing)) as usize,
+                    + (tile.x / (tile.w + tileset_definition.spacing)) as usize,
                 ..Default::default()
             },
             ..Default::default()
@@ -416,8 +415,11 @@ mod tests {
             width: 64,
             height: 64,
             pivot: Vec2::new(1., 1.),
-            tile: Some(EntityInstanceTile {
-                src_rect: vec![0, 0, 16, 32],
+            tile: Some(TilesetRectangle {
+                x: 0,
+                y: 0,
+                w: 16,
+                h: 32,
                 ..Default::default()
             }),
             ..Default::default()

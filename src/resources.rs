@@ -22,6 +22,8 @@ pub enum LevelSelection {
     Identifier(String),
     /// Spawn level from its index in the LDtk file's list of levels.
     Index(usize),
+    /// Spawn level with the given level `iid`.
+    Iid(String),
     /// Spawn level with the given level `uid`.
     Uid(i32),
 }
@@ -37,6 +39,7 @@ impl LevelSelection {
         match self {
             LevelSelection::Identifier(s) => *s == level.identifier,
             LevelSelection::Index(i) => *i == *index,
+            LevelSelection::Iid(i) => *i == level.iid,
             LevelSelection::Uid(u) => *u == level.uid,
         }
     }
@@ -78,22 +81,22 @@ impl Default for LdtkSettings {
 
 /// Events fired by the plugin related to level spawning/despawning.
 ///
-/// Each variant stores the level's `uid` in LDtk.
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Hash)]
+/// Each variant stores the level's `iid` in LDtk.
+#[derive(Clone, Eq, PartialEq, Debug, Hash)]
 pub enum LevelEvent {
     /// Indicates that a level has been triggered to spawn, but hasn't been spawned yet.
     ///
     /// Occurs one update before the level is spawned.
-    SpawnTriggered(i32),
+    SpawnTriggered(String),
     /// The level, with all of its layers, entities, etc., has spawned.
     ///
     /// Note: due to the frame-delay of [GlobalTransform] being updated, this may not be the event
     /// you want to listen for.
     /// If your systems are [GlobalTransform]-dependent, see [LevelEvent::Transformed].
-    Spawned(i32),
+    Spawned(String),
     /// Occurs one update after the level has spawned, so all [GlobalTransform]s of the level
     /// should be updated.
-    Transformed(i32),
+    Transformed(String),
     /// Indicates that a level has despawned.
-    Despawned(i32),
+    Despawned(String),
 }

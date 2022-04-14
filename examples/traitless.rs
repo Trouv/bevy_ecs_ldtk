@@ -36,27 +36,26 @@ fn process_my_entity(
     asset_server: Res<AssetServer>,
 ) {
     for (entity, transform, entity_instance) in entity_query.iter() {
-        if entity_instance.identifier == "MyEntityIdentifier".to_string() {
-            let tileset = asset_server.load("atlas/RPG Graphics Icons by 7Soul's.png");
+        if entity_instance.identifier == *"MyEntityIdentifier" {
+            let tileset = asset_server.load("atlas/MV Icons Complete Sheet Free - ALL.png");
 
             if let Some(tile) = &entity_instance.tile {
                 let texture_atlas = texture_atlases.add(TextureAtlas::from_grid(
                     tileset.clone(),
-                    Vec2::new(tile.src_rect[2] as f32, tile.src_rect[3] as f32),
+                    Vec2::new(tile.w as f32, tile.h as f32),
                     16,
-                    112,
+                    95,
                 ));
 
                 let sprite = TextureAtlasSprite {
-                    index: (tile.src_rect[1] / tile.src_rect[3]) as usize * 16
-                        + (tile.src_rect[0] / tile.src_rect[2]) as usize,
+                    index: (tile.y / tile.h) as usize * 16 + (tile.x / tile.w) as usize,
                     ..Default::default()
                 };
 
                 commands.entity(entity).insert_bundle(SpriteSheetBundle {
                     texture_atlas,
                     sprite,
-                    transform: transform.clone(),
+                    transform: *transform,
                     ..Default::default()
                 });
             }

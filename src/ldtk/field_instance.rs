@@ -1,7 +1,9 @@
 use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
 
 #[allow(unused_imports)]
-use super::{EntityInstance, Level};
+use super::{
+    EntityInstance, FieldInstanceEntityReference, FieldInstanceGridPoint, Level, TilesetRectangle,
+};
 use bevy::prelude::*;
 use regex::Regex;
 
@@ -13,11 +15,26 @@ pub struct FieldInstance {
     #[serde(rename = "__identifier")]
     pub identifier: String,
 
-    /// Type of the field, such as `Int`, `Float`, `Enum(my_enum_name)`, `Bool`, etc.
+    /// Optional TilesetRect used to display this field (this can be the field own Tile, or some
+    /// other Tile guessed from the value, like an Enum).
+    #[serde(rename = "__tile")]
+    pub tile: Option<TilesetRectangle>,
+
+    /// Type of the field, such as `Int`, `Float`, `String`, `Enum(my_enum_name)`, `Bool`,
+    /// etc.<br/>  NOTE: if you enable the advanced option **Use Multilines type**, you will have
+    /// "*Multilines*" instead of "*String*" when relevant.
     #[serde(rename = "__type")]
     pub field_instance_type: String,
 
-    /// Actual value of the field instance.
+    /// Actual value of the field instance. The value type varies, depending on `__type`:<br/>
+    /// - For **classic types** (ie. Integer, Float, Boolean, String, Text and FilePath), you
+    /// just get the actual value with the expected type.<br/>   - For **Color**, the value is an
+    /// hexadecimal string using "#rrggbb" format.<br/>   - For **Enum**, the value is a String
+    /// representing the selected enum value.<br/>   - For **Point**, the value is a
+    /// [GridPoint](#ldtk-GridPoint) object.<br/>   - For **Tile**, the value is a
+    /// [TilesetRect](#ldtk-TilesetRect) object.<br/>   - For **EntityRef**, the value is an
+    /// [EntityReferenceInfos](#ldtk-EntityReferenceInfos) object.<br/><br/>  If the field is an
+    /// array, then this `__value` will also be a JSON array.
     #[serde(rename = "__value")]
     pub value: FieldValue,
 
@@ -35,6 +52,9 @@ struct FieldInstanceHelper {
     #[serde(rename = "__identifier")]
     pub identifier: String,
 
+    #[serde(rename = "__tile")]
+    pub tile: Option<TilesetRectangle>,
+
     #[serde(rename = "__type")]
     pub field_instance_type: String,
 
@@ -46,12 +66,6 @@ struct FieldInstanceHelper {
 
     #[serde(rename = "realEditorValues")]
     pub real_editor_values: Vec<Option<serde_json::Value>>,
-}
-
-#[derive(Serialize, Deserialize)]
-struct PointHelper {
-    cx: i32,
-    cy: i32,
 }
 
 #[derive(Deserialize)]
@@ -83,9 +97,16 @@ impl<'de> Deserialize<'de> for FieldInstance {
             "FilePath" => FieldValue::FilePath(
                 Option::<String>::deserialize(helper.value).map_err(de::Error::custom)?,
             ),
+            "Tile" => FieldValue::Tile(
+                Option::<TilesetRectangle>::deserialize(helper.value).map_err(de::Error::custom)?,
+            ),
+            "EntityRef" => FieldValue::EntityRef(
+                Option::<FieldInstanceEntityReference>::deserialize(helper.value)
+                    .map_err(de::Error::custom)?,
+            ),
             "Point" => {
-                let point_helper =
-                    Option::<PointHelper>::deserialize(helper.value).map_err(de::Error::custom)?;
+                let point_helper = Option::<FieldInstanceGridPoint>::deserialize(helper.value)
+                    .map_err(de::Error::custom)?;
 
                 FieldValue::Point(point_helper.map(|p| IVec2::new(p.cx, p.cy)))
             }
@@ -110,9 +131,18 @@ impl<'de> Deserialize<'de> for FieldInstance {
             "Array<FilePath>" => FieldValue::Strings(
                 Vec::<Option<String>>::deserialize(helper.value).map_err(de::Error::custom)?,
             ),
+            "Array<Tile>" => FieldValue::Tiles(
+                Vec::<Option<TilesetRectangle>>::deserialize(helper.value)
+                    .map_err(de::Error::custom)?,
+            ),
+            "Array<EntityRef>" => FieldValue::EntityRefs(
+                Vec::<Option<FieldInstanceEntityReference>>::deserialize(helper.value)
+                    .map_err(de::Error::custom)?,
+            ),
             "Array<Point>" => {
-                let point_helpers = Vec::<Option<PointHelper>>::deserialize(helper.value)
-                    .map_err(de::Error::custom)?;
+                let point_helpers =
+                    Vec::<Option<FieldInstanceGridPoint>>::deserialize(helper.value)
+                        .map_err(de::Error::custom)?;
 
                 let points = point_helpers
                     .into_iter()
@@ -144,6 +174,7 @@ impl<'de> Deserialize<'de> for FieldInstance {
 
         Ok(FieldInstance {
             identifier: helper.identifier,
+            tile: helper.tile,
             field_instance_type: helper.field_instance_type,
             def_uid: helper.def_uid,
             real_editor_values: helper.real_editor_values,
@@ -169,6 +200,8 @@ pub enum FieldValue {
     Color(Color),
     FilePath(Option<String>),
     Enum(Option<String>),
+    Tile(Option<TilesetRectangle>),
+    EntityRef(Option<FieldInstanceEntityReference>),
     #[serde(serialize_with = "serialize_point")]
     Point(Option<IVec2>),
     Ints(Vec<Option<i32>>),
@@ -180,6 +213,8 @@ pub enum FieldValue {
     Colors(Vec<Color>),
     FilePaths(Vec<Option<String>>),
     Enums(Vec<Option<String>>),
+    Tiles(Vec<Option<TilesetRectangle>>),
+    EntityRefs(Vec<Option<FieldInstanceEntityReference>>),
     #[serde(serialize_with = "serialize_points")]
     Points(Vec<Option<IVec2>>),
 }
@@ -190,7 +225,7 @@ fn serialize_colors<S: Serializer>(colors: &[Color], serializer: S) -> Result<S:
 }
 
 fn serialize_point<S: Serializer>(point: &Option<IVec2>, serializer: S) -> Result<S::Ok, S::Error> {
-    let point_helper = point.map(|p| PointHelper { cx: p.x, cy: p.y });
+    let point_helper = point.map(|p| FieldInstanceGridPoint { cx: p.x, cy: p.y });
     point_helper.serialize(serializer)
 }
 

@@ -313,13 +313,13 @@ impl LdtkEntity for SpriteSheetBundle {
 impl LdtkEntity for Worldly {
     fn bundle_entity(
         entity_instance: &EntityInstance,
-        layer_instance: &LayerInstance,
+        _: &LayerInstance,
         _: Option<&Handle<Image>>,
         _: Option<&TilesetDefinition>,
         _: &AssetServer,
         _: &mut Assets<TextureAtlas>,
     ) -> Worldly {
-        Worldly::from_entity_info(entity_instance, layer_instance)
+        Worldly::from_entity_info(entity_instance)
     }
 }
 

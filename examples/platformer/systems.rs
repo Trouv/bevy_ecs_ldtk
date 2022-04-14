@@ -163,7 +163,7 @@ pub fn spawn_wall_collision(
                 for (y, row) in plate_stack.iter().enumerate() {
                     let mut current_rects: HashMap<Plate, Rect<i32>> = HashMap::new();
                     for plate in row {
-                        if let Some(previous_rect) = previous_rects.remove(&plate) {
+                        if let Some(previous_rect) = previous_rects.remove(plate) {
                             current_rects.insert(
                                 *plate,
                                 Rect {
@@ -293,9 +293,7 @@ pub fn patrol(mut query: Query<(&mut Transform, &mut Velocity, &mut Patrol)>) {
         }
 
         let mut new_velocity = Vec3::from((
-            (patrol.points[patrol.index] - Vec2::from(transform.translation.truncate()))
-                .normalize()
-                * 75.,
+            (patrol.points[patrol.index] - transform.translation.truncate()).normalize() * 75.,
             0.,
         ));
 
@@ -316,9 +314,7 @@ pub fn patrol(mut query: Query<(&mut Transform, &mut Velocity, &mut Patrol)>) {
             }
 
             new_velocity = Vec3::from((
-                (patrol.points[patrol.index] - Vec2::from(transform.translation.truncate()))
-                    .normalize()
-                    * 75.,
+                (patrol.points[patrol.index] - transform.translation.truncate()).normalize() * 75.,
                 0.,
             ));
         }
@@ -350,14 +346,14 @@ pub fn camera_fit_inside_current_level(
         ..
     }) = player_query.get_single()
     {
-        let player_translation = player_translation.clone();
+        let player_translation = *player_translation;
 
         let (mut orthographic_projection, mut camera_transform) = camera_query.single_mut();
 
         for (level_transform, level_handle) in level_query.iter() {
             if let Some(ldtk_level) = ldtk_levels.get(level_handle) {
                 let level = &ldtk_level.level;
-                if level_selection.is_match(&0, &level) {
+                if level_selection.is_match(&0, level) {
                     let level_ratio = level.px_wid as f32 / ldtk_level.level.px_hei as f32;
 
                     orthographic_projection.scaling_mode = bevy::render::camera::ScalingMode::None;
@@ -411,10 +407,9 @@ pub fn update_level_selection(
                     && player_transform.translation.x > level_bounds.left
                     && player_transform.translation.y < level_bounds.top
                     && player_transform.translation.y > level_bounds.bottom
+                    && !level_selection.is_match(&0, &ldtk_level.level)
                 {
-                    if !level_selection.is_match(&0, &ldtk_level.level) {
-                        *level_selection = LevelSelection::Uid(ldtk_level.level.uid);
-                    }
+                    *level_selection = LevelSelection::Iid(ldtk_level.level.iid.clone());
                 }
             }
         }

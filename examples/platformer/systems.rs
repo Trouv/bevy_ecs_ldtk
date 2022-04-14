@@ -32,6 +32,18 @@ pub fn pause_physics_during_load(
     }
 }
 
+pub fn dbg_player_items(
+    input: Res<Input<KeyCode>>,
+    mut query: Query<(&Items, &EntityInstance), With<Player>>,
+) {
+    for (items, entity_instance) in query.iter_mut() {
+        if input.just_pressed(KeyCode::P) {
+            dbg!(&items);
+            dbg!(&entity_instance);
+        }
+    }
+}
+
 pub fn movement(
     input: Res<Input<KeyCode>>,
     mut query: Query<(&mut Velocity, &mut Climber), With<Player>>,

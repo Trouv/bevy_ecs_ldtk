@@ -76,6 +76,33 @@ impl From<IntGridCell> for ColliderBundle {
     }
 }
 
+#[derive(Clone, Component, Debug, Eq, Default, PartialEq)]
+pub struct Items(Vec<String>);
+
+impl From<EntityInstance> for Items {
+    fn from(entity_instance: EntityInstance) -> Self {
+        let mut items: Vec<String> = vec![];
+
+        if let Some(field_instance) = entity_instance
+            .field_instances
+            .iter()
+            .find(|f| f.identifier == "items".to_string())
+        {
+            // convert &String to String which returns vec![String::from("Knife"), String::from("Boot")]
+            items = match &field_instance.value {
+                FieldValue::Enums(v) => v
+                    .into_iter()
+                    .flatten()
+                    .map(|s| s.into())
+                    .collect::<Vec<String>>(),
+                _ => vec![],
+            };
+        }
+
+        Self(items)
+    }
+}
+
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Component)]
 pub struct Player;
 
@@ -97,6 +124,14 @@ pub struct PlayerBundle {
     #[worldly]
     pub worldly: Worldly,
     pub climber: Climber,
+
+    // Build Items Component manually by using `impl From<EntityInstance>
+    #[from_entity_instance]
+    items: Items,
+
+    // The whole EntityInstance can be stored directly as an EntityInstance component
+    #[from_entity_instance]
+    entity_instance: EntityInstance,
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Component)]

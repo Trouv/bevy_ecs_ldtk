@@ -8,7 +8,10 @@ use crate::{
     assets::{LdtkAsset, LdtkLevel, TilesetMap},
     components::*,
     ldtk::{EntityDefinition, LayerDefinition, Level, TileInstance, TilesetDefinition, Type},
-    resources::{LdtkSettings, LevelEvent, LevelSelection, LevelSpawnBehavior, SetClearColor},
+    resources::{
+        LdtkSettings, LevelBackground, LevelEvent, LevelSelection, LevelSpawnBehavior,
+        RenderIntGrid, SetClearColor,
+    },
     tile_makers::*,
     utils::*,
 };
@@ -291,6 +294,7 @@ pub fn process_ldtk_levels(
     level_query: Query<(Entity, &Handle<LdtkLevel>, &Parent), Added<Handle<LdtkLevel>>>,
     worldly_query: Query<&Worldly>,
     mut level_events: EventWriter<LevelEvent>,
+    ldtk_settings: Res<LdtkSettings>,
 ) {
     // This function uses code from the bevy_ecs_tilemap ldtk example
     // https://github.com/StarArawn/bevy_ecs_tilemap/blob/main/examples/ldtk/ldtk.rs
@@ -330,6 +334,7 @@ pub fn process_ldtk_levels(
                         &tileset_definition_map,
                         worldly_set,
                         ldtk_entity,
+                        &ldtk_settings,
                     );
                     level_events.send(LevelEvent::Spawned(level.level.iid.clone()));
                 }
@@ -354,6 +359,7 @@ fn spawn_level(
     tileset_definition_map: &HashMap<i32, &TilesetDefinition>,
     worldly_set: HashSet<Worldly>,
     ldtk_entity: Entity,
+    ldtk_settings: &LdtkSettings,
 ) {
     let mut map = Map::new(level.uid as u16, ldtk_entity);
 
@@ -376,7 +382,7 @@ fn spawn_level(
 
         let white_image_handle = images.add(white_image);
 
-        {
+        if ldtk_settings.level_background == LevelBackground::Visible {
             let settings = LayerSettings::new(
                 MapSize(1, 1),
                 ChunkSize(1, 1),
@@ -578,17 +584,34 @@ fn spawn_level(
                                         .expect("Encountered layer without definition")
                                         .int_grid_values;
 
-                                    set_all_tiles_with_func(
-                                        &mut layer_builder,
-                                        tile_pos_to_tile_bundle_maker(
-                                            tile_pos_to_int_grid_colored_tile_maker(
-                                                &layer_instance.int_grid_csv,
-                                                int_grid_value_defs,
-                                                layer_instance.c_wid,
-                                                layer_instance.c_hei,
-                                            ),
-                                        ),
-                                    );
+                                    match ldtk_settings.render_int_grid {
+                                        RenderIntGrid::Colors => {
+                                            set_all_tiles_with_func(
+                                                &mut layer_builder,
+                                                tile_pos_to_tile_bundle_maker(
+                                                    tile_pos_to_int_grid_colored_tile_maker(
+                                                        &layer_instance.int_grid_csv,
+                                                        int_grid_value_defs,
+                                                        layer_instance.c_wid,
+                                                        layer_instance.c_hei,
+                                                    ),
+                                                ),
+                                            );
+                                        }
+                                        RenderIntGrid::NoColors => {
+                                            set_all_tiles_with_func(
+                                                &mut layer_builder,
+                                                tile_pos_to_tile_bundle_maker(
+                                                    tile_pos_to_tile_if_int_grid_nonzero_maker(
+                                                        tile_pos_to_invisible_tile,
+                                                        &layer_instance.int_grid_csv,
+                                                        layer_instance.c_wid,
+                                                        layer_instance.c_hei,
+                                                    ),
+                                                ),
+                                            );
+                                        }
+                                    }
                                 }
                             }
 

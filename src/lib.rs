@@ -180,8 +180,7 @@ mod plugin {
                 .add_system_to_stage(
                     CoreStage::PostUpdate,
                     systems::process_ldtk_levels.label(LdtkSystemLabel::LevelSpawning),
-                )
-                .add_system(systems::notify_chunks_when_tileset_updated);
+                );
         }
     }
 }
@@ -195,7 +194,10 @@ pub mod prelude {
         components::{EntityInstance, GridCoords, IntGridCell, LdtkWorldBundle, LevelSet, Worldly},
         ldtk::{self, FieldValue, LayerInstance, TilesetDefinition},
         plugin::LdtkPlugin,
-        resources::{LdtkSettings, LevelEvent, LevelSelection, LevelSpawnBehavior, SetClearColor},
+        resources::{
+            LdtkSettings, LevelBackground, LevelEvent, LevelSelection, LevelSpawnBehavior,
+            RenderIntGrid, SetClearColor,
+        },
     };
 
     #[cfg(feature = "derive")]

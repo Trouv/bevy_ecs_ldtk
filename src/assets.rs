@@ -134,9 +134,7 @@ impl AssetLoader for LdtkLoader {
                     warn!("Ignoring LDtk's Internal_Icons. They cannot be displayed due to their license.");
                 } else {
                     let identifier = &tileset.identifier;
-                    warn!(
-                        "{identifier} tileset cannot be loaded, it has a null relative path."
-                    );
+                    warn!("{identifier} tileset cannot be loaded, it has a null relative path.");
                 }
             }
 

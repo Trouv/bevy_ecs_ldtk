@@ -293,9 +293,7 @@ pub fn patrol(mut query: Query<(&mut Transform, &mut Velocity, &mut Patrol)>) {
         }
 
         let mut new_velocity = Vec3::from((
-            (patrol.points[patrol.index] - transform.translation.truncate())
-                .normalize()
-                * 75.,
+            (patrol.points[patrol.index] - transform.translation.truncate()).normalize() * 75.,
             0.,
         ));
 
@@ -316,9 +314,7 @@ pub fn patrol(mut query: Query<(&mut Transform, &mut Velocity, &mut Patrol)>) {
             }
 
             new_velocity = Vec3::from((
-                (patrol.points[patrol.index] - transform.translation.truncate())
-                    .normalize()
-                    * 75.,
+                (patrol.points[patrol.index] - transform.translation.truncate()).normalize() * 75.,
                 0.,
             ));
         }
@@ -409,7 +405,10 @@ pub fn update_level_selection(
             for player_transform in player_query.iter() {
                 if player_transform.translation.x < level_bounds.right
                     && player_transform.translation.x > level_bounds.left
-                    && player_transform.translation.y < level_bounds.top && player_transform.translation.y > level_bounds.bottom && !level_selection.is_match(&0, &ldtk_level.level) {
+                    && player_transform.translation.y < level_bounds.top
+                    && player_transform.translation.y > level_bounds.bottom
+                    && !level_selection.is_match(&0, &ldtk_level.level)
+                {
                     *level_selection = LevelSelection::Iid(ldtk_level.level.iid.clone());
                 }
             }

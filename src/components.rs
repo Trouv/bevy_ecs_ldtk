@@ -12,7 +12,7 @@ use std::{
 use crate::{
     assets::LdtkLevel,
     prelude::{LdtkEntity, LdtkIntCell},
-    resources::{LdtkSettings, LevelSelection},
+    resources::{LevelSelection, LevelSpawnBehavior},
     utils::ldtk_grid_coords_to_grid_coords,
 };
 
@@ -34,7 +34,8 @@ pub struct IntGridCell {
 /// [Component] that determines the desired levels to be loaded for an [LdtkWorldBundle].
 ///
 /// There is an abstraction for this in the form of the [LevelSelection] resource.
-/// This component does not respond to the [LdtkSettings] resource at all, while the
+/// This component does not respond to the
+/// [LevelSpawnBehavior::UseWorldTranslation::load_level_neighbors] option at all, while the
 /// [LevelSelection] does.
 /// If a [LevelSelection] is inserted, the plugin will update this component based off its value.
 /// If not, [LevelSet] allows you to have more direct control over the levels you spawn.

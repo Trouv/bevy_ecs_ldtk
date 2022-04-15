@@ -11,7 +11,7 @@ use crate::components::{LdtkWorldBundle, LevelSet};
 /// Resource for choosing which level(s) to spawn.
 ///
 /// Updating this will despawn the current level and spawn the new one (unless they are the same).
-/// You can also load the selected level's neighbors using the [LdtkSettings] resource.
+/// You can also load the selected level's neighbors using the [LevelSpawnBehavior] option.
 ///
 /// This resource works by updating the [LdtkWorldBundle]'s [LevelSet] component.
 /// If you need more control over the spawned levels than this resource provides,

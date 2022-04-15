@@ -84,17 +84,18 @@
 //! component in the [LdtkWorldBundle].
 //! The [LevelSelection] resource is a convenient abstraction over the [LevelSet] component, and
 //! updates the [LevelSet] component automatically when used.
-//! It also responds to [LdtkSettings::load_level_neighbors], while [LevelSet] does not.
+//! It also responds to [LevelSpawnBehavior::UseWorldTranslation::load_level_neighbors], while
+//! [LevelSet] does not.
 //!
 //! To spawn a new level, you can just update the [LevelSelection] resource.
-//! The current level will be automatically despawned, unless it's still selected due to
-//! [LdtkSettings::load_level_neighbors].
+//! The current level will be automatically despawned, unless it's still selected due to loading
+//! level neighbors.
 //! Updating the [LevelSet] component will have similar results.
 //!
 //! By default, the levels will be spawned so their bottom left corner is at the origin of the
 //! world.
 //! You can make them spawn according to their world location in LDtk by setting
-//! [LdtkSettings::use_level_world_translations].
+//! [LevelSpawnBehavior::UseWorldTranslation].
 
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;

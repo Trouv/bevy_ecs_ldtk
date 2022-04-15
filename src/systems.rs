@@ -382,7 +382,7 @@ fn spawn_level(
 
         let white_image_handle = images.add(white_image);
 
-        if ldtk_settings.level_background == LevelBackground::Visible {
+        if ldtk_settings.level_background == LevelBackground::Rendered {
             let settings = LayerSettings::new(
                 MapSize(1, 1),
                 ChunkSize(1, 1),

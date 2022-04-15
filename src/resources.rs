@@ -45,7 +45,7 @@ impl LevelSelection {
     }
 }
 
-/// Option in [LdtkSettings] for determining clear color behavior.
+/// Option in [LdtkSettings] that determines clear color behavior.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum SetClearColor {
     /// Don't update the clear color at all
@@ -63,6 +63,7 @@ impl Default for SetClearColor {
     }
 }
 
+/// Option in [LdtkSettings] that determines level spawn behavior.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum LevelSpawnBehavior {
     /// Newly spawned levels will be spawned with a translation of zero relative to the
@@ -85,9 +86,12 @@ impl Default for LevelSpawnBehavior {
     }
 }
 
+/// Option in [LdtkSettings] that determines the visual representation of IntGrid layers when they don't have AutoTile rules.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum IntGridRendering {
+    /// Renders the tile with its corresponding color in LDtk, so it appears like it does in LDtk
     Colorful,
+    /// Does not render the tile
     Invisible,
 }
 
@@ -97,19 +101,24 @@ impl Default for IntGridRendering {
     }
 }
 
+/// Option in [LdtkSettings] that dictates how the plugin handles level backgrounds.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum LevelBackground {
-    Visible,
-    Invisible,
+    /// The first layer of a level will be the background color.
+    // TODO: also render background images
+    Rendered,
+    /// There will be no level backgrounds, not even an empty layer.
+    Nonexistant,
 }
 
 impl Default for LevelBackground {
     fn default() -> Self {
-        LevelBackground::Visible
+        LevelBackground::Rendered
     }
 }
 
 /// Settings resource for the plugin.
+/// Check out the documentation for each field type to learn more.
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default)]
 pub struct LdtkSettings {
     pub level_spawn_behavior: LevelSpawnBehavior,

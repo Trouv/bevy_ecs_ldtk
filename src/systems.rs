@@ -516,6 +516,8 @@ fn spawn_level(
                     if let Some(tileset_definition) = tileset_definition {
                         settings.grid_size = Vec2::splat(layer_instance.grid_size as f32);
                         if tileset_definition.spacing != 0 {
+                            // TODO: Check that this is still an issue with upcoming
+                            // bevy_ecs_tilemap releases
                             #[cfg(not(feature = "atlas"))]
                             {
                                 warn!(
@@ -568,12 +570,15 @@ fn spawn_level(
                                     set_all_tiles_with_func(
                                         &mut layer_builder,
                                         tile_pos_to_tile_bundle_maker(
-                                            tile_pos_to_int_grid_with_grid_tiles_tile_maker(
-                                                &grid_tiles,
-                                                &layer_instance.int_grid_csv,
-                                                layer_instance.c_wid,
-                                                layer_instance.c_hei,
-                                                layer_instance.grid_size,
+                                            tile_pos_to_transparent_tile_maker(
+                                                tile_pos_to_int_grid_with_grid_tiles_tile_maker(
+                                                    &grid_tiles,
+                                                    &layer_instance.int_grid_csv,
+                                                    layer_instance.c_wid,
+                                                    layer_instance.c_hei,
+                                                    layer_instance.grid_size,
+                                                ),
+                                                layer_instance.opacity,
                                             ),
                                         ),
                                     );
@@ -589,11 +594,14 @@ fn spawn_level(
                                             set_all_tiles_with_func(
                                                 &mut layer_builder,
                                                 tile_pos_to_tile_bundle_maker(
-                                                    tile_pos_to_int_grid_colored_tile_maker(
-                                                        &layer_instance.int_grid_csv,
-                                                        int_grid_value_defs,
-                                                        layer_instance.c_wid,
-                                                        layer_instance.c_hei,
+                                                    tile_pos_to_transparent_tile_maker(
+                                                        tile_pos_to_int_grid_colored_tile_maker(
+                                                            &layer_instance.int_grid_csv,
+                                                            int_grid_value_defs,
+                                                            layer_instance.c_wid,
+                                                            layer_instance.c_hei,
+                                                        ),
+                                                        layer_instance.opacity,
                                                     ),
                                                 ),
                                             );
@@ -602,11 +610,14 @@ fn spawn_level(
                                             set_all_tiles_with_func(
                                                 &mut layer_builder,
                                                 tile_pos_to_tile_bundle_maker(
-                                                    tile_pos_to_tile_if_int_grid_nonzero_maker(
-                                                        tile_pos_to_invisible_tile,
-                                                        &layer_instance.int_grid_csv,
-                                                        layer_instance.c_wid,
-                                                        layer_instance.c_hei,
+                                                    tile_pos_to_transparent_tile_maker(
+                                                        tile_pos_to_tile_if_int_grid_nonzero_maker(
+                                                            tile_pos_to_invisible_tile,
+                                                            &layer_instance.int_grid_csv,
+                                                            layer_instance.c_wid,
+                                                            layer_instance.c_hei,
+                                                        ),
+                                                        layer_instance.opacity,
                                                     ),
                                                 ),
                                             );
@@ -670,10 +681,13 @@ fn spawn_level(
 
                             layer_entity
                         } else {
-                            let tile_maker = tile_pos_to_tile_maker(
-                                &grid_tiles,
-                                layer_instance.c_hei,
-                                layer_instance.grid_size,
+                            let tile_maker = tile_pos_to_transparent_tile_maker(
+                                tile_pos_to_tile_maker(
+                                    &grid_tiles,
+                                    layer_instance.c_hei,
+                                    layer_instance.grid_size,
+                                ),
+                                layer_instance.opacity,
                             );
 
                             LayerBuilder::<TileGridBundle>::new_batch(

@@ -166,6 +166,22 @@ pub(crate) fn tile_pos_to_int_grid_colored_tile_maker(
     }
 }
 
+pub(crate) fn tile_pos_to_transparent_tile_maker(
+    mut tile_maker: impl FnMut(TilePos) -> Option<Tile>,
+    layer_opacity: f32,
+) -> impl FnMut(TilePos) -> Option<Tile> {
+    move |tile_pos: TilePos| -> Option<Tile> {
+        if layer_opacity < 1. {
+            tile_maker(tile_pos).map(|mut tile| {
+                tile.color.set_a(layer_opacity);
+                tile
+            })
+        } else {
+            tile_maker(tile_pos)
+        }
+    }
+}
+
 /// Returns a tile bundle maker that returns the bundled result of the provided tile maker.
 ///
 /// Used for spawning Tile, AutoTile, and IntGrid layers.

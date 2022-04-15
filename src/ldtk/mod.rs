@@ -128,7 +128,7 @@ pub struct LdtkJson {
     pub identifier_style: IdentifierStyle,
 
     /// "Image export" option when saving project. Possible values: `None`, `OneImagePerLayer`,
-    /// `OneImagePerLevel`
+    /// `OneImagePerLevel`, `LayersAndLevels`
     #[serde(rename = "imageExportMode")]
     pub image_export_mode: ImageExportMode,
 
@@ -158,6 +158,11 @@ pub struct LdtkJson {
     /// File naming pattern for exported PNGs
     #[serde(rename = "pngFilePattern")]
     pub png_file_pattern: Option<String>,
+
+    /// If TRUE, a very simplified will be generated on saving, for quicker & easier engine
+    /// integration.
+    #[serde(rename = "simplifiedExport")]
+    simplified_export: bool,
 
     /// This optional description is used by LDtk Samples to show up some informations and
     /// instructions.
@@ -829,7 +834,8 @@ pub struct TilesetDefinition {
     #[serde(rename = "pxWid")]
     pub px_wid: i32,
 
-    /// Path to the source file, relative to the current project JSON file
+    /// Path to the source file, relative to the current project JSON file<br/>  It can be null
+    /// if no image was provided, or when using an embed atlas.
     #[serde(rename = "relPath")]
     pub rel_path: Option<String>,
 
@@ -1704,9 +1710,12 @@ pub enum IdentifierStyle {
 }
 
 /// "Image export" option when saving project. Possible values: `None`, `OneImagePerLayer`,
-/// `OneImagePerLevel`
+/// `OneImagePerLevel`, `LayersAndLevels`
 #[derive(Eq, PartialEq, Debug, Clone, Serialize, Deserialize)]
 pub enum ImageExportMode {
+    #[serde(rename = "LayersAndLevels")]
+    LayersAndLevels,
+
     #[serde(rename = "None")]
     None,
 

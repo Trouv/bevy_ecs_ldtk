@@ -130,15 +130,11 @@ impl AssetLoader for LdtkLoader {
 
                     tileset_rel_paths.push(asset_path.clone());
                     tileset_map.insert(tileset.uid, load_context.get_handle(asset_path));
+                } else if tileset.embed_atlas.is_some() {
+                    warn!("Ignoring LDtk's Internal_Icons. They cannot be displayed due to their license.");
                 } else {
-                    if tileset.embed_atlas.is_some() {
-                        warn!("Ignoring LDtk's Internal_Icons. They cannot be displayed due to their license.");
-                    } else {
-                        let identifier = &tileset.identifier;
-                        warn!(
-                            "{identifier} tileset cannot be loaded, it has a null relative path."
-                        );
-                    }
+                    let identifier = &tileset.identifier;
+                    warn!("{identifier} tileset cannot be loaded, it has a null relative path.");
                 }
             }
 

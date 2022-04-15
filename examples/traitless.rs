@@ -36,7 +36,7 @@ fn process_my_entity(
     asset_server: Res<AssetServer>,
 ) {
     for (entity, transform, entity_instance) in entity_query.iter() {
-        if entity_instance.identifier == "MyEntityIdentifier".to_string() {
+        if entity_instance.identifier == *"MyEntityIdentifier" {
             let tileset = asset_server.load("atlas/MV Icons Complete Sheet Free - ALL.png");
 
             if let Some(tile) = &entity_instance.tile {
@@ -55,7 +55,7 @@ fn process_my_entity(
                 commands.entity(entity).insert_bundle(SpriteSheetBundle {
                     texture_atlas,
                     sprite,
-                    transform: transform.clone(),
+                    transform: *transform,
                     ..Default::default()
                 });
             }

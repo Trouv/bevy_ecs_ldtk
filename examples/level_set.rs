@@ -18,7 +18,9 @@ fn main() {
         .insert_resource(LdtkSettings {
             // By default, levels are just spawned at the origin of the world.
             // This makes them spawn according to their location in LDtk
-            use_level_world_translations: true,
+            level_spawn_behavior: LevelSpawnBehavior::UseWorldTranslation {
+                load_level_neighbors: false,
+            },
             ..Default::default()
         })
         .run();

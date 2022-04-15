@@ -11,7 +11,7 @@ use crate::components::{LdtkWorldBundle, LevelSet};
 /// Resource for choosing which level(s) to spawn.
 ///
 /// Updating this will despawn the current level and spawn the new one (unless they are the same).
-/// You can also load the selected level's neighbors using the [LdtkSettings] resource.
+/// You can also load the selected level's neighbors using the [LevelSpawnBehavior] option.
 ///
 /// This resource works by updating the [LdtkWorldBundle]'s [LevelSet] component.
 /// If you need more control over the spawned levels than this resource provides,
@@ -45,38 +45,86 @@ impl LevelSelection {
     }
 }
 
-/// Settings resource for the plugin.
+/// Option in [LdtkSettings] that determines clear color behavior.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
-pub struct LdtkSettings {
+pub enum SetClearColor {
+    /// Don't update the clear color at all
+    No,
+    /// Update the clear color to use the background color of the current level
+    /// (determined by [LevelSelection])
+    FromLevelBackground,
+    /// Update the clear color to use the entire editor's background color
+    FromEditorBackground,
+}
+
+impl Default for SetClearColor {
+    fn default() -> Self {
+        Self::No
+    }
+}
+
+/// Option in [LdtkSettings] that determines level spawn behavior.
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+pub enum LevelSpawnBehavior {
+    /// Newly spawned levels will be spawned with a translation of zero relative to the
+    /// [LdtkWorldBundle].
+    UseZeroTranslation,
     /// Newly spawned levels will be spawned with translations like their location in the LDtk
     /// world.
     ///
     /// Useful for "2d free map" and "GridVania" layouts.
-    ///
-    /// Defaults to `false`.
-    pub use_level_world_translations: bool,
-    /// When used with the [LevelSelection] resource, levels in the `__level_neighbors` list of
-    /// the selected level will be spawned in addition to the selected level.
-    ///
-    /// This is best used with [LdtkSettings::use_level_world_translations].
-    ///
-    /// Defaults to `false`.
-    pub load_level_neighbors: bool,
-    /// Bevy's ClearColor resource will be set to the background color of the LDtk project.
-    /// The change occurs while processing the `LdtkAsset`.
-    ///
-    /// Defaults to `true`.
-    pub set_clear_color: bool,
+    UseWorldTranslation {
+        /// When used with the [LevelSelection] resource, levels in the `__level_neighbors` list of
+        /// the selected level will be spawned in addition to the selected level.
+        load_level_neighbors: bool,
+    },
 }
 
-impl Default for LdtkSettings {
-    fn default() -> LdtkSettings {
-        LdtkSettings {
-            use_level_world_translations: false,
-            load_level_neighbors: false,
-            set_clear_color: true,
-        }
+impl Default for LevelSpawnBehavior {
+    fn default() -> Self {
+        LevelSpawnBehavior::UseZeroTranslation
     }
+}
+
+/// Option in [LdtkSettings] that determines the visual representation of IntGrid layers when they don't have AutoTile rules.
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+pub enum IntGridRendering {
+    /// Renders the tile with its corresponding color in LDtk, so it appears like it does in LDtk
+    Colorful,
+    /// Does not render the tile
+    Invisible,
+}
+
+impl Default for IntGridRendering {
+    fn default() -> Self {
+        IntGridRendering::Colorful
+    }
+}
+
+/// Option in [LdtkSettings] that dictates how the plugin handles level backgrounds.
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+pub enum LevelBackground {
+    /// The first layer of a level will be the background color.
+    // TODO: also render background images
+    Rendered,
+    /// There will be no level backgrounds, not even an empty layer.
+    Nonexistant,
+}
+
+impl Default for LevelBackground {
+    fn default() -> Self {
+        LevelBackground::Rendered
+    }
+}
+
+/// Settings resource for the plugin.
+/// Check out the documentation for each field type to learn more.
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Default)]
+pub struct LdtkSettings {
+    pub level_spawn_behavior: LevelSpawnBehavior,
+    pub set_clear_color: SetClearColor,
+    pub int_grid_rendering: IntGridRendering,
+    pub level_background: LevelBackground,
 }
 
 /// Events fired by the plugin related to level spawning/despawning.

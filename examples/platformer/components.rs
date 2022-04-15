@@ -86,12 +86,12 @@ impl From<EntityInstance> for Items {
         if let Some(field_instance) = entity_instance
             .field_instances
             .iter()
-            .find(|f| f.identifier == "items".to_string())
+            .find(|f| f.identifier == *"items")
         {
             // convert &String to String which returns vec![String::from("Knife"), String::from("Boot")]
             items = match &field_instance.value {
                 FieldValue::Enums(v) => v
-                    .into_iter()
+                    .iter()
                     .flatten()
                     .map(|s| s.into())
                     .collect::<Vec<String>>(),

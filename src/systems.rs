@@ -8,7 +8,10 @@ use crate::{
     assets::{LdtkAsset, LdtkLevel, TilesetMap},
     components::*,
     ldtk::{EntityDefinition, LayerDefinition, Level, TileInstance, TilesetDefinition, Type},
-    resources::{LdtkSettings, LevelEvent, LevelSelection},
+    resources::{
+        IntGridRendering, LdtkSettings, LevelBackground, LevelEvent, LevelSelection,
+        LevelSpawnBehavior, SetClearColor,
+    },
     tile_makers::*,
     utils::*,
 };
@@ -24,6 +27,7 @@ pub fn choose_levels(
     ldtk_settings: Res<LdtkSettings>,
     ldtk_assets: Res<Assets<LdtkAsset>>,
     mut level_set_query: Query<(&Handle<LdtkAsset>, &mut LevelSet)>,
+    mut clear_color: ResMut<ClearColor>,
 ) {
     if let Some(level_selection) = level_selection {
         if level_selection.is_changed() {
@@ -34,10 +38,19 @@ pub fn choose_levels(
 
                         level_set.iids.insert(level.iid.clone());
 
-                        if ldtk_settings.load_level_neighbors {
-                            level_set
-                                .iids
-                                .extend(level.neighbours.iter().map(|n| n.level_iid.clone()));
+                        if let LevelSpawnBehavior::UseWorldTranslation {
+                            load_level_neighbors,
+                        } = ldtk_settings.level_spawn_behavior
+                        {
+                            if load_level_neighbors {
+                                level_set
+                                    .iids
+                                    .extend(level.neighbours.iter().map(|n| n.level_iid.clone()));
+                            }
+                        }
+
+                        if ldtk_settings.set_clear_color == SetClearColor::FromLevelBackground {
+                            clear_color.0 = level.bg_color;
                         }
                     }
                 }
@@ -107,7 +120,7 @@ pub fn process_ldtk_world(
     level_selection: Option<Res<LevelSelection>>,
     ldtk_assets: Res<Assets<LdtkAsset>>,
     ldtk_settings: Res<LdtkSettings>,
-    mut clear_color: Option<ResMut<ClearColor>>,
+    mut clear_color: ResMut<ClearColor>,
     layer_query: Query<&Layer>,
     chunk_query: Query<&Chunk>,
 ) {
@@ -163,12 +176,8 @@ pub fn process_ldtk_world(
                     }
                 }
 
-                if ldtk_settings.set_clear_color {
-                    if let Some(clear_color) = &mut clear_color {
-                        clear_color.0 = ldtk_asset.project.bg_color;
-                    } else {
-                        commands.insert_resource(ClearColor(ldtk_asset.project.bg_color));
-                    }
+                if ldtk_settings.set_clear_color == SetClearColor::FromEditorBackground {
+                    clear_color.0 = ldtk_asset.project.bg_color;
                 }
 
                 if let Some(level_selection) = &level_selection {
@@ -177,10 +186,19 @@ pub fn process_ldtk_world(
 
                         level_set.iids.insert(level.iid.clone());
 
-                        if ldtk_settings.load_level_neighbors {
-                            level_set
-                                .iids
-                                .extend(level.neighbours.iter().map(|n| n.level_iid.clone()));
+                        if let LevelSpawnBehavior::UseWorldTranslation {
+                            load_level_neighbors,
+                        } = ldtk_settings.level_spawn_behavior
+                        {
+                            if load_level_neighbors {
+                                level_set
+                                    .iids
+                                    .extend(level.neighbours.iter().map(|n| n.level_iid.clone()));
+                            }
+                        }
+
+                        if ldtk_settings.set_clear_color == SetClearColor::FromLevelBackground {
+                            clear_color.0 = level.bg_color;
                         }
                     }
                 }
@@ -205,7 +223,7 @@ fn pre_spawn_level(
     if let Some(level_handle) = ldtk_asset.level_map.get(level_iid) {
         let mut translation = Vec3::ZERO;
 
-        if ldtk_settings.use_level_world_translations {
+        if let LevelSpawnBehavior::UseWorldTranslation { .. } = ldtk_settings.level_spawn_behavior {
             if let Some(level) = ldtk_asset.get_level(&LevelSelection::Iid(level_iid.to_string())) {
                 let level_coords = ldtk_pixel_coords_to_translation(
                     IVec2::new(level.world_x, level.world_y + level.px_hei),
@@ -276,6 +294,7 @@ pub fn process_ldtk_levels(
     level_query: Query<(Entity, &Handle<LdtkLevel>, &Parent), Added<Handle<LdtkLevel>>>,
     worldly_query: Query<&Worldly>,
     mut level_events: EventWriter<LevelEvent>,
+    ldtk_settings: Res<LdtkSettings>,
 ) {
     // This function uses code from the bevy_ecs_tilemap ldtk example
     // https://github.com/StarArawn/bevy_ecs_tilemap/blob/main/examples/ldtk/ldtk.rs
@@ -315,6 +334,7 @@ pub fn process_ldtk_levels(
                         &tileset_definition_map,
                         worldly_set,
                         ldtk_entity,
+                        &ldtk_settings,
                     );
                     level_events.send(LevelEvent::Spawned(level.level.iid.clone()));
                 }
@@ -339,6 +359,7 @@ fn spawn_level(
     tileset_definition_map: &HashMap<i32, &TilesetDefinition>,
     worldly_set: HashSet<Worldly>,
     ldtk_entity: Entity,
+    ldtk_settings: &LdtkSettings,
 ) {
     let mut map = Map::new(level.uid as u16, ldtk_entity);
 
@@ -361,7 +382,7 @@ fn spawn_level(
 
         let white_image_handle = images.add(white_image);
 
-        {
+        if ldtk_settings.level_background == LevelBackground::Rendered {
             let settings = LayerSettings::new(
                 MapSize(1, 1),
                 ChunkSize(1, 1),
@@ -563,17 +584,34 @@ fn spawn_level(
                                         .expect("Encountered layer without definition")
                                         .int_grid_values;
 
-                                    set_all_tiles_with_func(
-                                        &mut layer_builder,
-                                        tile_pos_to_tile_bundle_maker(
-                                            tile_pos_to_int_grid_colored_tile_maker(
-                                                &layer_instance.int_grid_csv,
-                                                int_grid_value_defs,
-                                                layer_instance.c_wid,
-                                                layer_instance.c_hei,
-                                            ),
-                                        ),
-                                    );
+                                    match ldtk_settings.int_grid_rendering {
+                                        IntGridRendering::Colorful => {
+                                            set_all_tiles_with_func(
+                                                &mut layer_builder,
+                                                tile_pos_to_tile_bundle_maker(
+                                                    tile_pos_to_int_grid_colored_tile_maker(
+                                                        &layer_instance.int_grid_csv,
+                                                        int_grid_value_defs,
+                                                        layer_instance.c_wid,
+                                                        layer_instance.c_hei,
+                                                    ),
+                                                ),
+                                            );
+                                        }
+                                        IntGridRendering::Invisible => {
+                                            set_all_tiles_with_func(
+                                                &mut layer_builder,
+                                                tile_pos_to_tile_bundle_maker(
+                                                    tile_pos_to_tile_if_int_grid_nonzero_maker(
+                                                        tile_pos_to_invisible_tile,
+                                                        &layer_instance.int_grid_csv,
+                                                        layer_instance.c_wid,
+                                                        layer_instance.c_hei,
+                                                    ),
+                                                ),
+                                            );
+                                        }
+                                    }
                                 }
                             }
 
@@ -709,7 +747,7 @@ pub fn set_ldtk_texture_filters_to_nearest(
     // https://github.com/StarArawn/bevy_ecs_tilemap/blob/main/examples/helpers/texture.rs,
     // except it only applies to the ldtk tilesets.
     for event in texture_events.iter() {
-        if let AssetEvent::Created { handle } = event {
+        if let AssetEvent::Created { handle } | AssetEvent::Modified { handle } = event {
             let mut set_texture_filters_to_nearest = false;
 
             for (_, ldtk_asset) in ldtk_assets.iter() {

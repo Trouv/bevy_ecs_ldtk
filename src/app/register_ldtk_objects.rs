@@ -198,7 +198,8 @@ impl RegisterLdtkObjects for App {
             None => {
                 let mut bundle_map = LdtkEntityMap::new();
                 bundle_map.insert((layer_identifier, entity_identifier), new_entry);
-                self.world.insert_non_send::<LdtkEntityMap>(bundle_map);
+                self.world
+                    .insert_non_send_resource::<LdtkEntityMap>(bundle_map);
             }
         }
         self
@@ -217,7 +218,8 @@ impl RegisterLdtkObjects for App {
             None => {
                 let mut bundle_map = LdtkIntCellMap::new();
                 bundle_map.insert((layer_identifier, value), new_entry);
-                self.world.insert_non_send::<LdtkIntCellMap>(bundle_map);
+                self.world
+                    .insert_non_send_resource::<LdtkIntCellMap>(bundle_map);
             }
         }
         self

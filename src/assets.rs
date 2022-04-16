@@ -100,6 +100,7 @@ impl AssetLoader for LdtkLoader {
 
             let mut external_level_paths = Vec::new();
             let mut level_map = HashMap::new();
+            let mut background_images = Vec::new();
             if project.external_levels {
                 for level in project.iter_levels() {
                     if let Some(external_rel_path) = &level.external_rel_path {
@@ -112,8 +113,16 @@ impl AssetLoader for LdtkLoader {
             } else {
                 for level in project.iter_levels() {
                     let label = level.identifier.as_ref();
+
+                    let background_image = level.bg_rel_path.map(|p| {
+                        let asset_path = ldtk_path_to_asset_path(load_context, &p);
+                        background_images.push(asset_path.clone());
+                        load_context.get_handle(asset_path)
+                    });
+
                     let ldtk_level = LdtkLevel {
                         level: level.clone(),
+                        background_image,
                     };
                     let level_handle =
                         load_context.set_labeled_asset(label, LoadedAsset::new(ldtk_level));
@@ -146,7 +155,8 @@ impl AssetLoader for LdtkLoader {
             load_context.set_default_asset(
                 LoadedAsset::new(ldtk_asset)
                     .with_dependencies(tileset_rel_paths)
-                    .with_dependencies(external_level_paths),
+                    .with_dependencies(external_level_paths)
+                    .with_dependencies(background_images),
             );
             Ok(())
         })
@@ -167,6 +177,7 @@ impl AssetLoader for LdtkLoader {
 #[uuid = "5448469b-2134-44f5-a86c-a7b829f70a0c"]
 pub struct LdtkLevel {
     pub level: ldtk::Level,
+    pub background_image: Option<Handle<Image>>,
 }
 
 #[derive(Copy, Clone, Debug, Default)]
@@ -179,10 +190,28 @@ impl AssetLoader for LdtkLevelLoader {
         load_context: &'a mut LoadContext,
     ) -> BoxedFuture<'a, anyhow::Result<()>> {
         Box::pin(async move {
+            let level: ldtk::Level = serde_json::from_slice(bytes)?;
+
+            let mut background_asset_path = None;
+            let mut background_image = None;
+            if let Some(rel_path) = &level.bg_rel_path {
+                let asset_path = ldtk_path_to_asset_path(load_context, &rel_path);
+                background_asset_path = Some(asset_path.clone());
+                background_image = Some(load_context.get_handle(asset_path));
+            }
+
             let ldtk_level = LdtkLevel {
-                level: serde_json::from_slice(bytes)?,
+                level,
+                background_image,
             };
-            load_context.set_default_asset(LoadedAsset::new(ldtk_level));
+
+            let mut loaded_asset = LoadedAsset::new(ldtk_level);
+
+            if let Some(asset_path) = background_asset_path {
+                loaded_asset = loaded_asset.with_dependency(asset_path);
+            }
+
+            load_context.set_default_asset(loaded_asset);
             Ok(())
         })
     }

@@ -5,11 +5,11 @@
 		"doc": "https://ldtk.io/json",
 		"schema": "https://ldtk.io/files/JSON_SCHEMA.json",
 		"appAuthor": "Sebastien 'deepnight' Benard",
-		"appVersion": "1.0.0",
+		"appVersion": "1.1.1",
 		"url": "https://ldtk.io"
 	},
-	"jsonVersion": "1.0.0",
-	"appBuildId": 457946,
+	"jsonVersion": "1.1.1",
+	"appBuildId": 458278,
 	"nextUid": 31,
 	"identifierStyle": "Capitalize",
 	"worldLayout": "Free",
@@ -25,6 +25,7 @@
 	"minifyJson": false,
 	"externalLevels": false,
 	"exportTiled": false,
+	"simplifiedExport": false,
 	"imageExportMode": "None",
 	"pngFilePattern": null,
 	"backupOnSave": false,
@@ -897,7 +898,7 @@
 									"entityIid": "c48a6355-8dc0-11ec-9c6a-adbff0620690",
 									"layerIid": "c48a6353-8dc0-11ec-9c6a-599e25186db6",
 									"levelIid": "c48a6350-8dc0-11ec-9c6a-5d5f58c254f8",
-									"worldIid": "c48a3c40-8dc0-11ec-9c6a-e30fa414d266"
+									"worldIid": "144beb80-b4d0-11ec-8c12-4f92d934bd77"
 								}, "__type": "EntityRef", "__tile": null, "defUid": 28, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["c48a6355-8dc0-11ec-9c6a-adbff0620690"]
@@ -955,7 +956,7 @@
 									"entityIid": "c48a6355-8dc0-11ec-9c6a-adbff0620690",
 									"layerIid": "c48a6353-8dc0-11ec-9c6a-599e25186db6",
 									"levelIid": "c48a6350-8dc0-11ec-9c6a-5d5f58c254f8",
-									"worldIid": "c48a3c40-8dc0-11ec-9c6a-e30fa414d266"
+									"worldIid": "144beb80-b4d0-11ec-8c12-4f92d934bd77"
 								}, null ], "__type": "Array<EntityRef>", "__tile": null, "defUid": 30, "realEditorValues": [ {
 									"id": "V_String",
 									"params": ["c48a6355-8dc0-11ec-9c6a-adbff0620690"]

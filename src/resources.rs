@@ -104,8 +104,8 @@ impl Default for IntGridRendering {
 /// Option in [LdtkSettings] that dictates how the plugin handles level backgrounds.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum LevelBackground {
-    /// The first layer of a level will be the background color.
-    // TODO: also render background images
+    /// The level background's color (and image, if it exists) are rendered.
+    /// The first layer of the level will be the background color.
     Rendered,
     /// There will be no level backgrounds, not even an empty layer.
     Nonexistant,

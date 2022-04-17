@@ -7,7 +7,7 @@ use crate::{
     },
     assets::{LdtkAsset, LdtkLevel, TilesetMap},
     components::*,
-    ldtk::{EntityDefinition, LayerDefinition, Level, TileInstance, TilesetDefinition, Type},
+    ldtk::{EntityDefinition, LayerDefinition, TileInstance, TilesetDefinition, Type},
     resources::{
         IntGridRendering, LdtkSettings, LevelBackground, LevelEvent, LevelSelection,
         LevelSpawnBehavior, SetClearColor,
@@ -16,7 +16,7 @@ use crate::{
     utils::*,
 };
 
-use bevy::{prelude::*, render::render_resource::*};
+use bevy::{prelude::*, render::render_resource::*, sprite};
 use bevy_ecs_tilemap::prelude::*;
 use std::collections::{HashMap, HashSet};
 
@@ -320,7 +320,7 @@ pub fn process_ldtk_levels(
 
                 if let Some(level) = level_assets.get(level_handle) {
                     spawn_level(
-                        &level.level,
+                        &level,
                         &mut commands,
                         &asset_server,
                         &mut images,
@@ -345,7 +345,7 @@ pub fn process_ldtk_levels(
 
 #[allow(clippy::too_many_arguments)]
 fn spawn_level(
-    level: &Level,
+    ldtk_level: &LdtkLevel,
     commands: &mut Commands,
     asset_server: &AssetServer,
     images: &mut Assets<Image>,
@@ -361,6 +361,8 @@ fn spawn_level(
     ldtk_entity: Entity,
     ldtk_settings: &LdtkSettings,
 ) {
+    let level = &ldtk_level.level;
+
     let mut map = Map::new(level.uid as u16, ldtk_entity);
 
     if let Some(layer_instances) = &level.layer_instances {
@@ -411,6 +413,66 @@ fn spawn_level(
             commands.entity(layer_entity).insert_bundle(layer_bundle);
             map.add_layer(commands, layer_id, layer_entity);
             layer_id += 1;
+
+            // Spawn background image
+            if let (Some(background_image_handle), Some(background_position)) =
+                (&ldtk_level.background_image, &level.bg_pos)
+            {
+                if let Some(background_image) = images.get(background_image_handle) {
+                    // We need to use a texture atlas to apply the correct crop to the image
+                    let tile_size = Vec2::new(
+                        background_image.texture_descriptor.size.width as f32,
+                        background_image.texture_descriptor.size.height as f32,
+                    );
+                    let mut texture_atlas =
+                        TextureAtlas::new_empty(background_image_handle.clone(), tile_size);
+
+                    let min = Vec2::new(
+                        background_position.crop_rect[0],
+                        background_position.crop_rect[1],
+                    );
+
+                    let size = Vec2::new(
+                        background_position.crop_rect[2],
+                        background_position.crop_rect[3],
+                    );
+
+                    let max = min + size;
+
+                    let crop_rect = sprite::Rect { min, max };
+
+                    texture_atlas.textures.push(crop_rect);
+
+                    let texture_atlas_handle = texture_atlases.add(texture_atlas);
+
+                    let scale = background_position.scale;
+
+                    let scaled_size = size * scale;
+
+                    let top_left_translation = ldtk_pixel_coords_to_translation(
+                        background_position.top_left_px,
+                        level.px_hei,
+                    );
+
+                    let center_translation =
+                        top_left_translation + (Vec2::new(scaled_size.x, -scaled_size.y) / 2.);
+
+                    let sprite_sheet_bundle = SpriteSheetBundle {
+                        texture_atlas: texture_atlas_handle,
+                        transform: Transform::from_translation(
+                            center_translation.extend(layer_id as f32),
+                        )
+                        .with_scale(scale.extend(1.)),
+                        ..Default::default()
+                    };
+
+                    commands
+                        .spawn_bundle(sprite_sheet_bundle)
+                        .insert(Parent(ldtk_entity));
+
+                    layer_id += 1;
+                }
+            }
         }
 
         for layer_instance in layer_instances.iter().rev() {
@@ -472,6 +534,7 @@ fn spawn_level(
                             }
                         }
                     });
+                    layer_id += 1;
                 }
                 _ => {
                     // The remaining layers have a lot of shared code.

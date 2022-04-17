@@ -7,7 +7,10 @@ use crate::{
     },
     assets::{LdtkAsset, LdtkLevel, TilesetMap},
     components::*,
-    ldtk::{EntityDefinition, LayerDefinition, TileInstance, TilesetDefinition, Type},
+    ldtk::{
+        EntityDefinition, LayerDefinition, LevelBackgroundPosition, TileInstance,
+        TilesetDefinition, Type,
+    },
     resources::{
         IntGridRendering, LdtkSettings, LevelBackground, LevelEvent, LevelSelection,
         LevelSpawnBehavior, SetClearColor,
@@ -19,6 +22,7 @@ use crate::{
 use bevy::{prelude::*, render::render_resource::*, sprite};
 use bevy_ecs_tilemap::prelude::*;
 use std::collections::{HashMap, HashSet};
+use thiserror::Error;
 
 const CHUNK_SIZE: ChunkSize = ChunkSize(32, 32);
 
@@ -418,59 +422,22 @@ fn spawn_level(
             if let (Some(background_image_handle), Some(background_position)) =
                 (&ldtk_level.background_image, &level.bg_pos)
             {
-                if let Some(background_image) = images.get(background_image_handle) {
-                    // We need to use a texture atlas to apply the correct crop to the image
-                    let tile_size = Vec2::new(
-                        background_image.texture_descriptor.size.width as f32,
-                        background_image.texture_descriptor.size.height as f32,
-                    );
-                    let mut texture_atlas =
-                        TextureAtlas::new_empty(background_image_handle.clone(), tile_size);
+                match background_image_sprite_sheet_bundle(
+                    images,
+                    texture_atlases,
+                    background_image_handle,
+                    background_position,
+                    level.px_hei,
+                    layer_id as f32,
+                ) {
+                    Ok(sprite_sheet_bundle) => {
+                        commands
+                            .spawn_bundle(sprite_sheet_bundle)
+                            .insert(Parent(ldtk_entity));
 
-                    let min = Vec2::new(
-                        background_position.crop_rect[0],
-                        background_position.crop_rect[1],
-                    );
-
-                    let size = Vec2::new(
-                        background_position.crop_rect[2],
-                        background_position.crop_rect[3],
-                    );
-
-                    let max = min + size;
-
-                    let crop_rect = sprite::Rect { min, max };
-
-                    texture_atlas.textures.push(crop_rect);
-
-                    let texture_atlas_handle = texture_atlases.add(texture_atlas);
-
-                    let scale = background_position.scale;
-
-                    let scaled_size = size * scale;
-
-                    let top_left_translation = ldtk_pixel_coords_to_translation(
-                        background_position.top_left_px,
-                        level.px_hei,
-                    );
-
-                    let center_translation =
-                        top_left_translation + (Vec2::new(scaled_size.x, -scaled_size.y) / 2.);
-
-                    let sprite_sheet_bundle = SpriteSheetBundle {
-                        texture_atlas: texture_atlas_handle,
-                        transform: Transform::from_translation(
-                            center_translation.extend(layer_id as f32),
-                        )
-                        .with_scale(scale.extend(1.)),
-                        ..Default::default()
-                    };
-
-                    commands
-                        .spawn_bundle(sprite_sheet_bundle)
-                        .insert(Parent(ldtk_entity));
-
-                    layer_id += 1;
+                        layer_id += 1;
+                    }
+                    Err(e) => warn!("{}", e),
                 }
             }
         }
@@ -782,6 +749,67 @@ fn spawn_level(
         }
     }
     commands.entity(ldtk_entity).insert(map);
+}
+
+#[derive(Error, Debug)]
+enum BackgroundImageError {
+    #[error("background image handle not loaded into the image assets store")]
+    ImageNotLoaded,
+}
+
+fn background_image_sprite_sheet_bundle(
+    images: &Assets<Image>,
+    texture_atlases: &mut Assets<TextureAtlas>,
+    background_image_handle: &Handle<Image>,
+    background_position: &LevelBackgroundPosition,
+    level_height: i32,
+    transform_z: f32,
+) -> Result<SpriteSheetBundle, BackgroundImageError> {
+    if let Some(background_image) = images.get(background_image_handle) {
+        // We need to use a texture atlas to apply the correct crop to the image
+        let tile_size = Vec2::new(
+            background_image.texture_descriptor.size.width as f32,
+            background_image.texture_descriptor.size.height as f32,
+        );
+        let mut texture_atlas = TextureAtlas::new_empty(background_image_handle.clone(), tile_size);
+
+        let min = Vec2::new(
+            background_position.crop_rect[0],
+            background_position.crop_rect[1],
+        );
+
+        let size = Vec2::new(
+            background_position.crop_rect[2],
+            background_position.crop_rect[3],
+        );
+
+        let max = min + size;
+
+        let crop_rect = sprite::Rect { min, max };
+
+        texture_atlas.textures.push(crop_rect);
+
+        let texture_atlas_handle = texture_atlases.add(texture_atlas);
+
+        let scale = background_position.scale;
+
+        let scaled_size = size * scale;
+
+        let top_left_translation =
+            ldtk_pixel_coords_to_translation(background_position.top_left_px, level_height);
+
+        let center_translation =
+            top_left_translation + (Vec2::new(scaled_size.x, -scaled_size.y) / 2.);
+
+        Ok(SpriteSheetBundle {
+            texture_atlas: texture_atlas_handle,
+            transform: Transform::from_translation(center_translation.extend(transform_z))
+                .with_scale(scale.extend(1.)),
+            ..Default::default()
+        })
+    } else {
+        Err(BackgroundImageError::ImageNotLoaded)
+    }
 }
 
 fn layer_grid_tiles(grid_tiles: Vec<TileInstance>) -> Vec<Vec<TileInstance>> {

@@ -7,7 +7,7 @@ use crate::{
     },
     assets::{LdtkAsset, LdtkLevel, TilesetMap},
     components::*,
-    ldtk::{EntityDefinition, LayerDefinition, Level, TileInstance, TilesetDefinition, Type},
+    ldtk::{EntityDefinition, LayerDefinition, TileInstance, TilesetDefinition, Type},
     resources::{
         IntGridRendering, LdtkSettings, LevelBackground, LevelEvent, LevelSelection,
         LevelSpawnBehavior, SetClearColor,
@@ -320,7 +320,7 @@ pub fn process_ldtk_levels(
 
                 if let Some(level) = level_assets.get(level_handle) {
                     spawn_level(
-                        &level.level,
+                        level,
                         &mut commands,
                         &asset_server,
                         &mut images,
@@ -345,7 +345,7 @@ pub fn process_ldtk_levels(
 
 #[allow(clippy::too_many_arguments)]
 fn spawn_level(
-    level: &Level,
+    ldtk_level: &LdtkLevel,
     commands: &mut Commands,
     asset_server: &AssetServer,
     images: &mut Assets<Image>,
@@ -361,6 +361,8 @@ fn spawn_level(
     ldtk_entity: Entity,
     ldtk_settings: &LdtkSettings,
 ) {
+    let level = &ldtk_level.level;
+
     let mut map = Map::new(level.uid as u16, ldtk_entity);
 
     if let Some(layer_instances) = &level.layer_instances {
@@ -411,6 +413,29 @@ fn spawn_level(
             commands.entity(layer_entity).insert_bundle(layer_bundle);
             map.add_layer(commands, layer_id, layer_entity);
             layer_id += 1;
+
+            // Spawn background image
+            if let (Some(background_image_handle), Some(background_position)) =
+                (&ldtk_level.background_image, &level.bg_pos)
+            {
+                match background_image_sprite_sheet_bundle(
+                    images,
+                    texture_atlases,
+                    background_image_handle,
+                    background_position,
+                    level.px_hei,
+                    layer_id as f32,
+                ) {
+                    Ok(sprite_sheet_bundle) => {
+                        commands
+                            .spawn_bundle(sprite_sheet_bundle)
+                            .insert(Parent(ldtk_entity));
+
+                        layer_id += 1;
+                    }
+                    Err(e) => warn!("{}", e),
+                }
+            }
         }
 
         for layer_instance in layer_instances.iter().rev() {
@@ -472,6 +497,7 @@ fn spawn_level(
                             }
                         }
                     });
+                    layer_id += 1;
                 }
                 _ => {
                     // The remaining layers have a lot of shared code.

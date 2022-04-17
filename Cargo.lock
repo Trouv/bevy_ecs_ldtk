@@ -348,6 +348,7 @@ dependencies = [
  "regex",
  "serde",
  "serde_json",
+ "thiserror",
 ]
 
 [[package]]

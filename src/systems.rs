@@ -320,7 +320,7 @@ pub fn process_ldtk_levels(
 
                 if let Some(level) = level_assets.get(level_handle) {
                     spawn_level(
-                        &level,
+                        level,
                         &mut commands,
                         &asset_server,
                         &mut images,

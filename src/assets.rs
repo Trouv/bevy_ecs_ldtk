@@ -12,7 +12,7 @@ use std::{collections::HashMap, path::Path};
 #[allow(unused_imports)]
 use crate::components::LdtkWorldBundle;
 
-fn ldtk_path_to_asset_path<'a, 'b>(ldtk_path: &Path, rel_path: &str) -> AssetPath<'b> {
+fn ldtk_path_to_asset_path<'b>(ldtk_path: &Path, rel_path: &str) -> AssetPath<'b> {
     ldtk_path.parent().unwrap().join(Path::new(rel_path)).into()
 }
 
@@ -109,7 +109,7 @@ impl AssetLoader for LdtkLoader {
 
                     let mut background_image = None;
                     if let Some(rel_path) = &level.bg_rel_path {
-                        let asset_path = ldtk_path_to_asset_path(load_context.path(), &rel_path);
+                        let asset_path = ldtk_path_to_asset_path(load_context.path(), rel_path);
                         background_images.push(asset_path.clone());
                         background_image = Some(load_context.get_handle(asset_path));
                     }
@@ -190,7 +190,7 @@ impl AssetLoader for LdtkLevelLoader {
             let mut background_image = None;
             if let Some(rel_path) = &level.bg_rel_path {
                 let asset_path =
-                    ldtk_path_to_asset_path(load_context.path().parent().unwrap(), &rel_path);
+                    ldtk_path_to_asset_path(load_context.path().parent().unwrap(), rel_path);
                 background_asset_path = Some(asset_path.clone());
                 background_image = Some(load_context.get_handle(asset_path));
             }

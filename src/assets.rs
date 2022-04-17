@@ -12,16 +12,8 @@ use std::{collections::HashMap, path::Path};
 #[allow(unused_imports)]
 use crate::components::LdtkWorldBundle;
 
-fn ldtk_path_to_asset_path<'a, 'b>(
-    load_context: &LoadContext<'a>,
-    rel_path: &str,
-) -> AssetPath<'b> {
-    load_context
-        .path()
-        .parent()
-        .unwrap()
-        .join(Path::new(rel_path))
-        .into()
+fn ldtk_path_to_asset_path<'a, 'b>(ldtk_path: &Path, rel_path: &str) -> AssetPath<'b> {
+    ldtk_path.parent().unwrap().join(Path::new(rel_path)).into()
 }
 
 /// Used in [LdtkAsset]. Key is the tileset definition uid.
@@ -104,7 +96,8 @@ impl AssetLoader for LdtkLoader {
             if project.external_levels {
                 for level in project.iter_levels() {
                     if let Some(external_rel_path) = &level.external_rel_path {
-                        let asset_path = ldtk_path_to_asset_path(load_context, external_rel_path);
+                        let asset_path =
+                            ldtk_path_to_asset_path(load_context.path(), external_rel_path);
 
                         external_level_paths.push(asset_path.clone());
                         level_map.insert(level.iid.clone(), load_context.get_handle(asset_path));
@@ -116,7 +109,7 @@ impl AssetLoader for LdtkLoader {
 
                     let mut background_image = None;
                     if let Some(rel_path) = &level.bg_rel_path {
-                        let asset_path = ldtk_path_to_asset_path(load_context, &rel_path);
+                        let asset_path = ldtk_path_to_asset_path(load_context.path(), &rel_path);
                         background_images.push(asset_path.clone());
                         background_image = Some(load_context.get_handle(asset_path));
                     }
@@ -136,7 +129,7 @@ impl AssetLoader for LdtkLoader {
             let mut tileset_map = HashMap::new();
             for tileset in &project.defs.tilesets {
                 if let Some(tileset_path) = &tileset.rel_path {
-                    let asset_path = ldtk_path_to_asset_path(load_context, tileset_path);
+                    let asset_path = ldtk_path_to_asset_path(load_context.path(), tileset_path);
 
                     tileset_rel_paths.push(asset_path.clone());
                     tileset_map.insert(tileset.uid, load_context.get_handle(asset_path));
@@ -196,7 +189,8 @@ impl AssetLoader for LdtkLevelLoader {
             let mut background_asset_path = None;
             let mut background_image = None;
             if let Some(rel_path) = &level.bg_rel_path {
-                let asset_path = ldtk_path_to_asset_path(load_context, &rel_path);
+                let asset_path =
+                    ldtk_path_to_asset_path(load_context.path().parent().unwrap(), &rel_path);
                 background_asset_path = Some(asset_path.clone());
                 background_image = Some(load_context.get_handle(asset_path));
             }

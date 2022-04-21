@@ -730,7 +730,7 @@ fn spawn_level(
                         let layer_offset = Vec3::new(
                             layer_instance.px_total_offset_x as f32,
                             -layer_instance.px_total_offset_y as f32,
-                            0.,
+                            layer_id as f32,
                         );
 
                         commands.entity(layer_entity).insert(

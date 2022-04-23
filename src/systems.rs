@@ -707,24 +707,48 @@ fn spawn_level(
 
                             layer_entity
                         } else {
-                            let tile_maker = tile_pos_to_transparent_tile_maker(
-                                tile_pos_to_tile_maker(
-                                    &grid_tiles,
-                                    layer_instance.c_hei,
-                                    layer_instance.grid_size,
-                                ),
-                                layer_instance.opacity,
-                            );
+                            let tile_bundle_maker =
+                                tile_pos_to_tile_bundle_maker(tile_pos_to_transparent_tile_maker(
+                                    tile_pos_to_tile_maker(
+                                        &grid_tiles,
+                                        layer_instance.c_hei,
+                                        layer_instance.grid_size,
+                                    ),
+                                    layer_instance.opacity,
+                                ));
 
-                            LayerBuilder::<TileGridBundle>::new_batch(
-                                commands,
-                                settings,
-                                meshes,
-                                image_handle.clone(),
-                                map.id,
-                                layer_id as u16,
-                                tile_pos_to_tile_bundle_maker(tile_maker),
-                            )
+                            if cfg!(feature = "metadata") {
+                                // When we add metadata to tiles, we need to add additional
+                                // components to them.
+                                // This can't be accomplished using LayerBuilder::new_batch,
+                                // so the logic for building layers with metadata is slower.
+                                let (mut layer_builder, layer_entity) =
+                                    LayerBuilder::<TileGridBundle>::new(
+                                        commands,
+                                        settings,
+                                        map.id,
+                                        layer_id as u16,
+                                    );
+
+                                set_all_tiles_with_func(&mut layer_builder, tile_bundle_maker);
+
+                                let layer_bundle =
+                                    layer_builder.build(commands, meshes, image_handle.clone());
+
+                                commands.entity(layer_entity).insert_bundle(layer_bundle);
+
+                                layer_entity
+                            } else {
+                                LayerBuilder::<TileGridBundle>::new_batch(
+                                    commands,
+                                    settings,
+                                    meshes,
+                                    image_handle.clone(),
+                                    map.id,
+                                    layer_id as u16,
+                                    tile_bundle_maker,
+                                )
+                            }
                         };
 
                         let layer_offset = Vec3::new(

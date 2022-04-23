@@ -186,6 +186,19 @@ impl GridCoords {
     }
 }
 
+#[cfg(feature = "metadata")]
+#[derive(Clone, Eq, PartialEq, Debug, Default, Hash, Component)]
+pub struct TileMetadata {
+    data: String,
+}
+
+#[cfg(feature = "metadata")]
+#[derive(Clone, Eq, PartialEq, Debug, Default, Hash, Component)]
+pub struct TileEnumTags {
+    value: String,
+    source_uid: i32,
+}
+
 #[derive(Clone, Default, Bundle)]
 pub(crate) struct TileGridBundle {
     #[bundle]

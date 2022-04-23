@@ -29,6 +29,7 @@ rand = "0.8"
 [features]
 default = ["derive"]
 derive = ["bevy_ecs_ldtk_macros"]
+metadata = []
 atlas = ["bevy_ecs_tilemap/atlas"]
 
 [[example]]

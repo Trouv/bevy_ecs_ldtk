@@ -7,7 +7,10 @@ use crate::{
     },
     assets::{LdtkAsset, LdtkLevel, TilesetMap},
     components::*,
-    ldtk::{EntityDefinition, LayerDefinition, TileInstance, TilesetDefinition, Type},
+    ldtk::{
+        EntityDefinition, EnumTagValue, LayerDefinition, TileCustomMetadata, TileInstance,
+        TilesetDefinition, Type,
+    },
     resources::{
         IntGridRendering, LdtkSettings, LevelBackground, LevelEvent, LevelSelection,
         LevelSpawnBehavior, SetClearColor,
@@ -660,10 +663,10 @@ fn spawn_level(
                                     .filter(|(_, v)| **v != 0)
                                 {
                                     let tile_pos = int_grid_index_to_tile_pos(
-                                i,
-                                layer_instance.c_wid as u32,
-                                layer_instance.c_hei as u32,
-                            ).expect("int_grid_csv indices should be within the bounds of 0..(layer_widthd * layer_height)");
+                                        i,
+                                        layer_instance.c_wid as u32,
+                                        layer_instance.c_hei as u32,
+                                    ).expect("int_grid_csv indices should be within the bounds of 0..(layer_width * layer_height)");
 
                                     let tile_entity =
                                         layer_builder.get_tile_entity(commands, tile_pos).unwrap();
@@ -672,7 +675,7 @@ fn spawn_level(
                                         tile_pos,
                                         IVec2::splat(layer_instance.grid_size),
                                     )
-                                    .extend(layer_id as f32);
+                                    .extend(0.);
 
                                     translation /= layer_scale;
 
@@ -717,28 +720,113 @@ fn spawn_level(
                                     layer_instance.opacity,
                                 ));
 
-                            if cfg!(feature = "metadata") {
-                                // When we add metadata to tiles, we need to add additional
-                                // components to them.
-                                // This can't be accomplished using LayerBuilder::new_batch,
-                                // so the logic for building layers with metadata is slower.
-                                let (mut layer_builder, layer_entity) =
-                                    LayerBuilder::<TileGridBundle>::new(
+                            #[cfg(feature = "metadata")]
+                            {
+                                // This is some pretty complex conditional logic to determine whether
+                                // or not we'll be able to add any metadata to the tiles.
+                                match tileset_definition
+                                    .map(|tileset_definition| {
+                                        let metadata_map: HashMap<i32, TileMetadata> =
+                                            tileset_definition
+                                                .custom_data
+                                                .iter()
+                                                .map(|TileCustomMetadata { data, tile_id }| {
+                                                    (*tile_id, TileMetadata { data: data.clone() })
+                                                })
+                                                .collect();
+
+                                        let mut enum_tags_map: HashMap<i32, TileEnumTags> =
+                                            HashMap::new();
+
+                                        for EnumTagValue {
+                                            enum_value_id,
+                                            tile_ids,
+                                        } in tileset_definition.enum_tags.iter()
+                                        {
+                                            for tile_id in tile_ids {
+                                                enum_tags_map
+                                                    .entry(*tile_id)
+                                                    .or_insert_with(|| TileEnumTags {
+                                                        tags: Vec::new(),
+                                                        source_enum_uid: tileset_definition
+                                                            .tags_source_enum_uid,
+                                                    })
+                                                    .tags
+                                                    .push(enum_value_id.clone());
+                                            }
+                                        }
+
+                                        (!metadata_map.is_empty() || !enum_tags_map.is_empty())
+                                            .then(|| (metadata_map, enum_tags_map))
+                                    })
+                                    .flatten()
+                                {
+                                    Some((metadata_map, enum_tags_map)) => {
+                                        // When we add metadata to tiles, we need to add additional
+                                        // components to them.
+                                        // This can't be accomplished using LayerBuilder::new_batch,
+                                        // so the logic for building layers with metadata is slower.
+                                        let (mut layer_builder, layer_entity) =
+                                            LayerBuilder::<TileGridBundle>::new(
+                                                commands,
+                                                settings,
+                                                map.id,
+                                                layer_id as u16,
+                                            );
+
+                                        set_all_tiles_with_func(
+                                            &mut layer_builder,
+                                            tile_bundle_maker,
+                                        );
+
+                                        for tile in grid_tiles {
+                                            let tile_pos = TilePos(
+                                                (tile.px[0] / layer_instance.grid_size) as u32,
+                                                layer_instance.c_hei as u32
+                                                    - (tile.px[1] / layer_instance.grid_size)
+                                                        as u32
+                                                    - 1,
+                                            );
+
+                                            let tile_entity = layer_builder
+                                                .get_tile_entity(commands, tile_pos)
+                                                .unwrap();
+
+                                            let mut entity_commands = commands.entity(tile_entity);
+
+                                            if let Some(tile_metadata) = metadata_map.get(&tile.t) {
+                                                entity_commands.insert(tile_metadata.clone());
+                                            }
+
+                                            if let Some(enum_tags) = enum_tags_map.get(&tile.t) {
+                                                entity_commands.insert(enum_tags.clone());
+                                            }
+                                        }
+
+                                        let layer_bundle = layer_builder.build(
+                                            commands,
+                                            meshes,
+                                            image_handle.clone(),
+                                        );
+
+                                        commands.entity(layer_entity).insert_bundle(layer_bundle);
+
+                                        layer_entity
+                                    }
+                                    None => LayerBuilder::<TileGridBundle>::new_batch(
                                         commands,
                                         settings,
+                                        meshes,
+                                        image_handle.clone(),
                                         map.id,
                                         layer_id as u16,
-                                    );
+                                        tile_bundle_maker,
+                                    ),
+                                }
+                            }
 
-                                set_all_tiles_with_func(&mut layer_builder, tile_bundle_maker);
-
-                                let layer_bundle =
-                                    layer_builder.build(commands, meshes, image_handle.clone());
-
-                                commands.entity(layer_entity).insert_bundle(layer_bundle);
-
-                                layer_entity
-                            } else {
+                            #[cfg(not(feature = "metadata"))]
+                            {
                                 LayerBuilder::<TileGridBundle>::new_batch(
                                     commands,
                                     settings,

@@ -203,4 +203,7 @@ pub mod prelude {
 
     #[cfg(feature = "derive")]
     pub use crate::{LdtkEntity, LdtkIntCell};
+
+    #[cfg(feature = "metadata")]
+    pub use crate::components::{TileEnumTags, TileMetadata};
 }

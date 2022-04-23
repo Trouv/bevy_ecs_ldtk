@@ -703,6 +703,64 @@ fn spawn_level(
                                 }
                             }
 
+                            #[cfg(feature = "metadata")]
+                            {
+                                if let Some(tileset_definition) = tileset_definition {
+                                    let metadata_map: HashMap<i32, TileMetadata> =
+                                        tileset_definition
+                                            .custom_data
+                                            .iter()
+                                            .map(|TileCustomMetadata { data, tile_id }| {
+                                                (*tile_id, TileMetadata { data: data.clone() })
+                                            })
+                                            .collect();
+
+                                    let mut enum_tags_map: HashMap<i32, TileEnumTags> =
+                                        HashMap::new();
+
+                                    for EnumTagValue {
+                                        enum_value_id,
+                                        tile_ids,
+                                    } in tileset_definition.enum_tags.iter()
+                                    {
+                                        for tile_id in tile_ids {
+                                            enum_tags_map
+                                                .entry(*tile_id)
+                                                .or_insert_with(|| TileEnumTags {
+                                                    tags: Vec::new(),
+                                                    source_enum_uid: tileset_definition
+                                                        .tags_source_enum_uid,
+                                                })
+                                                .tags
+                                                .push(enum_value_id.clone());
+                                        }
+                                    }
+
+                                    for tile in grid_tiles {
+                                        let tile_pos = TilePos(
+                                            (tile.px[0] / layer_instance.grid_size) as u32,
+                                            layer_instance.c_hei as u32
+                                                - (tile.px[1] / layer_instance.grid_size) as u32
+                                                - 1,
+                                        );
+
+                                        let tile_entity = layer_builder
+                                            .get_tile_entity(commands, tile_pos)
+                                            .unwrap();
+
+                                        let mut entity_commands = commands.entity(tile_entity);
+
+                                        if let Some(tile_metadata) = metadata_map.get(&tile.t) {
+                                            entity_commands.insert(tile_metadata.clone());
+                                        }
+
+                                        if let Some(enum_tags) = enum_tags_map.get(&tile.t) {
+                                            entity_commands.insert(enum_tags.clone());
+                                        }
+                                    }
+                                }
+                            }
+
                             let layer_bundle =
                                 layer_builder.build(commands, meshes, image_handle.clone());
 

@@ -186,13 +186,11 @@ impl GridCoords {
     }
 }
 
-#[cfg(feature = "metadata")]
 #[derive(Clone, Eq, PartialEq, Debug, Default, Hash, Component)]
 pub struct TileMetadata {
     pub data: String,
 }
 
-#[cfg(feature = "metadata")]
 #[derive(Clone, Eq, PartialEq, Debug, Default, Hash, Component)]
 pub struct TileEnumTags {
     pub tags: Vec<String>,

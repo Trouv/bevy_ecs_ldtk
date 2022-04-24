@@ -192,7 +192,10 @@ pub mod prelude {
     pub use crate::{
         app::{LdtkEntity, LdtkIntCell, RegisterLdtkObjects},
         assets::{LdtkAsset, LdtkLevel},
-        components::{EntityInstance, GridCoords, IntGridCell, LdtkWorldBundle, LevelSet, Worldly},
+        components::{
+            EntityInstance, GridCoords, IntGridCell, LdtkWorldBundle, LevelSet, TileEnumTags,
+            TileMetadata, Worldly,
+        },
         ldtk::{self, FieldValue, LayerInstance, TilesetDefinition},
         plugin::LdtkPlugin,
         resources::{
@@ -203,7 +206,4 @@ pub mod prelude {
 
     #[cfg(feature = "derive")]
     pub use crate::{LdtkEntity, LdtkIntCell};
-
-    #[cfg(feature = "metadata")]
-    pub use crate::components::{TileEnumTags, TileMetadata};
 }

@@ -121,17 +121,6 @@ pub fn ldtk_grid_coords_to_grid_coords(ldtk_coords: IVec2, ldtk_grid_height: i32
     ldtk_coord_conversion_origin_adjusted(ldtk_coords, ldtk_grid_height).into()
 }
 
-/// Performs LDtk pixel coordinate to [GridCoords] conversion.
-///
-/// This is inherently lossy since `GridCoords` space is less detailed than ldtk pixel coord space.
-pub fn ldtk_pixel_coords_to_grid_coords(
-    ldtk_coords: IVec2,
-    ldtk_grid_height: i32,
-    grid_size: IVec2,
-) -> GridCoords {
-    ldtk_grid_coords_to_grid_coords(ldtk_coords / grid_size, ldtk_grid_height)
-}
-
 /// Performs [GridCoords] to LDtk grid coordinate conversion.
 ///
 /// This conversion is performed so that both the [GridCoords] and the resulting LDtk grid coords
@@ -139,19 +128,16 @@ pub fn ldtk_pixel_coords_to_grid_coords(
 /// This is different from them referring to the same position in space, because the tile is
 /// referenced by its top-left corner in LDtk, and by its bottom-left corner with [GridCoords].
 pub fn grid_coords_to_ldtk_grid_coords(grid_coords: GridCoords, ldtk_grid_height: i32) -> IVec2 {
-    let tile_coords: IVec2 = grid_coords.into();
-    ldtk_coord_conversion_origin_adjusted(tile_coords, ldtk_grid_height)
+    ldtk_coord_conversion_origin_adjusted(grid_coords.into(), ldtk_grid_height)
 }
 
-/// Performs LDtk grid coordinate to translation conversion, so that the resulting translation is
-/// in the center of the tile.
-pub fn ldtk_grid_coords_to_translation_centered(
-    ldtk_coords: IVec2,
-    ldtk_grid_height: i32,
-    grid_size: IVec2,
-) -> Vec2 {
-    ldtk_pixel_coords_to_translation(ldtk_coords * grid_size, ldtk_grid_height * grid_size.y)
-        + Vec2::new(grid_size.x as f32 / 2., -grid_size.y as f32 / 2.)
+/// Performs translation to [GridCoords] conversion.
+///
+/// This is inherently lossy since `GridCoords` space is less detailed than translation space.
+///
+/// Assumes that the origin of the grid is at [Vec2::ZERO].
+pub fn translation_to_grid_coords(translation: Vec2, grid_size: IVec2) -> GridCoords {
+    (translation / grid_size.as_vec2()).as_ivec2().into()
 }
 
 /// Performs [GridCoords] to translation conversion, so that the resulting translation is in the
@@ -164,6 +150,28 @@ pub fn grid_coords_to_translation_centered(grid_coords: GridCoords, tile_size: I
     let tile_coords: IVec2 = grid_coords.into();
     let tile_size = tile_size.as_vec2();
     (tile_size * tile_coords.as_vec2()) + (tile_size / Vec2::splat(2.))
+}
+
+/// Performs LDtk pixel coordinate to [GridCoords] conversion.
+///
+/// This is inherently lossy since `GridCoords` space is less detailed than ldtk pixel coord space.
+pub fn ldtk_pixel_coords_to_grid_coords(
+    ldtk_coords: IVec2,
+    ldtk_grid_height: i32,
+    grid_size: IVec2,
+) -> GridCoords {
+    ldtk_grid_coords_to_grid_coords(ldtk_coords / grid_size, ldtk_grid_height)
+}
+
+/// Performs LDtk grid coordinate to translation conversion, so that the resulting translation is
+/// in the center of the tile.
+pub fn ldtk_grid_coords_to_translation_centered(
+    ldtk_coords: IVec2,
+    ldtk_grid_height: i32,
+    grid_size: IVec2,
+) -> Vec2 {
+    ldtk_pixel_coords_to_translation(ldtk_coords * grid_size, ldtk_grid_height * grid_size.y)
+        + Vec2::new(grid_size.x as f32 / 2., -grid_size.y as f32 / 2.)
 }
 
 /// Performs LDtk pixel coordinate to translation conversion, with "pivot" support.

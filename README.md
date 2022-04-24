@@ -89,7 +89,7 @@ for additional level-loading options.
 | 0.6 | 0.5 | 0.9 | 0.2 |
 | 0.6 | 0.5 | 0.9 | 0.1 |
 
-*ldtk 1.0+ support is coming to 0.3. It's available now if you depend on main.*
+*ldtk 1.1+ support is coming to 0.3. It's available now if you depend on main.*
 
 ### Asset Credits
 - [SunnyLand](https://ansimuz.itch.io/sunny-land-pixel-game-art), a texture pack by Ansimuz, licensed under [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)

@@ -288,9 +288,6 @@ pub fn process_ldtk_levels(
     mut level_events: EventWriter<LevelEvent>,
     ldtk_settings: Res<LdtkSettings>,
 ) {
-    // This function uses code from the bevy_ecs_tilemap ldtk example
-    // https://github.com/StarArawn/bevy_ecs_tilemap/blob/main/examples/ldtk/ldtk.rs
-
     for (ldtk_entity, level_handle, parent) in level_query.iter() {
         if let Ok(ldtk_handle) = ldtk_query.get(parent.0) {
             if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {

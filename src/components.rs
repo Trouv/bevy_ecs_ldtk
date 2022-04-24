@@ -196,11 +196,19 @@ impl GridCoords {
     }
 }
 
+/// [Component] for storing user-defined custom data for a paticular tile in an LDtk tileset
+/// definition.
+///
+/// Automatically inserted on any tiles with metadata.
 #[derive(Clone, Eq, PartialEq, Debug, Default, Hash, Component)]
 pub struct TileMetadata {
     pub data: String,
 }
 
+/// [Component] for storing user-defined, enum-based tags for a particular tile in an LDtk tileset
+/// definition.
+///
+/// Automatically inserted on any tiles with enum tags.
 #[derive(Clone, Eq, PartialEq, Debug, Default, Hash, Component)]
 pub struct TileEnumTags {
     pub tags: Vec<String>,

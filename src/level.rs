@@ -1,3 +1,5 @@
+//! Functions related to spawning levels.
+
 use crate::{
     app::{
         LdtkEntity, LdtkEntityMap, LdtkIntCellMap, PhantomLdtkEntity, PhantomLdtkEntityTrait,

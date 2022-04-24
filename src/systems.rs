@@ -780,12 +780,37 @@ fn spawn_level(
 
                                         let mut entity_commands = commands.entity(tile_entity);
 
+                                        // We'll add transforms to these entities if they have any
+                                        // metadata, for convenience.
+                                        // Metadataless tiles will go without, just like they do when
+                                        // using LayerBuilder::new_batch.
+                                        // This is to avoid using unnecessary memory, and to be
+                                        // consistent with the new_batch scenario.
+                                        let mut metadata_inserted = false;
+
                                         if let Some(tile_metadata) = metadata_map.get(&tile.t) {
                                             entity_commands.insert(tile_metadata.clone());
+                                            metadata_inserted = true;
                                         }
 
                                         if let Some(enum_tags) = enum_tags_map.get(&tile.t) {
                                             entity_commands.insert(enum_tags.clone());
+                                            metadata_inserted = true;
+                                        }
+
+                                        if metadata_inserted {
+                                            let mut translation = tile_pos_to_translation_centered(
+                                                tile_pos,
+                                                IVec2::splat(layer_instance.grid_size),
+                                            )
+                                            .extend(0.);
+
+                                            translation /= layer_scale;
+
+                                            entity_commands
+                                                .insert(Transform::from_translation(translation))
+                                                .insert(GlobalTransform::default())
+                                                .insert(Parent(layer_entity));
                                         }
                                     }
                                 }
@@ -836,12 +861,37 @@ fn spawn_level(
 
                                     let mut entity_commands = commands.entity(tile_entity);
 
+                                    // We'll add transforms to these entities if they have any
+                                    // metadata, for convenience.
+                                    // Metadataless tiles will go without, just like they do when
+                                    // using LayerBuilder::new_batch.
+                                    // This is to avoid using unnecessary memory, and to be
+                                    // consistent with the new_batch scenario.
+                                    let mut metadata_inserted = false;
+
                                     if let Some(tile_metadata) = metadata_map.get(&tile.t) {
                                         entity_commands.insert(tile_metadata.clone());
+                                        metadata_inserted = true;
                                     }
 
                                     if let Some(enum_tags) = enum_tags_map.get(&tile.t) {
                                         entity_commands.insert(enum_tags.clone());
+                                        metadata_inserted = true;
+                                    }
+
+                                    if metadata_inserted {
+                                        let mut translation = tile_pos_to_translation_centered(
+                                            tile_pos,
+                                            IVec2::splat(layer_instance.grid_size),
+                                        )
+                                        .extend(0.);
+
+                                        translation /= layer_scale;
+
+                                        entity_commands
+                                            .insert(Transform::from_translation(translation))
+                                            .insert(GlobalTransform::default())
+                                            .insert(Parent(layer_entity));
                                     }
                                 }
 

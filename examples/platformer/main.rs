@@ -4,8 +4,6 @@
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 
-use bevy::render::{options::WgpuOptions, render_resource::WgpuLimits};
-
 use heron::prelude::*;
 
 mod components;
@@ -13,13 +11,6 @@ mod systems;
 
 fn main() {
     App::new()
-        .insert_resource(WgpuOptions {
-            limits: WgpuLimits {
-                max_texture_array_layers: 2048,
-                ..Default::default()
-            },
-            ..Default::default()
-        })
         .add_plugins(DefaultPlugins)
         .add_plugin(LdtkPlugin)
         .add_plugin(PhysicsPlugin::default())

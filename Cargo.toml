@@ -12,8 +12,8 @@ exclude = ["assets/*", "repo/*", "scripts/*"]
 
 [dependencies]
 bevy_ecs_ldtk_macros = { version = "0.2", optional = true, path = "macros" }
-bevy_ecs_tilemap = "0.5"
-bevy = { version = "0.6", default-features = false }
+bevy_ecs_tilemap = "0.6"
+bevy = { version = "0.7", default-features = false }
 anyhow = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -22,8 +22,8 @@ hex = "0.4"
 thiserror = "1.0"
 
 [dev-dependencies]
-bevy = "0.6"
-heron = { version = "1.2", features = ["2d"] }
+bevy = "0.7"
+heron = { version = "3.0", features = ["2d"] }
 rand = "0.8"
 
 [features]

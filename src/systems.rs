@@ -261,9 +261,10 @@ fn clear_map(
                     );
                     if let Some(chunk_entity) = layer.get_chunk(chunk_pos) {
                         if let Ok(chunk) = chunk_query.get(chunk_entity) {
-                            let chunk_tile_pos = chunk.to_chunk_pos(tile_pos);
-                            if let Some(tile) = chunk.get_tile_entity(chunk_tile_pos) {
-                                commands.entity(tile).despawn_recursive();
+                            if let Ok(chunk_tile_pos) = chunk.to_chunk_pos(tile_pos) {
+                                if let Some(tile) = chunk.get_tile_entity(chunk_tile_pos) {
+                                    commands.entity(tile).despawn_recursive();
+                                }
                             }
                         }
 
@@ -730,7 +731,7 @@ fn spawn_level(
                         let layer_offset = Vec3::new(
                             layer_instance.px_total_offset_x as f32,
                             -layer_instance.px_total_offset_y as f32,
-                            0.,
+                            layer_id as f32,
                         );
 
                         commands.entity(layer_entity).insert(

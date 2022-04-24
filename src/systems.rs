@@ -737,83 +737,51 @@ fn spawn_level(
                                 }
                             }
 
-                            if let Some(tileset_definition) = tileset_definition {
-                                let metadata_map: HashMap<i32, TileMetadata> = tileset_definition
-                                    .custom_data
-                                    .iter()
-                                    .map(|TileCustomMetadata { data, tile_id }| {
-                                        (*tile_id, TileMetadata { data: data.clone() })
-                                    })
-                                    .collect();
+                            if !(metadata_map.is_empty() && enum_tags_map.is_empty()) {
+                                for tile in grid_tiles {
+                                    let grid_coords = ldtk_pixel_coords_to_grid_coords(
+                                        IVec2::new(tile.px[0], tile.px[1]),
+                                        layer_instance.c_hei,
+                                        IVec2::splat(layer_instance.grid_size),
+                                    );
 
-                                let mut enum_tags_map: HashMap<i32, TileEnumTags> = HashMap::new();
+                                    let tile_entity = layer_builder
+                                        .get_tile_entity(commands, grid_coords.into())
+                                        .unwrap();
 
-                                for EnumTagValue {
-                                    enum_value_id,
-                                    tile_ids,
-                                } in tileset_definition.enum_tags.iter()
-                                {
-                                    for tile_id in tile_ids {
-                                        enum_tags_map
-                                            .entry(*tile_id)
-                                            .or_insert_with(|| TileEnumTags {
-                                                tags: Vec::new(),
-                                                source_enum_uid: tileset_definition
-                                                    .tags_source_enum_uid,
-                                            })
-                                            .tags
-                                            .push(enum_value_id.clone());
+                                    let mut entity_commands = commands.entity(tile_entity);
+
+                                    // We'll add transforms to these entities if they have any
+                                    // metadata, for convenience.
+                                    // Metadataless tiles will go without, just like they do when
+                                    // using LayerBuilder::new_batch.
+                                    // This is to avoid using unnecessary memory, and to be
+                                    // consistent with the new_batch scenario.
+                                    let mut metadata_inserted = false;
+
+                                    if let Some(tile_metadata) = metadata_map.get(&tile.t) {
+                                        entity_commands.insert(tile_metadata.clone());
+                                        metadata_inserted = true;
                                     }
-                                }
 
-                                if !(metadata_map.is_empty() && enum_tags_map.is_empty()) {
-                                    for tile in grid_tiles {
-                                        let tile_pos = TilePos(
-                                            (tile.px[0] / layer_instance.grid_size) as u32,
-                                            layer_instance.c_hei as u32
-                                                - (tile.px[1] / layer_instance.grid_size) as u32
-                                                - 1,
-                                        );
+                                    if let Some(enum_tags) = enum_tags_map.get(&tile.t) {
+                                        entity_commands.insert(enum_tags.clone());
+                                        metadata_inserted = true;
+                                    }
 
-                                        let tile_entity = layer_builder
-                                            .get_tile_entity(commands, tile_pos)
-                                            .unwrap();
+                                    if metadata_inserted {
+                                        let mut translation = grid_coords_to_translation_centered(
+                                            grid_coords,
+                                            IVec2::splat(layer_instance.grid_size),
+                                        )
+                                        .extend(0.);
 
-                                        let mut entity_commands = commands.entity(tile_entity);
+                                        translation /= layer_scale;
 
-                                        // We'll add transforms to these entities if they have any
-                                        // metadata, for convenience.
-                                        // Metadataless tiles will go without, just like they do when
-                                        // using LayerBuilder::new_batch.
-                                        // This is to avoid using unnecessary memory, and to be
-                                        // consistent with the new_batch scenario.
-                                        let mut metadata_inserted = false;
-
-                                        if let Some(tile_metadata) = metadata_map.get(&tile.t) {
-                                            entity_commands.insert(tile_metadata.clone());
-                                            metadata_inserted = true;
-                                        }
-
-                                        if let Some(enum_tags) = enum_tags_map.get(&tile.t) {
-                                            entity_commands.insert(enum_tags.clone());
-                                            metadata_inserted = true;
-                                        }
-
-                                        if metadata_inserted {
-                                            let mut translation =
-                                                grid_coords_to_translation_centered(
-                                                    tile_pos.into(),
-                                                    IVec2::splat(layer_instance.grid_size),
-                                                )
-                                                .extend(0.);
-
-                                            translation /= layer_scale;
-
-                                            entity_commands
-                                                .insert(Transform::from_translation(translation))
-                                                .insert(GlobalTransform::default())
-                                                .insert(Parent(layer_entity));
-                                        }
+                                        entity_commands
+                                            .insert(Transform::from_translation(translation))
+                                            .insert(GlobalTransform::default())
+                                            .insert(Parent(layer_entity));
                                     }
                                 }
                             }
@@ -851,15 +819,15 @@ fn spawn_level(
                                 set_all_tiles_with_func(&mut layer_builder, tile_bundle_maker);
 
                                 for tile in grid_tiles {
-                                    let tile_pos = TilePos(
-                                        (tile.px[0] / layer_instance.grid_size) as u32,
-                                        layer_instance.c_hei as u32
-                                            - (tile.px[1] / layer_instance.grid_size) as u32
-                                            - 1,
+                                    let grid_coords = ldtk_pixel_coords_to_grid_coords(
+                                        IVec2::new(tile.px[0], tile.px[1]),
+                                        layer_instance.c_hei,
+                                        IVec2::splat(layer_instance.grid_size),
                                     );
 
-                                    let tile_entity =
-                                        layer_builder.get_tile_entity(commands, tile_pos).unwrap();
+                                    let tile_entity = layer_builder
+                                        .get_tile_entity(commands, grid_coords.into())
+                                        .unwrap();
 
                                     let mut entity_commands = commands.entity(tile_entity);
 
@@ -883,7 +851,7 @@ fn spawn_level(
 
                                     if metadata_inserted {
                                         let mut translation = grid_coords_to_translation_centered(
-                                            tile_pos.into(),
+                                            grid_coords,
                                             IVec2::splat(layer_instance.grid_size),
                                         )
                                         .extend(0.);

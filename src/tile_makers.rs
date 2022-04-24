@@ -60,10 +60,12 @@ pub(crate) fn tile_pos_to_tile_maker(
         .iter()
         .map(|t| {
             (
-                TilePos(
-                    (t.px[0] / layer_grid_size) as u32,
-                    layer_height_in_tiles as u32 - (t.px[1] / layer_grid_size) as u32 - 1,
-                ),
+                ldtk_pixel_coords_to_grid_coords(
+                    IVec2::new(t.px[0], t.px[1]),
+                    layer_height_in_tiles,
+                    IVec2::splat(layer_grid_size),
+                )
+                .into(),
                 t.clone(),
             )
         })

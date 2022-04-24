@@ -104,6 +104,7 @@ pub mod app;
 mod assets;
 mod components;
 pub mod ldtk;
+mod level;
 mod resources;
 pub mod systems;
 mod tile_makers;
@@ -192,7 +193,10 @@ pub mod prelude {
     pub use crate::{
         app::{LdtkEntity, LdtkIntCell, RegisterLdtkObjects},
         assets::{LdtkAsset, LdtkLevel},
-        components::{EntityInstance, GridCoords, IntGridCell, LdtkWorldBundle, LevelSet, Worldly},
+        components::{
+            EntityInstance, GridCoords, IntGridCell, LdtkWorldBundle, LevelSet, TileEnumTags,
+            TileMetadata, Worldly,
+        },
         ldtk::{self, FieldValue, LayerInstance, TilesetDefinition},
         plugin::LdtkPlugin,
         resources::{

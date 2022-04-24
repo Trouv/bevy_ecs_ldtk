@@ -137,6 +137,7 @@ fn transform_bundle_for_tiles(
     )
 }
 
+#[allow(clippy::too_many_arguments)]
 fn insert_metadata_for_layer<T: TileBundleTrait>(
     commands: &mut Commands,
     layer_builder: &mut LayerBuilder<T>,
@@ -148,14 +149,13 @@ fn insert_metadata_for_layer<T: TileBundleTrait>(
     layer_entity: Entity,
 ) {
     for tile in grid_tiles {
-        let grid_coords =
-            tile_to_grid_coords(&tile, layer_instance.c_hei, layer_instance.grid_size);
+        let grid_coords = tile_to_grid_coords(tile, layer_instance.c_hei, layer_instance.grid_size);
 
         let tile_entity = layer_builder
             .get_tile_entity(commands, grid_coords.into())
             .unwrap();
 
-        if insert_metadata_to_tile(commands, &tile, tile_entity, &metadata_map, &enum_tags_map) {
+        if insert_metadata_to_tile(commands, tile, tile_entity, metadata_map, enum_tags_map) {
             commands
                 .entity(tile_entity)
                 .insert_bundle(transform_bundle_for_tiles(

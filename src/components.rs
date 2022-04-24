@@ -121,6 +121,12 @@ impl From<TilePos> for GridCoords {
     }
 }
 
+impl From<GridCoords> for TilePos {
+    fn from(grid_coords: GridCoords) -> Self {
+        TilePos(grid_coords.x as u32, grid_coords.y as u32)
+    }
+}
+
 impl Add<GridCoords> for GridCoords {
     type Output = GridCoords;
     fn add(self, rhs: GridCoords) -> Self::Output {
@@ -173,6 +179,10 @@ impl MulAssign<GridCoords> for GridCoords {
 }
 
 impl GridCoords {
+    pub fn new(x: i32, y: i32) -> GridCoords {
+        GridCoords { x, y }
+    }
+
     /// Creates a [GridCoords] from the entity information available to the
     /// [LdtkEntity::bundle_entity] method.
     ///

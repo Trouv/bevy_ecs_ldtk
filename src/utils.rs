@@ -14,15 +14,15 @@ use thiserror::Error;
 use std::{collections::HashMap, hash::Hash};
 
 /// The `int_grid_csv` field of a [LayerInstance] is a 1-dimensional [Vec<i32>].
-/// This function can map the indices of this [Vec] to a corresponding [TilePos].
+/// This function can map the indices of this [Vec] to a corresponding [GridCoords].
 ///
-/// Will return [None] if the resulting [TilePos] is out of the bounds implied by the width and
+/// Will return [None] if the resulting [GridCoords] is out of the bounds implied by the width and
 /// height.
-pub fn int_grid_index_to_tile_pos(
+pub fn int_grid_index_to_grid_coords(
     index: usize,
     layer_width_in_tiles: u32,
     layer_height_in_tiles: u32,
-) -> Option<TilePos> {
+) -> Option<GridCoords> {
     if layer_width_in_tiles * layer_height_in_tiles == 0 {
         // Checking for potential n mod 0 and n / 0 issues
         // Also it just doesn't make sense for either of these to be 0.
@@ -39,7 +39,7 @@ pub fn int_grid_index_to_tile_pos(
         // is a natural number.
         // This means tile_x == index where index < n, and tile_x < index where index >= n.
 
-        Some(ldtk_grid_coords_to_tile_pos(
+        Some(ldtk_grid_coords_to_grid_coords(
             IVec2::new(tile_x as i32, inverted_y as i32),
             layer_height_in_tiles as i32,
         ))
@@ -111,18 +111,6 @@ pub fn translation_to_ldtk_pixel_coords(translation: Vec2, ldtk_pixel_height: i3
     ldtk_coord_conversion(translation.as_ivec2(), ldtk_pixel_height)
 }
 
-/// Performs LDtk grid coordinate to [TilePos] conversion.
-///
-/// This conversion is performed so that both the LDtk grid coords and the resulting [TilePos]
-/// refer to the same tile.
-/// This is different from them referring to the same position in space, because the tile is
-/// referenced by its top-left corner in LDtk, and by its bottom-left corner with [TilePos].
-pub fn ldtk_grid_coords_to_tile_pos(ldtk_coords: IVec2, ldtk_grid_height: i32) -> TilePos {
-    let tile_coords =
-        ldtk_coord_conversion_origin_adjusted(ldtk_coords, ldtk_grid_height).as_uvec2();
-    TilePos(tile_coords.x, tile_coords.y)
-}
-
 /// Performs LDtk grid coordinate to [GridCoords] conversion.
 ///
 /// This conversion is performed so that both the LDtk grid coords and the resulting [GridCoords]
@@ -133,15 +121,26 @@ pub fn ldtk_grid_coords_to_grid_coords(ldtk_coords: IVec2, ldtk_grid_height: i32
     ldtk_coord_conversion_origin_adjusted(ldtk_coords, ldtk_grid_height).into()
 }
 
-/// Performs [TilePos] to LDtk grid coordinate conversion.
+/// Performs LDtk pixel coordinate to [GridCoords] conversion.
 ///
-/// This conversion is performed so that both the [TilePos] and the resulting LDtk grid coords
+/// This is inherently lossy since `GridCoords` space is less detailed than ldtk pixel coord space.
+pub fn ldtk_pixel_coords_to_grid_coords(
+    ldtk_coords: IVec2,
+    ldtk_grid_height: i32,
+    grid_size: IVec2,
+) -> GridCoords {
+    ldtk_grid_coords_to_grid_coords(ldtk_coords / grid_size, ldtk_grid_height)
+}
+
+/// Performs [GridCoords] to LDtk grid coordinate conversion.
+///
+/// This conversion is performed so that both the [GridCoords] and the resulting LDtk grid coords
 /// refer to the same tile.
 /// This is different from them referring to the same position in space, because the tile is
-/// referenced by its top-left corner in LDtk, and by its bottom-left corner with [TilePos].
-pub fn tile_pos_to_ldtk_grid_coords(tile_pos: TilePos, ldtk_grid_height: i32) -> IVec2 {
-    let tile_coords: UVec2 = tile_pos.into();
-    ldtk_coord_conversion_origin_adjusted(tile_coords.as_ivec2(), ldtk_grid_height)
+/// referenced by its top-left corner in LDtk, and by its bottom-left corner with [GridCoords].
+pub fn grid_coords_to_ldtk_grid_coords(grid_coords: GridCoords, ldtk_grid_height: i32) -> IVec2 {
+    let tile_coords: IVec2 = grid_coords.into();
+    ldtk_coord_conversion_origin_adjusted(tile_coords, ldtk_grid_height)
 }
 
 /// Performs LDtk grid coordinate to translation conversion, so that the resulting translation is
@@ -155,14 +154,14 @@ pub fn ldtk_grid_coords_to_translation_centered(
         + Vec2::new(grid_size.x as f32 / 2., -grid_size.y as f32 / 2.)
 }
 
-/// Performs [TilePos] to translation conversion, so that the resulting translation is in the in
+/// Performs [GridCoords] to translation conversion, so that the resulting translation is in the
 /// the center of the tile.
 ///
-/// Assumes that the bottom-left corner of the origin tile is at [Vec2::ZERO].
+/// Assumes that the origin the grid is at [Vec2::ZERO].
 ///
 /// Internally, this transform is used to place [IntGridCell]s as children of the level.
-pub fn tile_pos_to_translation_centered(tile_pos: TilePos, tile_size: IVec2) -> Vec2 {
-    let tile_coords: UVec2 = tile_pos.into();
+pub fn grid_coords_to_translation_centered(grid_coords: GridCoords, tile_size: IVec2) -> Vec2 {
+    let tile_coords: IVec2 = grid_coords.into();
     let tile_size = tile_size.as_vec2();
     (tile_size * tile_coords.as_vec2()) + (tile_size / Vec2::splat(2.))
 }
@@ -379,24 +378,39 @@ mod tests {
 
     #[test]
     fn test_int_grid_index_to_tile_pos() {
-        assert_eq!(int_grid_index_to_tile_pos(3, 4, 5), Some(TilePos(3, 4)));
+        assert_eq!(
+            int_grid_index_to_grid_coords(3, 4, 5),
+            Some(GridCoords::new(3, 4))
+        );
 
-        assert_eq!(int_grid_index_to_tile_pos(10, 5, 5), Some(TilePos(0, 2)));
+        assert_eq!(
+            int_grid_index_to_grid_coords(10, 5, 5),
+            Some(GridCoords::new(0, 2))
+        );
 
-        assert_eq!(int_grid_index_to_tile_pos(49, 10, 5), Some(TilePos(9, 0)));
+        assert_eq!(
+            int_grid_index_to_grid_coords(49, 10, 5),
+            Some(GridCoords::new(9, 0))
+        );
 
-        assert_eq!(int_grid_index_to_tile_pos(64, 100, 1), Some(TilePos(64, 0)));
+        assert_eq!(
+            int_grid_index_to_grid_coords(64, 100, 1),
+            Some(GridCoords::new(64, 0))
+        );
 
-        assert_eq!(int_grid_index_to_tile_pos(35, 1, 100), Some(TilePos(0, 64)));
+        assert_eq!(
+            int_grid_index_to_grid_coords(35, 1, 100),
+            Some(GridCoords::new(0, 64))
+        );
     }
 
     #[test]
     fn test_int_grid_index_out_of_range() {
-        assert_eq!(int_grid_index_to_tile_pos(3, 0, 5), None);
+        assert_eq!(int_grid_index_to_grid_coords(3, 0, 5), None);
 
-        assert_eq!(int_grid_index_to_tile_pos(3, 5, 0), None);
+        assert_eq!(int_grid_index_to_grid_coords(3, 5, 0), None);
 
-        assert_eq!(int_grid_index_to_tile_pos(25, 5, 5), None);
+        assert_eq!(int_grid_index_to_grid_coords(25, 5, 5), None);
     }
 
     #[test]
@@ -540,17 +554,17 @@ mod tests {
     #[test]
     fn test_tile_pos_to_translation_centered() {
         assert_eq!(
-            tile_pos_to_translation_centered(TilePos(1, 2), IVec2::splat(32)),
+            grid_coords_to_translation_centered(GridCoords::new(1, 2), IVec2::splat(32)),
             Vec2::new(48., 80.)
         );
 
         assert_eq!(
-            tile_pos_to_translation_centered(TilePos(1, 0), IVec2::splat(100)),
+            grid_coords_to_translation_centered(GridCoords::new(1, 0), IVec2::splat(100)),
             Vec2::new(150., 50.)
         );
 
         assert_eq!(
-            tile_pos_to_translation_centered(TilePos(0, 5), IVec2::splat(1)),
+            grid_coords_to_translation_centered(GridCoords::new(0, 5), IVec2::splat(1)),
             Vec2::new(0.5, 5.5)
         );
     }

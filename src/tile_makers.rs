@@ -42,7 +42,7 @@ pub(crate) fn tile_pos_to_int_grid_map(
 ) -> HashMap<TilePos, i32> {
     int_grid_csv.iter().enumerate().filter(|(_, v)| **v != 0).map(|(i, v)| {
         (
-            int_grid_index_to_tile_pos(i, layer_width_in_tiles as u32, layer_height_in_tiles as u32).expect("int_grid_csv indices should be within the bounds of 0..(layer_width * layer_height)",),
+            int_grid_index_to_grid_coords(i, layer_width_in_tiles as u32, layer_height_in_tiles as u32).expect("int_grid_csv indices should be within the bounds of 0..(layer_width * layer_height)",).into(),
             *v,
         )
     }).collect()

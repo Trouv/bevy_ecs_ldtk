@@ -695,17 +695,18 @@ fn spawn_level(
                                     .enumerate()
                                     .filter(|(_, v)| **v != 0)
                                 {
-                                    let tile_pos = int_grid_index_to_tile_pos(
+                                    let grid_coords = int_grid_index_to_grid_coords(
                                         i,
                                         layer_instance.c_wid as u32,
                                         layer_instance.c_hei as u32,
                                     ).expect("int_grid_csv indices should be within the bounds of 0..(layer_width * layer_height)");
 
-                                    let tile_entity =
-                                        layer_builder.get_tile_entity(commands, tile_pos).unwrap();
+                                    let tile_entity = layer_builder
+                                        .get_tile_entity(commands, grid_coords.into())
+                                        .unwrap();
 
-                                    let mut translation = tile_pos_to_translation_centered(
-                                        tile_pos,
+                                    let mut translation = grid_coords_to_translation_centered(
+                                        grid_coords,
                                         IVec2::splat(layer_instance.grid_size),
                                     )
                                     .extend(0.);
@@ -799,11 +800,12 @@ fn spawn_level(
                                         }
 
                                         if metadata_inserted {
-                                            let mut translation = tile_pos_to_translation_centered(
-                                                tile_pos,
-                                                IVec2::splat(layer_instance.grid_size),
-                                            )
-                                            .extend(0.);
+                                            let mut translation =
+                                                grid_coords_to_translation_centered(
+                                                    tile_pos.into(),
+                                                    IVec2::splat(layer_instance.grid_size),
+                                                )
+                                                .extend(0.);
 
                                             translation /= layer_scale;
 
@@ -880,8 +882,8 @@ fn spawn_level(
                                     }
 
                                     if metadata_inserted {
-                                        let mut translation = tile_pos_to_translation_centered(
-                                            tile_pos,
+                                        let mut translation = grid_coords_to_translation_centered(
+                                            tile_pos.into(),
                                             IVec2::splat(layer_instance.grid_size),
                                         )
                                         .extend(0.);

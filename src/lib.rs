@@ -104,6 +104,7 @@ pub mod app;
 mod assets;
 mod components;
 pub mod ldtk;
+mod level;
 mod resources;
 pub mod systems;
 mod tile_makers;

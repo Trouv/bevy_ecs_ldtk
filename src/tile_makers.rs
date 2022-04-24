@@ -16,6 +16,7 @@
 use crate::{
     components::TileGridBundle,
     ldtk::{IntGridValueDefinition, TileInstance},
+    level::tile_to_grid_coords,
     utils::*,
 };
 use bevy::prelude::*;
@@ -60,12 +61,7 @@ pub(crate) fn tile_pos_to_tile_maker(
         .iter()
         .map(|t| {
             (
-                ldtk_pixel_coords_to_grid_coords(
-                    IVec2::new(t.px[0], t.px[1]),
-                    layer_height_in_tiles,
-                    IVec2::splat(layer_grid_size),
-                )
-                .into(),
+                tile_to_grid_coords(t, layer_height_in_tiles, layer_grid_size).into(),
                 t.clone(),
             )
         })

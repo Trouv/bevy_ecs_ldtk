@@ -108,7 +108,7 @@ pub enum LevelBackground {
     /// The first layer of the level will be the background color.
     Rendered,
     /// There will be no level backgrounds, not even an empty layer.
-    Nonexistant,
+    Nonexistent,
 }
 
 impl Default for LevelBackground {

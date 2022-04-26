@@ -26,7 +26,8 @@ use bevy_ecs_tilemap::Map;
 /// When loading levels, you can flesh out `IntGrid` entities in your own system by querying for
 /// `Added<IntGridCell>`.
 /// Or, you can hook into the entity's spawning process using [LdtkIntCell].
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug, Default, Hash, Component)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug, Default, Hash, Component, Reflect)]
+#[reflect(Component)]
 pub struct IntGridCell {
     pub value: i32,
 }
@@ -61,7 +62,8 @@ pub struct LevelSet {
 ///
 /// Implements [LdtkEntity], and can be added to an [LdtkEntity] bundle with the `#[worldly]` field
 /// attribute. See [LdtkEntity#worldly] for more details.
-#[derive(Clone, Eq, PartialEq, Debug, Default, Hash, Component)]
+#[derive(Clone, Eq, PartialEq, Debug, Default, Hash, Component, Reflect)]
+#[reflect(Component)]
 pub struct Worldly {
     pub entity_iid: String,
 }
@@ -201,7 +203,8 @@ impl GridCoords {
 /// definition.
 ///
 /// Automatically inserted on any tiles with metadata.
-#[derive(Clone, Eq, PartialEq, Debug, Default, Hash, Component)]
+#[derive(Clone, Eq, PartialEq, Debug, Default, Hash, Component, Reflect)]
+#[reflect(Component)]
 pub struct TileMetadata {
     pub data: String,
 }
@@ -210,7 +213,8 @@ pub struct TileMetadata {
 /// definition.
 ///
 /// Automatically inserted on any tiles with enum tags.
-#[derive(Clone, Eq, PartialEq, Debug, Default, Hash, Component)]
+#[derive(Clone, Eq, PartialEq, Debug, Default, Hash, Component, Reflect)]
+#[reflect(Component)]
 pub struct TileEnumTags {
     pub tags: Vec<String>,
     pub source_enum_uid: Option<i32>,

@@ -91,7 +91,8 @@ impl Worldly {
 /// is updated, nor visa versa.
 /// This is left up to the user since there are plenty of scenarios where this behavior needs to be
 /// custom.
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Hash, Component)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Hash, Component, Reflect)]
+#[reflect(Component)]
 pub struct GridCoords {
     pub x: i32,
     pub y: i32,

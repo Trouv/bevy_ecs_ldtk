@@ -4,7 +4,10 @@ use bevy_ecs_ldtk::prelude::*;
 
 use std::collections::{HashMap, HashSet};
 
-use heron::prelude::*;
+use heron::{
+    prelude::*,
+    rapier_plugin::{PhysicsWorld, ShapeCastCollisionType},
+};
 
 pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     let camera = OrthographicCameraBundle::new_2d();
@@ -46,9 +49,11 @@ pub fn dbg_player_items(
 
 pub fn movement(
     input: Res<Input<KeyCode>>,
-    mut query: Query<(&mut Velocity, &mut Climber), With<Player>>,
+    mut query: Query<(&mut Velocity, &mut Climber, &Transform), With<Player>>,
+    physics_world: PhysicsWorld,
+    climbables: Query<&Climbable>,
 ) {
-    for (mut velocity, mut climber) in query.iter_mut() {
+    for (mut velocity, mut climber, transform) in query.iter_mut() {
         let right = if input.pressed(KeyCode::D) { 1. } else { 0. };
         let left = if input.pressed(KeyCode::A) { 1. } else { 0. };
 
@@ -68,8 +73,32 @@ pub fn movement(
         }
 
         if input.just_pressed(KeyCode::Space) {
-            velocity.linear.y = 450.;
-            climber.climbing = false;
+            let shape_size = Vec2::new(30., 1.);
+
+            let shape = CollisionShape::Cuboid {
+                half_extends: shape_size.extend(0.) / 2.,
+                border_radius: None,
+            };
+
+            let mut floor = transform.clone();
+            floor.translation.y = floor.translation.y - 20.0;
+
+            let result = physics_world.shape_cast_with_filter(
+                &shape,
+                floor.translation,
+                Quat::IDENTITY,
+                transform.translation,
+                CollisionLayers::default(),
+                |entity| climbables.get(entity).is_err(),
+            );
+
+            if let Some(collision) = result {
+                if let ShapeCastCollisionType::Collided(_) = collision.collision_type {
+                } else {
+                    velocity.linear.y = 450.;
+                    climber.climbing = false;
+                }
+            }
         }
     }
 }

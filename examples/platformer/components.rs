@@ -236,3 +236,7 @@ pub struct ChestBundle {
     #[bundle]
     pub collider_bundle: ColliderBundle,
 }
+
+pub struct GroundDetection {
+    pub on_ground: bool,
+}

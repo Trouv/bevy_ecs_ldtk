@@ -49,11 +49,10 @@ pub fn dbg_player_items(
 
 pub fn movement(
     input: Res<Input<KeyCode>>,
-    mut query: Query<(&mut Velocity, &mut Climber, &Transform), With<Player>>,
-    physics_world: PhysicsWorld,
-    climbables: Query<&Climbable>,
+    mut query: Query<(&mut Velocity, &mut Climber), With<Player>>,
+    ground_detection: Res<GroundDetection>,
 ) {
-    for (mut velocity, mut climber, transform) in query.iter_mut() {
+    for (mut velocity, mut climber) in query.iter_mut() {
         let right = if input.pressed(KeyCode::D) { 1. } else { 0. };
         let left = if input.pressed(KeyCode::A) { 1. } else { 0. };
 
@@ -72,33 +71,9 @@ pub fn movement(
             velocity.linear.y = (up - down) * 200.;
         }
 
-        if input.just_pressed(KeyCode::Space) {
-            let shape_size = Vec2::new(30., 1.);
-
-            let shape = CollisionShape::Cuboid {
-                half_extends: shape_size.extend(0.) / 2.,
-                border_radius: None,
-            };
-
-            let mut floor = transform.clone();
-            floor.translation.y = floor.translation.y - 20.0;
-
-            let result = physics_world.shape_cast_with_filter(
-                &shape,
-                floor.translation,
-                Quat::IDENTITY,
-                transform.translation,
-                CollisionLayers::default(),
-                |entity| climbables.get(entity).is_err(),
-            );
-
-            if let Some(collision) = result {
-                if let ShapeCastCollisionType::Collided(_) = collision.collision_type {
-                } else {
-                    velocity.linear.y = 450.;
-                    climber.climbing = false;
-                }
-            }
+        if input.just_pressed(KeyCode::Space) && ground_detection.on_ground {
+            velocity.linear.y = 450.;
+            climber.climbing = false;
         }
     }
 }
@@ -452,6 +427,42 @@ pub fn update_level_selection(
                 {
                     *level_selection = LevelSelection::Iid(ldtk_level.level.iid.clone());
                 }
+            }
+        }
+    }
+}
+
+pub fn ground_detection(
+    player_query: Query<&Transform, With<Player>>,
+    physics_world: PhysicsWorld,
+    climbables: Query<&Climbable>,
+    mut ground_detection: ResMut<GroundDetection>,
+) {
+    if let Ok(transform) = player_query.get_single() {
+        let shape_size = Vec2::new(10., 1.);
+
+        let shape = CollisionShape::Cuboid {
+            half_extends: shape_size.extend(0.) / 2.,
+            border_radius: None,
+        };
+
+        let mut floor = transform.clone();
+        floor.translation.y = floor.translation.y - 20.0;
+
+        let result = physics_world.shape_cast_with_filter(
+            &shape,
+            floor.translation,
+            Quat::IDENTITY,
+            transform.translation,
+            CollisionLayers::default(),
+            |entity| climbables.get(entity).is_err(),
+        );
+
+        if let Some(collision) = result {
+            if let ShapeCastCollisionType::Collided(_) = collision.collision_type {
+                ground_detection.on_ground = false;
+            } else {
+                ground_detection.on_ground = true;
             }
         }
     }

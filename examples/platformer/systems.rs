@@ -4,7 +4,10 @@ use bevy_ecs_ldtk::prelude::*;
 
 use std::collections::{HashMap, HashSet};
 
-use heron::prelude::*;
+use heron::{
+    prelude::*,
+    rapier_plugin::{PhysicsWorld, ShapeCastCollisionType},
+};
 
 pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     let camera = OrthographicCameraBundle::new_2d();
@@ -430,25 +433,36 @@ pub fn update_level_selection(
 }
 
 pub fn ground_detection(
-    player_query: Query<Entity, With<Player>>,
-    mut events: EventReader<CollisionEvent>,
+    player_query: Query<&Transform, With<Player>>,
+    physics_world: PhysicsWorld,
+    climbables: Query<&Climbable>,
     mut ground_detection: ResMut<GroundDetection>,
 ) {
-    if let Ok(entity) = player_query.get_single() {
-        for event in events.iter() {
-            match event {
-                CollisionEvent::Started(d1, d2) => {
-                    if d1.rigid_body_entity() == entity
-                        && d2.normals().get(0) == Some(&Vec3::new(0.0, -1.0, 0.0))
-                    {
-                        ground_detection.on_ground = true;
-                    }
-                }
-                CollisionEvent::Stopped(d1, _) => {
-                    if d1.rigid_body_entity() == entity {
-                        ground_detection.on_ground = false;
-                    }
-                }
+    if let Ok(transform) = player_query.get_single() {
+        let shape_size = Vec2::new(10., 1.);
+
+        let shape = CollisionShape::Cuboid {
+            half_extends: shape_size.extend(0.) / 2.,
+            border_radius: None,
+        };
+
+        let mut floor = transform.clone();
+        floor.translation.y = floor.translation.y - 20.0;
+
+        let result = physics_world.shape_cast_with_filter(
+            &shape,
+            floor.translation,
+            Quat::IDENTITY,
+            transform.translation,
+            CollisionLayers::default(),
+            |entity| climbables.get(entity).is_err(),
+        );
+
+        if let Some(collision) = result {
+            if let ShapeCastCollisionType::Collided(_) = collision.collision_type {
+                ground_detection.on_ground = false;
+            } else {
+                ground_detection.on_ground = true;
             }
         }
     }

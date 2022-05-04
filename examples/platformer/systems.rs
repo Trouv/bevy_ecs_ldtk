@@ -436,14 +436,6 @@ pub fn spawn_ground_sensor(
         commands.entity(entity).with_children(|builder| {
             builder
                 .spawn()
-                .insert_bundle(SpriteBundle {
-                    sprite: Sprite {
-                        color: Color::BLACK,
-                        custom_size: Some(Vec2::new(10.0, 10.0)),
-                        ..Default::default()
-                    },
-                    ..Default::default()
-                })
                 .insert(RigidBody::Sensor)
                 .insert(shape.clone())
                 .insert(Transform::from_xyz(0.0, -10.0, 5.0))

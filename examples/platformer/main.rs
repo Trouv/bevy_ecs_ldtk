@@ -4,7 +4,6 @@
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 
-use components::GroundDetection;
 use heron::prelude::*;
 
 mod components;
@@ -24,7 +23,6 @@ fn main() {
             set_clear_color: SetClearColor::FromLevelBackground,
             ..Default::default()
         })
-        .insert_resource(GroundDetection { on_ground: false })
         .add_startup_system(systems::setup)
         .add_system(systems::pause_physics_during_load)
         .add_system(systems::spawn_wall_collision)
@@ -35,6 +33,7 @@ fn main() {
         .add_system(systems::camera_fit_inside_current_level)
         .add_system(systems::update_level_selection)
         .add_system(systems::dbg_player_items)
+        .add_system(systems::spawn_ground_sensor)
         .add_system(systems::ground_detection)
         .register_ldtk_int_cell::<components::WallBundle>(1)
         .register_ldtk_int_cell::<components::LadderBundle>(2)

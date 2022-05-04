@@ -4,10 +4,7 @@ use bevy_ecs_ldtk::prelude::*;
 
 use std::collections::{HashMap, HashSet};
 
-use heron::{
-    prelude::*,
-    rapier_plugin::{PhysicsWorld, ShapeCastCollisionType},
-};
+use heron::prelude::*;
 
 pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     let camera = OrthographicCameraBundle::new_2d();
@@ -49,10 +46,9 @@ pub fn dbg_player_items(
 
 pub fn movement(
     input: Res<Input<KeyCode>>,
-    mut query: Query<(&mut Velocity, &mut Climber), With<Player>>,
-    ground_detection: Res<GroundDetection>,
+    mut query: Query<(&mut Velocity, &mut Climber, &GroundDetection), With<Player>>,
 ) {
-    for (mut velocity, mut climber) in query.iter_mut() {
+    for (mut velocity, mut climber, ground_detection) in query.iter_mut() {
         let right = if input.pressed(KeyCode::D) { 1. } else { 0. };
         let left = if input.pressed(KeyCode::A) { 1. } else { 0. };
 
@@ -432,37 +428,52 @@ pub fn update_level_selection(
     }
 }
 
-pub fn ground_detection(
-    player_query: Query<&Transform, With<Player>>,
-    physics_world: PhysicsWorld,
-    climbables: Query<&Climbable>,
-    mut ground_detection: ResMut<GroundDetection>,
+pub fn spawn_ground_sensor(
+    mut commands: Commands,
+    detect_ground_for: Query<(Entity, &CollisionShape), Added<GroundDetection>>,
 ) {
-    if let Ok(transform) = player_query.get_single() {
-        let shape_size = Vec2::new(10., 1.);
+    for (entity, shape) in detect_ground_for.iter() {
+        commands.entity(entity).with_children(|builder| {
+            builder
+                .spawn()
+                .insert_bundle(SpriteBundle {
+                    sprite: Sprite {
+                        color: Color::BLACK,
+                        custom_size: Some(Vec2::new(10.0, 10.0)),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                })
+                .insert(RigidBody::Sensor)
+                .insert(shape.clone())
+                .insert(Transform::from_xyz(0.0, -10.0, 5.0))
+                .insert(GroundSensor(entity));
+        });
+    }
+}
 
-        let shape = CollisionShape::Cuboid {
-            half_extends: shape_size.extend(0.) / 2.,
-            border_radius: None,
-        };
-
-        let mut floor = transform.clone();
-        floor.translation.y = floor.translation.y - 20.0;
-
-        let result = physics_world.shape_cast_with_filter(
-            &shape,
-            floor.translation,
-            Quat::IDENTITY,
-            transform.translation,
-            CollisionLayers::default(),
-            |entity| climbables.get(entity).is_err(),
-        );
-
-        if let Some(collision) = result {
-            if let ShapeCastCollisionType::Collided(_) = collision.collision_type {
-                ground_detection.on_ground = false;
-            } else {
-                ground_detection.on_ground = true;
+pub fn ground_detection(
+    mut ground_detectors: Query<(Entity, &mut GroundDetection)>,
+    ground_sensors: Query<(Entity, &GroundSensor)>,
+    mut collisions: EventReader<CollisionEvent>,
+) {
+    for sensor in ground_sensors.iter() {
+        for collision in collisions.iter() {
+            match collision {
+                CollisionEvent::Started(a, _) => {
+                    if a.rigid_body_entity() == sensor.0 {
+                        if let Ok((_, mut detector)) = ground_detectors.get_mut(sensor.1 .0) {
+                            detector.on_ground = true;
+                        }
+                    }
+                }
+                CollisionEvent::Stopped(a, _) => {
+                    if a.rigid_body_entity() == sensor.0 {
+                        if let Ok((_, mut detector)) = ground_detectors.get_mut(sensor.1 .0) {
+                            detector.on_ground = false;
+                        }
+                    }
+                }
             }
         }
     }

@@ -430,43 +430,60 @@ pub fn update_level_selection(
 
 pub fn spawn_ground_sensor(
     mut commands: Commands,
-    detect_ground_for: Query<(Entity, &CollisionShape), Added<GroundDetection>>,
+    detect_ground_for: Query<(Entity, &CollisionShape, &Transform), Added<GroundDetection>>,
 ) {
-    for (entity, shape) in detect_ground_for.iter() {
-        commands.entity(entity).with_children(|builder| {
-            builder
-                .spawn()
-                .insert(RigidBody::Sensor)
-                .insert(shape.clone())
-                .insert(Transform::from_xyz(0.0, -10.0, 5.0))
-                .insert(GroundSensor(entity));
-        });
+    for (entity, shape, transform) in detect_ground_for.iter() {
+        if let CollisionShape::Cuboid { half_extends, .. } = shape {
+            let detector_shape = CollisionShape::Cuboid {
+                half_extends: Vec3::new(half_extends.x / 2., 2., 0.),
+                border_radius: None,
+            };
+
+            commands.entity(entity).with_children(|builder| {
+                builder
+                    .spawn()
+                    .insert(RigidBody::Sensor)
+                    .insert(detector_shape)
+                    .insert(Transform::from_xyz(0.0, -half_extends.y - 4., 0.))
+                    .insert(GlobalTransform::default())
+                    .insert(GroundSensor {
+                        ground_detection_entity: entity,
+                        intersecting_ground_entities: HashSet::new(),
+                    });
+            });
+        }
     }
 }
 
 pub fn ground_detection(
-    mut ground_detectors: Query<(Entity, &mut GroundDetection)>,
-    ground_sensors: Query<(Entity, &GroundSensor)>,
+    mut ground_detectors: Query<&mut GroundDetection>,
+    mut ground_sensors: Query<(Entity, &mut GroundSensor)>,
     mut collisions: EventReader<CollisionEvent>,
 ) {
-    for sensor in ground_sensors.iter() {
+    for (entity, mut ground_sensor) in ground_sensors.iter_mut() {
         for collision in collisions.iter() {
             match collision {
-                CollisionEvent::Started(a, _) => {
-                    if a.rigid_body_entity() == sensor.0 {
-                        if let Ok((_, mut detector)) = ground_detectors.get_mut(sensor.1 .0) {
-                            detector.on_ground = true;
-                        }
+                CollisionEvent::Started(a, b) => {
+                    if a.rigid_body_entity() == entity {
+                        ground_sensor
+                            .intersecting_ground_entities
+                            .insert(b.rigid_body_entity());
                     }
                 }
-                CollisionEvent::Stopped(a, _) => {
-                    if a.rigid_body_entity() == sensor.0 {
-                        if let Ok((_, mut detector)) = ground_detectors.get_mut(sensor.1 .0) {
-                            detector.on_ground = false;
-                        }
+                CollisionEvent::Stopped(a, b) => {
+                    if a.rigid_body_entity() == entity {
+                        ground_sensor
+                            .intersecting_ground_entities
+                            .remove(&b.rigid_body_entity());
                     }
                 }
             }
+        }
+
+        if let Ok(mut ground_detection) =
+            ground_detectors.get_mut(ground_sensor.ground_detection_entity)
+        {
+            ground_detection.on_ground = ground_sensor.intersecting_ground_entities.len() > 0;
         }
     }
 }

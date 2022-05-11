@@ -67,7 +67,7 @@ pub fn movement(
             velocity.linear.y = (up - down) * 200.;
         }
 
-        if input.just_pressed(KeyCode::Space) && ground_detection.on_ground {
+        if input.just_pressed(KeyCode::Space) && (ground_detection.on_ground || climber.climbing) {
             velocity.linear.y = 450.;
             climber.climbing = false;
         }
@@ -439,12 +439,14 @@ pub fn spawn_ground_sensor(
                 border_radius: None,
             };
 
+            let sensor_translation = Vec3::new(0., -half_extends.y, 0.) / transform.scale;
+
             commands.entity(entity).with_children(|builder| {
                 builder
                     .spawn()
                     .insert(RigidBody::Sensor)
                     .insert(detector_shape)
-                    .insert(Transform::from_xyz(0.0, -half_extends.y - 4., 0.))
+                    .insert(Transform::from_translation(sensor_translation))
                     .insert(GlobalTransform::default())
                     .insert(GroundSensor {
                         ground_detection_entity: entity,
@@ -459,17 +461,26 @@ pub fn ground_detection(
     mut ground_detectors: Query<&mut GroundDetection>,
     mut ground_sensors: Query<(Entity, &mut GroundSensor)>,
     mut collisions: EventReader<CollisionEvent>,
+    rigid_bodies: Query<&RigidBody>,
 ) {
     for (entity, mut ground_sensor) in ground_sensors.iter_mut() {
         for collision in collisions.iter() {
             match collision {
-                CollisionEvent::Started(a, b) => {
-                    if a.rigid_body_entity() == entity {
-                        ground_sensor
-                            .intersecting_ground_entities
-                            .insert(b.rigid_body_entity());
+                CollisionEvent::Started(a, b) => match rigid_bodies.get(b.rigid_body_entity()) {
+                    Ok(RigidBody::Sensor) => {
+                        // don't consider sensors to be "the ground"
                     }
-                }
+                    Ok(_) => {
+                        if a.rigid_body_entity() == entity {
+                            ground_sensor
+                                .intersecting_ground_entities
+                                .insert(b.rigid_body_entity());
+                        }
+                    }
+                    Err(_) => {
+                        panic!("If there's a collision, there should be an entity")
+                    }
+                },
                 CollisionEvent::Stopped(a, b) => {
                     if a.rigid_body_entity() == entity {
                         ground_sensor

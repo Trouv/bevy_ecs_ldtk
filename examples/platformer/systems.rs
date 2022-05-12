@@ -46,9 +46,9 @@ pub fn dbg_player_items(
 
 pub fn movement(
     input: Res<Input<KeyCode>>,
-    mut query: Query<(&mut Velocity, &mut Climber), With<Player>>,
+    mut query: Query<(&mut Velocity, &mut Climber, &GroundDetection), With<Player>>,
 ) {
-    for (mut velocity, mut climber) in query.iter_mut() {
+    for (mut velocity, mut climber, ground_detection) in query.iter_mut() {
         let right = if input.pressed(KeyCode::D) { 1. } else { 0. };
         let left = if input.pressed(KeyCode::A) { 1. } else { 0. };
 
@@ -67,7 +67,7 @@ pub fn movement(
             velocity.linear.y = (up - down) * 200.;
         }
 
-        if input.just_pressed(KeyCode::Space) {
+        if input.just_pressed(KeyCode::Space) && (ground_detection.on_ground || climber.climbing) {
             velocity.linear.y = 450.;
             climber.climbing = false;
         }
@@ -424,6 +424,77 @@ pub fn update_level_selection(
                     *level_selection = LevelSelection::Iid(ldtk_level.level.iid.clone());
                 }
             }
+        }
+    }
+}
+
+pub fn spawn_ground_sensor(
+    mut commands: Commands,
+    detect_ground_for: Query<(Entity, &CollisionShape, &Transform), Added<GroundDetection>>,
+) {
+    for (entity, shape, transform) in detect_ground_for.iter() {
+        if let CollisionShape::Cuboid { half_extends, .. } = shape {
+            let detector_shape = CollisionShape::Cuboid {
+                half_extends: Vec3::new(half_extends.x / 2., 2., 0.),
+                border_radius: None,
+            };
+
+            let sensor_translation = Vec3::new(0., -half_extends.y, 0.) / transform.scale;
+
+            commands.entity(entity).with_children(|builder| {
+                builder
+                    .spawn()
+                    .insert(RigidBody::Sensor)
+                    .insert(detector_shape)
+                    .insert(Transform::from_translation(sensor_translation))
+                    .insert(GlobalTransform::default())
+                    .insert(GroundSensor {
+                        ground_detection_entity: entity,
+                        intersecting_ground_entities: HashSet::new(),
+                    });
+            });
+        }
+    }
+}
+
+pub fn ground_detection(
+    mut ground_detectors: Query<&mut GroundDetection>,
+    mut ground_sensors: Query<(Entity, &mut GroundSensor)>,
+    mut collisions: EventReader<CollisionEvent>,
+    rigid_bodies: Query<&RigidBody>,
+) {
+    for (entity, mut ground_sensor) in ground_sensors.iter_mut() {
+        for collision in collisions.iter() {
+            match collision {
+                CollisionEvent::Started(a, b) => match rigid_bodies.get(b.rigid_body_entity()) {
+                    Ok(RigidBody::Sensor) => {
+                        // don't consider sensors to be "the ground"
+                    }
+                    Ok(_) => {
+                        if a.rigid_body_entity() == entity {
+                            ground_sensor
+                                .intersecting_ground_entities
+                                .insert(b.rigid_body_entity());
+                        }
+                    }
+                    Err(_) => {
+                        panic!("If there's a collision, there should be an entity")
+                    }
+                },
+                CollisionEvent::Stopped(a, b) => {
+                    if a.rigid_body_entity() == entity {
+                        ground_sensor
+                            .intersecting_ground_entities
+                            .remove(&b.rigid_body_entity());
+                    }
+                }
+            }
+        }
+
+        if let Ok(mut ground_detection) =
+            ground_detectors.get_mut(ground_sensor.ground_detection_entity)
+        {
+            ground_detection.on_ground = ground_sensor.intersecting_ground_entities.len() > 0;
         }
     }
 }

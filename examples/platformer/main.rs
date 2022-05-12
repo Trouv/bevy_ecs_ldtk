@@ -33,6 +33,8 @@ fn main() {
         .add_system(systems::camera_fit_inside_current_level)
         .add_system(systems::update_level_selection)
         .add_system(systems::dbg_player_items)
+        .add_system(systems::spawn_ground_sensor)
+        .add_system(systems::ground_detection)
         .register_ldtk_int_cell::<components::WallBundle>(1)
         .register_ldtk_int_cell::<components::LadderBundle>(2)
         .register_ldtk_int_cell::<components::WallBundle>(3)

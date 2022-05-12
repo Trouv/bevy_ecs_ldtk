@@ -124,6 +124,7 @@ pub struct PlayerBundle {
     #[worldly]
     pub worldly: Worldly,
     pub climber: Climber,
+    pub ground_detection: GroundDetection,
 
     // Build Items Component manually by using `impl From<EntityInstance>
     #[from_entity_instance]
@@ -235,4 +236,15 @@ pub struct ChestBundle {
     #[from_entity_instance]
     #[bundle]
     pub collider_bundle: ColliderBundle,
+}
+
+#[derive(Clone, Default, Component)]
+pub struct GroundDetection {
+    pub on_ground: bool,
+}
+
+#[derive(Component)]
+pub struct GroundSensor {
+    pub ground_detection_entity: Entity,
+    pub intersecting_ground_entities: HashSet<Entity>,
 }

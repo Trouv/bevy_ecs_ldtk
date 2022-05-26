@@ -109,7 +109,10 @@ impl<'de> Deserialize<'de> for FieldInstance {
                     .map_err(de::Error::custom)?;
 
                 FieldValue::Point(point_helper.map(|p| IVec2::new(p.cx, p.cy)))
-            }
+            },
+            "Multilines" => FieldValue::String(
+                Option::<String>::deserialize(helper.value).map_err(de::Error::custom)?,
+            ),
             "Array<Int>" => FieldValue::Ints(
                 Vec::<Option<i32>>::deserialize(helper.value).map_err(de::Error::custom)?,
             ),

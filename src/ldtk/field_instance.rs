@@ -113,6 +113,9 @@ impl<'de> Deserialize<'de> for FieldInstance {
             "Multilines" => FieldValue::String(
                 Option::<String>::deserialize(helper.value).map_err(de::Error::custom)?,
             ),
+            "Array<Multilines>" => FieldValue::Strings(
+                Vec::<Option<String>>::deserialize(helper.value).map_err(de::Error::custom)?,
+            ),
             "Array<Int>" => FieldValue::Ints(
                 Vec::<Option<i32>>::deserialize(helper.value).map_err(de::Error::custom)?,
             ),

@@ -110,6 +110,12 @@ impl<'de> Deserialize<'de> for FieldInstance {
 
                 FieldValue::Point(point_helper.map(|p| IVec2::new(p.cx, p.cy)))
             }
+            "Multilines" => FieldValue::String(
+                Option::<String>::deserialize(helper.value).map_err(de::Error::custom)?,
+            ),
+            "Array<Multilines>" => FieldValue::Strings(
+                Vec::<Option<String>>::deserialize(helper.value).map_err(de::Error::custom)?,
+            ),
             "Array<Int>" => FieldValue::Ints(
                 Vec::<Option<i32>>::deserialize(helper.value).map_err(de::Error::custom)?,
             ),
@@ -167,7 +173,10 @@ impl<'de> Deserialize<'de> for FieldInstance {
                             .map_err(de::Error::custom)?,
                     )
                 } else {
-                    return Err(de::Error::custom("Encountered unknown field type"));
+                    return Err(de::Error::custom(format!(
+                        "Encountered unknown field type: {}",
+                        t
+                    )));
                 }
             }
         };

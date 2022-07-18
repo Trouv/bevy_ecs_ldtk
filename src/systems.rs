@@ -354,7 +354,7 @@ pub fn set_ldtk_texture_filters_to_nearest(
     // https://github.com/StarArawn/bevy_ecs_tilemap/blob/main/examples/helpers/texture.rs,
     // except it only applies to the ldtk tilesets.
     for event in texture_events.iter() {
-        if let AssetEvent::Created { handle } | AssetEvent::Modified { handle } = event {
+        if let AssetEvent::Created { handle } = event {
             let mut set_texture_filters_to_nearest = false;
 
             for (_, ldtk_asset) in ldtk_assets.iter() {

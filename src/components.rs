@@ -220,6 +220,11 @@ pub struct TileEnumTags {
     pub source_enum_uid: Option<i32>,
 }
 
+/// [Component] for storing some LDtk layer information on layer entities.
+///
+/// Based on [LayerInstance], but without the fields with tile and entity information.
+///
+/// Automatically inserted for IntGrid, AutoTile, and Tile layers.
 #[derive(Clone, PartialEq, Debug, Default, Component, Reflect)]
 #[reflect(Component)]
 pub struct LayerMetadata {

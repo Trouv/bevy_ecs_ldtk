@@ -1,6 +1,6 @@
 //! [Component]s and [Bundle]s used by the plugin.
 
-pub use crate::ldtk::{EntityInstance, LayerInstance};
+pub use crate::ldtk::{EntityInstance, LayerInstance, Type};
 use bevy::prelude::*;
 
 use std::{
@@ -250,7 +250,7 @@ pub struct LayerMetadata {
     pub tileset_rel_path: Option<String>,
 
     /// Layer type (possible values: IntGrid, Entities, Tiles or AutoLayer)
-    pub layer_instance_type: crate::ldtk::Type,
+    pub layer_instance_type: Type,
 
     /// Unique layer instance identifier
     pub iid: String,
@@ -281,6 +281,32 @@ pub struct LayerMetadata {
 
     /// Layer instance visibility
     pub visible: bool,
+}
+
+impl From<&LayerInstance> for LayerMetadata {
+    fn from(instance: &LayerInstance) -> Self {
+        LayerMetadata {
+            c_hei: instance.c_hei,
+            c_wid: instance.c_wid,
+            grid_size: instance.grid_size,
+            identifier: instance.identifier.clone(),
+            opacity: instance.opacity,
+            px_total_offset_x: instance.px_total_offset_x,
+            px_total_offset_y: instance.px_total_offset_y,
+            tileset_def_uid: instance.tileset_def_uid,
+            tileset_rel_path: instance.tileset_rel_path.clone(),
+            layer_instance_type: instance.layer_instance_type.clone(),
+            iid: instance.iid.clone(),
+            layer_def_uid: instance.layer_def_uid,
+            level_id: instance.level_id,
+            optional_rules: instance.optional_rules.clone(),
+            override_tileset_uid: instance.override_tileset_uid,
+            px_offset_x: instance.px_offset_x,
+            px_offset_y: instance.px_offset_y,
+            seed: instance.seed,
+            visible: instance.visible,
+        }
+    }
 }
 
 #[derive(Clone, Default, Bundle)]

@@ -194,8 +194,8 @@ pub mod prelude {
         app::{LdtkEntity, LdtkIntCell, RegisterLdtkObjects},
         assets::{LdtkAsset, LdtkLevel},
         components::{
-            EntityInstance, GridCoords, IntGridCell, LdtkWorldBundle, LevelSet, TileEnumTags,
-            TileMetadata, Worldly,
+            EntityInstance, GridCoords, IntGridCell, LayerMetadata, LdtkWorldBundle, LevelSet,
+            TileEnumTags, TileMetadata, Worldly,
         },
         ldtk::{self, FieldValue, LayerInstance, TilesetDefinition},
         plugin::LdtkPlugin,

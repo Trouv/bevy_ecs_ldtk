@@ -657,9 +657,12 @@ pub fn spawn_level(
                             layer_id as f32,
                         );
 
-                        commands.entity(layer_entity).insert(
-                            Transform::from_translation(layer_offset).with_scale(layer_scale),
-                        );
+                        commands
+                            .entity(layer_entity)
+                            .insert(
+                                Transform::from_translation(layer_offset).with_scale(layer_scale),
+                            )
+                            .insert(LayerMetadata::from(layer_instance));
 
                         map.add_layer(commands, layer_id as u16, layer_entity);
                         layer_id += 1;

@@ -11,8 +11,8 @@
 //! 2. All struct fields have been made public.
 //! 3. [Eq], [PartialEq], [Debug], [Default], and [Clone] have been derived wherever possible.
 //! 4. [i64] and [f64] have been changed to [i32] and [f32].
-//! 5. [LimitBehavior], [LimitScope], [RenderMode], and [TileRenderMode] have been given custom
-//!    [Default] implementations.
+//! 5. [LimitBehavior], [LimitScope], [RenderMode], [TileRenderMode], and [Type] have been given
+//!    custom [Default] implementations.
 //! 6. `Component` has been derived for [EntityInstance].
 //! 7. Documentation added for [EntityInstance], which required the unused import of [LdtkEntity].
 //! 8. [FieldInstance] has been moved to its own module, and is re-exported here.
@@ -1634,6 +1634,12 @@ pub enum Type {
 
     #[serde(rename = "Tiles")]
     Tiles,
+}
+
+impl Default for Type {
+    fn default() -> Self {
+        Self::Tiles
+    }
 }
 
 #[derive(Eq, PartialEq, Debug, Clone, Serialize, Deserialize)]

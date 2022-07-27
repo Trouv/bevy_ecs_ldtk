@@ -220,7 +220,8 @@ pub struct TileEnumTags {
     pub source_enum_uid: Option<i32>,
 }
 
-#[derive(Clone, PartialEq, Debug, Component, Reflect)]
+#[derive(Clone, PartialEq, Debug, Default, Component, Reflect)]
+#[reflect(Component)]
 pub struct LayerMetadata {
     /// Grid-based height
     pub c_hei: i32,

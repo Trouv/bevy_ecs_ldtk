@@ -220,6 +220,69 @@ pub struct TileEnumTags {
     pub source_enum_uid: Option<i32>,
 }
 
+#[derive(Clone, PartialEq, Debug, Component, Reflect)]
+pub struct LayerMetadata {
+    /// Grid-based height
+    pub c_hei: i32,
+
+    /// Grid-based width
+    pub c_wid: i32,
+
+    /// Grid size
+    pub grid_size: i32,
+
+    /// Layer definition identifier
+    pub identifier: String,
+
+    /// Layer opacity as Float [0-1]
+    pub opacity: f32,
+
+    /// Total layer X pixel offset, including both instance and definition offsets.
+    pub px_total_offset_x: i32,
+
+    /// Total layer Y pixel offset, including both instance and definition offsets.
+    pub px_total_offset_y: i32,
+
+    /// The definition UID of corresponding Tileset, if any.
+    pub tileset_def_uid: Option<i32>,
+
+    /// The relative path to corresponding Tileset, if any.
+    pub tileset_rel_path: Option<String>,
+
+    /// Layer type (possible values: IntGrid, Entities, Tiles or AutoLayer)
+    pub layer_instance_type: crate::ldtk::Type,
+
+    /// Unique layer instance identifier
+    pub iid: String,
+
+    /// Reference the Layer definition UID
+    pub layer_def_uid: i32,
+
+    /// Reference to the UID of the level containing this layer instance
+    pub level_id: i32,
+
+    /// An Array containing the UIDs of optional rules that were enabled in this specific layer
+    /// instance.
+    pub optional_rules: Vec<i32>,
+
+    /// This layer can use another tileset by overriding the tileset UID here.
+    pub override_tileset_uid: Option<i32>,
+
+    /// X offset in pixels to render this layer, usually 0 (IMPORTANT: this should be added to
+    /// the `LayerDef` optional offset, see `__pxTotalOffsetX`)
+    pub px_offset_x: i32,
+
+    /// Y offset in pixels to render this layer, usually 0 (IMPORTANT: this should be added to
+    /// the `LayerDef` optional offset, see `__pxTotalOffsetY`)
+    pub px_offset_y: i32,
+
+    /// Random seed used for Auto-Layers rendering
+    pub seed: i32,
+
+    /// Layer instance visibility
+    pub visible: bool,
+}
+
 #[derive(Clone, Default, Bundle)]
 pub(crate) struct TileGridBundle {
     #[bundle]

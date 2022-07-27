@@ -23,6 +23,7 @@
 //!     [Level] have been changed from [String]s to [Color].
 //! 12. [TilesetDefinition::rel_path]'s type changed from [String] to [Option<String>].
 //! 13. All urls in docs have been changed to hyperlinks with `<>`
+//! 14. `Reflect` has been derived for [Type].
 
 use bevy::prelude::{Color, IVec2, Vec2};
 use serde::{Deserialize, Serialize};
@@ -1620,7 +1621,7 @@ pub enum TileMode {
 
 /// Type of the layer as Haxe Enum Possible values: `IntGrid`, `Entities`, `Tiles`,
 /// `AutoLayer`
-#[derive(Eq, PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(Eq, PartialEq, Debug, Clone, bevy::prelude::Reflect, Serialize, Deserialize)]
 pub enum Type {
     #[serde(rename = "AutoLayer")]
     AutoLayer,

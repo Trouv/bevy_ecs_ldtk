@@ -98,7 +98,6 @@
 //! [LevelSpawnBehavior::UseWorldTranslation].
 
 use bevy::prelude::*;
-use bevy_ecs_tilemap::prelude::*;
 
 pub mod app;
 mod assets;
@@ -141,7 +140,7 @@ mod plugin {
 
     impl Plugin for LdtkPlugin {
         fn build(&self, app: &mut App) {
-            app.add_plugin(TilemapPlugin)
+            app.add_plugin(bevy_ecs_tilemap::Tilemap2dPlugin)
                 .init_non_send_resource::<app::LdtkEntityMap>()
                 .init_non_send_resource::<app::LdtkIntCellMap>()
                 .init_resource::<resources::LdtkSettings>()

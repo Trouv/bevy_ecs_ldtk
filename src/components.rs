@@ -16,10 +16,7 @@ use crate::{
     utils::ldtk_grid_coords_to_grid_coords,
 };
 
-use bevy_ecs_tilemap::{TileBundle, TileBundleTrait, TileParent, TilePos};
-
-#[allow(unused_imports)]
-use bevy_ecs_tilemap::Map;
+use bevy_ecs_tilemap::tiles::{TileBundle, TilePos2d};
 
 /// [Component] added to any `IntGrid` tile by default.
 ///
@@ -115,8 +112,8 @@ impl From<GridCoords> for IVec2 {
     }
 }
 
-impl From<TilePos> for GridCoords {
-    fn from(tile_pos: TilePos) -> Self {
+impl From<TilePos2d> for GridCoords {
+    fn from(tile_pos: TilePos2d) -> Self {
         GridCoords {
             x: tile_pos.0 as i32,
             y: tile_pos.1 as i32,
@@ -124,9 +121,9 @@ impl From<TilePos> for GridCoords {
     }
 }
 
-impl From<GridCoords> for TilePos {
+impl From<GridCoords> for TilePos2d {
     fn from(grid_coords: GridCoords) -> Self {
-        TilePos(grid_coords.x as u32, grid_coords.y as u32)
+        TilePos2d::new(grid_coords.x as u32, grid_coords.y as u32)
     }
 }
 
@@ -322,16 +319,6 @@ pub(crate) struct TileGridBundle {
     pub grid_coords: GridCoords,
 }
 
-impl TileBundleTrait for TileGridBundle {
-    fn get_tile_pos_mut(&mut self) -> &mut TilePos {
-        self.tile_bundle.get_tile_pos_mut()
-    }
-
-    fn get_tile_parent(&mut self) -> &mut TileParent {
-        self.tile_bundle.get_tile_parent()
-    }
-}
-
 #[derive(Clone, Default, Bundle)]
 pub(crate) struct IntGridCellBundle {
     pub int_grid_cell: IntGridCell,
@@ -347,7 +334,7 @@ pub(crate) struct EntityInstanceBundle {
 /// After the ldtk file is done loading, the levels you've chosen with [LevelSelection] or
 /// [LevelSet] will begin to spawn.
 /// Each level is its own entity, with the [LdtkWorldBundle] as its parent.
-/// Each level has `Handle<LdtkLevel>`, [Map], [Transform], and [GlobalTransform] components.
+/// Each level has `Handle<LdtkLevel>`, [Transform], and [GlobalTransform] components.
 /// Finally, all tiles and entities in the level are spawned as children to the level unless marked
 /// by a [Worldly] component.
 #[derive(Clone, Default, Bundle)]

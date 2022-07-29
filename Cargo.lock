@@ -392,9 +392,8 @@ dependencies = [
 
 [[package]]
 name = "bevy_ecs_tilemap"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c68fefad7aa09f9833d198c0fd1d9ebe58bf9ab3abf91cf912e4f5585227fb82"
+version = "0.5.0"
+source = "git+https://github.com/StarArawn/bevy_ecs_tilemap?branch=rewrite#97133fdbae7e51f51ecdb1ed9321384a47792c34"
 dependencies = [
  "bevy",
  "bytemuck",

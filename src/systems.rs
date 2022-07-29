@@ -11,7 +11,6 @@ use crate::{
 };
 
 use bevy::{prelude::*, render::render_resource::*};
-use bevy_ecs_tilemap::prelude::*;
 use std::collections::{HashMap, HashSet};
 
 pub fn choose_levels(
@@ -55,18 +54,16 @@ pub fn choose_levels(
 pub fn apply_level_set(
     mut commands: Commands,
     ldtk_world_query: Query<(Entity, &LevelSet, &Children, &Handle<LdtkAsset>), Changed<LevelSet>>,
-    mut ldtk_level_query: Query<(&Handle<LdtkLevel>, &mut Map)>,
+    mut ldtk_level_query: Query<&Handle<LdtkLevel>>,
     ldtk_assets: Res<Assets<LdtkAsset>>,
     level_assets: Res<Assets<LdtkLevel>>,
     ldtk_settings: Res<LdtkSettings>,
     mut level_events: EventWriter<LevelEvent>,
-    layers: Query<&Layer>,
-    chunks: Query<&Chunk>,
 ) {
     for (world_entity, level_set, children, ldtk_asset_handle) in ldtk_world_query.iter() {
         let mut previous_level_maps = HashMap::new();
         for child in children.iter() {
-            if let Ok((level_handle, _)) = ldtk_level_query.get(*child) {
+            if let Ok(level_handle) = ldtk_level_query.get(*child) {
                 if let Some(ldtk_level) = level_assets.get(level_handle) {
                     previous_level_maps.insert(ldtk_level.level.iid.clone(), child);
                 }
@@ -91,11 +88,8 @@ pub fn apply_level_set(
             let map_entity = previous_level_maps.get(iid).expect(
                 "The set of previous_iids and the keys in previous_level_maps should be the same.",
             );
-            if let Ok((_, mut map)) = ldtk_level_query.get_mut(**map_entity) {
-                clear_map(&mut commands, &mut map, &layers, &chunks);
-                map.despawn(&mut commands);
-                level_events.send(LevelEvent::Despawned(iid.clone()));
-            }
+            commands.entity(**map_entity).despawn_recursive();
+            level_events.send(LevelEvent::Despawned(iid.clone()));
         }
     }
 }
@@ -107,14 +101,13 @@ pub fn process_ldtk_world(
     mut ldtk_events: EventReader<AssetEvent<LdtkAsset>>,
     mut level_events: EventWriter<LevelEvent>,
     new_ldtks: Query<&Handle<LdtkAsset>, Added<Handle<LdtkAsset>>>,
-    mut ldtk_level_query: Query<&mut Map, With<Handle<LdtkLevel>>>,
+    mut ldtk_level_query: Query<&Handle<LdtkLevel>>,
     mut ldtk_world_query: Query<(Entity, &Handle<LdtkAsset>, &mut LevelSet, Option<&Children>)>,
     level_selection: Option<Res<LevelSelection>>,
     ldtk_assets: Res<Assets<LdtkAsset>>,
+    level_assets: Res<Assets<LdtkLevel>>,
     ldtk_settings: Res<LdtkSettings>,
     mut clear_color: ResMut<ClearColor>,
-    layer_query: Query<&Layer>,
-    chunk_query: Query<&Chunk>,
 ) {
     // This function uses code from the bevy_ecs_tilemap ldtk example
     // https://github.com/StarArawn/bevy_ecs_tilemap/blob/main/examples/ldtk/ldtk.rs
@@ -153,13 +146,10 @@ pub fn process_ldtk_world(
             if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
                 if let Some(children) = children {
                     for child in children.iter() {
-                        if let Ok(mut map) = ldtk_level_query.get_mut(*child) {
-                            clear_map(&mut commands, &mut map, &layer_query, &chunk_query);
-                            map.despawn(&mut commands);
+                        if let Ok(level_handle) = ldtk_level_query.get_mut(*child) {
+                            commands.entity(*child).despawn_recursive();
 
-                            if let Some(level) =
-                                ldtk_asset.get_level(&LevelSelection::Uid(map.id as i32))
-                            {
+                            if let Some(level) = ldtk_assets.get(level_handle) {
                                 level_events.send(LevelEvent::Despawned(level.iid.clone()));
                             }
                         } else {
@@ -233,40 +223,6 @@ fn pre_spawn_level(
                 Transform::from_translation(translation),
                 GlobalTransform::default(),
             ));
-    }
-}
-
-fn clear_map(
-    commands: &mut Commands,
-    map: &mut Map,
-    layer_query: &Query<&Layer>,
-    chunk_query: &Query<&Chunk>,
-) {
-    for (layer_id, layer_entity) in map.get_layers() {
-        if let Ok(layer) = layer_query.get(layer_entity) {
-            for x in 0..layer.get_layer_size_in_tiles().0 {
-                for y in 0..layer.get_layer_size_in_tiles().1 {
-                    let tile_pos = TilePos(x, y);
-                    let chunk_pos = ChunkPos(
-                        tile_pos.0 / layer.settings.chunk_size.0,
-                        tile_pos.1 / layer.settings.chunk_size.1,
-                    );
-                    if let Some(chunk_entity) = layer.get_chunk(chunk_pos) {
-                        if let Ok(chunk) = chunk_query.get(chunk_entity) {
-                            if let Ok(chunk_tile_pos) = chunk.to_chunk_pos(tile_pos) {
-                                if let Some(tile) = chunk.get_tile_entity(chunk_tile_pos) {
-                                    commands.entity(tile).despawn_recursive();
-                                }
-                            }
-                        }
-
-                        commands.entity(chunk_entity).despawn_recursive();
-                    }
-                }
-            }
-
-            map.remove_layer(commands, layer_id);
-        }
     }
 }
 

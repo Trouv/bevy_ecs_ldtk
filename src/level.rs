@@ -17,12 +17,17 @@ use crate::{
 };
 
 use bevy::{prelude::*, render::render_resource::*, sprite};
-use bevy_ecs_tilemap::prelude::*;
+use bevy_ecs_tilemap::{
+    map::{
+        Tilemap2dGridSize, Tilemap2dSize, Tilemap2dSpacing, Tilemap2dTextureSize,
+        Tilemap2dTileSize, TilemapId, TilemapTexture,
+    },
+    tiles::{Tile2dStorage, TileBundle, TileColor, TileFlip, TilePos2d, TileTexture, TileVisible},
+    TilemapBundle,
+};
 use std::collections::{HashMap, HashSet};
 
 use thiserror::Error;
-
-const CHUNK_SIZE: ChunkSize = ChunkSize(32, 32);
 
 #[derive(Error, Debug)]
 enum BackgroundImageError {
@@ -140,9 +145,9 @@ fn transform_bundle_for_tiles(
 }
 
 #[allow(clippy::too_many_arguments)]
-fn insert_metadata_for_layer<T: TileBundleTrait>(
+fn insert_metadata_for_layer(
     commands: &mut Commands,
-    layer_builder: &mut LayerBuilder<T>,
+    tile_storage: &Tile2dStorage,
     grid_tiles: &[TileInstance],
     layer_instance: &LayerInstance,
     metadata_map: &HashMap<i32, TileMetadata>,
@@ -153,9 +158,7 @@ fn insert_metadata_for_layer<T: TileBundleTrait>(
     for tile in grid_tiles {
         let grid_coords = tile_to_grid_coords(tile, layer_instance.c_hei, layer_instance.grid_size);
 
-        let tile_entity = layer_builder
-            .get_tile_entity(commands, grid_coords.into())
-            .unwrap();
+        let tile_entity = tile_storage.get(grid_coords.into()).unwrap();
 
         if insert_metadata_to_tile(commands, tile, tile_entity, metadata_map, enum_tags_map) {
             commands
@@ -209,10 +212,8 @@ pub fn spawn_level(
 ) {
     let level = &ldtk_level.level;
 
-    let mut map = Map::new(level.uid as u16, ldtk_entity);
-
     if let Some(layer_instances) = &level.layer_instances {
-        let mut layer_id = 0;
+        let mut layer_z = 0;
 
         // creating an image to use for the background color, and for intgrid colors
         let mut white_image = Image::new_fill(
@@ -231,34 +232,42 @@ pub fn spawn_level(
         let white_image_handle = images.add(white_image);
 
         if ldtk_settings.level_background == LevelBackground::Rendered {
-            let settings = LayerSettings::new(
-                MapSize(1, 1),
-                ChunkSize(1, 1),
-                TileSize(level.px_wid as f32, level.px_hei as f32),
-                TextureSize(level.px_wid as f32, level.px_hei as f32),
-            );
+            let background_entity = commands.spawn().id();
 
-            let (mut layer_builder, layer_entity) =
-                LayerBuilder::<TileBundle>::new(commands, settings, map.id, layer_id);
+            let storage = Tile2dStorage::empty(Tilemap2dSize { x: 1, y: 1 });
 
-            match layer_builder.set_tile(
-                TilePos(0, 0),
-                TileBundle {
-                    tile: Tile {
-                        color: level.bg_color,
-                        ..Default::default()
-                    },
-                    ..Default::default()
-                },
-            ) {
-                Ok(()) => (),
-                Err(_) => warn!("Encountered error when setting background tile"),
-            }
+            let tile_entity = commands
+                .spawn_bundle(TileBundle {
+                    color: TileColor(level.bg_color),
+                    tilemap_id: TilemapId(background_entity),
+                    ..default()
+                })
+                .id();
 
-            let layer_bundle = layer_builder.build(commands, meshes, white_image_handle.clone());
-            commands.entity(layer_entity).insert_bundle(layer_bundle);
-            map.add_layer(commands, layer_id, layer_entity);
-            layer_id += 1;
+            storage.set(&TilePos2d::default(), Some(tile_entity));
+
+            let tile_size = Tilemap2dTileSize {
+                x: level.px_wid as f32,
+                y: level.px_hei as f32,
+            };
+            let texture_size = Tilemap2dTextureSize {
+                x: level.px_wid as f32,
+                y: level.px_hei as f32,
+            };
+            let texture = TilemapTexture(white_image_handle);
+
+            commands
+                .entity(background_entity)
+                .insert_bundle(TilemapBundle {
+                    tile_size,
+                    texture_size,
+                    storage,
+                    texture,
+                    ..default()
+                })
+                .insert(Parent(ldtk_entity));
+
+            layer_z += 1;
 
             // Spawn background image
             if let (Some(background_image_handle), Some(background_position)) =
@@ -270,14 +279,14 @@ pub fn spawn_level(
                     background_image_handle,
                     background_position,
                     level.px_hei,
-                    layer_id as f32,
+                    layer_z as f32,
                 ) {
                     Ok(sprite_sheet_bundle) => {
                         commands
                             .spawn_bundle(sprite_sheet_bundle)
                             .insert(Parent(ldtk_entity));
 
-                        layer_id += 1;
+                        layer_z += 1;
                     }
                     Err(e) => warn!("{}", e),
                 }
@@ -293,7 +302,7 @@ pub fn spawn_level(
                                 entity_instance,
                                 entity_definition_map,
                                 level.px_hei,
-                                layer_id as f32,
+                                layer_z as f32,
                             );
                             // Note: entities do not seem to be affected visually by layer offsets in
                             // the editor, so no layer offset is added to the transform here.
@@ -343,7 +352,7 @@ pub fn spawn_level(
                             }
                         }
                     });
-                    layer_id += 1;
+                    layer_z += 1;
                 }
                 _ => {
                     // The remaining layers have a lot of shared code.
@@ -467,7 +476,7 @@ pub fn spawn_level(
                                     commands,
                                     settings,
                                     map.id,
-                                    layer_id as u16,
+                                    layer_z as u16,
                                 );
 
                             match tileset_definition {
@@ -616,7 +625,7 @@ pub fn spawn_level(
                                         commands,
                                         settings,
                                         map.id,
-                                        layer_id as u16,
+                                        layer_z as u16,
                                     );
 
                                 set_all_tiles_with_func(&mut layer_builder, tile_bundle_maker);
@@ -645,7 +654,7 @@ pub fn spawn_level(
                                     meshes,
                                     image_handle.clone(),
                                     map.id,
-                                    layer_id as u16,
+                                    layer_z as u16,
                                     tile_bundle_maker,
                                 )
                             }
@@ -654,7 +663,7 @@ pub fn spawn_level(
                         let layer_offset = Vec3::new(
                             layer_instance.px_total_offset_x as f32,
                             -layer_instance.px_total_offset_y as f32,
-                            layer_id as f32,
+                            layer_z as f32,
                         );
 
                         commands
@@ -664,8 +673,8 @@ pub fn spawn_level(
                             )
                             .insert(LayerMetadata::from(layer_instance));
 
-                        map.add_layer(commands, layer_id as u16, layer_entity);
-                        layer_id += 1;
+                        map.add_layer(commands, layer_z as u16, layer_entity);
+                        layer_z += 1;
                     }
                 }
             }

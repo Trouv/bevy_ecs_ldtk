@@ -14,9 +14,8 @@ use crate::{
     utils::*,
 };
 use bevy::prelude::*;
-use bevy_ecs_tilemap::{
-    map::{Tile2dStorage, TilemapId},
-    tiles::{TileBundle, TileColor, TileColor, TileFlip, TilePos2d, TileTexture, TileVisible},
+use bevy_ecs_tilemap::tiles::{
+    TileBundle, TileColor, TileFlip, TilePos2d, TileTexture, TileVisible,
 };
 
 use std::collections::HashMap;
@@ -177,7 +176,7 @@ pub(crate) fn tile_pos_to_transparent_tile_maker(
     move |tile_pos: TilePos2d| -> Option<TileBundle> {
         if alpha < 1. {
             tile_maker(tile_pos).map(|mut tile| {
-                tile.color.set_a(alpha);
+                tile.color.0.set_a(alpha);
                 tile
             })
         } else {

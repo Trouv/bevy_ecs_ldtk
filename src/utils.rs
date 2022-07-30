@@ -6,9 +6,12 @@ use crate::{
     components::{GridCoords, IntGridCell},
 };
 
-use crate::ldtk::*;
+use crate::{components::TileGridBundle, ldtk::*};
 use bevy::prelude::*;
-use bevy_ecs_tilemap::prelude::*;
+use bevy_ecs_tilemap::{
+    map::{Tilemap2dSize, TilemapId},
+    tiles::{Tile2dStorage, TilePos2d},
+};
 
 use std::{collections::HashMap, hash::Hash};
 
@@ -199,21 +202,19 @@ pub fn ldtk_pixel_coords_to_translation_pivoted(
 ///
 /// This allows for more methods to be performed on the [LayerBuilder] before building it.
 /// However, the performance cons of using non-batch methods still apply here.
-pub fn set_all_tiles_with_func<T>(
-    layer_builder: &mut LayerBuilder<T>,
-    mut func: impl FnMut(TilePos) -> Option<T>,
-) where
-    T: TileBundleTrait,
-{
-    let map_size: Vec2 = layer_builder.settings.map_size.into();
-    let chunk_size: Vec2 = layer_builder.settings.chunk_size.into();
-    let map_size_in_tiles = (map_size * chunk_size).as_uvec2();
-    for x in 0..map_size_in_tiles.x {
-        for y in 0..map_size_in_tiles.y {
-            let tile_pos = TilePos(x, y);
-            if let Some(t) = func(tile_pos) {
-                layer_builder.set_tile(tile_pos, t).unwrap()
-            }
+pub fn set_all_tiles_with_func(
+    commands: &mut Commands,
+    storage: &mut Tile2dStorage,
+    size: Tilemap2dSize,
+    tilemap_id: TilemapId,
+    mut func: impl FnMut(TilePos2d) -> Option<TileGridBundle>,
+) {
+    for x in 0..size.x {
+        for y in 0..size.y {
+            let tile_pos = TilePos2d { x, y };
+            let tile_entity =
+                func(tile_pos).map(|tile_bundle| commands.spawn_bundle(tile_bundle).id());
+            storage.set(&tile_pos, tile_entity);
         }
     }
 }

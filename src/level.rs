@@ -360,42 +360,49 @@ pub fn spawn_level(
                     // 1. There is virtually no difference between AutoTile and Tile layers
                     // 2. IntGrid layers can sometimes have AutoTile functionality
 
-                    let map_size = MapSize(
-                        (layer_instance.c_wid as f32 / CHUNK_SIZE.0 as f32).ceil() as u32,
-                        (layer_instance.c_hei as f32 / CHUNK_SIZE.1 as f32).ceil() as u32,
-                    );
+                    let layer_entity = commands.spawn();
+
+                    let size = Tilemap2dSize {
+                        x: layer_instance.c_wid as u32,
+                        y: layer_instance.c_hei as u32,
+                    };
 
                     let tileset_definition = layer_instance
                         .tileset_def_uid
                         .map(|u| tileset_definition_map.get(&u).unwrap());
 
                     let tile_size = match tileset_definition {
-                        Some(tileset_definition) => TileSize(
-                            tileset_definition.tile_grid_size as f32,
-                            tileset_definition.tile_grid_size as f32,
-                        ),
-                        None => TileSize(
-                            layer_instance.grid_size as f32,
-                            layer_instance.grid_size as f32,
-                        ),
+                        Some(tileset_definition) => Tilemap2dTileSize {
+                            x: tileset_definition.tile_grid_size as f32,
+                            y: tileset_definition.tile_grid_size as f32,
+                        },
+                        None => Tilemap2dTileSize {
+                            x: layer_instance.grid_size as f32,
+                            y: layer_instance.grid_size as f32,
+                        },
                     };
 
                     let texture_size = match tileset_definition {
-                        Some(tileset_definition) => TextureSize(
-                            tileset_definition.px_wid as f32,
-                            tileset_definition.px_hei as f32,
-                        ),
-                        None => TextureSize(
-                            layer_instance.grid_size as f32,
-                            layer_instance.grid_size as f32,
-                        ),
+                        Some(tileset_definition) => Tilemap2dTextureSize {
+                            x: tileset_definition.px_wid as f32,
+                            y: tileset_definition.px_hei as f32,
+                        },
+                        None => Tilemap2dTextureSize {
+                            x: layer_instance.grid_size as f32,
+                            y: layer_instance.grid_size as f32,
+                        },
                     };
 
-                    let mut settings =
-                        LayerSettings::new(map_size, CHUNK_SIZE, tile_size, texture_size);
+                    let mut grid_size = Tilemap2dGridSize::default();
+
+                    let mut tile_spacing = Tilemap2dSpacing::default();
 
                     if let Some(tileset_definition) = tileset_definition {
-                        settings.grid_size = Vec2::splat(layer_instance.grid_size as f32);
+                        grid_size = Tilemap2dGridSize {
+                            x: layer_instance.grid_size as f32,
+                            y: layer_instance.grid_size as f32,
+                        };
+
                         if tileset_definition.spacing != 0 {
                             // TODO: Check that this is still an issue with upcoming
                             // bevy_ecs_tilemap releases
@@ -408,8 +415,8 @@ pub fn spawn_level(
 
                             #[cfg(feature = "atlas")]
                             {
-                                settings.tile_spacing =
-                                    Vec2::splat(tileset_definition.spacing as f32);
+                                tile_spacing.x = tileset_definition.spacing as f32;
+                                tile_spacing.y = tileset_definition.spacing as f32;
                             }
                         }
                     }
@@ -418,8 +425,8 @@ pub fn spawn_level(
                     // where the tileset's tile size and the layer's tile size are different.
                     // However, changing the grid_size doesn't have any affect with the current
                     // bevy_ecs_tilemap, so the workaround is to scale up the entire layer.
-                    let layer_scale = (settings.grid_size
-                        / Vec2::new(settings.tile_size.0 as f32, settings.tile_size.1 as f32))
+                    let layer_scale = (Vec2::new(grid_size.x, grid_size.y)
+                        / Vec2::new(tile_size.x, tile_size.y))
                     .extend(1.);
 
                     let image_handle = match tileset_definition {

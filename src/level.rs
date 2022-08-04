@@ -22,7 +22,7 @@ use bevy_ecs_tilemap::{
         Tilemap2dGridSize, Tilemap2dSize, Tilemap2dSpacing, Tilemap2dTextureSize,
         Tilemap2dTileSize, TilemapId, TilemapTexture,
     },
-    tiles::{Tile2dStorage, TileBundle, TileColor, TileFlip, TilePos2d, TileTexture, TileVisible},
+    tiles::{Tile2dStorage, TileBundle, TileColor, TilePos2d},
     TilemapBundle,
 };
 use std::collections::{HashMap, HashSet};

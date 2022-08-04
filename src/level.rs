@@ -430,10 +430,10 @@ pub fn spawn_level(
                     .extend(1.);
 
                     let texture = match tileset_definition {
-                        Some(tileset_definition) => {
-                            tileset_map.get(&tileset_definition.uid).unwrap().clone()
-                        }
-                        None => white_image_handle.clone(),
+                        Some(tileset_definition) => TilemapTexture(
+                            tileset_map.get(&tileset_definition.uid).unwrap().clone(),
+                        ),
+                        None => TilemapTexture(white_image_handle.clone()),
                     };
 
                     let metadata_map: HashMap<i32, TileMetadata> = tileset_definition

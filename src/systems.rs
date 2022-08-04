@@ -149,8 +149,8 @@ pub fn process_ldtk_world(
                         if let Ok(level_handle) = ldtk_level_query.get_mut(*child) {
                             commands.entity(*child).despawn_recursive();
 
-                            if let Some(level) = ldtk_assets.get(level_handle) {
-                                level_events.send(LevelEvent::Despawned(level.iid.clone()));
+                            if let Some(level) = level_assets.get(level_handle) {
+                                level_events.send(LevelEvent::Despawned(level.level.iid.clone()));
                             }
                         } else {
                             commands.entity(*child).despawn_recursive();

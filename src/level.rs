@@ -676,17 +676,16 @@ pub fn spawn_level(
 
                         commands
                             .entity(layer_entity)
+                            .insert_bundle(tilemap_bundle)
                             .insert(
                                 Transform::from_translation(layer_offset).with_scale(layer_scale),
                             )
                             .insert(LayerMetadata::from(layer_instance));
 
-                        map.add_layer(commands, layer_z as u16, layer_entity);
                         layer_z += 1;
                     }
                 }
             }
         }
     }
-    commands.entity(ldtk_entity).insert(map);
 }

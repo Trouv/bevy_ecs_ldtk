@@ -628,24 +628,25 @@ pub fn spawn_level(
                                 ),
                             );
 
+                            // When we add metadata to tiles, we need to add additional
+                            // components to them.
+                            // This can't be accomplished using LayerBuilder::new_batch,
+                            // so the logic for building layers with metadata is slower.
+
+                            let storage = Tile2dStorage::empty(size);
+
+                            set_all_tiles_with_func(
+                                commands,
+                                &mut storage,
+                                size,
+                                TilemapId(layer_entity),
+                                tile_bundle_maker,
+                            );
+
                             if !(metadata_map.is_empty() && enum_tags_map.is_empty()) {
-                                // When we add metadata to tiles, we need to add additional
-                                // components to them.
-                                // This can't be accomplished using LayerBuilder::new_batch,
-                                // so the logic for building layers with metadata is slower.
-                                let (mut layer_builder, layer_entity) =
-                                    LayerBuilder::<TileGridBundle>::new(
-                                        commands,
-                                        settings,
-                                        map.id,
-                                        layer_z as u16,
-                                    );
-
-                                set_all_tiles_with_func(&mut layer_builder, tile_bundle_maker);
-
                                 insert_metadata_for_layer(
                                     commands,
-                                    &mut layer_builder,
+                                    &mut storage,
                                     &grid_tiles,
                                     layer_instance,
                                     &metadata_map,
@@ -653,23 +654,17 @@ pub fn spawn_level(
                                     layer_scale,
                                     layer_entity,
                                 );
+                            }
 
-                                let layer_bundle =
-                                    layer_builder.build(commands, meshes, texture.clone());
-
-                                commands.entity(layer_entity).insert_bundle(layer_bundle);
-
-                                layer_entity
-                            } else {
-                                LayerBuilder::<TileGridBundle>::new_batch(
-                                    commands,
-                                    settings,
-                                    meshes,
-                                    texture.clone(),
-                                    map.id,
-                                    layer_z as u16,
-                                    tile_bundle_maker,
-                                )
+                            TilemapBundle {
+                                grid_size,
+                                size,
+                                spacing,
+                                storage,
+                                texture_size,
+                                texture,
+                                tile_size,
+                                ..default()
                             }
                         };
 

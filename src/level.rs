@@ -158,7 +158,7 @@ fn insert_metadata_for_layer(
     for tile in grid_tiles {
         let grid_coords = tile_to_grid_coords(tile, layer_instance.c_hei, layer_instance.grid_size);
 
-        let tile_entity = tile_storage.get(grid_coords.into()).unwrap();
+        let tile_entity = tile_storage.get(&grid_coords.into()).unwrap();
 
         if insert_metadata_to_tile(commands, tile, tile_entity, metadata_map, enum_tags_map) {
             commands
@@ -360,7 +360,7 @@ pub fn spawn_level(
                     // 1. There is virtually no difference between AutoTile and Tile layers
                     // 2. IntGrid layers can sometimes have AutoTile functionality
 
-                    let layer_entity = commands.spawn();
+                    let layer_entity = commands.spawn().id();
 
                     let size = Tilemap2dSize {
                         x: layer_instance.c_wid as u32,
@@ -395,7 +395,7 @@ pub fn spawn_level(
 
                     let mut grid_size = Tilemap2dGridSize::default();
 
-                    let mut tile_spacing = Tilemap2dSpacing::default();
+                    let mut spacing = Tilemap2dSpacing::default();
 
                     if let Some(tileset_definition) = tileset_definition {
                         grid_size = Tilemap2dGridSize {
@@ -415,8 +415,8 @@ pub fn spawn_level(
 
                             #[cfg(feature = "atlas")]
                             {
-                                tile_spacing.x = tileset_definition.spacing as f32;
-                                tile_spacing.y = tileset_definition.spacing as f32;
+                                spacing.x = tileset_definition.spacing as f32;
+                                spacing.y = tileset_definition.spacing as f32;
                             }
                         }
                     }
@@ -429,7 +429,7 @@ pub fn spawn_level(
                         / Vec2::new(tile_size.x, tile_size.y))
                     .extend(1.);
 
-                    let image_handle = match tileset_definition {
+                    let texture = match tileset_definition {
                         Some(tileset_definition) => {
                             tileset_map.get(&tileset_definition.uid).unwrap().clone()
                         }
@@ -473,24 +473,21 @@ pub fn spawn_level(
                     grid_tiles.extend(layer_instance.auto_layer_tiles.clone());
 
                     for (i, grid_tiles) in layer_grid_tiles(grid_tiles).into_iter().enumerate() {
-                        let layer_entity = if layer_instance.layer_instance_type == Type::IntGrid {
+                        let tilemap_bundle = if layer_instance.layer_instance_type == Type::IntGrid
+                        {
                             // The current spawning of IntGrid layers doesn't allow using
                             // LayerBuilder::new_batch().
                             // So, the actual LayerBuilder usage diverges greatly here
-
-                            let (mut layer_builder, layer_entity) =
-                                LayerBuilder::<TileGridBundle>::new(
-                                    commands,
-                                    settings,
-                                    map.id,
-                                    layer_z as u16,
-                                );
+                            let storage = Tile2dStorage::empty(size);
 
                             match tileset_definition {
                                 Some(_) => {
                                     set_all_tiles_with_func(
-                                        &mut layer_builder,
-                                        tile_pos_to_tile_bundle_maker(
+                                        commands,
+                                        &mut storage,
+                                        size,
+                                        TilemapId(layer_entity),
+                                        tile_pos_to_tile_grid_bundle_maker(
                                             tile_pos_to_transparent_tile_maker(
                                                 tile_pos_to_int_grid_with_grid_tiles_tile_maker(
                                                     &grid_tiles,
@@ -513,8 +510,11 @@ pub fn spawn_level(
                                     match ldtk_settings.int_grid_rendering {
                                         IntGridRendering::Colorful => {
                                             set_all_tiles_with_func(
-                                                &mut layer_builder,
-                                                tile_pos_to_tile_bundle_maker(
+                                                commands,
+                                                &mut storage,
+                                                size,
+                                                TilemapId(layer_entity),
+                                                tile_pos_to_tile_grid_bundle_maker(
                                                     tile_pos_to_transparent_tile_maker(
                                                         tile_pos_to_int_grid_colored_tile_maker(
                                                             &layer_instance.int_grid_csv,
@@ -529,8 +529,11 @@ pub fn spawn_level(
                                         }
                                         IntGridRendering::Invisible => {
                                             set_all_tiles_with_func(
-                                                &mut layer_builder,
-                                                tile_pos_to_tile_bundle_maker(
+                                                commands,
+                                                &mut storage,
+                                                size,
+                                                TilemapId(layer_entity),
+                                                tile_pos_to_tile_grid_bundle_maker(
                                                     tile_pos_to_transparent_tile_maker(
                                                         tile_pos_to_tile_if_int_grid_nonzero_maker(
                                                             tile_pos_to_invisible_tile,
@@ -560,9 +563,7 @@ pub fn spawn_level(
                                         layer_instance.c_hei as u32,
                                     ).expect("int_grid_csv indices should be within the bounds of 0..(layer_width * layer_height)");
 
-                                    let tile_entity = layer_builder
-                                        .get_tile_entity(commands, grid_coords.into())
-                                        .unwrap();
+                                    let tile_entity = storage.get(&grid_coords.into()).unwrap();
 
                                     let mut entity_commands = commands.entity(tile_entity);
 
@@ -595,7 +596,7 @@ pub fn spawn_level(
                             if !(metadata_map.is_empty() && enum_tags_map.is_empty()) {
                                 insert_metadata_for_layer(
                                     commands,
-                                    &mut layer_builder,
+                                    &mut storage,
                                     &grid_tiles,
                                     layer_instance,
                                     &metadata_map,
@@ -605,22 +606,27 @@ pub fn spawn_level(
                                 );
                             }
 
-                            let layer_bundle =
-                                layer_builder.build(commands, meshes, image_handle.clone());
-
-                            commands.entity(layer_entity).insert_bundle(layer_bundle);
-
-                            layer_entity
+                            TilemapBundle {
+                                grid_size,
+                                size,
+                                spacing,
+                                storage,
+                                texture_size,
+                                texture,
+                                tile_size,
+                                ..default()
+                            }
                         } else {
-                            let tile_bundle_maker =
-                                tile_pos_to_tile_bundle_maker(tile_pos_to_transparent_tile_maker(
+                            let tile_bundle_maker = tile_pos_to_tile_grid_bundle_maker(
+                                tile_pos_to_transparent_tile_maker(
                                     tile_pos_to_tile_maker(
                                         &grid_tiles,
                                         layer_instance.c_hei,
                                         layer_instance.grid_size,
                                     ),
                                     layer_instance.opacity,
-                                ));
+                                ),
+                            );
 
                             if !(metadata_map.is_empty() && enum_tags_map.is_empty()) {
                                 // When we add metadata to tiles, we need to add additional
@@ -649,7 +655,7 @@ pub fn spawn_level(
                                 );
 
                                 let layer_bundle =
-                                    layer_builder.build(commands, meshes, image_handle.clone());
+                                    layer_builder.build(commands, meshes, texture.clone());
 
                                 commands.entity(layer_entity).insert_bundle(layer_bundle);
 
@@ -659,7 +665,7 @@ pub fn spawn_level(
                                     commands,
                                     settings,
                                     meshes,
-                                    image_handle.clone(),
+                                    texture.clone(),
                                     map.id,
                                     layer_z as u16,
                                     tile_bundle_maker,

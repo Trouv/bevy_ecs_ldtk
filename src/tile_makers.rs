@@ -188,7 +188,7 @@ pub(crate) fn tile_pos_to_transparent_tile_maker(
 /// Returns a tile bundle maker that returns the bundled result of the provided tile maker.
 ///
 /// Used for spawning Tile, AutoTile, and IntGrid layers.
-pub(crate) fn tile_pos_to_tile_bundle_maker(
+pub(crate) fn tile_pos_to_tile_grid_bundle_maker(
     mut tile_maker: impl FnMut(TilePos2d) -> Option<TileBundle>,
 ) -> impl FnMut(TilePos2d) -> Option<TileGridBundle> {
     move |tile_pos: TilePos2d| -> Option<TileGridBundle> {

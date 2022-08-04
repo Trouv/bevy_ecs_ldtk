@@ -115,8 +115,8 @@ impl From<GridCoords> for IVec2 {
 impl From<TilePos2d> for GridCoords {
     fn from(tile_pos: TilePos2d) -> Self {
         GridCoords {
-            x: tile_pos.0 as i32,
-            y: tile_pos.1 as i32,
+            x: tile_pos.x as i32,
+            y: tile_pos.y as i32,
         }
     }
 }

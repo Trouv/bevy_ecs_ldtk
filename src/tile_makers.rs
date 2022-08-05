@@ -14,9 +14,8 @@ use crate::{
     utils::*,
 };
 use bevy::prelude::*;
-use bevy_ecs_tilemap::{
-    map::Tilemap2dSize,
-    tiles::{TileBundle, TileColor, TileFlip, TilePos2d, TileTexture, TileVisible},
+use bevy_ecs_tilemap::tiles::{
+    TileBundle, TileColor, TileFlip, TilePos2d, TileTexture, TileVisible,
 };
 
 use std::collections::HashMap;
@@ -278,10 +277,10 @@ mod tests {
 
         let mut tile_maker = tile_pos_to_tile_maker(&grid_tiles, 2, 32);
 
-        assert_eq!(tile_maker(TilePos2d(0, 0)).unwrap().texture_index, 2);
-        assert_eq!(tile_maker(TilePos2d(1, 0)).unwrap().texture_index, 1);
-        assert_eq!(tile_maker(TilePos2d(0, 1)).unwrap().texture_index, 1);
-        assert_eq!(tile_maker(TilePos2d(1, 1)).unwrap().texture_index, 4);
+        assert_eq!(tile_maker(TilePos2d { x: 0, y: 0 }).unwrap().texture.0, 2);
+        assert_eq!(tile_maker(TilePos2d { x: 1, y: 0 }).unwrap().texture.0, 1);
+        assert_eq!(tile_maker(TilePos2d { x: 0, y: 1 }).unwrap().texture.0, 1);
+        assert_eq!(tile_maker(TilePos2d { x: 1, y: 1 }).unwrap().texture.0, 4);
     }
 
     #[test]
@@ -319,17 +318,17 @@ mod tests {
 
         let mut tile_maker = tile_pos_to_tile_maker(&grid_tiles, 2, 32);
 
-        assert!(!tile_maker(TilePos2d(0, 0)).unwrap().flip_x);
-        assert!(tile_maker(TilePos2d(0, 0)).unwrap().flip_y);
+        assert!(!tile_maker(TilePos2d { x: 0, y: 0 }).unwrap().flip.x);
+        assert!(tile_maker(TilePos2d { x: 0, y: 0 }).unwrap().flip.y);
 
-        assert!(!tile_maker(TilePos2d(0, 1)).unwrap().flip_x);
-        assert!(!tile_maker(TilePos2d(0, 1)).unwrap().flip_y);
+        assert!(!tile_maker(TilePos2d { x: 0, y: 1 }).unwrap().flip.x);
+        assert!(!tile_maker(TilePos2d { x: 0, y: 1 }).unwrap().flip.y);
 
-        assert!(tile_maker(TilePos2d(1, 1)).unwrap().flip_x);
-        assert!(!tile_maker(TilePos2d(1, 1)).unwrap().flip_y);
+        assert!(tile_maker(TilePos2d { x: 1, y: 1 }).unwrap().flip.x);
+        assert!(!tile_maker(TilePos2d { x: 1, y: 1 }).unwrap().flip.y);
 
-        assert!(tile_maker(TilePos2d(2, 1)).unwrap().flip_x);
-        assert!(tile_maker(TilePos2d(2, 1)).unwrap().flip_y);
+        assert!(tile_maker(TilePos2d { x: 2, y: 1 }).unwrap().flip.x);
+        assert!(tile_maker(TilePos2d { x: 2, y: 1 }).unwrap().flip.y);
     }
 
     #[test]
@@ -360,16 +359,25 @@ mod tests {
         let mut tile_maker =
             tile_pos_to_int_grid_with_grid_tiles_tile_maker(&grid_tiles, &int_grid_csv, 2, 2, 32);
 
-        assert_eq!(tile_maker(TilePos2d(0, 0)).unwrap().texture_index, 0);
-        assert_eq!(tile_maker(TilePos2d(0, 0)).unwrap().visible, false);
+        assert_eq!(tile_maker(TilePos2d { x: 0, y: 0 }).unwrap().texture.0, 0);
+        assert_eq!(
+            tile_maker(TilePos2d { x: 0, y: 0 }).unwrap().visible.0,
+            false
+        );
 
-        assert!(tile_maker(TilePos2d(1, 0)).is_none());
+        assert!(tile_maker(TilePos2d { x: 1, y: 0 }).is_none());
 
-        assert_eq!(tile_maker(TilePos2d(0, 1)).unwrap().texture_index, 1);
-        assert_eq!(tile_maker(TilePos2d(0, 1)).unwrap().visible, true);
+        assert_eq!(tile_maker(TilePos2d { x: 0, y: 1 }).unwrap().texture.0, 1);
+        assert_eq!(
+            tile_maker(TilePos2d { x: 0, y: 1 }).unwrap().visible.0,
+            true
+        );
 
-        assert_eq!(tile_maker(TilePos2d(1, 1)).unwrap().texture_index, 2);
-        assert_eq!(tile_maker(TilePos2d(1, 1)).unwrap().visible, true);
+        assert_eq!(tile_maker(TilePos2d { x: 1, y: 1 }).unwrap().texture.0, 2);
+        assert_eq!(
+            tile_maker(TilePos2d { x: 1, y: 1 }).unwrap().visible.0,
+            true
+        );
     }
 
     #[test]
@@ -392,9 +400,15 @@ mod tests {
         let mut tile_maker =
             tile_pos_to_int_grid_colored_tile_maker(&int_grid_csv, &int_grid_defs, 2, 2);
 
-        assert_eq!(tile_maker(TilePos2d(0, 0)).unwrap().color, Color::BLUE);
-        assert!(tile_maker(TilePos2d(1, 0)).is_none());
-        assert!(tile_maker(TilePos2d(0, 1)).is_none());
-        assert_eq!(tile_maker(TilePos2d(1, 1)).unwrap().color, Color::RED);
+        assert_eq!(
+            tile_maker(TilePos2d { x: 0, y: 0 }).unwrap().color.0,
+            Color::BLUE
+        );
+        assert!(tile_maker(TilePos2d { x: 1, y: 0 }).is_none());
+        assert!(tile_maker(TilePos2d { x: 0, y: 1 }).is_none());
+        assert_eq!(
+            tile_maker(TilePos2d { x: 1, y: 1 }).unwrap().color.0,
+            Color::RED
+        );
     }
 }

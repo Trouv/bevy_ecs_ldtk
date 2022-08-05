@@ -312,7 +312,7 @@ impl From<&LayerInstance> for LayerMetadata {
     }
 }
 
-#[derive(Clone, Default, Bundle)]
+#[derive(Copy, Clone, Debug, Default, Bundle)]
 pub(crate) struct TileGridBundle {
     #[bundle]
     pub tile_bundle: TileBundle,

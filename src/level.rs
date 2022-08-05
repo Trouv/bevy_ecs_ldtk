@@ -234,7 +234,7 @@ pub fn spawn_level(
         if ldtk_settings.level_background == LevelBackground::Rendered {
             let background_entity = commands.spawn().id();
 
-            let storage = Tile2dStorage::empty(Tilemap2dSize { x: 1, y: 1 });
+            let mut storage = Tile2dStorage::empty(Tilemap2dSize { x: 1, y: 1 });
 
             let tile_entity = commands
                 .spawn_bundle(TileBundle {
@@ -254,7 +254,7 @@ pub fn spawn_level(
                 x: level.px_wid as f32,
                 y: level.px_hei as f32,
             };
-            let texture = TilemapTexture(white_image_handle);
+            let texture = TilemapTexture(white_image_handle.clone());
 
             commands
                 .entity(background_entity)
@@ -478,7 +478,7 @@ pub fn spawn_level(
                             // The current spawning of IntGrid layers doesn't allow using
                             // LayerBuilder::new_batch().
                             // So, the actual LayerBuilder usage diverges greatly here
-                            let storage = Tile2dStorage::empty(size);
+                            let mut storage = Tile2dStorage::empty(size);
 
                             match tileset_definition {
                                 Some(_) => {
@@ -612,7 +612,7 @@ pub fn spawn_level(
                                 spacing,
                                 storage,
                                 texture_size,
-                                texture,
+                                texture: texture.clone(),
                                 tile_size,
                                 ..default()
                             }
@@ -633,7 +633,7 @@ pub fn spawn_level(
                             // This can't be accomplished using LayerBuilder::new_batch,
                             // so the logic for building layers with metadata is slower.
 
-                            let storage = Tile2dStorage::empty(size);
+                            let mut storage = Tile2dStorage::empty(size);
 
                             set_all_tiles_with_func(
                                 commands,
@@ -662,7 +662,7 @@ pub fn spawn_level(
                                 spacing,
                                 storage,
                                 texture_size,
-                                texture,
+                                texture: texture.clone(),
                                 tile_size,
                                 ..default()
                             }
@@ -680,7 +680,8 @@ pub fn spawn_level(
                             .insert(
                                 Transform::from_translation(layer_offset).with_scale(layer_scale),
                             )
-                            .insert(LayerMetadata::from(layer_instance));
+                            .insert(LayerMetadata::from(layer_instance))
+                            .insert(Parent(ldtk_entity));
 
                         layer_z += 1;
                     }

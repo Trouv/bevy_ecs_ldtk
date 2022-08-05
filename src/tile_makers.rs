@@ -21,7 +21,7 @@ use bevy_ecs_tilemap::tiles::{
 use std::collections::HashMap;
 
 #[derive(Clone, Eq, PartialEq, Debug, Default, Hash)]
-struct TilePos2dMap<T> {
+pub(crate) struct TilePos2dMap<T> {
     data: Vec<Vec<Option<T>>>,
 }
 

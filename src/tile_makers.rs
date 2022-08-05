@@ -14,11 +14,55 @@ use crate::{
     utils::*,
 };
 use bevy::prelude::*;
-use bevy_ecs_tilemap::tiles::{
-    TileBundle, TileColor, TileFlip, TilePos2d, TileTexture, TileVisible,
+use bevy_ecs_tilemap::{
+    map::Tilemap2dSize,
+    tiles::{TileBundle, TileColor, TileFlip, TilePos2d, TileTexture, TileVisible},
 };
 
 use std::collections::HashMap;
+
+#[derive(Clone, Eq, PartialEq, Debug, Default, Hash)]
+struct TilePos2dMap<T> {
+    data: Vec<Vec<Option<T>>>,
+}
+
+impl<T> TilePos2dMap<T> {
+    fn new() -> Self {
+        TilePos2dMap::<T> { data: Vec::new() }
+    }
+
+    fn get(&self, tile_pos: &TilePos2d) -> Option<&T> {
+        self.data
+            .get(tile_pos.y as usize)?
+            .get(tile_pos.x as usize)?
+            .as_ref()
+    }
+
+    fn set(&mut self, tile_pos: TilePos2d, value: T) {
+        while self.data.get(tile_pos.y as usize).is_none() {
+            self.data.push(Vec::new());
+        }
+
+        while self.data[tile_pos.y as usize]
+            .get(tile_pos.x as usize)
+            .is_none()
+        {
+            self.data[tile_pos.y as usize].push(None);
+        }
+
+        self.data[tile_pos.y as usize][tile_pos.x as usize] = Some(value);
+    }
+}
+
+impl<T> FromIterator<(TilePos2d, T)> for TilePos2dMap<T> {
+    fn from_iter<I: IntoIterator<Item = (TilePos2d, T)>>(iter: I) -> Self {
+        let mut tile_pos_map = TilePos2dMap::new();
+
+        iter.into_iter().for_each(|(t, v)| tile_pos_map.set(t, v));
+
+        tile_pos_map
+    }
+}
 
 /// Tile maker that always creates an invisible tile.
 ///
@@ -36,7 +80,7 @@ pub(crate) fn tile_pos_to_int_grid_map(
     int_grid_csv: &[i32],
     layer_width_in_tiles: i32,
     layer_height_in_tiles: i32,
-) -> HashMap<TilePos2d, i32> {
+) -> TilePos2dMap<i32> {
     int_grid_csv.iter().enumerate().filter(|(_, v)| **v != 0).map(|(i, v)| {
         (
             int_grid_index_to_grid_coords(i, layer_width_in_tiles as u32, layer_height_in_tiles as u32).expect("int_grid_csv indices should be within the bounds of 0..(layer_width * layer_height)",).into(),
@@ -53,7 +97,7 @@ pub(crate) fn tile_pos_to_tile_maker(
     layer_height_in_tiles: i32,
     layer_grid_size: i32,
 ) -> impl FnMut(TilePos2d) -> Option<TileBundle> {
-    let grid_tile_map: HashMap<TilePos2d, TileInstance> = grid_tiles
+    let grid_tile_map: TilePos2dMap<TileInstance> = grid_tiles
         .iter()
         .map(|t| {
             (

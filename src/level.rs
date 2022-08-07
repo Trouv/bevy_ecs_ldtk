@@ -19,7 +19,7 @@ use crate::{
 use bevy::{prelude::*, render::render_resource::*, sprite};
 use bevy_ecs_tilemap::{
     map::{
-        TilemapGridSize, TilemapSize, TilemapSpacing, TilemapTextureSize,
+        TilemapGridSize, TilemapSize, TilemapSpacing,
         TilemapTileSize, TilemapId, TilemapTexture,
     },
     tiles::{TileStorage, TileBundle, TileColor, TilePos},
@@ -250,17 +250,12 @@ pub fn spawn_level(
                 x: level.px_wid as f32,
                 y: level.px_hei as f32,
             };
-            let texture_size = Tilemap2dTextureSize {
-                x: level.px_wid as f32,
-                y: level.px_hei as f32,
-            };
             let texture = TilemapTexture(white_image_handle.clone());
 
             commands
                 .entity(background_entity)
                 .insert_bundle(TilemapBundle {
                     tile_size,
-                    texture_size,
                     storage,
                     texture,
                     ..default()
@@ -377,17 +372,6 @@ pub fn spawn_level(
                             y: tileset_definition.tile_grid_size as f32,
                         },
                         None => TilemapTileSize {
-                            x: layer_instance.grid_size as f32,
-                            y: layer_instance.grid_size as f32,
-                        },
-                    };
-
-                    let texture_size = match tileset_definition {
-                        Some(tileset_definition) => Tilemap2dTextureSize {
-                            x: tileset_definition.px_wid as f32,
-                            y: tileset_definition.px_hei as f32,
-                        },
-                        None => Tilemap2dTextureSize {
                             x: layer_instance.grid_size as f32,
                             y: layer_instance.grid_size as f32,
                         },
@@ -611,7 +595,6 @@ pub fn spawn_level(
                                 size,
                                 spacing,
                                 storage,
-                                texture_size,
                                 texture: texture.clone(),
                                 tile_size,
                                 ..default()
@@ -661,7 +644,6 @@ pub fn spawn_level(
                                 size,
                                 spacing,
                                 storage,
-                                texture_size,
                                 texture: texture.clone(),
                                 tile_size,
                                 ..default()

@@ -130,8 +130,7 @@ fn transform_bundle_for_tiles(
     grid_coords: GridCoords,
     grid_size: i32,
     layer_scale: Vec3,
-    parent: Entity,
-) -> (Transform, GlobalTransform, Parent) {
+) -> (Transform, GlobalTransform) {
     let mut translation =
         grid_coords_to_translation_centered(grid_coords, IVec2::splat(grid_size)).extend(0.);
 
@@ -140,7 +139,6 @@ fn transform_bundle_for_tiles(
     (
         Transform::from_translation(translation),
         GlobalTransform::default(),
-        Parent(parent),
     )
 }
 
@@ -167,8 +165,8 @@ fn insert_metadata_for_layer(
                     grid_coords,
                     layer_instance.grid_size,
                     layer_scale,
-                    layer_entity,
                 ));
+            commands.entity(layer_entity).add_child(tile_entity);
         }
     }
 }
@@ -259,8 +257,8 @@ pub fn spawn_level(
                     storage,
                     texture,
                     ..default()
-                })
-                .insert(Parent(ldtk_entity));
+                });
+            commands.entity(ldtk_entity).add_child(background_entity);
 
             layer_z += 1;
 
@@ -277,9 +275,9 @@ pub fn spawn_level(
                     layer_z as f32,
                 ) {
                     Ok(sprite_sheet_bundle) => {
-                        commands
-                            .spawn_bundle(sprite_sheet_bundle)
-                            .insert(Parent(ldtk_entity));
+                        commands.entity(ldtk_entity).with_children(|parent| {
+                            parent.spawn_bundle(sprite_sheet_bundle);
+                        });
 
                         layer_z += 1;
                     }
@@ -570,10 +568,10 @@ pub fn spawn_level(
                                         grid_coords,
                                         layer_instance.grid_size,
                                         layer_scale,
-                                        layer_entity,
                                     );
 
                                     entity_commands.insert_bundle(transform_bundle);
+                                    commands.entity(layer_entity).add_child(tile_entity);
                                 }
                             }
 
@@ -662,8 +660,8 @@ pub fn spawn_level(
                             .insert(
                                 Transform::from_translation(layer_offset).with_scale(layer_scale),
                             )
-                            .insert(LayerMetadata::from(layer_instance))
-                            .insert(Parent(ldtk_entity));
+                            .insert(LayerMetadata::from(layer_instance));
+                        commands.entity(ldtk_entity).add_child(layer_entity);
 
                         layer_z += 1;
                     }

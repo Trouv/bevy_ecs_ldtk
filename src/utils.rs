@@ -212,14 +212,8 @@ pub fn set_all_tiles_with_func(
     for x in 0..size.x {
         for y in 0..size.y {
             let tile_pos = TilePos2d { x, y };
-            let tile_entity = func(tile_pos).map(|tile_bundle| {
-                commands
-                    .spawn_bundle(tile_bundle)
-                    .insert(tile_pos)
-                    .insert(GridCoords::from(tile_pos))
-                    .insert(tilemap_id)
-                    .id()
-            });
+            let tile_entity = func(tile_pos)
+                .map(|tile_bundle| commands.spawn_bundle(tile_bundle).insert(tilemap_id).id());
             storage.set(&tile_pos, tile_entity);
         }
     }

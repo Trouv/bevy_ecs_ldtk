@@ -235,9 +235,12 @@ pub(crate) fn tile_pos_to_tile_grid_bundle_maker(
     mut tile_maker: impl FnMut(TilePos2d) -> Option<TileBundle>,
 ) -> impl FnMut(TilePos2d) -> Option<TileGridBundle> {
     move |tile_pos: TilePos2d| -> Option<TileGridBundle> {
-        tile_maker(tile_pos).map(|tile_bundle| TileGridBundle {
-            grid_coords: tile_pos.into(),
-            tile_bundle,
+        tile_maker(tile_pos).map(|mut tile_bundle| {
+            tile_bundle.position = tile_pos;
+            TileGridBundle {
+                grid_coords: tile_pos.into(),
+                tile_bundle,
+            }
         })
     }
 }

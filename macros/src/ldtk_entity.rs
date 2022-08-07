@@ -222,6 +222,7 @@ fn expand_sprite_sheet_bundle_attribute(
                             asset_server.load(#asset_path).into(),
                             bevy::prelude::Vec2::new(#tile_width, #tile_height),
                             #columns, #rows, bevy::prelude::Vec2::splat(#padding),
+                            Vec2::ZERO,
                         )
                     ),
                     sprite: bevy::prelude::TextureAtlasSprite {

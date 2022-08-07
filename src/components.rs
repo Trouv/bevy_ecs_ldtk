@@ -16,7 +16,7 @@ use crate::{
     utils::ldtk_grid_coords_to_grid_coords,
 };
 
-use bevy_ecs_tilemap::tiles::{TileBundle, TilePos2d};
+use bevy_ecs_tilemap::tiles::{TileBundle, TilePos};
 
 /// [Component] added to any `IntGrid` tile by default.
 ///
@@ -112,8 +112,8 @@ impl From<GridCoords> for IVec2 {
     }
 }
 
-impl From<TilePos2d> for GridCoords {
-    fn from(tile_pos: TilePos2d) -> Self {
+impl From<TilePos> for GridCoords {
+    fn from(tile_pos: TilePos) -> Self {
         GridCoords {
             x: tile_pos.x as i32,
             y: tile_pos.y as i32,
@@ -121,9 +121,9 @@ impl From<TilePos2d> for GridCoords {
     }
 }
 
-impl From<GridCoords> for TilePos2d {
+impl From<GridCoords> for TilePos {
     fn from(grid_coords: GridCoords) -> Self {
-        TilePos2d::new(grid_coords.x as u32, grid_coords.y as u32)
+        TilePos::new(grid_coords.x as u32, grid_coords.y as u32)
     }
 }
 

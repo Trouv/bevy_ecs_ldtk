@@ -9,8 +9,8 @@ use crate::{
 use crate::{components::TileGridBundle, ldtk::*};
 use bevy::prelude::*;
 use bevy_ecs_tilemap::{
-    map::{Tilemap2dSize, TilemapId},
-    tiles::{Tile2dStorage, TilePos2d},
+    map::{TilemapSize, TilemapId},
+    tiles::{TileStorage, TilePos},
 };
 
 use std::{collections::HashMap, hash::Hash};
@@ -204,14 +204,14 @@ pub fn ldtk_pixel_coords_to_translation_pivoted(
 /// However, the performance cons of using non-batch methods still apply here.
 pub fn set_all_tiles_with_func(
     commands: &mut Commands,
-    storage: &mut Tile2dStorage,
-    size: Tilemap2dSize,
+    storage: &mut TileStorage,
+    size: TilemapSize,
     tilemap_id: TilemapId,
-    mut func: impl FnMut(TilePos2d) -> Option<TileGridBundle>,
+    mut func: impl FnMut(TilePos) -> Option<TileGridBundle>,
 ) {
     for x in 0..size.x {
         for y in 0..size.y {
-            let tile_pos = TilePos2d { x, y };
+            let tile_pos = TilePos { x, y };
             let tile_entity = func(tile_pos)
                 .map(|tile_bundle| commands.spawn_bundle(tile_bundle).insert(tilemap_id).id());
             storage.set(&tile_pos, tile_entity);

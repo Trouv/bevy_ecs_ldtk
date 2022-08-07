@@ -19,10 +19,10 @@ use crate::{
 use bevy::{prelude::*, render::render_resource::*, sprite};
 use bevy_ecs_tilemap::{
     map::{
-        Tilemap2dGridSize, Tilemap2dSize, Tilemap2dSpacing, Tilemap2dTextureSize,
-        Tilemap2dTileSize, TilemapId, TilemapTexture,
+        TilemapGridSize, TilemapSize, TilemapSpacing, TilemapTextureSize,
+        TilemapTileSize, TilemapId, TilemapTexture,
     },
-    tiles::{Tile2dStorage, TileBundle, TileColor, TilePos2d},
+    tiles::{TileStorage, TileBundle, TileColor, TilePos},
     TilemapBundle,
 };
 use std::collections::{HashMap, HashSet};
@@ -147,7 +147,7 @@ fn transform_bundle_for_tiles(
 #[allow(clippy::too_many_arguments)]
 fn insert_metadata_for_layer(
     commands: &mut Commands,
-    tile_storage: &Tile2dStorage,
+    tile_storage: &TileStorage,
     grid_tiles: &[TileInstance],
     layer_instance: &LayerInstance,
     metadata_map: &HashMap<i32, TileMetadata>,
@@ -234,7 +234,7 @@ pub fn spawn_level(
         if ldtk_settings.level_background == LevelBackground::Rendered {
             let background_entity = commands.spawn().id();
 
-            let mut storage = Tile2dStorage::empty(Tilemap2dSize { x: 1, y: 1 });
+            let mut storage = TileStorage::empty(TilemapSize { x: 1, y: 1 });
 
             let tile_entity = commands
                 .spawn_bundle(TileBundle {
@@ -244,9 +244,9 @@ pub fn spawn_level(
                 })
                 .id();
 
-            storage.set(&TilePos2d::default(), Some(tile_entity));
+            storage.set(&TilePos::default(), Some(tile_entity));
 
-            let tile_size = Tilemap2dTileSize {
+            let tile_size = TilemapTileSize {
                 x: level.px_wid as f32,
                 y: level.px_hei as f32,
             };
@@ -362,7 +362,7 @@ pub fn spawn_level(
 
                     let layer_entity = commands.spawn().id();
 
-                    let size = Tilemap2dSize {
+                    let size = TilemapSize {
                         x: layer_instance.c_wid as u32,
                         y: layer_instance.c_hei as u32,
                     };
@@ -372,11 +372,11 @@ pub fn spawn_level(
                         .map(|u| tileset_definition_map.get(&u).unwrap());
 
                     let tile_size = match tileset_definition {
-                        Some(tileset_definition) => Tilemap2dTileSize {
+                        Some(tileset_definition) => TilemapTileSize {
                             x: tileset_definition.tile_grid_size as f32,
                             y: tileset_definition.tile_grid_size as f32,
                         },
-                        None => Tilemap2dTileSize {
+                        None => TilemapTileSize {
                             x: layer_instance.grid_size as f32,
                             y: layer_instance.grid_size as f32,
                         },
@@ -393,12 +393,12 @@ pub fn spawn_level(
                         },
                     };
 
-                    let mut grid_size = Tilemap2dGridSize::default();
+                    let mut grid_size = TilemapGridSize::default();
 
-                    let mut spacing = Tilemap2dSpacing::default();
+                    let mut spacing = TilemapSpacing::default();
 
                     if let Some(tileset_definition) = tileset_definition {
-                        grid_size = Tilemap2dGridSize {
+                        grid_size = TilemapGridSize {
                             x: layer_instance.grid_size as f32,
                             y: layer_instance.grid_size as f32,
                         };
@@ -478,7 +478,7 @@ pub fn spawn_level(
                             // The current spawning of IntGrid layers doesn't allow using
                             // LayerBuilder::new_batch().
                             // So, the actual LayerBuilder usage diverges greatly here
-                            let mut storage = Tile2dStorage::empty(size);
+                            let mut storage = TileStorage::empty(size);
 
                             match tileset_definition {
                                 Some(_) => {
@@ -633,7 +633,7 @@ pub fn spawn_level(
                             // This can't be accomplished using LayerBuilder::new_batch,
                             // so the logic for building layers with metadata is slower.
 
-                            let mut storage = Tile2dStorage::empty(size);
+                            let mut storage = TileStorage::empty(size);
 
                             set_all_tiles_with_func(
                                 commands,

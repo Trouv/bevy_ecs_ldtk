@@ -19,10 +19,10 @@ use crate::{
 use bevy::{prelude::*, render::render_resource::*, sprite};
 use bevy_ecs_tilemap::{
     map::{
-        Tilemap2dGridSize, Tilemap2dSize, Tilemap2dSpacing, Tilemap2dTextureSize,
-        Tilemap2dTileSize, TilemapId, TilemapTexture,
+        TilemapGridSize, TilemapSize, TilemapSpacing,
+        TilemapTileSize, TilemapId, TilemapTexture,
     },
-    tiles::{Tile2dStorage, TileBundle, TileColor, TilePos2d},
+    tiles::{TileStorage, TileBundle, TileColor, TilePos},
     TilemapBundle,
 };
 use std::collections::{HashMap, HashSet};
@@ -126,28 +126,26 @@ fn insert_metadata_to_tile(
     metadata_inserted
 }
 
-fn transform_bundle_for_tiles(
+fn spatial_bundle_for_tiles(
     grid_coords: GridCoords,
     grid_size: i32,
     layer_scale: Vec3,
-    parent: Entity,
-) -> (Transform, GlobalTransform, Parent) {
+) -> SpatialBundle {
     let mut translation =
         grid_coords_to_translation_centered(grid_coords, IVec2::splat(grid_size)).extend(0.);
 
     translation /= layer_scale;
 
-    (
-        Transform::from_translation(translation),
-        GlobalTransform::default(),
-        Parent(parent),
-    )
+    SpatialBundle {
+        transform: Transform::from_translation(translation),
+        ..default()
+    }
 }
 
 #[allow(clippy::too_many_arguments)]
 fn insert_metadata_for_layer(
     commands: &mut Commands,
-    tile_storage: &Tile2dStorage,
+    tile_storage: &TileStorage,
     grid_tiles: &[TileInstance],
     layer_instance: &LayerInstance,
     metadata_map: &HashMap<i32, TileMetadata>,
@@ -163,12 +161,12 @@ fn insert_metadata_for_layer(
         if insert_metadata_to_tile(commands, tile, tile_entity, metadata_map, enum_tags_map) {
             commands
                 .entity(tile_entity)
-                .insert_bundle(transform_bundle_for_tiles(
+                .insert_bundle(spatial_bundle_for_tiles(
                     grid_coords,
                     layer_instance.grid_size,
                     layer_scale,
-                    layer_entity,
                 ));
+            commands.entity(layer_entity).add_child(tile_entity);
         }
     }
 }
@@ -234,7 +232,7 @@ pub fn spawn_level(
         if ldtk_settings.level_background == LevelBackground::Rendered {
             let background_entity = commands.spawn().id();
 
-            let mut storage = Tile2dStorage::empty(Tilemap2dSize { x: 1, y: 1 });
+            let mut storage = TileStorage::empty(TilemapSize { x: 1, y: 1 });
 
             let tile_entity = commands
                 .spawn_bundle(TileBundle {
@@ -244,13 +242,9 @@ pub fn spawn_level(
                 })
                 .id();
 
-            storage.set(&TilePos2d::default(), Some(tile_entity));
+            storage.set(&TilePos::default(), Some(tile_entity));
 
-            let tile_size = Tilemap2dTileSize {
-                x: level.px_wid as f32,
-                y: level.px_hei as f32,
-            };
-            let texture_size = Tilemap2dTextureSize {
+            let tile_size = TilemapTileSize {
                 x: level.px_wid as f32,
                 y: level.px_hei as f32,
             };
@@ -260,12 +254,11 @@ pub fn spawn_level(
                 .entity(background_entity)
                 .insert_bundle(TilemapBundle {
                     tile_size,
-                    texture_size,
                     storage,
                     texture,
                     ..default()
-                })
-                .insert(Parent(ldtk_entity));
+                });
+            commands.entity(ldtk_entity).add_child(background_entity);
 
             layer_z += 1;
 
@@ -282,9 +275,9 @@ pub fn spawn_level(
                     layer_z as f32,
                 ) {
                     Ok(sprite_sheet_bundle) => {
-                        commands
-                            .spawn_bundle(sprite_sheet_bundle)
-                            .insert(Parent(ldtk_entity));
+                        commands.entity(ldtk_entity).with_children(|parent| {
+                            parent.spawn_bundle(sprite_sheet_bundle);
+                        });
 
                         layer_z += 1;
                     }
@@ -347,8 +340,10 @@ pub fn spawn_level(
                                 );
 
                                 entity_commands
-                                    .insert(transform)
-                                    .insert(GlobalTransform::default());
+                                    .insert_bundle(SpatialBundle {
+                                        transform,
+                                        ..default()
+                                    });
                             }
                         }
                     });
@@ -362,7 +357,7 @@ pub fn spawn_level(
 
                     let layer_entity = commands.spawn().id();
 
-                    let size = Tilemap2dSize {
+                    let size = TilemapSize {
                         x: layer_instance.c_wid as u32,
                         y: layer_instance.c_hei as u32,
                     };
@@ -372,33 +367,22 @@ pub fn spawn_level(
                         .map(|u| tileset_definition_map.get(&u).unwrap());
 
                     let tile_size = match tileset_definition {
-                        Some(tileset_definition) => Tilemap2dTileSize {
+                        Some(tileset_definition) => TilemapTileSize {
                             x: tileset_definition.tile_grid_size as f32,
                             y: tileset_definition.tile_grid_size as f32,
                         },
-                        None => Tilemap2dTileSize {
+                        None => TilemapTileSize {
                             x: layer_instance.grid_size as f32,
                             y: layer_instance.grid_size as f32,
                         },
                     };
 
-                    let texture_size = match tileset_definition {
-                        Some(tileset_definition) => Tilemap2dTextureSize {
-                            x: tileset_definition.px_wid as f32,
-                            y: tileset_definition.px_hei as f32,
-                        },
-                        None => Tilemap2dTextureSize {
-                            x: layer_instance.grid_size as f32,
-                            y: layer_instance.grid_size as f32,
-                        },
-                    };
+                    let mut grid_size = TilemapGridSize::default();
 
-                    let mut grid_size = Tilemap2dGridSize::default();
-
-                    let mut spacing = Tilemap2dSpacing::default();
+                    let mut spacing = TilemapSpacing::default();
 
                     if let Some(tileset_definition) = tileset_definition {
-                        grid_size = Tilemap2dGridSize {
+                        grid_size = TilemapGridSize {
                             x: layer_instance.grid_size as f32,
                             y: layer_instance.grid_size as f32,
                         };
@@ -478,7 +462,7 @@ pub fn spawn_level(
                             // The current spawning of IntGrid layers doesn't allow using
                             // LayerBuilder::new_batch().
                             // So, the actual LayerBuilder usage diverges greatly here
-                            let mut storage = Tile2dStorage::empty(size);
+                            let mut storage = TileStorage::empty(size);
 
                             match tileset_definition {
                                 Some(_) => {
@@ -582,14 +566,14 @@ pub fn spawn_level(
                                         layer_instance,
                                     );
 
-                                    let transform_bundle = transform_bundle_for_tiles(
+                                    let spatial_bundle = spatial_bundle_for_tiles(
                                         grid_coords,
                                         layer_instance.grid_size,
                                         layer_scale,
-                                        layer_entity,
                                     );
 
-                                    entity_commands.insert_bundle(transform_bundle);
+                                    entity_commands.insert_bundle(spatial_bundle);
+                                    commands.entity(layer_entity).add_child(tile_entity);
                                 }
                             }
 
@@ -611,7 +595,6 @@ pub fn spawn_level(
                                 size,
                                 spacing,
                                 storage,
-                                texture_size,
                                 texture: texture.clone(),
                                 tile_size,
                                 ..default()
@@ -633,7 +616,7 @@ pub fn spawn_level(
                             // This can't be accomplished using LayerBuilder::new_batch,
                             // so the logic for building layers with metadata is slower.
 
-                            let mut storage = Tile2dStorage::empty(size);
+                            let mut storage = TileStorage::empty(size);
 
                             set_all_tiles_with_func(
                                 commands,
@@ -661,7 +644,6 @@ pub fn spawn_level(
                                 size,
                                 spacing,
                                 storage,
-                                texture_size,
                                 texture: texture.clone(),
                                 tile_size,
                                 ..default()
@@ -680,8 +662,8 @@ pub fn spawn_level(
                             .insert(
                                 Transform::from_translation(layer_offset).with_scale(layer_scale),
                             )
-                            .insert(LayerMetadata::from(layer_instance))
-                            .insert(Parent(ldtk_entity));
+                            .insert(LayerMetadata::from(layer_instance));
+                        commands.entity(ldtk_entity).add_child(layer_entity);
 
                         layer_z += 1;
                     }

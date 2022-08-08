@@ -219,10 +219,10 @@ fn pre_spawn_level(
         child_builder
             .spawn()
             .insert(level_handle.clone())
-            .insert_bundle((
-                Transform::from_translation(translation),
-                GlobalTransform::default(),
-            ));
+            .insert_bundle(SpatialBundle {
+                transform: Transform::from_translation(translation),
+                ..default()
+            });
     }
 }
 
@@ -246,7 +246,7 @@ pub fn process_ldtk_levels(
     ldtk_settings: Res<LdtkSettings>,
 ) {
     for (ldtk_entity, level_handle, parent) in level_query.iter() {
-        if let Ok(ldtk_handle) = ldtk_query.get(parent.0) {
+        if let Ok(ldtk_handle) = ldtk_query.get(parent.get()) {
             if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
                 let tileset_definition_map: HashMap<i32, &TilesetDefinition> = ldtk_asset
                     .project
@@ -290,13 +290,18 @@ pub fn process_ldtk_levels(
 }
 
 pub fn worldly_adoption(
-    mut worldly_query: Query<(&mut Transform, &mut Parent), Added<Worldly>>,
+    mut commands: Commands,
+    mut worldly_query: Query<(&mut Transform, &Parent, Entity), Added<Worldly>>,
     transform_query: Query<(&Transform, &Parent), Without<Worldly>>,
 ) {
-    for (mut transform, mut parent) in worldly_query.iter_mut() {
-        if let Ok((level_transform, level_parent)) = transform_query.get(parent.0) {
+    for (mut transform, parent, entity) in worldly_query.iter_mut() {
+        if let Ok((level_transform, level_parent)) = transform_query.get(parent.get()) {
+            // Find the entity's world-relative transform, so it doesn't move when its parent changes
             *transform = level_transform.mul_transform(*transform);
-            parent.0 = level_parent.0
+            // Make it a child of the world
+            commands
+                .entity(level_parent.get())
+                .add_child(entity);
         }
     }
 }

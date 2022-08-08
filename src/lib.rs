@@ -140,7 +140,7 @@ mod plugin {
 
     impl Plugin for LdtkPlugin {
         fn build(&self, app: &mut App) {
-            app.add_plugin(bevy_ecs_tilemap::Tilemap2dPlugin)
+            app.add_plugin(bevy_ecs_tilemap::TilemapPlugin)
                 .init_non_send_resource::<app::LdtkEntityMap>()
                 .init_non_send_resource::<app::LdtkIntCellMap>()
                 .init_resource::<resources::LdtkSettings>()

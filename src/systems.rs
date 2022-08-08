@@ -219,10 +219,10 @@ fn pre_spawn_level(
         child_builder
             .spawn()
             .insert(level_handle.clone())
-            .insert_bundle((
-                Transform::from_translation(translation),
-                GlobalTransform::default(),
-            ));
+            .insert_bundle(SpatialBundle {
+                transform: Transform::from_translation(translation),
+                ..default()
+            });
     }
 }
 

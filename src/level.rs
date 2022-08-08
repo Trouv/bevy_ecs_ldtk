@@ -126,20 +126,20 @@ fn insert_metadata_to_tile(
     metadata_inserted
 }
 
-fn transform_bundle_for_tiles(
+fn spatial_bundle_for_tiles(
     grid_coords: GridCoords,
     grid_size: i32,
     layer_scale: Vec3,
-) -> (Transform, GlobalTransform) {
+) -> SpatialBundle {
     let mut translation =
         grid_coords_to_translation_centered(grid_coords, IVec2::splat(grid_size)).extend(0.);
 
     translation /= layer_scale;
 
-    (
-        Transform::from_translation(translation),
-        GlobalTransform::default(),
-    )
+    SpatialBundle {
+        transform: Transform::from_translation(translation),
+        ..default()
+    }
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -161,7 +161,7 @@ fn insert_metadata_for_layer(
         if insert_metadata_to_tile(commands, tile, tile_entity, metadata_map, enum_tags_map) {
             commands
                 .entity(tile_entity)
-                .insert_bundle(transform_bundle_for_tiles(
+                .insert_bundle(spatial_bundle_for_tiles(
                     grid_coords,
                     layer_instance.grid_size,
                     layer_scale,
@@ -340,8 +340,10 @@ pub fn spawn_level(
                                 );
 
                                 entity_commands
-                                    .insert(transform)
-                                    .insert(GlobalTransform::default());
+                                    .insert_bundle(SpatialBundle {
+                                        transform,
+                                        ..default()
+                                    });
                             }
                         }
                     });
@@ -564,13 +566,13 @@ pub fn spawn_level(
                                         layer_instance,
                                     );
 
-                                    let transform_bundle = transform_bundle_for_tiles(
+                                    let spatial_bundle = spatial_bundle_for_tiles(
                                         grid_coords,
                                         layer_instance.grid_size,
                                         layer_scale,
                                     );
 
-                                    entity_commands.insert_bundle(transform_bundle);
+                                    entity_commands.insert_bundle(spatial_bundle);
                                     commands.entity(layer_entity).add_child(tile_entity);
                                 }
                             }

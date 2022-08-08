@@ -343,4 +343,6 @@ pub struct LdtkWorldBundle {
     pub level_set: LevelSet,
     pub transform: Transform,
     pub global_transform: GlobalTransform,
+    pub visibility: Visibility,
+    pub computed_visibility: ComputedVisibility,
 }

@@ -581,7 +581,7 @@ pub fn spawn_level(
                             if !(metadata_map.is_empty() && enum_tags_map.is_empty()) {
                                 insert_metadata_for_layer(
                                     commands,
-                                    &mut storage,
+                                    &storage,
                                     &grid_tiles,
                                     layer_instance,
                                     &metadata_map,
@@ -630,7 +630,7 @@ pub fn spawn_level(
                             if !(metadata_map.is_empty() && enum_tags_map.is_empty()) {
                                 insert_metadata_for_layer(
                                     commands,
-                                    &mut storage,
+                                    &storage,
                                     &grid_tiles,
                                     layer_instance,
                                     &metadata_map,

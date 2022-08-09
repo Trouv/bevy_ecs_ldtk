@@ -38,7 +38,7 @@ const LEVEL_IIDS: [&str; 8] = [
 ];
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+    commands.spawn_bundle(Camera2dBundle::default());
 
     let iids: HashSet<String> = LEVEL_IIDS.into_iter().map(|s| s.to_string()).collect();
 

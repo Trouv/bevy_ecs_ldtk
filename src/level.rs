@@ -19,10 +19,9 @@ use crate::{
 use bevy::{prelude::*, render::render_resource::*, sprite};
 use bevy_ecs_tilemap::{
     map::{
-        TilemapGridSize, TilemapSize, TilemapSpacing,
-        TilemapTileSize, TilemapId, TilemapTexture,
+        TilemapGridSize, TilemapId, TilemapSize, TilemapSpacing, TilemapTexture, TilemapTileSize,
     },
-    tiles::{TileStorage, TileBundle, TileColor, TilePos},
+    tiles::{TileBundle, TileColor, TilePos, TileStorage},
     TilemapBundle,
 };
 use std::collections::{HashMap, HashSet};
@@ -339,11 +338,10 @@ pub fn spawn_level(
                                     texture_atlases,
                                 );
 
-                                entity_commands
-                                    .insert_bundle(SpatialBundle {
-                                        transform,
-                                        ..default()
-                                    });
+                                entity_commands.insert_bundle(SpatialBundle {
+                                    transform,
+                                    ..default()
+                                });
                             }
                         }
                     });

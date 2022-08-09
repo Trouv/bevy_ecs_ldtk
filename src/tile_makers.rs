@@ -14,9 +14,7 @@ use crate::{
     utils::*,
 };
 use bevy::prelude::*;
-use bevy_ecs_tilemap::tiles::{
-    TileBundle, TileColor, TileFlip, TilePos, TileTexture, TileVisible,
-};
+use bevy_ecs_tilemap::tiles::{TileBundle, TileColor, TileFlip, TilePos, TileTexture, TileVisible};
 
 use std::collections::HashMap;
 
@@ -363,24 +361,15 @@ mod tests {
             tile_pos_to_int_grid_with_grid_tiles_tile_maker(&grid_tiles, &int_grid_csv, 2, 2, 32);
 
         assert_eq!(tile_maker(TilePos { x: 0, y: 0 }).unwrap().texture.0, 0);
-        assert_eq!(
-            tile_maker(TilePos { x: 0, y: 0 }).unwrap().visible.0,
-            false
-        );
+        assert_eq!(tile_maker(TilePos { x: 0, y: 0 }).unwrap().visible.0, false);
 
         assert!(tile_maker(TilePos { x: 1, y: 0 }).is_none());
 
         assert_eq!(tile_maker(TilePos { x: 0, y: 1 }).unwrap().texture.0, 1);
-        assert_eq!(
-            tile_maker(TilePos { x: 0, y: 1 }).unwrap().visible.0,
-            true
-        );
+        assert_eq!(tile_maker(TilePos { x: 0, y: 1 }).unwrap().visible.0, true);
 
         assert_eq!(tile_maker(TilePos { x: 1, y: 1 }).unwrap().texture.0, 2);
-        assert_eq!(
-            tile_maker(TilePos { x: 1, y: 1 }).unwrap().visible.0,
-            true
-        );
+        assert_eq!(tile_maker(TilePos { x: 1, y: 1 }).unwrap().visible.0, true);
     }
 
     #[test]

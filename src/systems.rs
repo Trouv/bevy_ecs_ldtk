@@ -299,9 +299,7 @@ pub fn worldly_adoption(
             // Find the entity's world-relative transform, so it doesn't move when its parent changes
             *transform = level_transform.mul_transform(*transform);
             // Make it a child of the world
-            commands
-                .entity(level_parent.get())
-                .add_child(entity);
+            commands.entity(level_parent.get()).add_child(entity);
         }
     }
 }

@@ -9,8 +9,8 @@ use crate::{
 use crate::{components::TileGridBundle, ldtk::*};
 use bevy::prelude::*;
 use bevy_ecs_tilemap::{
-    map::{TilemapSize, TilemapId},
-    tiles::{TileStorage, TilePos},
+    map::{TilemapId, TilemapSize},
+    tiles::{TilePos, TileStorage},
 };
 
 use std::{collections::HashMap, hash::Hash};

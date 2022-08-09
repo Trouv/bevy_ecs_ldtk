@@ -196,7 +196,6 @@ pub fn spawn_level(
     asset_server: &AssetServer,
     images: &mut Assets<Image>,
     texture_atlases: &mut Assets<TextureAtlas>,
-    meshes: &mut ResMut<Assets<Mesh>>,
     ldtk_entity_map: &LdtkEntityMap,
     ldtk_int_cell_map: &LdtkIntCellMap,
     entity_definition_map: &HashMap<i32, &EntityDefinition>,
@@ -375,17 +374,16 @@ pub fn spawn_level(
                         },
                     };
 
-                    let mut grid_size = TilemapGridSize::default();
-
-                    let mut spacing = TilemapSpacing::default();
-
-                    if let Some(tileset_definition) = tileset_definition {
-                        grid_size = TilemapGridSize {
+                    let grid_size = match tileset_definition {
+                        Some(_) => TilemapGridSize {
                             x: layer_instance.grid_size as f32,
                             y: layer_instance.grid_size as f32,
-                        };
+                        },
+                        None => TilemapGridSize::default(),
+                    };
 
-                        if tileset_definition.spacing != 0 {
+                    let spacing = match tileset_definition {
+                        Some(tileset_definition) if tileset_definition.spacing != 0 => {
                             // TODO: Check that this is still an issue with upcoming
                             // bevy_ecs_tilemap releases
                             #[cfg(not(feature = "atlas"))]
@@ -393,15 +391,20 @@ pub fn spawn_level(
                                 warn!(
                                     "Tile spacing on Tile and AutoTile layers requires the \"atlas\" feature"
                                 );
+
+                                TilemapSpacing::default()
                             }
 
                             #[cfg(feature = "atlas")]
                             {
-                                spacing.x = tileset_definition.spacing as f32;
-                                spacing.y = tileset_definition.spacing as f32;
+                                TilemapSpacing {
+                                    x: tileset_definition.spacing as f32,
+                                    y: tileset_definition.spacing as f32,
+                                }
                             }
                         }
-                    }
+                        _ => TilemapSpacing::default(),
+                    };
 
                     // The change to the settings.grid_size above is supposed to help handle cases
                     // where the tileset's tile size and the layer's tile size are different.

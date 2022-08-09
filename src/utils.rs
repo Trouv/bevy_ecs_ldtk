@@ -202,7 +202,7 @@ pub fn ldtk_pixel_coords_to_translation_pivoted(
 ///
 /// This allows for more methods to be performed on the [LayerBuilder] before building it.
 /// However, the performance cons of using non-batch methods still apply here.
-pub fn set_all_tiles_with_func(
+pub(crate) fn set_all_tiles_with_func(
     commands: &mut Commands,
     storage: &mut TileStorage,
     size: TilemapSize,

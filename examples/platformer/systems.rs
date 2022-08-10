@@ -114,13 +114,19 @@ pub fn spawn_wall_collision(
         bottom: i32,
     }
 
-    // consider where the walls are
+    // Consider where the walls are
     // storing them as GridCoords in a HashSet for quick, easy lookup
+    //
+    // The key of this map will be the entity of the level the wall belongs to.
+    // This has two consequences in the resulting collision entities:
+    // 1. it forces the walls to be split along level boundaries
+    // 2. it lets us easily add the collision entities as children of the appropriate level entity
     let mut level_to_wall_locations: HashMap<Entity, HashSet<GridCoords>> = HashMap::new();
 
     wall_query.for_each(|(&grid_coords, parent)| {
-        // the intgrid tiles' direct parents will be layers, not the level
-        // To get the level, you need their grandparents, which is where parent_query comes in
+        // An intgrid tile's direct parent will be a layer entity, not the level entity
+        // To get the level entity, you need the tile's grandparent.
+        // This is where parent_query comes in.
         if let Ok(grandparent) = parent_query.get(parent.get()) {
             level_to_wall_locations
                 .entry(grandparent.get())

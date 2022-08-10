@@ -134,7 +134,7 @@ pub trait LdtkIntCell {
     /// Note: whether or not the entity is registered to the app, the plugin will insert [Transform],
     /// [GlobalTransform], and [Parent] components to the entity **after** this bundle is inserted.
     /// So, any custom implementations of these components within this trait will be overwritten.
-    /// Furthermore, a [bevy_ecs_tilemap::TileBundle] will be inserted **before** this bundle, so
+    /// Furthermore, a [bevy_ecs_tilemap::tiles::TileBundle] will be inserted **before** this bundle, so
     /// be careful not to overwrite the components provided by that bundle.
     fn bundle_int_cell(int_grid_cell: IntGridCell, layer_instance: &LayerInstance) -> Self;
 }

@@ -8,7 +8,7 @@ use crate::{
     assets::{LdtkLevel, TilesetMap},
     components::*,
     ldtk::{
-        EntityDefinition, EnumTagValue, LayerDefinition, LevelBackgroundPosition,
+        EntityDefinition, EnumTagValue, LayerDefinition, LayerInstance, LevelBackgroundPosition,
         TileCustomMetadata, TileInstance, TilesetDefinition, Type,
     },
     resources::{IntGridRendering, LdtkSettings, LevelBackground},

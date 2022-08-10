@@ -1,6 +1,7 @@
 //! [Component]s and [Bundle]s used by the plugin.
 
-pub use crate::ldtk::{EntityInstance, LayerInstance, Type};
+pub use crate::ldtk::EntityInstance;
+use crate::ldtk::{LayerInstance, Type};
 use bevy::prelude::*;
 
 use std::{
@@ -334,9 +335,15 @@ pub(crate) struct EntityInstanceBundle {
 /// After the ldtk file is done loading, the levels you've chosen with [LevelSelection] or
 /// [LevelSet] will begin to spawn.
 /// Each level is its own entity, with the [LdtkWorldBundle] as its parent.
-/// Each level has `Handle<LdtkLevel>`, [Transform], and [GlobalTransform] components.
-/// Finally, all tiles and entities in the level are spawned as children to the level unless marked
-/// by a [Worldly] component.
+/// Each level has a `Handle<LdtkLevel>` component.
+///
+/// All non-Entity layers (IntGrid, Tile, and AutoTile) will also spawn as their own entities.
+/// Each layer's parent will be the level entity.
+/// Each layer will have a [LayerMetadata] component, and are [bevy_ecs_tilemap::TilemapBundle]s.
+/// Each tile in these layers will have the layer entity as its parent.
+///
+/// For Entity layers, all LDtk entities in the level are spawned as children to the level entity,
+/// unless marked by a [Worldly] component.
 #[derive(Clone, Default, Bundle)]
 pub struct LdtkWorldBundle {
     pub ldtk_handle: Handle<crate::assets::LdtkAsset>,

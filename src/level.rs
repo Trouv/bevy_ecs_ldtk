@@ -141,6 +141,30 @@ fn spatial_bundle_for_tiles(
     }
 }
 
+fn insert_spacial_bundle_for_layer(
+    commands: &mut Commands,
+    storage: &TileStorage,
+    size: &TilemapSize,
+    grid_size: i32,
+    layer_scale: Vec3,
+    tilemap_id: TilemapId,
+) {
+    for x in 0..size.x {
+        for y in 0..size.y {
+            let tile_pos = TilePos { x, y };
+            let tile_entity = storage.get(&tile_pos);
+
+            if let Some(tile_entity) = tile_entity {
+                let spatial_bundle =
+                    spatial_bundle_for_tiles(tile_pos.into(), grid_size, layer_scale);
+
+                commands.entity(tile_entity).insert_bundle(spatial_bundle);
+                commands.entity(tilemap_id.0).add_child(tile_entity);
+            }
+        }
+    }
+}
+
 #[allow(clippy::too_many_arguments)]
 fn insert_metadata_for_layer(
     commands: &mut Commands,
@@ -458,6 +482,8 @@ pub fn spawn_level(
                     grid_tiles.extend(layer_instance.auto_layer_tiles.clone());
 
                     for (i, grid_tiles) in layer_grid_tiles(grid_tiles).into_iter().enumerate() {
+                        dbg!(i, layer_z, &layer_instance.identifier);
+
                         let tilemap_bundle = if layer_instance.layer_instance_type == Type::IntGrid
                         {
                             // The current spawning of IntGrid layers doesn't allow using
@@ -566,15 +592,6 @@ pub fn spawn_level(
                                         IntGridCell { value: *value },
                                         layer_instance,
                                     );
-
-                                    let spatial_bundle = spatial_bundle_for_tiles(
-                                        grid_coords,
-                                        layer_instance.grid_size,
-                                        layer_scale,
-                                    );
-
-                                    entity_commands.insert_bundle(spatial_bundle);
-                                    commands.entity(layer_entity).add_child(tile_entity);
                                 }
                             }
 
@@ -651,6 +668,15 @@ pub fn spawn_level(
                             }
                         };
 
+                        insert_spacial_bundle_for_layer(
+                            commands,
+                            &tilemap_bundle.storage,
+                            &tilemap_bundle.size,
+                            layer_instance.grid_size,
+                            layer_scale,
+                            TilemapId(layer_entity),
+                        );
+
                         let layer_offset = Vec3::new(
                             layer_instance.px_total_offset_x as f32,
                             -layer_instance.px_total_offset_y as f32,
@@ -660,10 +686,11 @@ pub fn spawn_level(
                         commands
                             .entity(layer_entity)
                             .insert_bundle(tilemap_bundle)
-                            .insert(
+                            .insert_bundle(SpatialBundle::from_transform(
                                 Transform::from_translation(layer_offset).with_scale(layer_scale),
-                            )
+                            ))
                             .insert(LayerMetadata::from(layer_instance));
+
                         commands.entity(ldtk_entity).add_child(layer_entity);
 
                         layer_z += 1;

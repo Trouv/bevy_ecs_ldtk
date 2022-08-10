@@ -235,6 +235,7 @@ pub(crate) fn tile_pos_to_tile_grid_bundle_maker(
     move |tile_pos: TilePos| -> Option<TileGridBundle> {
         tile_maker(tile_pos).map(|mut tile_bundle| {
             tile_bundle.position = tile_pos;
+
             TileGridBundle {
                 grid_coords: tile_pos.into(),
                 tile_bundle,

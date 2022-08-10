@@ -141,7 +141,7 @@ fn spatial_bundle_for_tiles(
     }
 }
 
-fn insert_spacial_bundle_for_layer(
+fn insert_tile_spatial_bundles_for_layer(
     commands: &mut Commands,
     storage: &TileStorage,
     size: &TilemapSize,
@@ -166,31 +166,20 @@ fn insert_spacial_bundle_for_layer(
 }
 
 #[allow(clippy::too_many_arguments)]
-fn insert_metadata_for_layer(
+fn insert_tile_metadata_for_layer(
     commands: &mut Commands,
     tile_storage: &TileStorage,
     grid_tiles: &[TileInstance],
     layer_instance: &LayerInstance,
     metadata_map: &HashMap<i32, TileMetadata>,
     enum_tags_map: &HashMap<i32, TileEnumTags>,
-    layer_scale: Vec3,
-    layer_entity: Entity,
 ) {
     for tile in grid_tiles {
         let grid_coords = tile_to_grid_coords(tile, layer_instance.c_hei, layer_instance.grid_size);
 
         let tile_entity = tile_storage.get(&grid_coords.into()).unwrap();
 
-        if insert_metadata_to_tile(commands, tile, tile_entity, metadata_map, enum_tags_map) {
-            commands
-                .entity(tile_entity)
-                .insert_bundle(spatial_bundle_for_tiles(
-                    grid_coords,
-                    layer_instance.grid_size,
-                    layer_scale,
-                ));
-            commands.entity(layer_entity).add_child(tile_entity);
-        }
+        insert_metadata_to_tile(commands, tile, tile_entity, metadata_map, enum_tags_map);
     }
 }
 
@@ -262,6 +251,7 @@ pub fn spawn_level(
                     tilemap_id: TilemapId(background_entity),
                     ..default()
                 })
+                .insert_bundle(SpatialBundle::default())
                 .id();
 
             storage.set(&TilePos::default(), Some(tile_entity));
@@ -279,7 +269,9 @@ pub fn spawn_level(
                     storage,
                     texture,
                     ..default()
-                });
+                })
+                .insert_bundle(SpatialBundle::default())
+                .add_child(tile_entity);
             commands.entity(ldtk_entity).add_child(background_entity);
 
             layer_z += 1;
@@ -375,8 +367,6 @@ pub fn spawn_level(
                     // This is because:
                     // 1. There is virtually no difference between AutoTile and Tile layers
                     // 2. IntGrid layers can sometimes have AutoTile functionality
-
-                    let layer_entity = commands.spawn().id();
 
                     let size = TilemapSize {
                         x: layer_instance.c_wid as u32,
@@ -482,7 +472,7 @@ pub fn spawn_level(
                     grid_tiles.extend(layer_instance.auto_layer_tiles.clone());
 
                     for (i, grid_tiles) in layer_grid_tiles(grid_tiles).into_iter().enumerate() {
-                        dbg!(i, layer_z, &layer_instance.identifier);
+                        let layer_entity = commands.spawn().id();
 
                         let tilemap_bundle = if layer_instance.layer_instance_type == Type::IntGrid
                         {
@@ -596,15 +586,13 @@ pub fn spawn_level(
                             }
 
                             if !(metadata_map.is_empty() && enum_tags_map.is_empty()) {
-                                insert_metadata_for_layer(
+                                insert_tile_metadata_for_layer(
                                     commands,
                                     &storage,
                                     &grid_tiles,
                                     layer_instance,
                                     &metadata_map,
                                     &enum_tags_map,
-                                    layer_scale,
-                                    layer_entity,
                                 );
                             }
 
@@ -645,15 +633,13 @@ pub fn spawn_level(
                             );
 
                             if !(metadata_map.is_empty() && enum_tags_map.is_empty()) {
-                                insert_metadata_for_layer(
+                                insert_tile_metadata_for_layer(
                                     commands,
                                     &storage,
                                     &grid_tiles,
                                     layer_instance,
                                     &metadata_map,
                                     &enum_tags_map,
-                                    layer_scale,
-                                    layer_entity,
                                 );
                             }
 
@@ -668,7 +654,7 @@ pub fn spawn_level(
                             }
                         };
 
-                        insert_spacial_bundle_for_layer(
+                        insert_tile_spatial_bundles_for_layer(
                             commands,
                             &tilemap_bundle.storage,
                             &tilemap_bundle.size,

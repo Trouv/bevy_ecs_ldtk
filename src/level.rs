@@ -225,7 +225,7 @@ pub fn spawn_level(
         let mut layer_z = 0;
 
         // creating an image to use for the background color, and for intgrid colors
-        let mut white_image = Image::new_fill(
+        let white_image = Image::new_fill(
             Extent3d {
                 width: level.px_wid as u32,
                 height: level.px_hei as u32,
@@ -235,8 +235,6 @@ pub fn spawn_level(
             &[255, 255, 255, 255],
             TextureFormat::Rgba8UnormSrgb,
         );
-        white_image.texture_descriptor.usage =
-            TextureUsages::TEXTURE_BINDING | TextureUsages::COPY_SRC | TextureUsages::COPY_DST;
 
         let white_image_handle = images.add(white_image);
 

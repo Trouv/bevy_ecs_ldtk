@@ -165,10 +165,6 @@ mod plugin {
                 )
                 .add_system_to_stage(
                     CoreStage::PreUpdate,
-                    systems::set_ldtk_texture_filters_to_nearest.label(LdtkSystemLabel::Other),
-                )
-                .add_system_to_stage(
-                    CoreStage::PreUpdate,
                     systems::worldly_adoption.label(LdtkSystemLabel::Other),
                 )
                 .add_system_to_stage(

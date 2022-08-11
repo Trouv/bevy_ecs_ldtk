@@ -141,7 +141,7 @@ fn spatial_bundle_for_tiles(
     }
 }
 
-fn insert_tile_spatial_bundles_for_layer(
+fn insert_spatial_bundle_for_layer_tiles(
     commands: &mut Commands,
     storage: &TileStorage,
     size: &TilemapSize,
@@ -652,7 +652,7 @@ pub fn spawn_level(
                             }
                         };
 
-                        insert_tile_spatial_bundles_for_layer(
+                        insert_spatial_bundle_for_layer_tiles(
                             commands,
                             &tilemap_bundle.storage,
                             &tilemap_bundle.size,

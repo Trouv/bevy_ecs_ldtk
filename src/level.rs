@@ -132,7 +132,6 @@ fn spatial_bundle_for_tiles(
 ) -> SpatialBundle {
     let mut translation =
         grid_coords_to_translation_centered(grid_coords, IVec2::splat(grid_size)).extend(0.);
-
     translation /= layer_scale;
 
     SpatialBundle {
@@ -391,7 +390,10 @@ pub fn spawn_level(
                             x: layer_instance.grid_size as f32,
                             y: layer_instance.grid_size as f32,
                         },
-                        None => TilemapGridSize::default(),
+                        None => TilemapGridSize {
+                            x: tile_size.x,
+                            y: tile_size.y,
+                        },
                     };
 
                     let spacing = match tileset_definition {

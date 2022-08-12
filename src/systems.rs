@@ -108,19 +108,36 @@ pub fn process_ldtk_world(
     level_assets: Res<Assets<LdtkLevel>>,
     ldtk_settings: Res<LdtkSettings>,
     mut clear_color: ResMut<ClearColor>,
+    mut created_assets: Local<HashSet<Handle<LdtkAsset>>>,
 ) {
+    let mut changed_ldtks = HashSet::new();
+
+    // Map despawning should only be run for LDtk handles that have already been spawned
+    // So, the `new` field indicates that the asset/entity is new, so no despawning needs to happen
+    #[derive(Hash, PartialEq, Eq)]
+    struct ChangedLdtk {
+        handle: Handle<LdtkAsset>,
+        new: bool,
+    }
+
     // This function uses code from the bevy_ecs_tilemap ldtk example
     // https://github.com/StarArawn/bevy_ecs_tilemap/blob/main/examples/ldtk/ldtk.rs
-    let mut changed_ldtks = Vec::new();
     for event in ldtk_events.iter() {
         match event {
             AssetEvent::Created { handle } => {
                 debug!("LDtk asset creation detected.");
-                changed_ldtks.push(handle.clone());
+                created_assets.insert(handle.clone_weak());
+                changed_ldtks.insert(ChangedLdtk {
+                    handle: handle.clone(),
+                    new: true,
+                });
             }
             AssetEvent::Modified { handle } => {
                 info!("LDtk asset modification detected.");
-                changed_ldtks.push(handle.clone());
+                changed_ldtks.insert(ChangedLdtk {
+                    handle: handle.clone(),
+                    new: false,
+                });
             }
             AssetEvent::Removed { handle } => {
                 info!("LDtk asset removal detected.");
@@ -128,32 +145,42 @@ pub fn process_ldtk_world(
                 // events are ordered so future modification events are ok
                 changed_ldtks = changed_ldtks
                     .into_iter()
-                    .filter(|changed_handle| changed_handle != handle)
+                    .filter(|changed_handle| changed_handle.handle != *handle)
                     .collect();
             }
         }
     }
 
     for new_ldtk_handle in new_ldtks.iter() {
-        changed_ldtks.push(new_ldtk_handle.clone());
+        // For new LDtk handles, spawning should only occur if its asset has finished loading.
+        // `created_assets` keeps track of that.
+        if created_assets.contains(new_ldtk_handle) {
+            changed_ldtks.insert(ChangedLdtk {
+                handle: new_ldtk_handle.clone(),
+                new: true,
+            });
+        }
     }
 
     for changed_ldtk in changed_ldtks {
         for (ldtk_entity, ldtk_handle, mut level_set, children) in ldtk_world_query
             .iter_mut()
-            .filter(|(_, l, _, _)| **l == changed_ldtk)
+            .filter(|(_, l, _, _)| **l == changed_ldtk.handle)
         {
             if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
-                if let Some(children) = children {
-                    for child in children.iter() {
-                        if let Ok(level_handle) = ldtk_level_query.get_mut(*child) {
-                            commands.entity(*child).despawn_recursive();
+                if !changed_ldtk.new {
+                    if let Some(children) = children {
+                        for child in children.iter() {
+                            if let Ok(level_handle) = ldtk_level_query.get_mut(*child) {
+                                commands.entity(*child).despawn_recursive();
 
-                            if let Some(level) = level_assets.get(level_handle) {
-                                level_events.send(LevelEvent::Despawned(level.level.iid.clone()));
+                                if let Some(level) = level_assets.get(level_handle) {
+                                    level_events
+                                        .send(LevelEvent::Despawned(level.level.iid.clone()));
+                                }
+                            } else {
+                                commands.entity(*child).despawn_recursive();
                             }
-                        } else {
-                            commands.entity(*child).despawn_recursive();
                         }
                     }
                 }

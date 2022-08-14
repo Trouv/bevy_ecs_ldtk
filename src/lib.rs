@@ -160,7 +160,7 @@ mod plugin {
                 .add_event::<resources::LevelEvent>()
                 .add_system_to_stage(
                     CoreStage::First,
-                    systems::choose_levels.label(LdtkSystemLabel::LevelSelection),
+                    systems::apply_level_selection.label(LdtkSystemLabel::LevelSelection),
                 )
                 .add_system_to_stage(
                     CoreStage::First,
@@ -202,7 +202,7 @@ pub mod prelude {
         assets::{LdtkAsset, LdtkLevel},
         components::{
             EntityInstance, GridCoords, IntGridCell, LayerMetadata, LdtkWorldBundle, LevelSet,
-            TileEnumTags, TileMetadata, Worldly,
+            Respawn, TileEnumTags, TileMetadata, Worldly,
         },
         ldtk::{self, FieldValue, LayerInstance, TilesetDefinition},
         plugin::LdtkPlugin,

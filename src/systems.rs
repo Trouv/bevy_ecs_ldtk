@@ -281,7 +281,7 @@ pub fn clean_respawn_entities(
             commands.entity(*child).despawn_recursive();
 
             if let Ok(level_handle) = other_ldtk_levels.get(*child) {
-                if let Some(level_asset) = level_assets.get(&*level_handle) {
+                if let Some(level_asset) = level_assets.get(level_handle) {
                     level_events.send(LevelEvent::Despawned(level_asset.level.iid.clone()));
                 }
             }

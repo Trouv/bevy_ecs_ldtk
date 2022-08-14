@@ -121,15 +121,23 @@ mod plugin {
     //! Provides [LdtkPlugin] and its scheduling-related dependencies.
 
     use super::*;
+    use bevy::asset::AssetStage;
 
     /// [SystemLabel] used by the plugin for scheduling its systems.
     #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash, SystemLabel)]
     pub enum LdtkSystemLabel {
+        ProcessAssets,
+        Clean,
         LevelSelection,
         PreSpawn,
         LevelSpawning,
         FrameDelay,
         Other,
+    }
+
+    #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash, StageLabel)]
+    pub enum LdtkStage {
+        PreSpawn,
     }
 
     /// Adds the default systems, assets, and resources used by `bevy_ecs_ldtk`.
@@ -141,6 +149,11 @@ mod plugin {
     impl Plugin for LdtkPlugin {
         fn build(&self, app: &mut App) {
             app.add_plugin(bevy_ecs_tilemap::TilemapPlugin)
+                .add_stage_after(
+                    AssetStage::LoadAssets,
+                    LdtkStage::PreSpawn,
+                    SystemStage::parallel(),
+                )
                 .init_non_send_resource::<app::LdtkEntityMap>()
                 .init_non_send_resource::<app::LdtkIntCellMap>()
                 .init_resource::<resources::LdtkSettings>()
@@ -150,33 +163,38 @@ mod plugin {
                 .init_asset_loader::<assets::LdtkLevelLoader>()
                 .add_event::<resources::LevelEvent>()
                 .add_system_to_stage(
-                    CoreStage::PreUpdate,
-                    systems::process_ldtk_world.label(LdtkSystemLabel::PreSpawn),
+                    AssetStage::LoadAssets,
+                    systems::process_ldtk_assets
+                        .label(LdtkSystemLabel::ProcessAssets)
+                        .before(LdtkSystemLabel::Clean),
                 )
                 .add_system_to_stage(
-                    CoreStage::PreUpdate,
+                    AssetStage::LoadAssets,
+                    systems::clean_respawn_entities.label(LdtkSystemLabel::Clean),
+                )
+                .add_system_to_stage(
+                    LdtkStage::PreSpawn,
                     systems::choose_levels.label(LdtkSystemLabel::LevelSelection),
                 )
                 .add_system_to_stage(
-                    CoreStage::PreUpdate,
+                    LdtkStage::PreSpawn,
                     systems::apply_level_set
                         .label(LdtkSystemLabel::PreSpawn)
                         .after(LdtkSystemLabel::LevelSelection),
                 )
                 .add_system_to_stage(
                     CoreStage::PreUpdate,
+                    systems::process_ldtk_levels.label(LdtkSystemLabel::LevelSpawning),
+                )
+                .add_system_to_stage(
+                    CoreStage::Update,
                     systems::worldly_adoption.label(LdtkSystemLabel::Other),
                 )
                 .add_system_to_stage(
                     CoreStage::PostUpdate,
                     systems::detect_level_spawned_events
                         .chain(systems::fire_level_transformed_events)
-                        .label(LdtkSystemLabel::Other)
-                        .before(LdtkSystemLabel::LevelSpawning),
-                )
-                .add_system_to_stage(
-                    CoreStage::PostUpdate,
-                    systems::process_ldtk_levels.label(LdtkSystemLabel::LevelSpawning),
+                        .label(LdtkSystemLabel::Other),
                 );
         }
     }

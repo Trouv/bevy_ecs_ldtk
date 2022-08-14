@@ -13,6 +13,77 @@ use crate::{
 use bevy::prelude::*;
 use std::collections::{HashMap, HashSet};
 
+/// Detects [LdtkAsset] events and spawns levels as children of the [LdtkWorldBundle].
+#[allow(clippy::too_many_arguments)]
+pub fn process_ldtk_assets(
+    mut commands: Commands,
+    mut ldtk_events: EventReader<AssetEvent<LdtkAsset>>,
+    new_ldtks: Query<(Entity, &Handle<LdtkAsset>), Added<Handle<LdtkAsset>>>,
+    ldtk_world_query: Query<(Entity, &Handle<LdtkAsset>)>,
+    mut created_assets: Local<HashSet<Handle<LdtkAsset>>>,
+) {
+    let mut ldtk_handles_to_respawn = HashSet::new();
+
+    // This function uses code from the bevy_ecs_tilemap ldtk example
+    // https://github.com/StarArawn/bevy_ecs_tilemap/blob/main/examples/ldtk/ldtk.rs
+    for event in ldtk_events.iter() {
+        match event {
+            AssetEvent::Created { handle } => {
+                debug!("LDtk asset creation detected.");
+                created_assets.insert(handle.clone_weak());
+                ldtk_handles_to_respawn.insert(handle);
+            }
+            AssetEvent::Modified { handle } => {
+                info!("LDtk asset modification detected.");
+                ldtk_handles_to_respawn.insert(handle);
+            }
+            AssetEvent::Removed { handle } => {
+                info!("LDtk asset removal detected.");
+                // if mesh was modified and removed in the same update, ignore the modification
+                // events are ordered so future modification events are ok
+                ldtk_handles_to_respawn = ldtk_handles_to_respawn
+                    .into_iter()
+                    .filter(|changed_handle| *changed_handle != handle)
+                    .collect();
+            }
+        }
+    }
+
+    for (entity, handle) in ldtk_world_query.iter() {
+        if ldtk_handles_to_respawn.contains(handle) {
+            commands.entity(entity).insert(Respawn);
+        }
+    }
+
+    for (entity, handle) in new_ldtks.iter() {
+        // For new LDtk handles, spawning should only occur if its asset has finished loading.
+        // `created_assets` keeps track of that.
+        if created_assets.contains(handle) {
+            commands.entity(entity).insert(Respawn);
+        }
+    }
+}
+
+pub fn clean_respawn_entities(
+    mut commands: Commands,
+    ldtk_worlds_to_clean: Query<&Children, (With<Handle<LdtkAsset>>, With<Respawn>)>,
+    ldtk_levels_to_clean: Query<Entity, (With<Handle<LdtkLevel>>, With<Respawn>)>,
+    other_ldtk_levels: Query<Entity, (With<Handle<LdtkLevel>>, Without<Respawn>)>,
+) {
+    for world_children in ldtk_worlds_to_clean.iter() {
+        for child in world_children
+            .iter()
+            .filter(|l| other_ldtk_levels.contains(**l))
+        {
+            commands.entity(*child).despawn_recursive();
+        }
+    }
+
+    for level_entity in ldtk_levels_to_clean.iter() {
+        commands.entity(level_entity).despawn_descendants();
+    }
+}
+
 pub fn choose_levels(
     level_selection: Option<Res<LevelSelection>>,
     ldtk_settings: Res<LdtkSettings>,
@@ -53,7 +124,10 @@ pub fn choose_levels(
 #[allow(clippy::too_many_arguments)]
 pub fn apply_level_set(
     mut commands: Commands,
-    ldtk_world_query: Query<(Entity, &LevelSet, &Children, &Handle<LdtkAsset>), Changed<LevelSet>>,
+    ldtk_world_query: Query<
+        (Entity, &LevelSet, &Children, &Handle<LdtkAsset>),
+        Or<(Changed<LevelSet>, With<Respawn>)>,
+    >,
     ldtk_level_query: Query<&Handle<LdtkLevel>>,
     ldtk_assets: Res<Assets<LdtkAsset>>,
     level_assets: Res<Assets<LdtkLevel>>,
@@ -91,135 +165,8 @@ pub fn apply_level_set(
             commands.entity(**map_entity).despawn_recursive();
             level_events.send(LevelEvent::Despawned(iid.clone()));
         }
-    }
-}
 
-/// Detects [LdtkAsset] events and spawns levels as children of the [LdtkWorldBundle].
-#[allow(clippy::too_many_arguments)]
-pub fn process_ldtk_world(
-    mut commands: Commands,
-    mut ldtk_events: EventReader<AssetEvent<LdtkAsset>>,
-    mut level_events: EventWriter<LevelEvent>,
-    new_ldtks: Query<&Handle<LdtkAsset>, Added<Handle<LdtkAsset>>>,
-    mut ldtk_level_query: Query<&Handle<LdtkLevel>>,
-    mut ldtk_world_query: Query<(Entity, &Handle<LdtkAsset>, &mut LevelSet, Option<&Children>)>,
-    level_selection: Option<Res<LevelSelection>>,
-    ldtk_assets: Res<Assets<LdtkAsset>>,
-    level_assets: Res<Assets<LdtkLevel>>,
-    ldtk_settings: Res<LdtkSettings>,
-    mut clear_color: ResMut<ClearColor>,
-    mut created_assets: Local<HashSet<Handle<LdtkAsset>>>,
-) {
-    let mut changed_ldtks = HashSet::new();
-
-    // Map despawning should only be run for LDtk handles that have already been spawned
-    // So, the `new` field indicates that the asset/entity is new, so no despawning needs to happen
-    #[derive(Hash, PartialEq, Eq)]
-    struct ChangedLdtk {
-        handle: Handle<LdtkAsset>,
-        new: bool,
-    }
-
-    // This function uses code from the bevy_ecs_tilemap ldtk example
-    // https://github.com/StarArawn/bevy_ecs_tilemap/blob/main/examples/ldtk/ldtk.rs
-    for event in ldtk_events.iter() {
-        match event {
-            AssetEvent::Created { handle } => {
-                debug!("LDtk asset creation detected.");
-                created_assets.insert(handle.clone_weak());
-                changed_ldtks.insert(ChangedLdtk {
-                    handle: handle.clone(),
-                    new: true,
-                });
-            }
-            AssetEvent::Modified { handle } => {
-                info!("LDtk asset modification detected.");
-                changed_ldtks.insert(ChangedLdtk {
-                    handle: handle.clone(),
-                    new: false,
-                });
-            }
-            AssetEvent::Removed { handle } => {
-                info!("LDtk asset removal detected.");
-                // if mesh was modified and removed in the same update, ignore the modification
-                // events are ordered so future modification events are ok
-                changed_ldtks = changed_ldtks
-                    .into_iter()
-                    .filter(|changed_handle| changed_handle.handle != *handle)
-                    .collect();
-            }
-        }
-    }
-
-    for new_ldtk_handle in new_ldtks.iter() {
-        // For new LDtk handles, spawning should only occur if its asset has finished loading.
-        // `created_assets` keeps track of that.
-        if created_assets.contains(new_ldtk_handle) {
-            changed_ldtks.insert(ChangedLdtk {
-                handle: new_ldtk_handle.clone(),
-                new: true,
-            });
-        }
-    }
-
-    for changed_ldtk in changed_ldtks {
-        for (ldtk_entity, ldtk_handle, mut level_set, children) in ldtk_world_query
-            .iter_mut()
-            .filter(|(_, l, _, _)| **l == changed_ldtk.handle)
-        {
-            if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
-                if !changed_ldtk.new {
-                    if let Some(children) = children {
-                        for child in children.iter() {
-                            if let Ok(level_handle) = ldtk_level_query.get_mut(*child) {
-                                commands.entity(*child).despawn_recursive();
-
-                                if let Some(level) = level_assets.get(level_handle) {
-                                    level_events
-                                        .send(LevelEvent::Despawned(level.level.iid.clone()));
-                                }
-                            } else {
-                                commands.entity(*child).despawn_recursive();
-                            }
-                        }
-                    }
-                }
-
-                if ldtk_settings.set_clear_color == SetClearColor::FromEditorBackground {
-                    clear_color.0 = ldtk_asset.project.bg_color;
-                }
-
-                if let Some(level_selection) = &level_selection {
-                    if let Some(level) = ldtk_asset.get_level(level_selection) {
-                        level_set.iids.clear();
-
-                        level_set.iids.insert(level.iid.clone());
-
-                        if let LevelSpawnBehavior::UseWorldTranslation {
-                            load_level_neighbors,
-                        } = ldtk_settings.level_spawn_behavior
-                        {
-                            if load_level_neighbors {
-                                level_set
-                                    .iids
-                                    .extend(level.neighbours.iter().map(|n| n.level_iid.clone()));
-                            }
-                        }
-
-                        if ldtk_settings.set_clear_color == SetClearColor::FromLevelBackground {
-                            clear_color.0 = level.bg_color;
-                        }
-                    }
-                }
-
-                commands.entity(ldtk_entity).with_children(|c| {
-                    for level_iid in &level_set.iids {
-                        level_events.send(LevelEvent::SpawnTriggered(level_iid.clone()));
-                        pre_spawn_level(c, ldtk_asset, level_iid, &ldtk_settings)
-                    }
-                });
-            }
-        }
+        commands.entity(world_entity).remove::<Respawn>();
     }
 }
 
@@ -266,7 +213,10 @@ pub fn process_ldtk_levels(
     ldtk_entity_map: NonSend<LdtkEntityMap>,
     ldtk_int_cell_map: NonSend<LdtkIntCellMap>,
     ldtk_query: Query<&Handle<LdtkAsset>>,
-    level_query: Query<(Entity, &Handle<LdtkLevel>, &Parent), Added<Handle<LdtkLevel>>>,
+    level_query: Query<
+        (Entity, &Handle<LdtkLevel>, &Parent),
+        Or<(Added<Handle<LdtkLevel>>, With<Respawn>)>,
+    >,
     worldly_query: Query<&Worldly>,
     mut level_events: EventWriter<LevelEvent>,
     ldtk_settings: Res<LdtkSettings>,
@@ -311,6 +261,8 @@ pub fn process_ldtk_levels(
                 }
             }
         }
+
+        commands.entity(ldtk_entity).remove::<Respawn>();
     }
 }
 

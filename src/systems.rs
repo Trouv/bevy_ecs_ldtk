@@ -64,27 +64,7 @@ pub fn process_ldtk_assets(
     }
 }
 
-pub fn clean_respawn_entities(
-    mut commands: Commands,
-    ldtk_worlds_to_clean: Query<&Children, (With<Handle<LdtkAsset>>, With<Respawn>)>,
-    ldtk_levels_to_clean: Query<Entity, (With<Handle<LdtkLevel>>, With<Respawn>)>,
-    other_ldtk_levels: Query<Entity, (With<Handle<LdtkLevel>>, Without<Respawn>)>,
-) {
-    for world_children in ldtk_worlds_to_clean.iter() {
-        for child in world_children
-            .iter()
-            .filter(|l| other_ldtk_levels.contains(**l))
-        {
-            commands.entity(*child).despawn_recursive();
-        }
-    }
-
-    for level_entity in ldtk_levels_to_clean.iter() {
-        commands.entity(level_entity).despawn_descendants();
-    }
-}
-
-pub fn choose_levels(
+pub fn apply_level_selection(
     level_selection: Option<Res<LevelSelection>>,
     ldtk_settings: Res<LdtkSettings>,
     ldtk_assets: Res<Assets<LdtkAsset>>,
@@ -268,6 +248,26 @@ pub fn process_ldtk_levels(
         }
 
         commands.entity(ldtk_entity).remove::<Respawn>();
+    }
+}
+
+pub fn clean_respawn_entities(
+    mut commands: Commands,
+    ldtk_worlds_to_clean: Query<&Children, (With<Handle<LdtkAsset>>, With<Respawn>)>,
+    ldtk_levels_to_clean: Query<Entity, (With<Handle<LdtkLevel>>, With<Respawn>)>,
+    other_ldtk_levels: Query<Entity, (With<Handle<LdtkLevel>>, Without<Respawn>)>,
+) {
+    for world_children in ldtk_worlds_to_clean.iter() {
+        for child in world_children
+            .iter()
+            .filter(|l| other_ldtk_levels.contains(**l))
+        {
+            commands.entity(*child).despawn_recursive();
+        }
+    }
+
+    for level_entity in ldtk_levels_to_clean.iter() {
+        commands.entity(level_entity).despawn_descendants();
     }
 }
 

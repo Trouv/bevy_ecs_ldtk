@@ -20,12 +20,13 @@ pub fn process_ldtk_assets(
     mut ldtk_events: EventReader<AssetEvent<LdtkAsset>>,
     new_ldtks: Query<(Entity, &Handle<LdtkAsset>), Added<Handle<LdtkAsset>>>,
     ldtk_world_query: Query<(Entity, &Handle<LdtkAsset>)>,
+    ldtk_settings: Res<LdtkSettings>,
+    mut clear_color: ResMut<ClearColor>,
+    ldtk_assets: Res<Assets<LdtkAsset>>,
     mut created_assets: Local<HashSet<Handle<LdtkAsset>>>,
 ) {
     let mut ldtk_handles_to_respawn = HashSet::new();
 
-    // This function uses code from the bevy_ecs_tilemap ldtk example
-    // https://github.com/StarArawn/bevy_ecs_tilemap/blob/main/examples/ldtk/ldtk.rs
     for event in ldtk_events.iter() {
         match event {
             AssetEvent::Created { handle } => {
@@ -45,6 +46,15 @@ pub fn process_ldtk_assets(
                     .into_iter()
                     .filter(|changed_handle| *changed_handle != handle)
                     .collect();
+            }
+        }
+    }
+
+    if ldtk_settings.set_clear_color == SetClearColor::FromEditorBackground {
+        for handle in ldtk_handles_to_respawn.iter() {
+            if let Some(ldtk_asset) = ldtk_assets.get(handle) {
+                println!("setting clear color");
+                clear_color.0 = ldtk_asset.project.bg_color;
             }
         }
     }
@@ -93,11 +103,11 @@ pub fn apply_level_selection(
                     };
 
                     if *level_set != new_level_set {
-                        *level_set = new_level_set
-                    }
+                        *level_set = new_level_set;
 
-                    if ldtk_settings.set_clear_color == SetClearColor::FromLevelBackground {
-                        clear_color.0 = level.bg_color;
+                        if ldtk_settings.set_clear_color == SetClearColor::FromLevelBackground {
+                            clear_color.0 = level.bg_color;
+                        }
                     }
                 }
             }

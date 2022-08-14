@@ -36,6 +36,7 @@ fn main() {
         .add_system(systems::dbg_player_items)
         .add_system(systems::spawn_ground_sensor)
         .add_system(systems::ground_detection)
+        .add_system(systems::restart_level)
         .register_ldtk_int_cell::<components::WallBundle>(1)
         .register_ldtk_int_cell::<components::LadderBundle>(2)
         .register_ldtk_int_cell::<components::WallBundle>(3)

@@ -133,8 +133,11 @@ mod plugin {
         Other,
     }
 
+    /// [StageLabel] for stages added by the plugin.
     #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash, StageLabel)]
     pub enum LdtkStage {
+        /// Occurs immediately after [CoreStage::Update].
+        /// Used for systems relating to [components::Worldly] and [components::Respawn].
         Clean,
     }
 

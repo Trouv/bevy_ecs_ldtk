@@ -64,6 +64,7 @@ pub fn process_ldtk_assets(
     }
 }
 
+/// Updates all LevelSet components according to the LevelSelection
 pub fn apply_level_selection(
     level_selection: Option<Res<LevelSelection>>,
     ldtk_settings: Res<LdtkSettings>,
@@ -104,6 +105,7 @@ pub fn apply_level_selection(
     }
 }
 
+/// Triggers the spawning/despawning of levels according to `LevelSet` values.
 #[allow(clippy::too_many_arguments)]
 pub fn apply_level_set(
     mut commands: Commands,
@@ -251,6 +253,7 @@ pub fn process_ldtk_levels(
     }
 }
 
+/// Performs the "despawning" portion of the respawn process for `Respawn` entities.
 pub fn clean_respawn_entities(
     mut commands: Commands,
     ldtk_worlds_to_clean: Query<&Children, (With<Handle<LdtkAsset>>, With<Respawn>)>,
@@ -271,6 +274,7 @@ pub fn clean_respawn_entities(
     }
 }
 
+/// Implements the functionality for `Worldly` components.
 pub fn worldly_adoption(
     mut commands: Commands,
     mut worldly_query: Query<(&mut Transform, &Parent, Entity), Added<Worldly>>,

@@ -2,16 +2,10 @@
 //!
 //! A tile maker is a function loosely defined with the following signature:
 //! ```ignore
-//! impl FnMut(TilePos) -> Option<Tile>
+//! impl FnMut(TilePos) -> Option<TileBundle>
 //! ```
 //!
-//! Similarly, tile bundle makers are functions loosely defined as:
-//! ```ignore
-//! impl FnMut(TilePos) -> Option<T> where T: TileBundleTrait
-//! ```
-//!
-//! Tile bundle makers can be used with [LayerBuilder::new_batch] and [set_all_tiles_with_func] to
-//! spawn many tiles at once.
+//! Tile makers can be used with [set_all_tiles_with_func] to spawn many tiles at once.
 
 use crate::{
     components::TileGridBundle,
@@ -20,17 +14,60 @@ use crate::{
     utils::*,
 };
 use bevy::prelude::*;
-use bevy_ecs_tilemap::prelude::*;
+use bevy_ecs_tilemap::tiles::{TileBundle, TileColor, TileFlip, TilePos, TileTexture, TileVisible};
 
 use std::collections::HashMap;
+
+#[derive(Clone, Eq, PartialEq, Debug, Default, Hash)]
+pub(crate) struct TilePosMap<T> {
+    data: Vec<Vec<Option<T>>>,
+}
+
+impl<T> TilePosMap<T> {
+    fn new() -> Self {
+        TilePosMap::<T> { data: Vec::new() }
+    }
+
+    fn get(&self, tile_pos: &TilePos) -> Option<&T> {
+        self.data
+            .get(tile_pos.y as usize)?
+            .get(tile_pos.x as usize)?
+            .as_ref()
+    }
+
+    fn set(&mut self, tile_pos: TilePos, value: T) {
+        while self.data.get(tile_pos.y as usize).is_none() {
+            self.data.push(Vec::new());
+        }
+
+        while self.data[tile_pos.y as usize]
+            .get(tile_pos.x as usize)
+            .is_none()
+        {
+            self.data[tile_pos.y as usize].push(None);
+        }
+
+        self.data[tile_pos.y as usize][tile_pos.x as usize] = Some(value);
+    }
+}
+
+impl<T> FromIterator<(TilePos, T)> for TilePosMap<T> {
+    fn from_iter<I: IntoIterator<Item = (TilePos, T)>>(iter: I) -> Self {
+        let mut tile_pos_map = TilePosMap::new();
+
+        iter.into_iter().for_each(|(t, v)| tile_pos_map.set(t, v));
+
+        tile_pos_map
+    }
+}
 
 /// Tile maker that always creates an invisible tile.
 ///
 /// This function doesn't return a tile maker, it IS one,
 /// contrasting many of the other functions in this module.
-pub(crate) fn tile_pos_to_invisible_tile(_: TilePos) -> Option<Tile> {
-    Some(Tile {
-        visible: false,
+pub(crate) fn tile_pos_to_invisible_tile(_: TilePos) -> Option<TileBundle> {
+    Some(TileBundle {
+        visible: TileVisible(false),
         ..Default::default()
     })
 }
@@ -40,7 +77,7 @@ pub(crate) fn tile_pos_to_int_grid_map(
     int_grid_csv: &[i32],
     layer_width_in_tiles: i32,
     layer_height_in_tiles: i32,
-) -> HashMap<TilePos, i32> {
+) -> TilePosMap<i32> {
     int_grid_csv.iter().enumerate().filter(|(_, v)| **v != 0).map(|(i, v)| {
         (
             int_grid_index_to_grid_coords(i, layer_width_in_tiles as u32, layer_height_in_tiles as u32).expect("int_grid_csv indices should be within the bounds of 0..(layer_width * layer_height)",).into(),
@@ -56,8 +93,8 @@ pub(crate) fn tile_pos_to_tile_maker(
     grid_tiles: &[TileInstance],
     layer_height_in_tiles: i32,
     layer_grid_size: i32,
-) -> impl FnMut(TilePos) -> Option<Tile> {
-    let grid_tile_map: HashMap<TilePos, TileInstance> = grid_tiles
+) -> impl FnMut(TilePos) -> Option<TileBundle> {
+    let grid_tile_map: TilePosMap<TileInstance> = grid_tiles
         .iter()
         .map(|t| {
             (
@@ -67,7 +104,7 @@ pub(crate) fn tile_pos_to_tile_maker(
         })
         .collect();
 
-    move |tile_pos: TilePos| -> Option<Tile> {
+    move |tile_pos: TilePos| -> Option<TileBundle> {
         match grid_tile_map.get(&tile_pos) {
             Some(tile_instance) => {
                 let (flip_x, flip_y) = match tile_instance.f {
@@ -77,11 +114,14 @@ pub(crate) fn tile_pos_to_tile_maker(
                     _ => (false, false),
                 };
 
-                Some(Tile {
-                    texture_index: tile_instance.t as u16,
-                    flip_x,
-                    flip_y,
-                    ..Default::default()
+                Some(TileBundle {
+                    texture: TileTexture(tile_instance.t as u32),
+                    flip: TileFlip {
+                        x: flip_x,
+                        y: flip_y,
+                        ..default()
+                    },
+                    ..default()
                 })
             }
             None => None,
@@ -95,15 +135,15 @@ pub(crate) fn tile_pos_to_tile_maker(
 ///
 /// Used for spawning IntGrid layers with AutoTile functionality.
 pub(crate) fn tile_pos_to_tile_if_int_grid_nonzero_maker(
-    mut tile_maker: impl FnMut(TilePos) -> Option<Tile>,
+    mut tile_maker: impl FnMut(TilePos) -> Option<TileBundle>,
     int_grid_csv: &[i32],
     layer_width_in_tiles: i32,
     layer_height_in_tiles: i32,
-) -> impl FnMut(TilePos) -> Option<Tile> {
+) -> impl FnMut(TilePos) -> Option<TileBundle> {
     let int_grid_map =
         tile_pos_to_int_grid_map(int_grid_csv, layer_width_in_tiles, layer_height_in_tiles);
 
-    move |tile_pos: TilePos| -> Option<Tile> {
+    move |tile_pos: TilePos| -> Option<TileBundle> {
         int_grid_map
             .get(&tile_pos)
             .and_then(|_| tile_maker(tile_pos))
@@ -122,7 +162,7 @@ pub(crate) fn tile_pos_to_int_grid_with_grid_tiles_tile_maker(
     layer_width_in_tiles: i32,
     layer_height_in_tiles: i32,
     layer_grid_size: i32,
-) -> impl FnMut(TilePos) -> Option<Tile> {
+) -> impl FnMut(TilePos) -> Option<TileBundle> {
     // Creating the tile makers outside of the returned tile maker so we only do it once.
     let mut auto_tile_maker =
         tile_pos_to_tile_maker(grid_tiles, layer_height_in_tiles, layer_grid_size);
@@ -133,7 +173,7 @@ pub(crate) fn tile_pos_to_int_grid_with_grid_tiles_tile_maker(
         layer_height_in_tiles,
     );
 
-    move |tile_pos: TilePos| -> Option<Tile> {
+    move |tile_pos: TilePos| -> Option<TileBundle> {
         auto_tile_maker(tile_pos).or_else(|| invisible_tile_maker(tile_pos))
     }
 }
@@ -146,7 +186,7 @@ pub(crate) fn tile_pos_to_int_grid_colored_tile_maker(
     int_grid_value_defs: &[IntGridValueDefinition],
     layer_width_in_tiles: i32,
     layer_height_in_tiles: i32,
-) -> impl FnMut(TilePos) -> Option<Tile> {
+) -> impl FnMut(TilePos) -> Option<TileBundle> {
     let color_map: HashMap<i32, Color> = int_grid_value_defs
         .iter()
         .map(|IntGridValueDefinition { value, color, .. }| (*value, *color))
@@ -154,12 +194,14 @@ pub(crate) fn tile_pos_to_int_grid_colored_tile_maker(
     let tile_pos_map =
         tile_pos_to_int_grid_map(int_grid_csv, layer_width_in_tiles, layer_height_in_tiles);
 
-    move |tile_pos: TilePos| -> Option<Tile> {
-        tile_pos_map.get(&tile_pos).map(|&value| Tile {
-            color: *color_map
-                .get(&value)
-                .expect("Int grid values should have an associated IntGridValueDefinition"),
-            ..Default::default()
+    move |tile_pos: TilePos| -> Option<TileBundle> {
+        tile_pos_map.get(&tile_pos).map(|&value| TileBundle {
+            color: TileColor(
+                *color_map
+                    .get(&value)
+                    .expect("Int grid values should have an associated IntGridValueDefinition"),
+            ),
+            ..default()
         })
     }
 }
@@ -169,13 +211,13 @@ pub(crate) fn tile_pos_to_int_grid_colored_tile_maker(
 ///
 /// Used for spawning Tile, AutoTile, and IntGrid layers.
 pub(crate) fn tile_pos_to_transparent_tile_maker(
-    mut tile_maker: impl FnMut(TilePos) -> Option<Tile>,
+    mut tile_maker: impl FnMut(TilePos) -> Option<TileBundle>,
     alpha: f32,
-) -> impl FnMut(TilePos) -> Option<Tile> {
-    move |tile_pos: TilePos| -> Option<Tile> {
+) -> impl FnMut(TilePos) -> Option<TileBundle> {
+    move |tile_pos: TilePos| -> Option<TileBundle> {
         if alpha < 1. {
             tile_maker(tile_pos).map(|mut tile| {
-                tile.color.set_a(alpha);
+                tile.color.0.set_a(alpha);
                 tile
             })
         } else {
@@ -187,16 +229,17 @@ pub(crate) fn tile_pos_to_transparent_tile_maker(
 /// Returns a tile bundle maker that returns the bundled result of the provided tile maker.
 ///
 /// Used for spawning Tile, AutoTile, and IntGrid layers.
-pub(crate) fn tile_pos_to_tile_bundle_maker(
-    mut tile_maker: impl FnMut(TilePos) -> Option<Tile>,
+pub(crate) fn tile_pos_to_tile_grid_bundle_maker(
+    mut tile_maker: impl FnMut(TilePos) -> Option<TileBundle>,
 ) -> impl FnMut(TilePos) -> Option<TileGridBundle> {
     move |tile_pos: TilePos| -> Option<TileGridBundle> {
-        tile_maker(tile_pos).map(|tile| TileGridBundle {
-            grid_coords: tile_pos.into(),
-            tile_bundle: TileBundle {
-                tile,
-                ..Default::default()
-            },
+        tile_maker(tile_pos).map(|mut tile_bundle| {
+            tile_bundle.position = tile_pos;
+
+            TileGridBundle {
+                grid_coords: tile_pos.into(),
+                tile_bundle,
+            }
         })
     }
 }
@@ -236,10 +279,10 @@ mod tests {
 
         let mut tile_maker = tile_pos_to_tile_maker(&grid_tiles, 2, 32);
 
-        assert_eq!(tile_maker(TilePos(0, 0)).unwrap().texture_index, 2);
-        assert_eq!(tile_maker(TilePos(1, 0)).unwrap().texture_index, 1);
-        assert_eq!(tile_maker(TilePos(0, 1)).unwrap().texture_index, 1);
-        assert_eq!(tile_maker(TilePos(1, 1)).unwrap().texture_index, 4);
+        assert_eq!(tile_maker(TilePos { x: 0, y: 0 }).unwrap().texture.0, 2);
+        assert_eq!(tile_maker(TilePos { x: 1, y: 0 }).unwrap().texture.0, 1);
+        assert_eq!(tile_maker(TilePos { x: 0, y: 1 }).unwrap().texture.0, 1);
+        assert_eq!(tile_maker(TilePos { x: 1, y: 1 }).unwrap().texture.0, 4);
     }
 
     #[test]
@@ -277,17 +320,17 @@ mod tests {
 
         let mut tile_maker = tile_pos_to_tile_maker(&grid_tiles, 2, 32);
 
-        assert!(!tile_maker(TilePos(0, 0)).unwrap().flip_x);
-        assert!(tile_maker(TilePos(0, 0)).unwrap().flip_y);
+        assert!(!tile_maker(TilePos { x: 0, y: 0 }).unwrap().flip.x);
+        assert!(tile_maker(TilePos { x: 0, y: 0 }).unwrap().flip.y);
 
-        assert!(!tile_maker(TilePos(0, 1)).unwrap().flip_x);
-        assert!(!tile_maker(TilePos(0, 1)).unwrap().flip_y);
+        assert!(!tile_maker(TilePos { x: 0, y: 1 }).unwrap().flip.x);
+        assert!(!tile_maker(TilePos { x: 0, y: 1 }).unwrap().flip.y);
 
-        assert!(tile_maker(TilePos(1, 1)).unwrap().flip_x);
-        assert!(!tile_maker(TilePos(1, 1)).unwrap().flip_y);
+        assert!(tile_maker(TilePos { x: 1, y: 1 }).unwrap().flip.x);
+        assert!(!tile_maker(TilePos { x: 1, y: 1 }).unwrap().flip.y);
 
-        assert!(tile_maker(TilePos(2, 1)).unwrap().flip_x);
-        assert!(tile_maker(TilePos(2, 1)).unwrap().flip_y);
+        assert!(tile_maker(TilePos { x: 2, y: 1 }).unwrap().flip.x);
+        assert!(tile_maker(TilePos { x: 2, y: 1 }).unwrap().flip.y);
     }
 
     #[test]
@@ -318,16 +361,16 @@ mod tests {
         let mut tile_maker =
             tile_pos_to_int_grid_with_grid_tiles_tile_maker(&grid_tiles, &int_grid_csv, 2, 2, 32);
 
-        assert_eq!(tile_maker(TilePos(0, 0)).unwrap().texture_index, 0);
-        assert_eq!(tile_maker(TilePos(0, 0)).unwrap().visible, false);
+        assert_eq!(tile_maker(TilePos { x: 0, y: 0 }).unwrap().texture.0, 0);
+        assert_eq!(tile_maker(TilePos { x: 0, y: 0 }).unwrap().visible.0, false);
 
-        assert!(tile_maker(TilePos(1, 0)).is_none());
+        assert!(tile_maker(TilePos { x: 1, y: 0 }).is_none());
 
-        assert_eq!(tile_maker(TilePos(0, 1)).unwrap().texture_index, 1);
-        assert_eq!(tile_maker(TilePos(0, 1)).unwrap().visible, true);
+        assert_eq!(tile_maker(TilePos { x: 0, y: 1 }).unwrap().texture.0, 1);
+        assert_eq!(tile_maker(TilePos { x: 0, y: 1 }).unwrap().visible.0, true);
 
-        assert_eq!(tile_maker(TilePos(1, 1)).unwrap().texture_index, 2);
-        assert_eq!(tile_maker(TilePos(1, 1)).unwrap().visible, true);
+        assert_eq!(tile_maker(TilePos { x: 1, y: 1 }).unwrap().texture.0, 2);
+        assert_eq!(tile_maker(TilePos { x: 1, y: 1 }).unwrap().visible.0, true);
     }
 
     #[test]
@@ -350,9 +393,15 @@ mod tests {
         let mut tile_maker =
             tile_pos_to_int_grid_colored_tile_maker(&int_grid_csv, &int_grid_defs, 2, 2);
 
-        assert_eq!(tile_maker(TilePos(0, 0)).unwrap().color, Color::BLUE);
-        assert!(tile_maker(TilePos(1, 0)).is_none());
-        assert!(tile_maker(TilePos(0, 1)).is_none());
-        assert_eq!(tile_maker(TilePos(1, 1)).unwrap().color, Color::RED);
+        assert_eq!(
+            tile_maker(TilePos { x: 0, y: 0 }).unwrap().color.0,
+            Color::BLUE
+        );
+        assert!(tile_maker(TilePos { x: 1, y: 0 }).is_none());
+        assert!(tile_maker(TilePos { x: 0, y: 1 }).is_none());
+        assert_eq!(
+            tile_maker(TilePos { x: 1, y: 1 }).unwrap().color.0,
+            Color::RED
+        );
     }
 }

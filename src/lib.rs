@@ -28,7 +28,7 @@
 //! }
 //!
 //! fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-//!     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+//!     commands.spawn_bundle(Camera2dBundle::default());
 //!
 //!     commands.spawn_bundle(LdtkWorldBundle {
 //!         ldtk_handle: asset_server.load("my_project.ldtk"),
@@ -98,7 +98,6 @@
 //! [LevelSpawnBehavior::UseWorldTranslation].
 
 use bevy::prelude::*;
-use bevy_ecs_tilemap::prelude::*;
 
 pub mod app;
 mod assets;
@@ -141,7 +140,7 @@ mod plugin {
 
     impl Plugin for LdtkPlugin {
         fn build(&self, app: &mut App) {
-            app.add_plugin(TilemapPlugin)
+            app.add_plugin(bevy_ecs_tilemap::TilemapPlugin)
                 .init_non_send_resource::<app::LdtkEntityMap>()
                 .init_non_send_resource::<app::LdtkIntCellMap>()
                 .init_resource::<resources::LdtkSettings>()
@@ -163,10 +162,6 @@ mod plugin {
                     systems::apply_level_set
                         .label(LdtkSystemLabel::PreSpawn)
                         .after(LdtkSystemLabel::LevelSelection),
-                )
-                .add_system_to_stage(
-                    CoreStage::PreUpdate,
-                    systems::set_ldtk_texture_filters_to_nearest.label(LdtkSystemLabel::Other),
                 )
                 .add_system_to_stage(
                     CoreStage::PreUpdate,

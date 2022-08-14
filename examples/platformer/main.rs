@@ -1,7 +1,7 @@
 // This example shows off a more in-depth implementation of a game with `bevy_ecs_ldtk`.
 // Please run with `--release`.
 
-use bevy::prelude::*;
+use bevy::{prelude::*, render::texture::ImageSettings};
 use bevy_ecs_ldtk::prelude::*;
 
 use heron::prelude::*;
@@ -11,6 +11,7 @@ mod systems;
 
 fn main() {
     App::new()
+        .insert_resource(ImageSettings::default_nearest()) // prevents blurry sprites
         .add_plugins(DefaultPlugins)
         .add_plugin(LdtkPlugin)
         .add_plugin(PhysicsPlugin::default())

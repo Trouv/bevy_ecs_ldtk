@@ -1,6 +1,7 @@
 //! [Component]s and [Bundle]s used by the plugin.
 
-pub use crate::ldtk::{EntityInstance, LayerInstance, Type};
+pub use crate::ldtk::EntityInstance;
+use crate::ldtk::{LayerInstance, Type};
 use bevy::prelude::*;
 
 use std::{
@@ -16,10 +17,7 @@ use crate::{
     utils::ldtk_grid_coords_to_grid_coords,
 };
 
-use bevy_ecs_tilemap::{TileBundle, TileBundleTrait, TileParent, TilePos};
-
-#[allow(unused_imports)]
-use bevy_ecs_tilemap::Map;
+use bevy_ecs_tilemap::tiles::{TileBundle, TilePos};
 
 /// [Component] added to any `IntGrid` tile by default.
 ///
@@ -118,15 +116,15 @@ impl From<GridCoords> for IVec2 {
 impl From<TilePos> for GridCoords {
     fn from(tile_pos: TilePos) -> Self {
         GridCoords {
-            x: tile_pos.0 as i32,
-            y: tile_pos.1 as i32,
+            x: tile_pos.x as i32,
+            y: tile_pos.y as i32,
         }
     }
 }
 
 impl From<GridCoords> for TilePos {
     fn from(grid_coords: GridCoords) -> Self {
-        TilePos(grid_coords.x as u32, grid_coords.y as u32)
+        TilePos::new(grid_coords.x as u32, grid_coords.y as u32)
     }
 }
 
@@ -315,21 +313,11 @@ impl From<&LayerInstance> for LayerMetadata {
     }
 }
 
-#[derive(Clone, Default, Bundle)]
+#[derive(Copy, Clone, Debug, Default, Bundle)]
 pub(crate) struct TileGridBundle {
     #[bundle]
     pub tile_bundle: TileBundle,
     pub grid_coords: GridCoords,
-}
-
-impl TileBundleTrait for TileGridBundle {
-    fn get_tile_pos_mut(&mut self) -> &mut TilePos {
-        self.tile_bundle.get_tile_pos_mut()
-    }
-
-    fn get_tile_parent(&mut self) -> &mut TileParent {
-        self.tile_bundle.get_tile_parent()
-    }
 }
 
 #[derive(Clone, Default, Bundle)]
@@ -347,13 +335,21 @@ pub(crate) struct EntityInstanceBundle {
 /// After the ldtk file is done loading, the levels you've chosen with [LevelSelection] or
 /// [LevelSet] will begin to spawn.
 /// Each level is its own entity, with the [LdtkWorldBundle] as its parent.
-/// Each level has `Handle<LdtkLevel>`, [Map], [Transform], and [GlobalTransform] components.
-/// Finally, all tiles and entities in the level are spawned as children to the level unless marked
-/// by a [Worldly] component.
+/// Each level has a `Handle<LdtkLevel>` component.
+///
+/// All non-Entity layers (IntGrid, Tile, and AutoTile) will also spawn as their own entities.
+/// Each layer's parent will be the level entity.
+/// Each layer will have a [LayerMetadata] component, and are [bevy_ecs_tilemap::TilemapBundle]s.
+/// Each tile in these layers will have the layer entity as its parent.
+///
+/// For Entity layers, all LDtk entities in the level are spawned as children to the level entity,
+/// unless marked by a [Worldly] component.
 #[derive(Clone, Default, Bundle)]
 pub struct LdtkWorldBundle {
     pub ldtk_handle: Handle<crate::assets::LdtkAsset>,
     pub level_set: LevelSet,
     pub transform: Transform,
     pub global_transform: GlobalTransform,
+    pub visibility: Visibility,
+    pub computed_visibility: ComputedVisibility,
 }

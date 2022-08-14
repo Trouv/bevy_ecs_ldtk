@@ -269,11 +269,12 @@ pub fn clean_respawn_entities(
     ldtk_worlds_to_clean: Query<&Children, (With<Handle<LdtkAsset>>, With<Respawn>)>,
     ldtk_levels_to_clean: Query<Entity, (With<Handle<LdtkLevel>>, With<Respawn>)>,
     other_ldtk_levels: Query<Entity, (With<Handle<LdtkLevel>>, Without<Respawn>)>,
+    worldly_entities: Query<Entity, With<Worldly>>,
 ) {
     for world_children in ldtk_worlds_to_clean.iter() {
         for child in world_children
             .iter()
-            .filter(|l| other_ldtk_levels.contains(**l))
+            .filter(|l| other_ldtk_levels.contains(**l) || worldly_entities.contains(**l))
         {
             commands.entity(*child).despawn_recursive();
         }

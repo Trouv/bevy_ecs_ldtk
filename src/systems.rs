@@ -267,9 +267,11 @@ pub fn process_ldtk_levels(
 pub fn clean_respawn_entities(
     mut commands: Commands,
     ldtk_worlds_to_clean: Query<&Children, (With<Handle<LdtkAsset>>, With<Respawn>)>,
-    ldtk_levels_to_clean: Query<Entity, (With<Handle<LdtkLevel>>, With<Respawn>)>,
-    other_ldtk_levels: Query<Entity, (With<Handle<LdtkLevel>>, Without<Respawn>)>,
+    ldtk_levels_to_clean: Query<(Entity, &Handle<LdtkLevel>), With<Respawn>>,
+    other_ldtk_levels: Query<&Handle<LdtkLevel>, Without<Respawn>>,
     worldly_entities: Query<Entity, With<Worldly>>,
+    level_assets: Res<Assets<LdtkLevel>>,
+    mut level_events: EventWriter<LevelEvent>,
 ) {
     for world_children in ldtk_worlds_to_clean.iter() {
         for child in world_children
@@ -277,11 +279,21 @@ pub fn clean_respawn_entities(
             .filter(|l| other_ldtk_levels.contains(**l) || worldly_entities.contains(**l))
         {
             commands.entity(*child).despawn_recursive();
+
+            if let Ok(level_handle) = other_ldtk_levels.get(*child) {
+                if let Some(level_asset) = level_assets.get(&*level_handle) {
+                    level_events.send(LevelEvent::Despawned(level_asset.level.iid.clone()));
+                }
+            }
         }
     }
 
-    for level_entity in ldtk_levels_to_clean.iter() {
+    for (level_entity, level_handle) in ldtk_levels_to_clean.iter() {
         commands.entity(level_entity).despawn_descendants();
+
+        if let Some(level_asset) = level_assets.get(level_handle) {
+            level_events.send(LevelEvent::Despawned(level_asset.level.iid.clone()));
+        }
     }
 }
 

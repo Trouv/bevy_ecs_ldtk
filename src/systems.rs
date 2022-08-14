@@ -116,7 +116,7 @@ pub fn apply_level_selection(
 }
 
 /// Triggers the spawning/despawning of levels according to `LevelSet` values.
-#[allow(clippy::too_many_arguments)]
+#[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub fn apply_level_set(
     mut commands: Commands,
     ldtk_world_query: Query<

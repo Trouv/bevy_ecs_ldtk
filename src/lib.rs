@@ -126,11 +126,10 @@ mod plugin {
     #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash, SystemLabel)]
     pub enum LdtkSystemLabel {
         ProcessAssets,
-        Clean,
         LevelSelection,
-        PreSpawn,
+        LevelSet,
         LevelSpawning,
-        FrameDelay,
+        Clean,
         Other,
     }
 
@@ -164,7 +163,7 @@ mod plugin {
                 .add_system_to_stage(
                     CoreStage::First,
                     systems::apply_level_set
-                        .label(LdtkSystemLabel::PreSpawn)
+                        .label(LdtkSystemLabel::LevelSet)
                         .after(LdtkSystemLabel::LevelSelection),
                 )
                 .add_system_to_stage(

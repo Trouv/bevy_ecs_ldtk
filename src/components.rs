@@ -10,8 +10,12 @@ use std::{
 };
 
 #[allow(unused_imports)]
+use bevy::prelude::CoreStage;
+
+#[allow(unused_imports)]
 use crate::{
     assets::LdtkLevel,
+    plugin::LdtkStage,
     prelude::{LdtkEntity, LdtkIntCell},
     resources::{LevelSelection, LevelSpawnBehavior},
     utils::ldtk_grid_coords_to_grid_coords,
@@ -313,6 +317,16 @@ impl From<&LayerInstance> for LayerMetadata {
     }
 }
 
+/// [Component] that indicates that an LDtk level or world should respawn.
+///
+/// Inserting this component on an entity with either `Handle<LdtkAsset>` or `Handle<LdtkLevel>`
+/// components will cause it to respawn.
+/// This can be used to implement a simple level-restart feature.
+/// Internally, this is used to support the entire level spawning process
+///
+/// **Important:** this must be inserted *before* [LdtkStage::Clean], which occurs immediately
+/// after [CoreStage::Update].
+/// Inserting it during or after this stage is, for now, undefined behavior.
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Hash, Component, Reflect)]
 #[reflect(Component)]
 pub struct Respawn;

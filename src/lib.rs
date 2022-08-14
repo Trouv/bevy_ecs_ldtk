@@ -121,7 +121,6 @@ mod plugin {
     //! Provides [LdtkPlugin] and its scheduling-related dependencies.
 
     use super::*;
-    use bevy::asset::AssetStage;
 
     /// [SystemLabel] used by the plugin for scheduling its systems.
     #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash, SystemLabel)]

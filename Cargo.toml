@@ -12,7 +12,7 @@ exclude = ["assets/*", "repo/*", "scripts/*"]
 
 [dependencies]
 bevy_ecs_ldtk_macros = { version = "0.3", optional = true, path = "macros" }
-bevy_ecs_tilemap = { version = "0.7.0" }
+bevy_ecs_tilemap = "0.7"
 bevy = { version = "0.8", default-features = false, features = ["bevy_sprite"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"

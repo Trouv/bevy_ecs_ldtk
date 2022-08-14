@@ -313,6 +313,10 @@ impl From<&LayerInstance> for LayerMetadata {
     }
 }
 
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Hash, Component, Reflect)]
+#[reflect(Component)]
+pub struct Respawn;
+
 #[derive(Copy, Clone, Debug, Default, Bundle)]
 pub(crate) struct TileGridBundle {
     #[bundle]

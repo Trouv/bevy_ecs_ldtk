@@ -92,13 +92,12 @@ pub fn choose_levels(
     mut clear_color: ResMut<ClearColor>,
 ) {
     if let Some(level_selection) = level_selection {
-        if level_selection.is_changed() {
-            for (ldtk_handle, mut level_set) in level_set_query.iter_mut() {
-                if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
-                    if let Some(level) = ldtk_asset.get_level(&level_selection) {
-                        level_set.iids.clear();
-
-                        level_set.iids.insert(level.iid.clone());
+        for (ldtk_handle, mut level_set) in level_set_query.iter_mut() {
+            if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
+                if let Some(level) = ldtk_asset.get_level(&level_selection) {
+                    let new_level_set = {
+                        let mut iids = HashSet::new();
+                        iids.insert(level.iid.clone());
 
                         if let LevelSpawnBehavior::UseWorldTranslation {
                             load_level_neighbors,
@@ -111,9 +110,16 @@ pub fn choose_levels(
                             }
                         }
 
-                        if ldtk_settings.set_clear_color == SetClearColor::FromLevelBackground {
-                            clear_color.0 = level.bg_color;
-                        }
+                        LevelSet { iids }
+                    };
+
+                    if *level_set.as_ref() != new_level_set {
+                        println!("level set updated");
+                        *level_set = new_level_set
+                    }
+
+                    if ldtk_settings.set_clear_color == SetClearColor::FromLevelBackground {
+                        clear_color.0 = level.bg_color;
                     }
                 }
             }
@@ -125,7 +131,7 @@ pub fn choose_levels(
 pub fn apply_level_set(
     mut commands: Commands,
     ldtk_world_query: Query<
-        (Entity, &LevelSet, &Children, &Handle<LdtkAsset>),
+        (Entity, &LevelSet, Option<&Children>, &Handle<LdtkAsset>),
         Or<(Changed<LevelSet>, With<Respawn>)>,
     >,
     ldtk_level_query: Query<&Handle<LdtkLevel>>,
@@ -135,11 +141,14 @@ pub fn apply_level_set(
     mut level_events: EventWriter<LevelEvent>,
 ) {
     for (world_entity, level_set, children, ldtk_asset_handle) in ldtk_world_query.iter() {
+        println!("level set applied");
         let mut previous_level_maps = HashMap::new();
-        for child in children.iter() {
-            if let Ok(level_handle) = ldtk_level_query.get(*child) {
-                if let Some(ldtk_level) = level_assets.get(level_handle) {
-                    previous_level_maps.insert(ldtk_level.level.iid.clone(), child);
+        if let Some(children) = children {
+            for child in children.iter() {
+                if let Ok(level_handle) = ldtk_level_query.get(*child) {
+                    if let Some(ldtk_level) = level_assets.get(level_handle) {
+                        previous_level_maps.insert(ldtk_level.level.iid.clone(), child);
+                    }
                 }
             }
         }
@@ -156,6 +165,8 @@ pub fn apply_level_set(
                     }
                 });
             }
+
+            commands.entity(world_entity).remove::<Respawn>();
         }
 
         for iid in previous_iids.difference(&level_set.iids) {
@@ -165,8 +176,6 @@ pub fn apply_level_set(
             commands.entity(**map_entity).despawn_recursive();
             level_events.send(LevelEvent::Despawned(iid.clone()));
         }
-
-        commands.entity(world_entity).remove::<Respawn>();
     }
 }
 

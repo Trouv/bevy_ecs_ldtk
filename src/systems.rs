@@ -104,17 +104,14 @@ pub fn choose_levels(
                         } = ldtk_settings.level_spawn_behavior
                         {
                             if load_level_neighbors {
-                                level_set
-                                    .iids
-                                    .extend(level.neighbours.iter().map(|n| n.level_iid.clone()));
+                                iids.extend(level.neighbours.iter().map(|n| n.level_iid.clone()));
                             }
                         }
 
                         LevelSet { iids }
                     };
 
-                    if *level_set.as_ref() != new_level_set {
-                        println!("level set updated");
+                    if *level_set != new_level_set {
                         *level_set = new_level_set
                     }
 
@@ -141,7 +138,6 @@ pub fn apply_level_set(
     mut level_events: EventWriter<LevelEvent>,
 ) {
     for (world_entity, level_set, children, ldtk_asset_handle) in ldtk_world_query.iter() {
-        println!("level set applied");
         let mut previous_level_maps = HashMap::new();
         if let Some(children) = children {
             for child in children.iter() {

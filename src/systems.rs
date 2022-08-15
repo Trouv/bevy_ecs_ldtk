@@ -109,50 +109,65 @@ pub fn apply_level_selection(
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub fn apply_level_set(
     mut commands: Commands,
-    ldtk_world_query: Query<
-        (Entity, &LevelSet, Option<&Children>, &Handle<LdtkAsset>),
-        Or<(Changed<LevelSet>, With<Respawn>)>,
-    >,
+    ldtk_world_query: Query<(
+        Entity,
+        &LevelSet,
+        Option<&Children>,
+        &Handle<LdtkAsset>,
+        Option<&Respawn>,
+    )>,
     ldtk_level_query: Query<&Handle<LdtkLevel>>,
     ldtk_assets: Res<Assets<LdtkAsset>>,
     level_assets: Res<Assets<LdtkLevel>>,
     ldtk_settings: Res<LdtkSettings>,
     mut level_events: EventWriter<LevelEvent>,
 ) {
-    for (world_entity, level_set, children, ldtk_asset_handle) in ldtk_world_query.iter() {
-        let mut previous_level_maps = HashMap::new();
-        if let Some(children) = children {
-            for child in children.iter() {
-                if let Ok(level_handle) = ldtk_level_query.get(*child) {
-                    if let Some(ldtk_level) = level_assets.get(level_handle) {
-                        previous_level_maps.insert(ldtk_level.level.iid.clone(), child);
+    for (world_entity, level_set, children, ldtk_asset_handle, respawn) in ldtk_world_query.iter() {
+        // Only apply level set if the asset has finished loading
+        if let Some(ldtk_asset) = ldtk_assets.get(ldtk_asset_handle) {
+            // Determine what levels are currently spawned
+            let mut previous_level_maps = HashMap::new();
+
+            if let Some(children) = children {
+                for child in children.iter() {
+                    if let Ok(level_handle) = ldtk_level_query.get(*child) {
+                        if let Some(ldtk_level) = level_assets.get(level_handle) {
+                            previous_level_maps.insert(ldtk_level.level.iid.clone(), child);
+                        }
                     }
                 }
             }
-        }
 
-        let previous_iids: HashSet<String> = previous_level_maps.keys().cloned().collect();
+            let previous_iids: HashSet<String> = previous_level_maps.keys().cloned().collect();
 
-        let iids_to_spawn = level_set.iids.difference(&previous_iids);
-        if iids_to_spawn.clone().count() > 0 {
-            if let Some(ldtk_asset) = ldtk_assets.get(ldtk_asset_handle) {
+            // Spawn levels that should be spawned but aren't
+            let iids_to_spawn = level_set.iids.difference(&previous_iids);
+            if iids_to_spawn.clone().count() > 0 {
                 commands.entity(world_entity).with_children(|c| {
-                    for iid in iids_to_spawn {
+                    for iid in iids_to_spawn.clone() {
                         level_events.send(LevelEvent::SpawnTriggered(iid.clone()));
                         pre_spawn_level(c, ldtk_asset, iid, &ldtk_settings);
                     }
                 });
             }
 
-            commands.entity(world_entity).remove::<Respawn>();
-        }
-
-        for iid in previous_iids.difference(&level_set.iids) {
-            let map_entity = previous_level_maps.get(iid).expect(
+            // Despawn levels that shouldn't be spawned but are
+            for iid in previous_iids.difference(&level_set.iids) {
+                let map_entity = previous_level_maps.get(iid).expect(
                 "The set of previous_iids and the keys in previous_level_maps should be the same.",
             );
-            commands.entity(**map_entity).despawn_recursive();
-            level_events.send(LevelEvent::Despawned(iid.clone()));
+                commands.entity(**map_entity).despawn_recursive();
+                level_events.send(LevelEvent::Despawned(iid.clone()));
+            }
+
+            // If the world was empty before but has now been populated, and this world was
+            // supposed to respawn, then this run of the system must have completed the "spawning"
+            // portion of said respawn.
+            // In that case, the respawn component needs to be removed so that the cleanup system
+            // doesn't start the process over again.
+            if previous_iids.len() == 0 && iids_to_spawn.count() > 0 && respawn.is_some() {
+                commands.entity(world_entity).remove::<Respawn>();
+            }
         }
     }
 }

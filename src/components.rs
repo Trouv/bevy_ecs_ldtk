@@ -323,10 +323,6 @@ impl From<&LayerInstance> for LayerMetadata {
 /// components will cause it to respawn.
 /// This can be used to implement a simple level-restart feature.
 /// Internally, this is used to support the entire level spawning process
-///
-/// **Important:** this must be inserted *before* [LdtkStage::Clean], which occurs immediately
-/// after [CoreStage::Update].
-/// Inserting it during or after this stage is, for now, undefined behavior.
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Hash, Component, Reflect)]
 #[reflect(Component)]
 pub struct Respawn;

@@ -165,7 +165,7 @@ pub fn apply_level_set(
             // portion of said respawn.
             // In that case, the respawn component needs to be removed so that the cleanup system
             // doesn't start the process over again.
-            if previous_iids.len() == 0 && iids_to_spawn.count() > 0 && respawn.is_some() {
+            if previous_iids.is_empty() && iids_to_spawn.count() > 0 && respawn.is_some() {
                 commands.entity(world_entity).remove::<Respawn>();
             }
         }

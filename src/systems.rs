@@ -216,14 +216,14 @@ pub fn process_ldtk_levels(
     ldtk_int_cell_map: NonSend<LdtkIntCellMap>,
     ldtk_query: Query<&Handle<LdtkAsset>>,
     level_query: Query<
-        (Entity, &Handle<LdtkLevel>, &Parent),
+        (Entity, &Handle<LdtkLevel>, &Parent, Option<&Respawn>),
         Or<(Added<Handle<LdtkLevel>>, With<Respawn>)>,
     >,
     worldly_query: Query<&Worldly>,
     mut level_events: EventWriter<LevelEvent>,
     ldtk_settings: Res<LdtkSettings>,
 ) {
-    for (ldtk_entity, level_handle, parent) in level_query.iter() {
+    for (ldtk_entity, level_handle, parent, respawn) in level_query.iter() {
         if let Ok(ldtk_handle) = ldtk_query.get(parent.get()) {
             if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
                 let tileset_definition_map: HashMap<i32, &TilesetDefinition> = ldtk_asset
@@ -261,10 +261,12 @@ pub fn process_ldtk_levels(
                     );
                     level_events.send(LevelEvent::Spawned(level.level.iid.clone()));
                 }
+
+                if respawn.is_some() {
+                    commands.entity(ldtk_entity).remove::<Respawn>();
+                }
             }
         }
-
-        commands.entity(ldtk_entity).remove::<Respawn>();
     }
 }
 

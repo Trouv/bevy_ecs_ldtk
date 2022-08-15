@@ -18,25 +18,24 @@ use std::collections::{HashMap, HashSet};
 pub fn process_ldtk_assets(
     mut commands: Commands,
     mut ldtk_events: EventReader<AssetEvent<LdtkAsset>>,
-    new_ldtks: Query<(Entity, &Handle<LdtkAsset>), Added<Handle<LdtkAsset>>>,
     ldtk_world_query: Query<(Entity, &Handle<LdtkAsset>)>,
     ldtk_settings: Res<LdtkSettings>,
     mut clear_color: ResMut<ClearColor>,
     ldtk_assets: Res<Assets<LdtkAsset>>,
-    mut created_assets: Local<HashSet<Handle<LdtkAsset>>>,
 ) {
     let mut ldtk_handles_to_respawn = HashSet::new();
+    let mut ldtk_handles_for_clear_color = HashSet::new();
 
     for event in ldtk_events.iter() {
         match event {
             AssetEvent::Created { handle } => {
                 debug!("LDtk asset creation detected.");
-                created_assets.insert(handle.clone_weak());
-                ldtk_handles_to_respawn.insert(handle);
+                ldtk_handles_for_clear_color.insert(handle);
             }
             AssetEvent::Modified { handle } => {
                 info!("LDtk asset modification detected.");
                 ldtk_handles_to_respawn.insert(handle);
+                ldtk_handles_for_clear_color.insert(handle);
             }
             AssetEvent::Removed { handle } => {
                 info!("LDtk asset removal detected.");
@@ -51,9 +50,8 @@ pub fn process_ldtk_assets(
     }
 
     if ldtk_settings.set_clear_color == SetClearColor::FromEditorBackground {
-        for handle in ldtk_handles_to_respawn.iter() {
+        for handle in ldtk_handles_for_clear_color.iter() {
             if let Some(ldtk_asset) = ldtk_assets.get(handle) {
-                println!("setting clear color");
                 clear_color.0 = ldtk_asset.project.bg_color;
             }
         }
@@ -61,14 +59,6 @@ pub fn process_ldtk_assets(
 
     for (entity, handle) in ldtk_world_query.iter() {
         if ldtk_handles_to_respawn.contains(handle) {
-            commands.entity(entity).insert(Respawn);
-        }
-    }
-
-    for (entity, handle) in new_ldtks.iter() {
-        // For new LDtk handles, spawning should only occur if its asset has finished loading.
-        // `created_assets` keeps track of that.
-        if created_assets.contains(handle) {
             commands.entity(entity).insert(Respawn);
         }
     }

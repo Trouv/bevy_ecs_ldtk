@@ -239,10 +239,7 @@ pub fn process_ldtk_levels(
         // be processed again.
         // In the case of respawning levels, the level entity will have its descendants *despawned*
         // first, by a separate system.
-        let already_processed = match children {
-            Some(children) if !children.is_empty() => true,
-            _ => false,
-        };
+        let already_processed = matches!(children, Some(children) if !children.is_empty());
 
         if !already_processed {
             if let Ok(ldtk_handle) = ldtk_query.get(parent.get()) {

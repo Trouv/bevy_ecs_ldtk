@@ -168,22 +168,26 @@ mod plugin {
                     systems::process_ldtk_levels.label(LdtkSystemLabel::LevelSpawning),
                 )
                 .add_system_to_stage(
-                    CoreStage::Update,
-                    systems::apply_level_selection.label(LdtkSystemLabel::LevelSelection),
+                    CoreStage::PreUpdate,
+                    systems::apply_level_selection
+                        .label(LdtkSystemLabel::LevelSelection)
+                        .after(LdtkSystemLabel::LevelSpawning),
                 )
                 .add_system_to_stage(
-                    CoreStage::Update,
+                    CoreStage::PreUpdate,
                     systems::apply_level_set
                         .label(LdtkSystemLabel::LevelSet)
                         .after(LdtkSystemLabel::LevelSelection),
                 )
                 .add_system_to_stage(
                     LdtkStage::Clean,
-                    systems::clean_respawn_entities.label(LdtkSystemLabel::Clean),
+                    systems::worldly_adoption
+                        .label(LdtkSystemLabel::Other)
+                        .before(LdtkSystemLabel::Clean),
                 )
                 .add_system_to_stage(
                     LdtkStage::Clean,
-                    systems::worldly_adoption.label(LdtkSystemLabel::Other),
+                    systems::clean_respawn_entities.label(LdtkSystemLabel::Clean),
                 )
                 .add_system_to_stage(
                     CoreStage::PostUpdate,

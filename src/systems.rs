@@ -165,7 +165,7 @@ pub fn apply_level_set(
             // portion of said respawn.
             // In that case, the respawn component needs to be removed so that the cleanup system
             // doesn't start the process over again.
-            if previous_iids.len() == 0 && iids_to_spawn.count() > 0 && respawn.is_some() {
+            if previous_iids.is_empty() && iids_to_spawn.count() > 0 && respawn.is_some() {
                 commands.entity(world_entity).remove::<Respawn>();
             }
         }
@@ -216,54 +216,74 @@ pub fn process_ldtk_levels(
     ldtk_int_cell_map: NonSend<LdtkIntCellMap>,
     ldtk_query: Query<&Handle<LdtkAsset>>,
     level_query: Query<
-        (Entity, &Handle<LdtkLevel>, &Parent, Option<&Respawn>),
+        (
+            Entity,
+            &Handle<LdtkLevel>,
+            &Parent,
+            Option<&Respawn>,
+            Option<&Children>,
+        ),
         Or<(Added<Handle<LdtkLevel>>, With<Respawn>)>,
     >,
     worldly_query: Query<&Worldly>,
     mut level_events: EventWriter<LevelEvent>,
     ldtk_settings: Res<LdtkSettings>,
 ) {
-    for (ldtk_entity, level_handle, parent, respawn) in level_query.iter() {
-        if let Ok(ldtk_handle) = ldtk_query.get(parent.get()) {
-            if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
-                let tileset_definition_map: HashMap<i32, &TilesetDefinition> = ldtk_asset
-                    .project
-                    .defs
-                    .tilesets
-                    .iter()
-                    .map(|t| (t.uid, t))
-                    .collect();
+    for (ldtk_entity, level_handle, parent, respawn, children) in level_query.iter() {
+        // Checking if the level has any children is an okay method of checking whether it has
+        // already been processed.
+        // Users will most likely not be adding children to the level entity betwen its creation
+        // and its processing.
+        //
+        // Furthermore, there are no circumstances where an already-processed level entity needs to
+        // be processed again.
+        // In the case of respawning levels, the level entity will have its descendants *despawned*
+        // first, by a separate system.
+        let already_processed = matches!(children, Some(children) if !children.is_empty());
 
-                let entity_definition_map =
-                    create_entity_definition_map(&ldtk_asset.project.defs.entities);
+        if !already_processed {
+            if let Ok(ldtk_handle) = ldtk_query.get(parent.get()) {
+                if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
+                    // Commence the spawning
+                    let tileset_definition_map: HashMap<i32, &TilesetDefinition> = ldtk_asset
+                        .project
+                        .defs
+                        .tilesets
+                        .iter()
+                        .map(|t| (t.uid, t))
+                        .collect();
 
-                let layer_definition_map =
-                    create_layer_definition_map(&ldtk_asset.project.defs.layers);
+                    let entity_definition_map =
+                        create_entity_definition_map(&ldtk_asset.project.defs.entities);
 
-                let worldly_set = worldly_query.iter().cloned().collect();
+                    let layer_definition_map =
+                        create_layer_definition_map(&ldtk_asset.project.defs.layers);
 
-                if let Some(level) = level_assets.get(level_handle) {
-                    spawn_level(
-                        level,
-                        &mut commands,
-                        &asset_server,
-                        &mut images,
-                        &mut texture_atlases,
-                        &ldtk_entity_map,
-                        &ldtk_int_cell_map,
-                        &entity_definition_map,
-                        &layer_definition_map,
-                        &ldtk_asset.tileset_map,
-                        &tileset_definition_map,
-                        worldly_set,
-                        ldtk_entity,
-                        &ldtk_settings,
-                    );
-                    level_events.send(LevelEvent::Spawned(level.level.iid.clone()));
-                }
+                    let worldly_set = worldly_query.iter().cloned().collect();
 
-                if respawn.is_some() {
-                    commands.entity(ldtk_entity).remove::<Respawn>();
+                    if let Some(level) = level_assets.get(level_handle) {
+                        spawn_level(
+                            level,
+                            &mut commands,
+                            &asset_server,
+                            &mut images,
+                            &mut texture_atlases,
+                            &ldtk_entity_map,
+                            &ldtk_int_cell_map,
+                            &entity_definition_map,
+                            &layer_definition_map,
+                            &ldtk_asset.tileset_map,
+                            &tileset_definition_map,
+                            worldly_set,
+                            ldtk_entity,
+                            &ldtk_settings,
+                        );
+                        level_events.send(LevelEvent::Spawned(level.level.iid.clone()));
+                    }
+
+                    if respawn.is_some() {
+                        commands.entity(ldtk_entity).remove::<Respawn>();
+                    }
                 }
             }
         }

@@ -15,7 +15,7 @@ use bevy::prelude::CoreStage;
 #[allow(unused_imports)]
 use crate::{
     assets::LdtkLevel,
-    plugin::{LdtkStage, LdtkSystemLabel},
+    plugin::LdtkStage,
     prelude::{LdtkEntity, LdtkIntCell},
     resources::{LevelSelection, LevelSpawnBehavior},
     utils::ldtk_grid_coords_to_grid_coords,
@@ -44,9 +44,6 @@ pub struct IntGridCell {
 /// If not, [LevelSet] allows you to have more direct control over the levels you spawn.
 ///
 /// Changes to this component are idempotent, so levels won't be respawned greedily.
-///
-/// While not necessary, you can avoid frame delay by updating this component before
-/// [CoreStage::Update], or before [LdtkSystemLabel::LevelSet] within [CoreStage::Update].
 #[derive(Clone, Eq, PartialEq, Debug, Default, Component)]
 pub struct LevelSet {
     pub iids: HashSet<String>,
@@ -326,10 +323,6 @@ impl From<&LayerInstance> for LayerMetadata {
 /// components will cause it to respawn.
 /// This can be used to implement a simple level-restart feature.
 /// Internally, this is used to support the entire level spawning process
-///
-/// **Important:** this must be inserted *before* [LdtkStage::Clean], which occurs immediately
-/// after [CoreStage::Update].
-/// Inserting it during or after this stage is, for now, undefined behavior.
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Hash, Component, Reflect)]
 #[reflect(Component)]
 pub struct Respawn;

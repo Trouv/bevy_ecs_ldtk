@@ -136,10 +136,7 @@ mod plugin {
     /// [StageLabel] for stages added by the plugin.
     #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash, StageLabel)]
     pub enum LdtkStage {
-        /// Occurs immediately after [CoreStage::Update]
-        /// Used for systems related to [resources::LevelSelection] and [components::LevelSet]
-        LevelSelection,
-        /// Occurs immediately after [LdtkStage::LevelSelection].
+        /// Occurs immediately after [CoreStage::Update].
         /// Used for systems relating to [components::Worldly] and [components::Respawn].
         Clean,
     }
@@ -153,16 +150,7 @@ mod plugin {
     impl Plugin for LdtkPlugin {
         fn build(&self, app: &mut App) {
             app.add_plugin(bevy_ecs_tilemap::TilemapPlugin)
-                .add_stage_after(
-                    CoreStage::Update,
-                    LdtkStage::LevelSelection,
-                    SystemStage::parallel(),
-                )
-                .add_stage_after(
-                    LdtkStage::LevelSelection,
-                    LdtkStage::Clean,
-                    SystemStage::parallel(),
-                )
+                .add_stage_after(CoreStage::Update, LdtkStage::Clean, SystemStage::parallel())
                 .init_non_send_resource::<app::LdtkEntityMap>()
                 .init_non_send_resource::<app::LdtkIntCellMap>()
                 .init_resource::<resources::LdtkSettings>()
@@ -180,11 +168,11 @@ mod plugin {
                     systems::process_ldtk_levels.label(LdtkSystemLabel::LevelSpawning),
                 )
                 .add_system_to_stage(
-                    LdtkStage::LevelSelection,
+                    CoreStage::Update,
                     systems::apply_level_selection.label(LdtkSystemLabel::LevelSelection),
                 )
                 .add_system_to_stage(
-                    LdtkStage::LevelSelection,
+                    CoreStage::Update,
                     systems::apply_level_set
                         .label(LdtkSystemLabel::LevelSet)
                         .after(LdtkSystemLabel::LevelSelection),
@@ -218,7 +206,7 @@ pub mod prelude {
             Respawn, TileEnumTags, TileMetadata, Worldly,
         },
         ldtk::{self, FieldValue, LayerInstance, TilesetDefinition},
-        plugin::LdtkPlugin,
+        plugin::{LdtkPlugin, LdtkSystemLabel},
         resources::{
             IntGridRendering, LdtkSettings, LevelBackground, LevelEvent, LevelSelection,
             LevelSpawnBehavior, SetClearColor,

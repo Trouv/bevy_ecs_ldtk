@@ -6,7 +6,10 @@ use crate::ldtk::Level;
 use bevy::prelude::{CoreStage, GlobalTransform};
 
 #[allow(unused_imports)]
-use crate::components::{LdtkWorldBundle, LevelSet};
+use crate::{
+    components::{LdtkWorldBundle, LevelSet},
+    plugin::LdtkSystemLabel,
+};
 
 /// Resource for choosing which level(s) to spawn.
 ///
@@ -16,6 +19,9 @@ use crate::components::{LdtkWorldBundle, LevelSet};
 /// This resource works by updating the [LdtkWorldBundle]'s [LevelSet] component.
 /// If you need more control over the spawned levels than this resource provides,
 /// you can choose not to insert this resource and interface with [LevelSet] directly instead.
+///
+/// While not necessary, you can avoid frame delay by updating this component before
+/// [CoreStage::Update], or before [LdtkSystemLabel::LevelSelection] within [CoreStage::Update].
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub enum LevelSelection {
     /// Spawn level with the given identifier.

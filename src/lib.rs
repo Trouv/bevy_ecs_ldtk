@@ -137,8 +137,17 @@ mod plugin {
     #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash, StageLabel)]
     pub enum LdtkStage {
         /// Occurs immediately after [CoreStage::Update].
-        /// Used for systems relating to [components::Worldly] and [components::Respawn].
-        Clean,
+        ///
+        /// Used for systems that process components and resources provided by this plugin's API.
+        /// In particular, this stage processes..
+        /// - [resources::LevelSelection]
+        /// - [components::LevelSet]
+        /// - [components::Worldly]
+        /// - [components::Respawn]
+        ///
+        /// As a result, you can expect minimal frame delay when updating these in
+        /// [CoreStage::Update].
+        ProcessApi,
     }
 
     /// Adds the default systems, assets, and resources used by `bevy_ecs_ldtk`.
@@ -150,7 +159,11 @@ mod plugin {
     impl Plugin for LdtkPlugin {
         fn build(&self, app: &mut App) {
             app.add_plugin(bevy_ecs_tilemap::TilemapPlugin)
-                .add_stage_after(CoreStage::Update, LdtkStage::Clean, SystemStage::parallel())
+                .add_stage_after(
+                    CoreStage::Update,
+                    LdtkStage::ProcessApi,
+                    SystemStage::parallel(),
+                )
                 .init_non_send_resource::<app::LdtkEntityMap>()
                 .init_non_send_resource::<app::LdtkIntCellMap>()
                 .init_resource::<resources::LdtkSettings>()
@@ -168,21 +181,21 @@ mod plugin {
                     systems::process_ldtk_levels.label(LdtkSystemLabel::LevelSpawning),
                 )
                 .add_system_to_stage(
-                    LdtkStage::Clean,
+                    LdtkStage::ProcessApi,
                     systems::worldly_adoption.label(LdtkSystemLabel::Other),
                 )
                 .add_system_to_stage(
-                    LdtkStage::Clean,
+                    LdtkStage::ProcessApi,
                     systems::apply_level_selection.label(LdtkSystemLabel::LevelSelection),
                 )
                 .add_system_to_stage(
-                    LdtkStage::Clean,
+                    LdtkStage::ProcessApi,
                     systems::apply_level_set
                         .label(LdtkSystemLabel::LevelSet)
                         .after(LdtkSystemLabel::LevelSelection),
                 )
                 .add_system_to_stage(
-                    LdtkStage::Clean,
+                    LdtkStage::ProcessApi,
                     systems::clean_respawn_entities.exclusive_system().at_end(),
                 )
                 .add_system_to_stage(

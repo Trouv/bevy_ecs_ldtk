@@ -3,7 +3,7 @@
 use crate::ldtk::Level;
 
 #[allow(unused_imports)]
-use bevy::prelude::GlobalTransform;
+use bevy::prelude::{CoreStage, GlobalTransform};
 
 #[allow(unused_imports)]
 use crate::components::{LdtkWorldBundle, LevelSet};
@@ -133,8 +133,6 @@ pub struct LdtkSettings {
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 pub enum LevelEvent {
     /// Indicates that a level has been triggered to spawn, but hasn't been spawned yet.
-    ///
-    /// Occurs one update before the level is spawned.
     SpawnTriggered(String),
     /// The level, with all of its layers, entities, etc., has spawned.
     ///
@@ -142,8 +140,8 @@ pub enum LevelEvent {
     /// you want to listen for.
     /// If your systems are [GlobalTransform]-dependent, see [LevelEvent::Transformed].
     Spawned(String),
-    /// Occurs one update after the level has spawned, so all [GlobalTransform]s of the level
-    /// should be updated.
+    /// Occurs during the [CoreStage::PostUpdate] after the level has spawned, so all
+    /// [GlobalTransform]s of the level should be updated.
     Transformed(String),
     /// Indicates that a level has despawned.
     Despawned(String),

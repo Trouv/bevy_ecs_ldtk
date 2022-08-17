@@ -125,11 +125,28 @@ mod plugin {
     /// [SystemLabel] used by the plugin for scheduling its systems.
     #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash, SystemLabel)]
     pub enum LdtkSystemLabel {
+        ProcessAssets,
         LevelSelection,
-        PreSpawn,
+        LevelSet,
         LevelSpawning,
-        FrameDelay,
         Other,
+    }
+
+    /// [StageLabel] for stages added by the plugin.
+    #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash, StageLabel)]
+    pub enum LdtkStage {
+        /// Occurs immediately after [CoreStage::Update].
+        ///
+        /// Used for systems that process components and resources provided by this plugin's API.
+        /// In particular, this stage processes..
+        /// - [resources::LevelSelection]
+        /// - [components::LevelSet]
+        /// - [components::Worldly]
+        /// - [components::Respawn]
+        ///
+        /// As a result, you can expect minimal frame delay when updating these in
+        /// [CoreStage::Update].
+        ProcessApi,
     }
 
     /// Adds the default systems, assets, and resources used by `bevy_ecs_ldtk`.
@@ -141,6 +158,11 @@ mod plugin {
     impl Plugin for LdtkPlugin {
         fn build(&self, app: &mut App) {
             app.add_plugin(bevy_ecs_tilemap::TilemapPlugin)
+                .add_stage_after(
+                    CoreStage::Update,
+                    LdtkStage::ProcessApi,
+                    SystemStage::parallel(),
+                )
                 .init_non_send_resource::<app::LdtkEntityMap>()
                 .init_non_send_resource::<app::LdtkIntCellMap>()
                 .init_resource::<resources::LdtkSettings>()
@@ -151,32 +173,35 @@ mod plugin {
                 .add_event::<resources::LevelEvent>()
                 .add_system_to_stage(
                     CoreStage::PreUpdate,
-                    systems::process_ldtk_world.label(LdtkSystemLabel::PreSpawn),
+                    systems::process_ldtk_assets.label(LdtkSystemLabel::ProcessAssets),
                 )
                 .add_system_to_stage(
                     CoreStage::PreUpdate,
-                    systems::choose_levels.label(LdtkSystemLabel::LevelSelection),
+                    systems::process_ldtk_levels.label(LdtkSystemLabel::LevelSpawning),
                 )
                 .add_system_to_stage(
-                    CoreStage::PreUpdate,
+                    LdtkStage::ProcessApi,
+                    systems::worldly_adoption.label(LdtkSystemLabel::Other),
+                )
+                .add_system_to_stage(
+                    LdtkStage::ProcessApi,
+                    systems::apply_level_selection.label(LdtkSystemLabel::LevelSelection),
+                )
+                .add_system_to_stage(
+                    LdtkStage::ProcessApi,
                     systems::apply_level_set
-                        .label(LdtkSystemLabel::PreSpawn)
+                        .label(LdtkSystemLabel::LevelSet)
                         .after(LdtkSystemLabel::LevelSelection),
                 )
                 .add_system_to_stage(
-                    CoreStage::PreUpdate,
-                    systems::worldly_adoption.label(LdtkSystemLabel::Other),
+                    LdtkStage::ProcessApi,
+                    systems::clean_respawn_entities.exclusive_system().at_end(),
                 )
                 .add_system_to_stage(
                     CoreStage::PostUpdate,
                     systems::detect_level_spawned_events
                         .chain(systems::fire_level_transformed_events)
-                        .label(LdtkSystemLabel::Other)
-                        .before(LdtkSystemLabel::LevelSpawning),
-                )
-                .add_system_to_stage(
-                    CoreStage::PostUpdate,
-                    systems::process_ldtk_levels.label(LdtkSystemLabel::LevelSpawning),
+                        .label(LdtkSystemLabel::Other),
                 );
         }
     }
@@ -190,7 +215,7 @@ pub mod prelude {
         assets::{LdtkAsset, LdtkLevel},
         components::{
             EntityInstance, GridCoords, IntGridCell, LayerMetadata, LdtkWorldBundle, LevelSet,
-            TileEnumTags, TileMetadata, Worldly,
+            Respawn, TileEnumTags, TileMetadata, Worldly,
         },
         ldtk::{self, FieldValue, LayerInstance, TilesetDefinition},
         plugin::LdtkPlugin,

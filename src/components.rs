@@ -313,6 +313,16 @@ impl From<&LayerInstance> for LayerMetadata {
     }
 }
 
+/// [Component] that indicates that an LDtk level or world should respawn.
+///
+/// Inserting this component on an entity with either `Handle<LdtkAsset>` or `Handle<LdtkLevel>`
+/// components will cause it to respawn.
+/// This can be used to implement a simple level-restart feature.
+/// Internally, this is used to support the entire level spawning process
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Hash, Component, Reflect)]
+#[reflect(Component)]
+pub struct Respawn;
+
 #[derive(Copy, Clone, Debug, Default, Bundle)]
 pub(crate) struct TileGridBundle {
     #[bundle]

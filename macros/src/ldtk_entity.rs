@@ -183,7 +183,7 @@ fn expand_sprite_sheet_bundle_attribute(
         .parse_meta()
         .expect("Cannot parse #[sprite_sheet_bundle...] attribute")
     {
-        syn::Meta::List(syn::MetaList { nested, .. }) if nested.len() == 7 => {
+        syn::Meta::List(syn::MetaList { nested, .. }) if nested.len() == 8 => {
             let mut nested_iter = nested.iter();
 
             let asset_path = &match nested_iter.next() {
@@ -210,9 +210,13 @@ fn expand_sprite_sheet_bundle_attribute(
                 Some(syn::NestedMeta::Lit(syn::Lit::Float(asset))) => asset.base10_parse::<f32>().unwrap(),
                 _ => panic!("Sixth argument of #[sprite_sheet_bundle(...)] should be a float")
             };
+            let offset = match nested_iter.next() {
+                Some(syn::NestedMeta::Lit(syn::Lit::Float(asset))) => asset.base10_parse::<f32>().unwrap(),
+                _ => panic!("Seventh argument of #[sprite_sheet_bundle(...)] should be a float")
+            };
             let index = match nested_iter.next() {
                 Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_parse::<usize>().unwrap(),
-                _ => panic!("Seventh argument of #[sprite_sheet_bundle(...)] should be an int")
+                _ => panic!("Eighth argument of #[sprite_sheet_bundle(...)] should be an int")
             };
 
             quote! {
@@ -222,7 +226,7 @@ fn expand_sprite_sheet_bundle_attribute(
                             asset_server.load(#asset_path).into(),
                             bevy::prelude::Vec2::new(#tile_width, #tile_height),
                             #columns, #rows, bevy::prelude::Vec2::splat(#padding),
-                            Vec2::ZERO,
+                            bevy::prelude::Vec2::splat(#offset),
                         )
                     ),
                     sprite: bevy::prelude::TextureAtlasSprite {
@@ -238,7 +242,7 @@ fn expand_sprite_sheet_bundle_attribute(
                 #field_name: bevy_ecs_ldtk::utils::sprite_sheet_bundle_from_entity_info(entity_instance, tileset, tileset_definition, texture_atlases),
             }
         },
-        _ => panic!("#[sprite_sheet_bundle...] attribute should take the form #[sprite_sheet_bundle(\"asset/path.png\", tile_width, tile_height, columns, rows, padding, index)] or #[sprite_sheet_bundle]"),
+        _ => panic!("#[sprite_sheet_bundle...] attribute should take the form #[sprite_sheet_bundle(\"asset/path.png\", tile_width, tile_height, columns, rows, padding, offset, index)] or #[sprite_sheet_bundle]"),
     }
 }
 

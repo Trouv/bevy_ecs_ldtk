@@ -291,6 +291,10 @@ pub fn process_ldtk_levels(
 }
 
 /// Performs the "despawning" portion of the respawn process for `Respawn` entities.
+///
+/// This is currently an exclusive system for scheduling purposes.
+/// If we need to revert it to its non-exclusive form, copy it from
+/// 90155a75acb6dea4c97bb92a724b741e693b100d
 pub fn clean_respawn_entities(world: &mut World) {
     let mut system_state: SystemState<(
         Query<&Children, (With<Handle<LdtkAsset>>, With<Respawn>)>,

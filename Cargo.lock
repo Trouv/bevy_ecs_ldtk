@@ -345,7 +345,7 @@ dependencies = [
 
 [[package]]
 name = "bevy_ecs_ldtk"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "anyhow",
  "bevy",
@@ -362,7 +362,7 @@ dependencies = [
 
 [[package]]
 name = "bevy_ecs_ldtk_macros"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1764,9 +1764,9 @@ dependencies = [
 
 [[package]]
 name = "heron"
-version = "4.0.0-alpha.4"
+version = "4.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d7747ff2cea42946d786cf31d4c72ecc67b76d32ef6e65fea4c0c084a76f4122"
+checksum = "5b278c3197344aeb6a7350f548f2b65fee4a582632e5e0766e8c13383744a9ac"
 dependencies = [
  "bevy",
  "cfg_aliases",
@@ -1777,9 +1777,9 @@ dependencies = [
 
 [[package]]
 name = "heron_core"
-version = "4.0.0-alpha.4"
+version = "4.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "88e954c7956d81a0e4c2764d21c2b311a270233cb923aa41e1a10364b5f4f247"
+checksum = "84f8839b0fd32eec6002d629d1606dd644a302b836aa107b0879eba3e7048845"
 dependencies = [
  "bevy",
  "cfg_aliases",
@@ -1789,9 +1789,9 @@ dependencies = [
 
 [[package]]
 name = "heron_macros"
-version = "4.0.0-alpha.4"
+version = "4.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3505c4abe5732be0ca34384814b01d840ae7931f9202ae134c890e3a61ff720d"
+checksum = "04df4225ffd3fb5db46839127ae818f6b26a308a9c2435197b228a9585fe10da"
 dependencies = [
  "quote",
  "syn",
@@ -1799,9 +1799,9 @@ dependencies = [
 
 [[package]]
 name = "heron_rapier"
-version = "4.0.0-alpha.4"
+version = "4.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "81494f0f72447cca454b66880a0da5d93f1fa1f08b2a8326284b2609d67d77bd"
+checksum = "64e68bf8d0835cbced961b45d34aa1f4f7857ef4778df8aa4b5ead19ba0f231d"
 dependencies = [
  "bevy",
  "cfg_aliases",
@@ -3005,9 +3005,9 @@ dependencies = [
 
 [[package]]
 name = "smallvec"
-version = "1.8.0"
+version = "1.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f2dd574626839106c320a323308629dcb1acfc96e32a8cba364ddc61ac23ee83"
+checksum = "2fd0db749597d91ff862fd1d55ea87f7855a744a8425a64695b6fca237d1dad1"
 dependencies = [
  "serde",
 ]

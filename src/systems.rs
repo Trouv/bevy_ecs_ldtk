@@ -10,7 +10,7 @@ use crate::{
     utils::*,
 };
 
-use bevy::prelude::*;
+use bevy::{ecs::system::SystemState, prelude::*};
 use std::collections::{HashMap, HashSet};
 
 /// Detects [LdtkAsset] events and spawns levels as children of the [LdtkWorldBundle].
@@ -291,36 +291,59 @@ pub fn process_ldtk_levels(
 }
 
 /// Performs the "despawning" portion of the respawn process for `Respawn` entities.
-pub fn clean_respawn_entities(
-    mut commands: Commands,
-    ldtk_worlds_to_clean: Query<&Children, (With<Handle<LdtkAsset>>, With<Respawn>)>,
-    ldtk_levels_to_clean: Query<(Entity, &Handle<LdtkLevel>), With<Respawn>>,
-    other_ldtk_levels: Query<&Handle<LdtkLevel>, Without<Respawn>>,
-    worldly_entities: Query<Entity, With<Worldly>>,
-    level_assets: Res<Assets<LdtkLevel>>,
-    mut level_events: EventWriter<LevelEvent>,
-) {
-    for world_children in ldtk_worlds_to_clean.iter() {
-        for child in world_children
-            .iter()
-            .filter(|l| other_ldtk_levels.contains(**l) || worldly_entities.contains(**l))
-        {
-            commands.entity(*child).despawn_recursive();
+pub fn clean_respawn_entities(world: &mut World) {
+    let mut system_state: SystemState<(
+        Query<&Children, (With<Handle<LdtkAsset>>, With<Respawn>)>,
+        Query<(Entity, &Handle<LdtkLevel>), With<Respawn>>,
+        Query<&Handle<LdtkLevel>, Without<Respawn>>,
+        Query<Entity, With<Worldly>>,
+        Res<Assets<LdtkLevel>>,
+        EventWriter<LevelEvent>,
+    )> = SystemState::new(world);
 
-            if let Ok(level_handle) = other_ldtk_levels.get(*child) {
-                if let Some(level_asset) = level_assets.get(level_handle) {
-                    level_events.send(LevelEvent::Despawned(level_asset.level.iid.clone()));
+    let mut entities_to_despawn_recursively = Vec::new();
+    let mut entities_to_despawn_descendants = Vec::new();
+
+    {
+        let (
+            ldtk_worlds_to_clean,
+            ldtk_levels_to_clean,
+            other_ldtk_levels,
+            worldly_entities,
+            level_assets,
+            mut level_events,
+        ) = system_state.get_mut(world);
+
+        for world_children in ldtk_worlds_to_clean.iter() {
+            for child in world_children
+                .iter()
+                .filter(|l| other_ldtk_levels.contains(**l) || worldly_entities.contains(**l))
+            {
+                entities_to_despawn_recursively.push(*child);
+
+                if let Ok(level_handle) = other_ldtk_levels.get(*child) {
+                    if let Some(level_asset) = level_assets.get(level_handle) {
+                        level_events.send(LevelEvent::Despawned(level_asset.level.iid.clone()));
+                    }
                 }
+            }
+        }
+
+        for (level_entity, level_handle) in ldtk_levels_to_clean.iter() {
+            entities_to_despawn_descendants.push(level_entity);
+
+            if let Some(level_asset) = level_assets.get(level_handle) {
+                level_events.send(LevelEvent::Despawned(level_asset.level.iid.clone()));
             }
         }
     }
 
-    for (level_entity, level_handle) in ldtk_levels_to_clean.iter() {
-        commands.entity(level_entity).despawn_descendants();
+    for entity in entities_to_despawn_recursively {
+        world.entity_mut(entity).despawn_recursive();
+    }
 
-        if let Some(level_asset) = level_assets.get(level_handle) {
-            level_events.send(LevelEvent::Despawned(level_asset.level.iid.clone()));
-        }
+    for entity in entities_to_despawn_descendants {
+        world.entity_mut(entity).despawn_descendants();
     }
 }
 

@@ -187,7 +187,7 @@ mod plugin {
                 )
                 .add_system_to_stage(
                     LdtkStage::Clean,
-                    systems::clean_respawn_entities.label(LdtkSystemLabel::Clean),
+                    systems::clean_respawn_entities.exclusive_system().at_end(),
                 )
                 .add_system_to_stage(
                     CoreStage::PostUpdate,

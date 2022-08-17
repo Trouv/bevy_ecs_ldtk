@@ -129,7 +129,6 @@ mod plugin {
         LevelSelection,
         LevelSet,
         LevelSpawning,
-        Clean,
         Other,
     }
 

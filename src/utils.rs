@@ -283,7 +283,7 @@ pub fn sprite_sheet_bundle_from_entity_info(
                 tileset_definition.c_wid as usize,
                 tileset_definition.c_hei as usize,
                 Vec2::splat(tileset_definition.spacing as f32),
-                Vec2::ZERO,
+                Vec2::splat(tileset_definition.padding as f32),
             )),
             sprite: TextureAtlasSprite {
                 index: (tile.y / (tile.h + tileset_definition.spacing)) as usize

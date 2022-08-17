@@ -97,7 +97,7 @@ use crate::app::register_ldtk_objects::RegisterLdtkObjects;
 /// with an actual material/image.
 /// There are two forms for this attribute:
 /// - `#[sprite_sheet_bundle("path/to/asset.png", tile_width, tile_height, columns, rows, padding,
-/// index)]` will create the field using all of the information provided.
+/// offset, index)]` will create the field using all of the information provided.
 /// Similar to using [TextureAtlas::from_grid()].
 /// - `#[sprite_sheet_bundle]` will create the field using information from the LDtk Editor visual,
 /// if it has one.
@@ -111,7 +111,7 @@ use crate::app::register_ldtk_objects::RegisterLdtkObjects;
 /// #[derive(Bundle, LdtkEntity)]
 /// pub struct Sword {
 ///     #[bundle]
-///     #[sprite_sheet_bundle("weapons.png", 32.0, 32.0, 4, 5, 5.0, 17)]
+///     #[sprite_sheet_bundle("weapons.png", 32.0, 32.0, 4, 5, 5.0, 1.0, 17)]
 ///     sprite_sheet: SpriteSheetBundle,
 ///     damage: Damage,
 /// }

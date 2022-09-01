@@ -198,7 +198,14 @@ fn pre_spawn_level(
             .insert_bundle(SpatialBundle {
                 transform: Transform::from_translation(translation),
                 ..default()
-            });
+            })
+            .insert(Name::new(
+                ldtk_asset
+                    .get_level(&LevelSelection::Iid(level_iid.to_string()))
+                    .unwrap()
+                    .identifier
+                    .to_owned(),
+            ));
     }
 }
 

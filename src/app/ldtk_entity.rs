@@ -252,7 +252,8 @@ pub trait LdtkEntity {
     /// registered to the app.
     ///
     /// Note: whether or not the entity is registered to the app, the plugin will insert [Transform],
-    /// [GlobalTransform], and [Parent] components to the entity **after** this bundle is inserted.
+    /// [GlobalTransform], [Name], and [Parent] components to the entity **after** this bundle is
+    /// inserted.
     /// So, any custom implementations of these components within this trait will be overwritten.
     fn bundle_entity(
         entity_instance: &EntityInstance,

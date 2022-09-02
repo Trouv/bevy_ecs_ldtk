@@ -350,10 +350,12 @@ pub fn spawn_level(
                                     texture_atlases,
                                 );
 
-                                entity_commands.insert_bundle(SpatialBundle {
-                                    transform,
-                                    ..default()
-                                });
+                                entity_commands
+                                    .insert_bundle(SpatialBundle {
+                                        transform,
+                                        ..default()
+                                    })
+                                    .insert(Name::new(entity_instance.identifier.to_owned()));
                             }
                         }
                     });
@@ -675,7 +677,8 @@ pub fn spawn_level(
                             .insert_bundle(SpatialBundle::from_transform(
                                 Transform::from_translation(layer_offset).with_scale(layer_scale),
                             ))
-                            .insert(LayerMetadata::from(layer_instance));
+                            .insert(LayerMetadata::from(layer_instance))
+                            .insert(Name::new(layer_instance.identifier.to_owned()));
 
                         commands.entity(ldtk_entity).add_child(layer_entity);
 

@@ -311,8 +311,6 @@ pub fn spawn_level(
                             // Note: entities do not seem to be affected visually by layer offsets in
                             // the editor, so no layer offset is added to the transform here.
 
-                            let mut entity_commands = commands.spawn();
-
                             let (tileset, tileset_definition) = match &entity_instance.tile {
                                 Some(t) => (
                                     tileset_map.get(&t.tileset_uid),
@@ -333,6 +331,7 @@ pub fn spawn_level(
                             if !worldly_set.contains(&predicted_worldly) {
                                 let default_ldtk_entity: Box<dyn PhantomLdtkEntityTrait> =
                                     Box::new(PhantomLdtkEntity::<EntityInstanceBundle>::new());
+                                let mut entity_commands = commands.spawn();
 
                                 ldtk_map_get_or_default(
                                     layer_instance.identifier.clone(),

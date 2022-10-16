@@ -41,10 +41,7 @@ pub fn process_ldtk_assets(
                 info!("LDtk asset removal detected.");
                 // if mesh was modified and removed in the same update, ignore the modification
                 // events are ordered so future modification events are ok
-                ldtk_handles_to_respawn = ldtk_handles_to_respawn
-                    .into_iter()
-                    .filter(|changed_handle| *changed_handle != handle)
-                    .collect();
+                ldtk_handles_to_respawn.retain(|changed_handle| *changed_handle != handle);
             }
         }
     }

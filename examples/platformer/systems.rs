@@ -513,7 +513,7 @@ pub fn ground_detection(
         if let Ok(mut ground_detection) =
             ground_detectors.get_mut(ground_sensor.ground_detection_entity)
         {
-            ground_detection.on_ground = ground_sensor.intersecting_ground_entities.len() > 0;
+            ground_detection.on_ground = !ground_sensor.intersecting_ground_entities.is_empty();
         }
     }
 }

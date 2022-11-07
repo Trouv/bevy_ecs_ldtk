@@ -23,7 +23,7 @@ thiserror = "1.0"
 
 [dev-dependencies]
 bevy = "0.8"
-heron = { version = "4", features = ["2d"] }
+bevy_rapier2d = { version = "0.18" }
 rand = "0.8"
 
 [features]

@@ -9,6 +9,7 @@ static WORLDLY_ATTRIBUTE_NAME: &str = "worldly";
 static GRID_COORDS_ATTRIBUTE_NAME: &str = "grid_coords";
 static LDTK_ENTITY_ATTRIBUTE_NAME: &str = "ldtk_entity";
 static FROM_ENTITY_INSTANCE_ATTRIBUTE_NAME: &str = "from_entity_instance";
+static WITH_ATTRIBUTE_NAME: &str = "with";
 
 pub fn expand_ldtk_entity_derive(ast: &syn::DeriveInput) -> proc_macro::TokenStream {
     let struct_name = &ast.ident;
@@ -87,6 +88,15 @@ pub fn expand_ldtk_entity_derive(ast: &syn::DeriveInput) -> proc_macro::TokenStr
             field_constructions.push(expand_from_entity_instance_attribute(
                 attribute, field_name, field_type,
             ));
+            continue;
+        }
+
+        let from_path = field
+            .attrs
+            .iter()
+            .find(|a| *a.path.get_ident().as_ref().unwrap() == WITH_ATTRIBUTE_NAME);
+        if let Some(attribute) = from_path {
+            field_constructions.push(expand_with_attribute(attribute, field_name, field_type));
             continue;
         }
 
@@ -183,7 +193,7 @@ fn expand_sprite_sheet_bundle_attribute(
         .parse_meta()
         .expect("Cannot parse #[sprite_sheet_bundle...] attribute")
     {
-        syn::Meta::List(syn::MetaList { nested, .. }) if nested.len() == 8 => {
+        syn::Meta::List(syn::MetaList { nested, .. }) if nested.len() == 10 => {
             let mut nested_iter = nested.iter();
 
             let asset_path = &match nested_iter.next() {
@@ -218,6 +228,14 @@ fn expand_sprite_sheet_bundle_attribute(
                 Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_parse::<usize>().unwrap(),
                 _ => panic!("Eighth argument of #[sprite_sheet_bundle(...)] should be an int")
             };
+            let tx = match nested_iter.next() {
+                Some(syn::NestedMeta::Lit(syn::Lit::Float(asset))) => asset.base10_parse::<f32>().unwrap(),
+                _ => panic!("Ninth argument of #[sprite_sheet_bundle(...)] should be an float")
+            };
+            let ty = match nested_iter.next() {
+                Some(syn::NestedMeta::Lit(syn::Lit::Float(asset))) => asset.base10_parse::<f32>().unwrap(),
+                _ => panic!("Tenth argument of #[sprite_sheet_bundle(...)] should be an float")
+            };
 
             quote! {
                 #field_name: bevy::prelude::SpriteSheetBundle {
@@ -233,6 +251,7 @@ fn expand_sprite_sheet_bundle_attribute(
                         index: #index,
                         ..Default::default()
                     },
+                    transform: Transform::from_xyz(#tx, #ty, 0.0),
                     ..Default::default()
                 },
             }
@@ -316,6 +335,31 @@ fn expand_from_entity_instance_attribute(
         }
         _ => {
             panic!("#[from_entity_instance] attribute should take the form #[from_entity_instance]")
+        }
+    }
+}
+
+fn expand_with_attribute(
+    attribute: &syn::Attribute,
+    field_name: &syn::Ident,
+    _: &syn::Type,
+) -> proc_macro2::TokenStream {
+    match attribute
+        .parse_meta()
+        .expect("Cannot parse #[with...] attribute")
+    {
+        syn::Meta::List(syn::MetaList { nested, .. }) if nested.len() == 1 => {
+            match nested.first().unwrap() {
+                syn::NestedMeta::Meta(syn::Meta::Path(path)) => {
+                    quote! {
+                        #field_name: #path(entity_instance.clone()),
+                    }
+                }
+                _ => panic!("Expected function as the only argument of #[with(...)]"),
+            }
+        }
+        _ => {
+            panic!("#[with...] attribute should take the form #[with(function_name)]")
         }
     }
 }

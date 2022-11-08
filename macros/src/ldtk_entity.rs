@@ -228,14 +228,6 @@ fn expand_sprite_sheet_bundle_attribute(
                 Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_parse::<usize>().unwrap(),
                 _ => panic!("Eighth argument of #[sprite_sheet_bundle(...)] should be an int")
             };
-            let tx = match nested_iter.next() {
-                Some(syn::NestedMeta::Lit(syn::Lit::Float(asset))) => asset.base10_parse::<f32>().unwrap(),
-                _ => panic!("Ninth argument of #[sprite_sheet_bundle(...)] should be an float")
-            };
-            let ty = match nested_iter.next() {
-                Some(syn::NestedMeta::Lit(syn::Lit::Float(asset))) => asset.base10_parse::<f32>().unwrap(),
-                _ => panic!("Tenth argument of #[sprite_sheet_bundle(...)] should be an float")
-            };
 
             quote! {
                 #field_name: bevy::prelude::SpriteSheetBundle {
@@ -251,7 +243,6 @@ fn expand_sprite_sheet_bundle_attribute(
                         index: #index,
                         ..Default::default()
                     },
-                    transform: Transform::from_xyz(#tx, #ty, 0.0),
                     ..Default::default()
                 },
             }

@@ -193,7 +193,7 @@ fn expand_sprite_sheet_bundle_attribute(
         .parse_meta()
         .expect("Cannot parse #[sprite_sheet_bundle...] attribute")
     {
-        syn::Meta::List(syn::MetaList { nested, .. }) if nested.len() == 10 => {
+        syn::Meta::List(syn::MetaList { nested, .. }) if nested.len() == 8 => {
             let mut nested_iter = nested.iter();
 
             let asset_path = &match nested_iter.next() {

@@ -91,11 +91,11 @@ pub fn expand_ldtk_entity_derive(ast: &syn::DeriveInput) -> proc_macro::TokenStr
             continue;
         }
 
-        let from_path = field
+        let with = field
             .attrs
             .iter()
             .find(|a| *a.path.get_ident().as_ref().unwrap() == WITH_ATTRIBUTE_NAME);
-        if let Some(attribute) = from_path {
+        if let Some(attribute) = with {
             field_constructions.push(expand_with_attribute(attribute, field_name, field_type));
             continue;
         }

@@ -4,7 +4,7 @@ use bevy_ecs_ldtk::prelude::*;
 
 use std::collections::{HashMap, HashSet};
 
-use heron::prelude::*;
+use bevy_rapier2d::prelude::*;
 
 pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     let camera = Camera2dBundle::default();
@@ -19,24 +19,11 @@ pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
 }
 
-pub fn pause_physics_during_load(
-    mut level_events: EventReader<LevelEvent>,
-    mut physics_time: ResMut<PhysicsTime>,
-) {
-    for event in level_events.iter() {
-        match event {
-            LevelEvent::SpawnTriggered(_) => physics_time.set_scale(0.),
-            LevelEvent::Transformed(_) => physics_time.set_scale(1.),
-            _ => (),
-        }
-    }
-}
-
 pub fn dbg_player_items(
     input: Res<Input<KeyCode>>,
     mut query: Query<(&Items, &EntityInstance), With<Player>>,
 ) {
-    for (items, entity_instance) in query.iter_mut() {
+    for (items, entity_instance) in &mut query {
         if input.just_pressed(KeyCode::P) {
             dbg!(&items);
             dbg!(&entity_instance);
@@ -48,11 +35,11 @@ pub fn movement(
     input: Res<Input<KeyCode>>,
     mut query: Query<(&mut Velocity, &mut Climber, &GroundDetection), With<Player>>,
 ) {
-    for (mut velocity, mut climber, ground_detection) in query.iter_mut() {
+    for (mut velocity, mut climber, ground_detection) in &mut query {
         let right = if input.pressed(KeyCode::D) { 1. } else { 0. };
         let left = if input.pressed(KeyCode::A) { 1. } else { 0. };
 
-        velocity.linear.x = (right - left) * 200.;
+        velocity.linvel.x = (right - left) * 200.;
 
         if climber.intersecting_climbables.is_empty() {
             climber.climbing = false;
@@ -64,11 +51,11 @@ pub fn movement(
             let up = if input.pressed(KeyCode::W) { 1. } else { 0. };
             let down = if input.pressed(KeyCode::S) { 1. } else { 0. };
 
-            velocity.linear.y = (up - down) * 200.;
+            velocity.linvel.y = (up - down) * 200.;
         }
 
         if input.just_pressed(KeyCode::Space) && (ground_detection.on_ground || climber.climbing) {
-            velocity.linear.y = 450.;
+            velocity.linvel.y = 500.;
             climber.climbing = false;
         }
     }
@@ -224,23 +211,16 @@ pub fn spawn_wall_collision(
                     for wall_rect in wall_rects {
                         level
                             .spawn()
-                            .insert(CollisionShape::Cuboid {
-                                half_extends: Vec3::new(
-                                    (wall_rect.right as f32 - wall_rect.left as f32 + 1.)
-                                        * grid_size as f32
-                                        / 2.,
-                                    (wall_rect.top as f32 - wall_rect.bottom as f32 + 1.)
-                                        * grid_size as f32
-                                        / 2.,
-                                    0.,
-                                ),
-                                border_radius: None,
-                            })
-                            .insert(RigidBody::Static)
-                            .insert(PhysicMaterial {
-                                friction: 0.1,
-                                ..Default::default()
-                            })
+                            .insert(Collider::cuboid(
+                                (wall_rect.right as f32 - wall_rect.left as f32 + 1.)
+                                    * grid_size as f32
+                                    / 2.,
+                                (wall_rect.top as f32 - wall_rect.bottom as f32 + 1.)
+                                    * grid_size as f32
+                                    / 2.,
+                            ))
+                            .insert(RigidBody::Fixed)
+                            .insert(Friction::new(1.0))
                             .insert(Transform::from_xyz(
                                 (wall_rect.left + wall_rect.right + 1) as f32 * grid_size as f32
                                     / 2.,
@@ -258,43 +238,34 @@ pub fn spawn_wall_collision(
 
 pub fn detect_climb_range(
     mut climbers: Query<&mut Climber>,
-    climbables: Query<&Climbable>,
+    climbables: Query<Entity, With<Climbable>>,
     mut collisions: EventReader<CollisionEvent>,
 ) {
     for collision in collisions.iter() {
         match collision {
-            CollisionEvent::Started(collider_a, collider_b) => {
-                if let Ok(mut climber) = climbers.get_mut(collider_a.rigid_body_entity()) {
-                    if climbables.get(collider_b.rigid_body_entity()).is_ok() {
-                        climber
-                            .intersecting_climbables
-                            .insert(collider_b.rigid_body_entity());
-                    }
+            CollisionEvent::Started(collider_a, collider_b, _) => {
+                if let (Ok(mut climber), Ok(climbable)) =
+                    (climbers.get_mut(*collider_a), climbables.get(*collider_b))
+                {
+                    climber.intersecting_climbables.insert(climbable);
                 }
-
-                if let Ok(mut climber) = climbers.get_mut(collider_b.rigid_body_entity()) {
-                    if climbables.get(collider_a.rigid_body_entity()).is_ok() {
-                        climber
-                            .intersecting_climbables
-                            .insert(collider_a.rigid_body_entity());
-                    }
-                }
+                if let (Ok(mut climber), Ok(climbable)) =
+                    (climbers.get_mut(*collider_b), climbables.get(*collider_a))
+                {
+                    climber.intersecting_climbables.insert(climbable);
+                };
             }
-            CollisionEvent::Stopped(collider_a, collider_b) => {
-                if let Ok(mut climber) = climbers.get_mut(collider_a.rigid_body_entity()) {
-                    if climbables.get(collider_b.rigid_body_entity()).is_ok() {
-                        climber
-                            .intersecting_climbables
-                            .remove(&collider_b.rigid_body_entity());
-                    }
+            CollisionEvent::Stopped(collider_a, collider_b, _) => {
+                if let (Ok(mut climber), Ok(climbable)) =
+                    (climbers.get_mut(*collider_a), climbables.get(*collider_b))
+                {
+                    climber.intersecting_climbables.remove(&climbable);
                 }
 
-                if let Ok(mut climber) = climbers.get_mut(collider_b.rigid_body_entity()) {
-                    if climbables.get(collider_a.rigid_body_entity()).is_ok() {
-                        climber
-                            .intersecting_climbables
-                            .remove(&collider_a.rigid_body_entity());
-                    }
+                if let (Ok(mut climber), Ok(climbable)) =
+                    (climbers.get_mut(*collider_b), climbables.get(*collider_a))
+                {
+                    climber.intersecting_climbables.remove(&climbable);
                 }
             }
         }
@@ -302,32 +273,27 @@ pub fn detect_climb_range(
 }
 
 pub fn ignore_gravity_if_climbing(
-    mut commands: Commands,
-    query: Query<(Entity, &Climber), Changed<Climber>>,
+    mut query: Query<(&Climber, &mut GravityScale), Changed<Climber>>,
 ) {
-    for (entity, climber) in query.iter() {
+    for (climber, mut gravity_scale) in &mut query {
         if climber.climbing {
-            commands
-                .entity(entity)
-                .insert(RigidBody::KinematicVelocityBased);
+            gravity_scale.0 = 0.0;
         } else {
-            commands.entity(entity).insert(RigidBody::Dynamic);
+            gravity_scale.0 = 1.0;
         }
     }
 }
 
 pub fn patrol(mut query: Query<(&mut Transform, &mut Velocity, &mut Patrol)>) {
-    for (mut transform, mut velocity, mut patrol) in query.iter_mut() {
+    for (mut transform, mut velocity, mut patrol) in &mut query {
         if patrol.points.len() <= 1 {
             continue;
         }
 
-        let mut new_velocity = Vec3::from((
-            (patrol.points[patrol.index] - transform.translation.truncate()).normalize() * 75.,
-            0.,
-        ));
+        let mut new_velocity =
+            (patrol.points[patrol.index] - transform.translation.truncate()).normalize() * 75.;
 
-        if new_velocity.dot(velocity.linear) < 0. {
+        if new_velocity.dot(velocity.linvel) < 0. {
             if patrol.index == 0 {
                 patrol.forward = true;
             } else if patrol.index == patrol.points.len() - 1 {
@@ -343,13 +309,11 @@ pub fn patrol(mut query: Query<(&mut Transform, &mut Velocity, &mut Patrol)>) {
                 patrol.index -= 1;
             }
 
-            new_velocity = Vec3::from((
-                (patrol.points[patrol.index] - transform.translation.truncate()).normalize() * 75.,
-                0.,
-            ));
+            new_velocity =
+                (patrol.points[patrol.index] - transform.translation.truncate()).normalize() * 75.;
         }
 
-        velocity.linear = new_velocity;
+        velocity.linvel = new_velocity;
     }
 }
 
@@ -380,7 +344,7 @@ pub fn camera_fit_inside_current_level(
 
         let (mut orthographic_projection, mut camera_transform) = camera_query.single_mut();
 
-        for (level_transform, level_handle) in level_query.iter() {
+        for (level_transform, level_handle) in &level_query {
             if let Some(ldtk_level) = ldtk_levels.get(level_handle) {
                 let level = &ldtk_level.level;
                 if level_selection.is_match(&0, level) {
@@ -423,7 +387,7 @@ pub fn update_level_selection(
     mut level_selection: ResMut<LevelSelection>,
     ldtk_levels: Res<Assets<LdtkLevel>>,
 ) {
-    for (level_handle, level_transform) in level_query.iter() {
+    for (level_handle, level_transform) in &level_query {
         if let Some(ldtk_level) = ldtk_levels.get(level_handle) {
             let level_bounds = bevy::sprite::Rect {
                 min: Vec2::new(level_transform.translation.x, level_transform.translation.y),
@@ -433,7 +397,7 @@ pub fn update_level_selection(
                 ),
             };
 
-            for player_transform in player_query.iter() {
+            for player_transform in &player_query {
                 if player_transform.translation.x < level_bounds.max.x
                     && player_transform.translation.x > level_bounds.min.x
                     && player_transform.translation.y < level_bounds.max.y
@@ -449,22 +413,25 @@ pub fn update_level_selection(
 
 pub fn spawn_ground_sensor(
     mut commands: Commands,
-    detect_ground_for: Query<(Entity, &CollisionShape, &Transform), Added<GroundDetection>>,
+    detect_ground_for: Query<(Entity, &Collider), Added<GroundDetection>>,
 ) {
-    for (entity, shape, transform) in detect_ground_for.iter() {
-        if let CollisionShape::Cuboid { half_extends, .. } = shape {
-            let detector_shape = CollisionShape::Cuboid {
-                half_extends: Vec3::new(half_extends.x / 2., 2., 0.),
-                border_radius: None,
-            };
+    for (entity, shape) in &detect_ground_for {
+        if let Some(cuboid) = shape.as_cuboid() {
+            let Vec2 {
+                x: half_extents_x,
+                y: half_extents_y,
+            } = cuboid.half_extents();
 
-            let sensor_translation = Vec3::new(0., -half_extends.y, 0.) / transform.scale;
+            let detector_shape = Collider::cuboid(half_extents_x / 2.0, 2.);
+
+            let sensor_translation = Vec3::new(0., -half_extents_y, 0.);
 
             commands.entity(entity).with_children(|builder| {
                 builder
                     .spawn()
-                    .insert(RigidBody::Sensor)
+                    .insert(ActiveEvents::COLLISION_EVENTS)
                     .insert(detector_shape)
+                    .insert(Sensor)
                     .insert(Transform::from_translation(sensor_translation))
                     .insert(GlobalTransform::default())
                     .insert(GroundSensor {
@@ -480,31 +447,39 @@ pub fn ground_detection(
     mut ground_detectors: Query<&mut GroundDetection>,
     mut ground_sensors: Query<(Entity, &mut GroundSensor)>,
     mut collisions: EventReader<CollisionEvent>,
-    rigid_bodies: Query<&RigidBody>,
+    collidables: Query<Entity, (With<Collider>, Without<Sensor>)>,
 ) {
-    for (entity, mut ground_sensor) in ground_sensors.iter_mut() {
+    for (entity, mut ground_sensor) in &mut ground_sensors {
         for collision in collisions.iter() {
             match collision {
-                CollisionEvent::Started(a, b) => match rigid_bodies.get(b.rigid_body_entity()) {
-                    Ok(RigidBody::Sensor) => {
-                        // don't consider sensors to be "the ground"
-                    }
-                    Ok(_) => {
-                        if a.rigid_body_entity() == entity {
-                            ground_sensor
-                                .intersecting_ground_entities
-                                .insert(b.rigid_body_entity());
+                CollisionEvent::Started(collider_a, collider_b, _) => {
+                    let (sensor, other) = if *collider_a == entity {
+                        (collider_a, collider_b)
+                    } else if *collider_b == entity {
+                        (collider_b, collider_a)
+                    } else {
+                        continue;
+                    };
+
+                    if collidables.contains(*other) {
+                        if *sensor == entity {
+                            ground_sensor.intersecting_ground_entities.insert(*other);
                         }
                     }
-                    Err(_) => {
-                        panic!("If there's a collision, there should be an entity")
-                    }
-                },
-                CollisionEvent::Stopped(a, b) => {
-                    if a.rigid_body_entity() == entity {
-                        ground_sensor
-                            .intersecting_ground_entities
-                            .remove(&b.rigid_body_entity());
+                }
+                CollisionEvent::Stopped(collider_a, collider_b, _) => {
+                    let (sensor, other) = if *collider_a == entity {
+                        (collider_a, collider_b)
+                    } else if *collider_b == entity {
+                        (collider_b, collider_a)
+                    } else {
+                        continue;
+                    };
+
+                    if collidables.contains(*other) {
+                        if *sensor == entity {
+                            ground_sensor.intersecting_ground_entities.remove(other);
+                        }
                     }
                 }
             }
@@ -524,7 +499,7 @@ pub fn restart_level(
     input: Res<Input<KeyCode>>,
 ) {
     if input.just_pressed(KeyCode::R) {
-        for level_entity in level_query.iter() {
+        for level_entity in &level_query {
             commands.entity(level_entity).insert(Respawn);
         }
     }

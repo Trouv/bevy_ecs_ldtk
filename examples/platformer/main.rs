@@ -4,7 +4,7 @@
 use bevy::{prelude::*, render::texture::ImageSettings};
 use bevy_ecs_ldtk::prelude::*;
 
-use heron::prelude::*;
+use bevy_rapier2d::prelude::*;
 
 mod components;
 mod systems;
@@ -14,8 +14,11 @@ fn main() {
         .insert_resource(ImageSettings::default_nearest()) // prevents blurry sprites
         .add_plugins(DefaultPlugins)
         .add_plugin(LdtkPlugin)
-        .add_plugin(PhysicsPlugin::default())
-        .insert_resource(Gravity::from(Vec3::new(0.0, -2000., 0.0)))
+        .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
+        .insert_resource(RapierConfiguration {
+            gravity: Vec2::new(0.0, -2000.0),
+            ..Default::default()
+        })
         .insert_resource(LevelSelection::Uid(0))
         .insert_resource(LdtkSettings {
             level_spawn_behavior: LevelSpawnBehavior::UseWorldTranslation {
@@ -25,7 +28,6 @@ fn main() {
             ..Default::default()
         })
         .add_startup_system(systems::setup)
-        .add_system(systems::pause_physics_during_load)
         .add_system(systems::spawn_wall_collision)
         .add_system(systems::movement)
         .add_system(systems::detect_climb_range)

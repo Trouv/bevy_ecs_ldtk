@@ -201,6 +201,13 @@ fn layer_grid_tiles(grid_tiles: Vec<TileInstance>) -> Vec<Vec<TileInstance>> {
     layered_grid_tiles
 }
 
+fn tile_in_layer_bounds(tile: &TileInstance, layer_instance: &LayerInstance) -> bool {
+    tile.px.x >= 0
+        && tile.px.y >= 0
+        && tile.px.x < (layer_instance.c_wid * layer_instance.grid_size)
+        && tile.px.y < (layer_instance.c_hei * layer_instance.grid_size)
+}
+
 #[allow(clippy::too_many_arguments)]
 pub fn spawn_level(
     ldtk_level: &LdtkLevel,
@@ -472,7 +479,17 @@ pub fn spawn_level(
                     let mut grid_tiles = layer_instance.grid_tiles.clone();
                     grid_tiles.extend(layer_instance.auto_layer_tiles.clone());
 
-                    for (i, grid_tiles) in layer_grid_tiles(grid_tiles).into_iter().enumerate() {
+                    for (i, grid_tiles) in layer_grid_tiles(grid_tiles)
+                        .into_iter()
+                        // filter out tiles that are out of bounds
+                        .map(|grid_tiles| {
+                            grid_tiles
+                                .into_iter()
+                                .filter(|tile| tile_in_layer_bounds(tile, layer_instance))
+                                .collect::<Vec<_>>()
+                        })
+                        .enumerate()
+                    {
                         let layer_entity = commands.spawn().id();
 
                         let tilemap_bundle = if layer_instance.layer_instance_type == Type::IntGrid

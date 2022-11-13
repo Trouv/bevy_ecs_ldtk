@@ -242,6 +242,41 @@ use crate::app::register_ldtk_objects::RegisterLdtkObjects;
 ///     entity_instance: EntityInstance,
 /// }
 /// ```
+///
+/// ### `#[with(...)]`
+///
+/// Indicates that this component or bundle should be initialized with the given
+/// function.
+///
+/// Note: The given function should have signature `fn (entity: EntityInstance) -> T`
+/// where `T` is the field type. The function should also be accessible in the scope.
+///
+/// ```
+/// # use bevy::prelude::*;
+/// # use bevy_ecs_ldtk::prelude::*;
+/// # #[derive(Component, Default)]
+/// # pub struct Player;
+/// # #[derive(Component, Default, Clone)]
+/// # pub struct Money(f32);
+/// #[derive(Clone, Default, Bundle)]
+/// pub struct InventoryBundle {
+///     pub money: Money,
+/// }
+///
+/// #[derive(Bundle, Default, LdtkEntity)]
+/// pub struct PlayerBundle {
+///     player: Player,
+///     #[with(player_initial_inventory)]
+///     #[bundle]
+///     collider: InventoryBundle,
+/// }
+///
+/// fn player_initial_inventory(_: EntityInstance) -> InventoryBundle {
+///     InventoryBundle {
+///         money: Money(4.0)
+///     }
+/// }
+/// ```
 pub trait LdtkEntity {
     /// The constructor used by the plugin when spawning entities from an LDtk file.
     /// Has access to resources/assets most commonly used for spawning 2d objects.

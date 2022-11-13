@@ -12,7 +12,8 @@ mod ldtk_int_cell;
         worldly,
         grid_coords,
         ldtk_entity,
-        from_entity_instance
+        from_entity_instance,
+        with
     )
 )]
 pub fn ldtk_entity_derive(input: TokenStream) -> TokenStream {

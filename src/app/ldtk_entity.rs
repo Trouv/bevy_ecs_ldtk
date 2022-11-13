@@ -252,14 +252,12 @@ use crate::app::register_ldtk_objects::RegisterLdtkObjects;
 /// where `T` is the field type. The function should also be accessible in the scope.
 ///
 /// ```
-/// use bevy::prelude::*;
-/// use bevy_ecs_ldtk::prelude::*;
-///
-/// #[derive(Component, Default)]
-/// pub struct Player;
-/// #[derive(Component, Default, Clone)]
-/// pub struct Money(f32);
-///
+/// # use bevy::prelude::*;
+/// # use bevy_ecs_ldtk::prelude::*;
+/// # #[derive(Component, Default)]
+/// # pub struct Player;
+/// # #[derive(Component, Default, Clone)]
+/// # pub struct Money(f32);
 /// #[derive(Clone, Default, Bundle)]
 /// pub struct InventoryBundle {
 ///     pub money: Money,

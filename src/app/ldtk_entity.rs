@@ -251,10 +251,18 @@ use crate::app::register_ldtk_objects::RegisterLdtkObjects;
 /// Note: The given function should have signature `fn (entity: EntityInstance) -> T`
 /// where `T` is the field type. The function should also be accessible in the scope.
 ///
-/// ```no_run
+/// ```
+/// use bevy::prelude::*;
+/// use bevy_ecs_ldtk::prelude::*;
+///
+/// #[derive(Component, Default)]
+/// pub struct Player;
+/// #[derive(Component, Default, Clone)]
+/// pub struct Money(f32);
+///
 /// #[derive(Clone, Default, Bundle)]
 /// pub struct InventoryBundle {
-///     pub money: f32,
+///     pub money: Money,
 /// }
 ///
 /// #[derive(Bundle, Default, LdtkEntity)]
@@ -267,7 +275,7 @@ use crate::app::register_ldtk_objects::RegisterLdtkObjects;
 ///
 /// fn player_initial_inventory(_: EntityInstance) -> InventoryBundle {
 ///     InventoryBundle {
-///         money: 4.0f
+///         money: Money(4.0)
 ///     }
 /// }
 /// ```

@@ -258,13 +258,13 @@ pub fn spawn_level(
                 .insert_bundle(SpatialBundle::default())
                 .id();
 
-            storage.set(&TilePos::default(), Some(tile_entity));
+            storage.set(&TilePos::default(), tile_entity);
 
             let tile_size = TilemapTileSize {
                 x: level.px_wid as f32,
                 y: level.px_hei as f32,
             };
-            let texture = TilemapTexture(white_image_handle.clone());
+            let texture = TilemapTexture::Single(white_image_handle.clone());
 
             commands
                 .entity(background_entity)
@@ -437,10 +437,10 @@ pub fn spawn_level(
                     .extend(1.);
 
                     let texture = match tileset_definition {
-                        Some(tileset_definition) => TilemapTexture(
+                        Some(tileset_definition) => TilemapTexture::Single(
                             tileset_map.get(&tileset_definition.uid).unwrap().clone(),
                         ),
-                        None => TilemapTexture(white_image_handle.clone()),
+                        None => TilemapTexture::Single(white_image_handle.clone()),
                     };
 
                     let metadata_map: HashMap<i32, TileMetadata> = tileset_definition

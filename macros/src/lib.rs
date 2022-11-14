@@ -1,6 +1,5 @@
 use proc_macro::TokenStream;
 
-
 mod ldtk_entity;
 mod ldtk_int_cell;
 

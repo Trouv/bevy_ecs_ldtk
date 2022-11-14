@@ -1,7 +1,4 @@
-
-
 use quote::quote;
-
 
 static SPRITE_BUNDLE_ATTRIBUTE_NAME: &str = "sprite_bundle";
 static SPRITE_SHEET_BUNDLE_ATTRIBUTE_NAME: &str = "sprite_sheet_bundle";

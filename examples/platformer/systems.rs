@@ -461,10 +461,8 @@ pub fn ground_detection(
                         continue;
                     };
 
-                    if collidables.contains(*other) {
-                        if *sensor == entity {
-                            ground_sensor.intersecting_ground_entities.insert(*other);
-                        }
+                    if collidables.contains(*other) && *sensor == entity {
+                        ground_sensor.intersecting_ground_entities.insert(*other);
                     }
                 }
                 CollisionEvent::Stopped(collider_a, collider_b, _) => {
@@ -476,10 +474,8 @@ pub fn ground_detection(
                         continue;
                     };
 
-                    if collidables.contains(*other) {
-                        if *sensor == entity {
-                            ground_sensor.intersecting_ground_entities.remove(other);
-                        }
+                    if collidables.contains(*other) && *sensor == entity {
+                        ground_sensor.intersecting_ground_entities.remove(other);
                     }
                 }
             }

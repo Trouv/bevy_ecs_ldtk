@@ -1,7 +1,7 @@
-use proc_macro;
-use proc_macro2;
+
+
 use quote::quote;
-use syn;
+
 
 static SPRITE_BUNDLE_ATTRIBUTE_NAME: &str = "sprite_bundle";
 static SPRITE_SHEET_BUNDLE_ATTRIBUTE_NAME: &str = "sprite_sheet_bundle";
@@ -136,7 +136,7 @@ fn expand_sprite_bundle_attribute(
     match field_type {
         syn::Type::Path(syn::TypePath { path: syn::Path { segments, .. }, .. }) => {
             if let Some(last) = segments.last() {
-                if last.ident.to_string() != "SpriteBundle".to_string() {
+                if last.ident != *"SpriteBundle" {
                     panic!("#[sprite_bundle...] attribute should apply to a field of type bevy::prelude::SpriteBundle")
                 }
             }
@@ -181,7 +181,7 @@ fn expand_sprite_sheet_bundle_attribute(
     match field_type {
         syn::Type::Path(syn::TypePath { path: syn::Path { segments, .. }, .. }) => {
             if let Some(last) = segments.last() {
-                if last.ident.to_string() != "SpriteSheetBundle".to_string() {
+                if last.ident != *"SpriteSheetBundle" {
                     panic!("#[sprite_sheet_bundle...] attribute should apply to a field of type bevy::prelude::SpriteSheetBundle")
                 }
             }

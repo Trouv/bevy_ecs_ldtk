@@ -1,7 +1,4 @@
-use proc_macro;
-use proc_macro2;
 use quote::quote;
-use syn;
 
 static LDTK_INT_CELL_ATTRIBUTE_NAME: &str = "ldtk_int_cell";
 static FROM_INT_GRID_CELL_ATTRIBUTE_NAME: &str = "from_int_grid_cell";

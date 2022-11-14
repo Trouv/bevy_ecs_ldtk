@@ -10,6 +10,9 @@ keywords = ["bevy", "ldtk", "game", "gamedev", "map-editor"]
 categories = ["game-development"]
 exclude = ["assets/*", "repo/*", "scripts/*"]
 
+[workspace]
+members = ["macros"]
+
 [dependencies]
 bevy_ecs_ldtk_macros = { version = "0.4", optional = true, path = "macros" }
 bevy_ecs_tilemap = "0.7"

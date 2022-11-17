@@ -222,8 +222,10 @@ pub fn spawn_wall_collision(
                             .insert(RigidBody::Fixed)
                             .insert(Friction::new(1.0))
                             .insert(Transform::from_xyz(
-                                (wall_rect.left + wall_rect.right) as f32 * grid_size as f32 / 2.,
-                                (wall_rect.bottom + wall_rect.top) as f32 * grid_size as f32 / 2.,
+                                (wall_rect.left + wall_rect.right + 1) as f32 * grid_size as f32
+                                    / 2.,
+                                (wall_rect.bottom + wall_rect.top + 1) as f32 * grid_size as f32
+                                    / 2.,
                                 0.,
                             ))
                             .insert(GlobalTransform::default());

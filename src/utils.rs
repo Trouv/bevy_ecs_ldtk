@@ -486,18 +486,18 @@ mod tests {
     #[test]
     fn test_ldtk_grid_coords_to_translation_centered() {
         assert_eq!(
-            ldtk_grid_coords_to_translation_centered(IVec2::new(1, 1), 4, IVec2::splat(32)),
-            Vec2::new(48., 80.)
+            ldtk_grid_coords_to_translation(IVec2::new(1, 1), 4, IVec2::splat(32)),
+            Vec2::new(32., 64.)
         );
 
         assert_eq!(
-            ldtk_grid_coords_to_translation_centered(IVec2::new(1, 1), 2, IVec2::splat(100)),
-            Vec2::new(150., 50.)
+            ldtk_grid_coords_to_translation(IVec2::new(1, 1), 2, IVec2::splat(100)),
+            Vec2::new(100., 0.)
         );
 
         assert_eq!(
-            ldtk_grid_coords_to_translation_centered(IVec2::new(0, 4), 10, IVec2::splat(1)),
-            Vec2::new(0.5, 5.5)
+            ldtk_grid_coords_to_translation(IVec2::new(0, 4), 10, IVec2::splat(1)),
+            Vec2::new(0., 5.)
         );
     }
 

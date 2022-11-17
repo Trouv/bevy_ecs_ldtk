@@ -444,47 +444,45 @@ pub fn spawn_ground_sensor(
 }
 
 pub fn ground_detection(
-    mut ground_detectors: Query<&mut GroundDetection>,
-    mut ground_sensors: Query<(Entity, &mut GroundSensor)>,
+    mut ground_sensors: Query<&mut GroundSensor>,
     mut collisions: EventReader<CollisionEvent>,
-    collidables: Query<Entity, (With<Collider>, Without<Sensor>)>,
+    collidables: Query<With<Collider>, Without<Sensor>>,
 ) {
-    for (entity, mut ground_sensor) in &mut ground_sensors {
-        for collision in collisions.iter() {
-            match collision {
-                CollisionEvent::Started(collider_a, collider_b, _) => {
-                    let (sensor, other) = if *collider_a == entity {
-                        (collider_a, collider_b)
-                    } else if *collider_b == entity {
-                        (collider_b, collider_a)
-                    } else {
-                        continue;
-                    };
-
-                    if collidables.contains(*other) && *sensor == entity {
-                        ground_sensor.intersecting_ground_entities.insert(*other);
+    for collision_event in collisions.iter() {
+        match collision_event {
+            CollisionEvent::Started(e1, e2, _) => {
+                if collidables.contains(*e1) {
+                    if let Ok(mut sensor) = ground_sensors.get_mut(*e2) {
+                        sensor.intersecting_ground_entities.insert(*e1);
+                    }
+                } else if collidables.contains(*e2) {
+                    if let Ok(mut sensor) = ground_sensors.get_mut(*e1) {
+                        sensor.intersecting_ground_entities.insert(*e2);
                     }
                 }
-                CollisionEvent::Stopped(collider_a, collider_b, _) => {
-                    let (sensor, other) = if *collider_a == entity {
-                        (collider_a, collider_b)
-                    } else if *collider_b == entity {
-                        (collider_b, collider_a)
-                    } else {
-                        continue;
-                    };
-
-                    if collidables.contains(*other) && *sensor == entity {
-                        ground_sensor.intersecting_ground_entities.remove(other);
+            }
+            CollisionEvent::Stopped(e1, e2, _) => {
+                if collidables.contains(*e1) {
+                    if let Ok(mut sensor) = ground_sensors.get_mut(*e2) {
+                        sensor.intersecting_ground_entities.remove(e1);
+                    }
+                } else if collidables.contains(*e2) {
+                    if let Ok(mut sensor) = ground_sensors.get_mut(*e1) {
+                        sensor.intersecting_ground_entities.remove(e2);
                     }
                 }
             }
         }
+    }
+}
 
-        if let Ok(mut ground_detection) =
-            ground_detectors.get_mut(ground_sensor.ground_detection_entity)
-        {
-            ground_detection.on_ground = !ground_sensor.intersecting_ground_entities.is_empty();
+pub fn update_on_ground(
+    mut ground_detectors: Query<&mut GroundDetection>,
+    ground_sensors: Query<&GroundSensor, Changed<GroundSensor>>,
+) {
+    for sensor in &ground_sensors {
+        if let Ok(mut ground_detection) = ground_detectors.get_mut(sensor.ground_detection_entity) {
+            ground_detection.on_ground = !sensor.intersecting_ground_entities.is_empty();
         }
     }
 }

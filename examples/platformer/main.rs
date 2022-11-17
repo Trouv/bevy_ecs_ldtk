@@ -15,6 +15,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(LdtkPlugin)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
+        .add_plugin(RapierDebugRenderPlugin::default()) // draws borders around colliders
         .insert_resource(RapierConfiguration {
             gravity: Vec2::new(0.0, -2000.0),
             ..Default::default()
@@ -38,6 +39,7 @@ fn main() {
         .add_system(systems::dbg_player_items)
         .add_system(systems::spawn_ground_sensor)
         .add_system(systems::ground_detection)
+        .add_system(systems::update_on_ground)
         .add_system(systems::restart_level)
         .register_ldtk_int_cell::<components::WallBundle>(1)
         .register_ldtk_int_cell::<components::LadderBundle>(2)

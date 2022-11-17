@@ -500,20 +500,20 @@ mod tests {
     }
 
     #[test]
-    fn test_tile_pos_to_translation_centered() {
+    fn test_grid_coords_to_translation() {
         assert_eq!(
-            grid_coords_to_translation_centered(GridCoords::new(1, 2), IVec2::splat(32)),
-            Vec2::new(48., 80.)
+            grid_coords_to_translation(GridCoords::new(1, 2), IVec2::splat(32)),
+            Vec2::new(32., 64.)
         );
 
         assert_eq!(
-            grid_coords_to_translation_centered(GridCoords::new(1, 0), IVec2::splat(100)),
-            Vec2::new(150., 50.)
+            grid_coords_to_translation(GridCoords::new(1, 0), IVec2::splat(100)),
+            Vec2::new(100., 0.)
         );
 
         assert_eq!(
-            grid_coords_to_translation_centered(GridCoords::new(0, 5), IVec2::splat(1)),
-            Vec2::new(0.5, 5.5)
+            grid_coords_to_translation(GridCoords::new(0, 5), IVec2::splat(1)),
+            Vec2::new(0.0, 5.0)
         );
     }
 

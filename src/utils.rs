@@ -167,13 +167,15 @@ pub fn ldtk_pixel_coords_to_grid_coords(
 
 /// Performs LDtk grid coordinate to translation conversion, so that the resulting translation is
 /// in the center of the tile.
-pub fn ldtk_grid_coords_to_translation_centered(
+///
+/// Assumes that the center of the origin tile of the grid is at [Vec2::ZERO].
+pub fn ldtk_grid_coords_to_translation(
     ldtk_coords: IVec2,
     ldtk_grid_height: i32,
     grid_size: IVec2,
 ) -> Vec2 {
     ldtk_pixel_coords_to_translation(ldtk_coords * grid_size, ldtk_grid_height * grid_size.y)
-        + Vec2::new(grid_size.x as f32 / 2., -grid_size.y as f32 / 2.)
+        + Vec2::new(0., -grid_size.y as f32)
 }
 
 /// Performs LDtk pixel coordinate to translation conversion, with "pivot" support.

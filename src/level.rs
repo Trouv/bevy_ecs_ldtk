@@ -131,7 +131,7 @@ fn spatial_bundle_for_tiles(
     layer_scale: Vec3,
 ) -> SpatialBundle {
     let mut translation =
-        grid_coords_to_translation_centered(grid_coords, IVec2::splat(grid_size)).extend(0.);
+        grid_coords_to_translation(grid_coords, IVec2::splat(grid_size)).extend(0.);
     translation /= layer_scale;
 
     SpatialBundle {

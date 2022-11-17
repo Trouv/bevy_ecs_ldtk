@@ -681,6 +681,18 @@ pub fn spawn_level(
                             TilemapId(layer_entity),
                         );
 
+                        // Tile positions are anchored to the center of the tile.
+                        // Applying this adjustment to the layer places the bottom-left corner of
+                        // the layer at the origin of the level.
+                        // Making this adjustment at the layer level, as opposed to using the
+                        // tilemap's default positioning, ensures all layers have the same
+                        // bottom-left corner placement regardless of grid_size.
+                        let tilemap_adjustment = Vec3::new(
+                            layer_instance.grid_size as f32,
+                            layer_instance.grid_size as f32,
+                            0.,
+                        ) / 2.;
+
                         let layer_offset = Vec3::new(
                             layer_instance.px_total_offset_x as f32,
                             -layer_instance.px_total_offset_y as f32,
@@ -691,7 +703,8 @@ pub fn spawn_level(
                             .entity(layer_entity)
                             .insert_bundle(tilemap_bundle)
                             .insert_bundle(SpatialBundle::from_transform(
-                                Transform::from_translation(layer_offset).with_scale(layer_scale),
+                                Transform::from_translation(layer_offset + tilemap_adjustment)
+                                    .with_scale(layer_scale),
                             ))
                             .insert(LayerMetadata::from(layer_instance))
                             .insert(Name::new(layer_instance.identifier.to_owned()));

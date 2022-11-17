@@ -12,14 +12,12 @@ fn main() {
 }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn_bundle(Camera2dBundle::default());
-
-    asset_server.watch_for_changes().unwrap();
+    commands.spawn(Camera2dBundle::default());
 
     let ldtk_handle = asset_server.load("field_instances.ldtk");
-    let map_entity = commands.spawn().id();
+    let map_entity = commands.spawn_empty().id();
 
-    commands.entity(map_entity).insert_bundle(LdtkWorldBundle {
+    commands.entity(map_entity).insert(LdtkWorldBundle {
         ldtk_handle,
         ..Default::default()
     });

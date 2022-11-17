@@ -14,7 +14,9 @@ use crate::{
     utils::*,
 };
 use bevy::prelude::*;
-use bevy_ecs_tilemap::tiles::{TileBundle, TileColor, TileFlip, TilePos, TileTexture, TileVisible};
+use bevy_ecs_tilemap::tiles::{
+    TileBundle, TileColor, TileFlip, TilePos, TileTextureIndex, TileVisible,
+};
 
 use std::collections::HashMap;
 
@@ -115,7 +117,7 @@ pub(crate) fn tile_pos_to_tile_maker(
                 };
 
                 Some(TileBundle {
-                    texture: TileTexture(tile_instance.t as u32),
+                    texture_index: TileTextureIndex(tile_instance.t as u32),
                     flip: TileFlip {
                         x: flip_x,
                         y: flip_y,

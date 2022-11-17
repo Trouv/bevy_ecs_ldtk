@@ -213,7 +213,7 @@ pub(crate) fn set_all_tiles_with_func(
         for y in 0..size.y {
             let tile_pos = TilePos { x, y };
             let tile_entity = func(tile_pos)
-                .map(|tile_bundle| commands.spawn_bundle(tile_bundle).insert(tilemap_id).id());
+                .map(|tile_bundle| commands.spawn(tile_bundle).insert(tilemap_id).id());
             match tile_entity {
                 Some(tile_entity) => storage.set(&tile_pos, tile_entity),
                 None => storage.remove(&tile_pos),
@@ -280,13 +280,13 @@ pub fn sprite_sheet_bundle_from_entity_info(
 ) -> SpriteSheetBundle {
     match (tileset, &entity_instance.tile, tileset_definition) {
         (Some(tileset), Some(tile), Some(tileset_definition)) => SpriteSheetBundle {
-            texture_atlas: texture_atlases.add(TextureAtlas::from_grid_with_padding(
+            texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
                 tileset.clone(),
                 Vec2::new(tile.w as f32, tile.h as f32),
                 tileset_definition.c_wid as usize,
                 tileset_definition.c_hei as usize,
-                Vec2::splat(tileset_definition.spacing as f32),
-                Vec2::splat(tileset_definition.padding as f32),
+                Some(Vec2::splat(tileset_definition.spacing as f32)),
+                Some(Vec2::splat(tileset_definition.padding as f32)),
             )),
             sprite: TextureAtlasSprite {
                 index: (tile.y / (tile.h + tileset_definition.spacing)) as usize

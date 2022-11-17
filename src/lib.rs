@@ -195,12 +195,12 @@ mod plugin {
                 )
                 .add_system_to_stage(
                     LdtkStage::ProcessApi,
-                    systems::clean_respawn_entities.exclusive_system().at_end(),
+                    systems::clean_respawn_entities.at_end(),
                 )
                 .add_system_to_stage(
                     CoreStage::PostUpdate,
                     systems::detect_level_spawned_events
-                        .chain(systems::fire_level_transformed_events)
+                        .pipe(systems::fire_level_transformed_events)
                         .label(LdtkSystemLabel::Other),
                 );
         }

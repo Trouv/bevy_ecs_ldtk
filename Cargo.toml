@@ -15,8 +15,8 @@ members = ["macros"]
 
 [dependencies]
 bevy_ecs_ldtk_macros = { version = "0.4", optional = true, path = "macros" }
-bevy_ecs_tilemap = "0.8"
-bevy = { version = "0.8", default-features = false, features = ["bevy_sprite"] }
+bevy_ecs_tilemap = "0.9"
+bevy = { version = "0.9", default-features = false, features = ["bevy_sprite"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 regex = "1"
@@ -25,7 +25,7 @@ anyhow = "1.0"
 thiserror = "1.0"
 
 [dev-dependencies]
-bevy = "0.8"
+bevy = "0.9"
 bevy_rapier2d = { version = "0.18" }
 rand = "0.8"
 

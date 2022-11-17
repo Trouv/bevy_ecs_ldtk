@@ -3,7 +3,7 @@
 use crate::ldtk::Level;
 
 #[allow(unused_imports)]
-use bevy::prelude::{CoreStage, GlobalTransform};
+use bevy::prelude::{CoreStage, GlobalTransform, Resource};
 
 #[allow(unused_imports)]
 use crate::components::{LdtkWorldBundle, LevelSet};
@@ -16,7 +16,7 @@ use crate::components::{LdtkWorldBundle, LevelSet};
 /// This resource works by updating the [LdtkWorldBundle]'s [LevelSet] component.
 /// If you need more control over the spawned levels than this resource provides,
 /// you can choose not to insert this resource and interface with [LevelSet] directly instead.
-#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(Clone, Eq, PartialEq, Debug, Resource)]
 pub enum LevelSelection {
     /// Spawn level with the given identifier.
     Identifier(String),
@@ -119,7 +119,7 @@ impl Default for LevelBackground {
 
 /// Settings resource for the plugin.
 /// Check out the documentation for each field type to learn more.
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Default)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Resource)]
 pub struct LdtkSettings {
     pub level_spawn_behavior: LevelSpawnBehavior,
     pub set_clear_color: SetClearColor,

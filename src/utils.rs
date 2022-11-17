@@ -145,13 +145,13 @@ pub fn translation_to_grid_coords(translation: Vec2, grid_size: IVec2) -> GridCo
 /// Performs [GridCoords] to translation conversion, so that the resulting translation is in the
 /// the center of the tile.
 ///
-/// Assumes that the origin the grid is at [Vec2::ZERO].
+/// Assumes that the center of the origin tile of the grid is at [Vec2::ZERO].
 ///
 /// Internally, this transform is used to place [IntGridCell]s as children of the level.
-pub fn grid_coords_to_translation_centered(grid_coords: GridCoords, tile_size: IVec2) -> Vec2 {
+pub fn grid_coords_to_translation(grid_coords: GridCoords, tile_size: IVec2) -> Vec2 {
     let tile_coords: IVec2 = grid_coords.into();
     let tile_size = tile_size.as_vec2();
-    (tile_size * tile_coords.as_vec2()) + (tile_size / Vec2::splat(2.))
+    tile_size * tile_coords.as_vec2()
 }
 
 /// Performs LDtk pixel coordinate to [GridCoords] conversion.

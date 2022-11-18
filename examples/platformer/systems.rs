@@ -8,12 +8,10 @@ use bevy_rapier2d::prelude::*;
 
 pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     let camera = Camera2dBundle::default();
-    commands.spawn_bundle(camera);
-
-    asset_server.watch_for_changes().unwrap();
+    commands.spawn(camera);
 
     let ldtk_handle = asset_server.load("Typical_2D_platformer_example.ldtk");
-    commands.spawn_bundle(LdtkWorldBundle {
+    commands.spawn(LdtkWorldBundle {
         ldtk_handle,
         ..Default::default()
     });
@@ -210,7 +208,7 @@ pub fn spawn_wall_collision(
                     // 2. the colliders will be despawned automatically when levels unload
                     for wall_rect in wall_rects {
                         level
-                            .spawn()
+                            .spawn_empty()
                             .insert(Collider::cuboid(
                                 (wall_rect.right as f32 - wall_rect.left as f32 + 1.)
                                     * grid_size as f32
@@ -389,7 +387,7 @@ pub fn update_level_selection(
 ) {
     for (level_handle, level_transform) in &level_query {
         if let Some(ldtk_level) = ldtk_levels.get(level_handle) {
-            let level_bounds = bevy::sprite::Rect {
+            let level_bounds = Rect {
                 min: Vec2::new(level_transform.translation.x, level_transform.translation.y),
                 max: Vec2::new(
                     level_transform.translation.x + ldtk_level.level.px_wid as f32,
@@ -428,7 +426,7 @@ pub fn spawn_ground_sensor(
 
             commands.entity(entity).with_children(|builder| {
                 builder
-                    .spawn()
+                    .spawn_empty()
                     .insert(ActiveEvents::COLLISION_EVENTS)
                     .insert(detector_shape)
                     .insert(Sensor)

@@ -26,7 +26,7 @@ thiserror = "1.0"
 
 [dev-dependencies]
 bevy = "0.9"
-bevy_rapier2d = { version = "0.18" }
+bevy_rapier2d = { git = "https://github.com/devil-ira/bevy_rapier.git", branch = "bevy-0.9" }
 rand = "0.8"
 
 [features]

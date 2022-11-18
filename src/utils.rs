@@ -142,16 +142,33 @@ pub fn translation_to_grid_coords(translation: Vec2, grid_size: IVec2) -> GridCo
     (translation / grid_size.as_vec2()).as_ivec2().into()
 }
 
+/// Performs [GridCoords] to translation conversion (relative to the layer), so that the resulting translation is in the
+/// the center of the tile.
+///
+/// `IntGrid`, `AutoTile` and `Tile` layer entities have nonzero translations to adjust for
+/// `bevy_ecs_tilemap`'s center-anchored tiles.
+/// This function is intended to calculate translations for entities that are children of those
+/// layers.
+/// If you want to calculate translations for other entities relative to the level instead, see
+/// [grid_coords_to_translation].
+///
+/// Internally, this transform is used to place [IntGridCell]s as children of the level.
+pub fn grid_coords_to_translation_relative_to_tile_layer(
+    grid_coords: GridCoords,
+    tile_size: IVec2,
+) -> Vec2 {
+    let tile_coords: IVec2 = grid_coords.into();
+    let tile_size = tile_size.as_vec2();
+    tile_size * tile_coords.as_vec2()
+}
+
 /// Performs [GridCoords] to translation conversion, so that the resulting translation is in the
 /// the center of the tile.
 ///
-/// Assumes that the origin the grid is at [Vec2::ZERO].
-///
-/// Internally, this transform is used to place [IntGridCell]s as children of the level.
-pub fn grid_coords_to_translation_centered(grid_coords: GridCoords, tile_size: IVec2) -> Vec2 {
-    let tile_coords: IVec2 = grid_coords.into();
-    let tile_size = tile_size.as_vec2();
-    (tile_size * tile_coords.as_vec2()) + (tile_size / Vec2::splat(2.))
+/// See also: [grid_coords_to_translation_relative_to_tile_layer]
+pub fn grid_coords_to_translation(grid_coords: GridCoords, tile_size: IVec2) -> Vec2 {
+    grid_coords_to_translation_relative_to_tile_layer(grid_coords, tile_size)
+        + (tile_size.as_vec2() / 2.)
 }
 
 /// Performs LDtk pixel coordinate to [GridCoords] conversion.
@@ -167,13 +184,33 @@ pub fn ldtk_pixel_coords_to_grid_coords(
 
 /// Performs LDtk grid coordinate to translation conversion, so that the resulting translation is
 /// in the center of the tile.
-pub fn ldtk_grid_coords_to_translation_centered(
+///
+/// `IntGrid`, `AutoTile` and `Tile` layer entities have nonzero translations to adjust for
+/// `bevy_ecs_tilemap`'s center-anchored tiles.
+/// This function is intended to calculate translations for entities that are children of those
+/// layers.
+/// If you want to calculate translations for other entities relative to the level instead, see
+/// [ldtk_grid_coords_to_translation].
+pub fn ldtk_grid_coords_to_translation_relative_to_tile_layer(
     ldtk_coords: IVec2,
     ldtk_grid_height: i32,
     grid_size: IVec2,
 ) -> Vec2 {
     ldtk_pixel_coords_to_translation(ldtk_coords * grid_size, ldtk_grid_height * grid_size.y)
-        + Vec2::new(grid_size.x as f32 / 2., -grid_size.y as f32 / 2.)
+        + Vec2::new(0., -grid_size.y as f32)
+}
+
+/// Performs LDtk grid coordinate to translation conversion, so that the resulting translation is
+/// in the center of the tile.
+///
+/// See also: [ldtk_grid_coords_to_translation_relative_to_tile_layer]
+pub fn ldtk_grid_coords_to_translation(
+    ldtk_coords: IVec2,
+    ldtk_grid_height: i32,
+    grid_size: IVec2,
+) -> Vec2 {
+    ldtk_grid_coords_to_translation_relative_to_tile_layer(ldtk_coords, ldtk_grid_height, grid_size)
+        + (grid_size.as_vec2() / 2.)
 }
 
 /// Performs LDtk pixel coordinate to translation conversion, with "pivot" support.
@@ -485,37 +522,94 @@ mod tests {
     }
 
     #[test]
-    fn test_ldtk_grid_coords_to_translation_centered() {
+    fn test_ldtk_grid_coords_to_translation_relative_to_tile_layer() {
         assert_eq!(
-            ldtk_grid_coords_to_translation_centered(IVec2::new(1, 1), 4, IVec2::splat(32)),
+            ldtk_grid_coords_to_translation_relative_to_tile_layer(
+                IVec2::new(1, 1),
+                4,
+                IVec2::splat(32)
+            ),
+            Vec2::new(32., 64.)
+        );
+
+        assert_eq!(
+            ldtk_grid_coords_to_translation_relative_to_tile_layer(
+                IVec2::new(1, 1),
+                2,
+                IVec2::splat(100)
+            ),
+            Vec2::new(100., 0.)
+        );
+
+        assert_eq!(
+            ldtk_grid_coords_to_translation_relative_to_tile_layer(
+                IVec2::new(0, 4),
+                10,
+                IVec2::splat(1)
+            ),
+            Vec2::new(0., 5.)
+        );
+    }
+
+    #[test]
+    fn test_ldtk_grid_coords_to_translation() {
+        assert_eq!(
+            ldtk_grid_coords_to_translation(IVec2::new(1, 1), 4, IVec2::splat(32)),
             Vec2::new(48., 80.)
         );
 
         assert_eq!(
-            ldtk_grid_coords_to_translation_centered(IVec2::new(1, 1), 2, IVec2::splat(100)),
+            ldtk_grid_coords_to_translation(IVec2::new(1, 1), 2, IVec2::splat(100)),
             Vec2::new(150., 50.)
         );
 
         assert_eq!(
-            ldtk_grid_coords_to_translation_centered(IVec2::new(0, 4), 10, IVec2::splat(1)),
+            ldtk_grid_coords_to_translation(IVec2::new(0, 4), 10, IVec2::splat(1)),
             Vec2::new(0.5, 5.5)
         );
     }
 
     #[test]
-    fn test_tile_pos_to_translation_centered() {
+    fn test_grid_coords_to_translation_relative_to_tile_layer() {
         assert_eq!(
-            grid_coords_to_translation_centered(GridCoords::new(1, 2), IVec2::splat(32)),
+            grid_coords_to_translation_relative_to_tile_layer(
+                GridCoords::new(1, 2),
+                IVec2::splat(32)
+            ),
+            Vec2::new(32., 64.)
+        );
+
+        assert_eq!(
+            grid_coords_to_translation_relative_to_tile_layer(
+                GridCoords::new(1, 0),
+                IVec2::splat(100)
+            ),
+            Vec2::new(100., 0.)
+        );
+
+        assert_eq!(
+            grid_coords_to_translation_relative_to_tile_layer(
+                GridCoords::new(0, 5),
+                IVec2::splat(1)
+            ),
+            Vec2::new(0.0, 5.0)
+        );
+    }
+
+    #[test]
+    fn test_grid_coords_to_translation() {
+        assert_eq!(
+            grid_coords_to_translation(GridCoords::new(1, 2), IVec2::splat(32)),
             Vec2::new(48., 80.)
         );
 
         assert_eq!(
-            grid_coords_to_translation_centered(GridCoords::new(1, 0), IVec2::splat(100)),
+            grid_coords_to_translation(GridCoords::new(1, 0), IVec2::splat(100)),
             Vec2::new(150., 50.)
         );
 
         assert_eq!(
-            grid_coords_to_translation_centered(GridCoords::new(0, 5), IVec2::splat(1)),
+            grid_coords_to_translation(GridCoords::new(0, 5), IVec2::splat(1)),
             Vec2::new(0.5, 5.5)
         );
     }

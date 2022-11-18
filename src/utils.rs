@@ -162,6 +162,15 @@ pub fn grid_coords_to_translation_relative_to_tile_layer(
     tile_size * tile_coords.as_vec2()
 }
 
+/// Performs [GridCoords] to translation conversion, so that the resulting translation is in the
+/// the center of the tile.
+///
+/// See also: [grid_coords_to_translation_relative_to_tile_layer]
+pub fn grid_coords_to_translation(grid_coords: GridCoords, tile_size: IVec2) -> Vec2 {
+    grid_coords_to_translation_relative_to_tile_layer(grid_coords, tile_size)
+        + (tile_size.as_vec2() / 2.)
+}
+
 /// Performs LDtk pixel coordinate to [GridCoords] conversion.
 ///
 /// This is inherently lossy since `GridCoords` space is less detailed than ldtk pixel coord space.
@@ -553,6 +562,24 @@ mod tests {
                 IVec2::splat(1)
             ),
             Vec2::new(0.0, 5.0)
+        );
+    }
+
+    #[test]
+    fn test_grid_coords_to_translation() {
+        assert_eq!(
+            grid_coords_to_translation(GridCoords::new(1, 2), IVec2::splat(32)),
+            Vec2::new(48., 80.)
+        );
+
+        assert_eq!(
+            grid_coords_to_translation(GridCoords::new(1, 0), IVec2::splat(100)),
+            Vec2::new(150., 50.)
+        );
+
+        assert_eq!(
+            grid_coords_to_translation(GridCoords::new(0, 5), IVec2::splat(1)),
+            Vec2::new(0.5, 5.5)
         );
     }
 

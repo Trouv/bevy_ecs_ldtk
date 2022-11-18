@@ -125,20 +125,12 @@ fn insert_metadata_to_tile(
     metadata_inserted
 }
 
-fn spatial_bundle_for_tiles(
-    grid_coords: GridCoords,
-    grid_size: i32,
-    layer_scale: Vec3,
-) -> SpatialBundle {
-    let mut translation =
+fn spatial_bundle_for_tiles(grid_coords: GridCoords, grid_size: i32) -> SpatialBundle {
+    let translation =
         grid_coords_to_translation_relative_to_tile_layer(grid_coords, IVec2::splat(grid_size))
             .extend(0.);
-    translation /= layer_scale;
 
-    SpatialBundle {
-        transform: Transform::from_translation(translation),
-        ..default()
-    }
+    SpatialBundle::from_transform(Transform::from_translation(translation))
 }
 
 fn insert_spatial_bundle_for_layer_tiles(
@@ -146,7 +138,6 @@ fn insert_spatial_bundle_for_layer_tiles(
     storage: &TileStorage,
     size: &TilemapSize,
     grid_size: i32,
-    layer_scale: Vec3,
     tilemap_id: TilemapId,
 ) {
     for x in 0..size.x {
@@ -155,8 +146,7 @@ fn insert_spatial_bundle_for_layer_tiles(
             let tile_entity = storage.get(&tile_pos);
 
             if let Some(tile_entity) = tile_entity {
-                let spatial_bundle =
-                    spatial_bundle_for_tiles(tile_pos.into(), grid_size, layer_scale);
+                let spatial_bundle = spatial_bundle_for_tiles(tile_pos.into(), grid_size);
 
                 commands.entity(tile_entity).insert_bundle(spatial_bundle);
                 commands.entity(tilemap_id.0).add_child(tile_entity);
@@ -433,14 +423,6 @@ pub fn spawn_level(
                         _ => TilemapSpacing::default(),
                     };
 
-                    // The change to the settings.grid_size above is supposed to help handle cases
-                    // where the tileset's tile size and the layer's tile size are different.
-                    // However, changing the grid_size doesn't have any affect with the current
-                    // bevy_ecs_tilemap, so the workaround is to scale up the entire layer.
-                    let layer_scale = (Vec2::new(grid_size.x, grid_size.y)
-                        / Vec2::new(tile_size.x, tile_size.y))
-                    .extend(1.);
-
                     let texture = match tileset_definition {
                         Some(tileset_definition) => TilemapTexture::Single(
                             tileset_map.get(&tileset_definition.uid).unwrap().clone(),
@@ -682,7 +664,6 @@ pub fn spawn_level(
                             &tilemap_bundle.storage,
                             &tilemap_bundle.size,
                             layer_instance.grid_size,
-                            layer_scale,
                             TilemapId(layer_entity),
                         );
 
@@ -708,8 +689,7 @@ pub fn spawn_level(
                             .entity(layer_entity)
                             .insert_bundle(tilemap_bundle)
                             .insert_bundle(SpatialBundle::from_transform(
-                                Transform::from_translation(layer_offset + tilemap_adjustment)
-                                    .with_scale(layer_scale),
+                                Transform::from_translation(layer_offset + tilemap_adjustment),
                             ))
                             .insert(LayerMetadata::from(layer_instance))
                             .insert(Name::new(layer_instance.identifier.to_owned()));

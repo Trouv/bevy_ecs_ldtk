@@ -266,6 +266,8 @@ pub fn spawn_level(
             };
             let texture = TilemapTexture::Single(white_image_handle.clone());
 
+            let translation = Vec3::new(level.px_wid as f32, level.px_hei as f32, 0.) / 2.;
+
             commands
                 .entity(background_entity)
                 .insert_bundle(TilemapBundle {
@@ -274,7 +276,9 @@ pub fn spawn_level(
                     texture,
                     ..default()
                 })
-                .insert_bundle(SpatialBundle::default())
+                .insert_bundle(SpatialBundle::from_transform(Transform::from_translation(
+                    translation,
+                )))
                 .add_child(tile_entity);
             commands.entity(ldtk_entity).add_child(background_entity);
 

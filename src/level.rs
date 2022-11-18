@@ -258,13 +258,13 @@ pub fn spawn_level(
                 .insert_bundle(SpatialBundle::default())
                 .id();
 
-            storage.set(&TilePos::default(), Some(tile_entity));
+            storage.set(&TilePos::default(), tile_entity);
 
             let tile_size = TilemapTileSize {
                 x: level.px_wid as f32,
                 y: level.px_hei as f32,
             };
-            let texture = TilemapTexture(white_image_handle.clone());
+            let texture = TilemapTexture::Single(white_image_handle.clone());
 
             commands
                 .entity(background_entity)
@@ -437,10 +437,10 @@ pub fn spawn_level(
                     .extend(1.);
 
                     let texture = match tileset_definition {
-                        Some(tileset_definition) => TilemapTexture(
+                        Some(tileset_definition) => TilemapTexture::Single(
                             tileset_map.get(&tileset_definition.uid).unwrap().clone(),
                         ),
-                        None => TilemapTexture(white_image_handle.clone()),
+                        None => TilemapTexture::Single(white_image_handle.clone()),
                     };
 
                     let metadata_map: HashMap<i32, TileMetadata> = tileset_definition
@@ -681,6 +681,18 @@ pub fn spawn_level(
                             TilemapId(layer_entity),
                         );
 
+                        // Tile positions are anchored to the center of the tile.
+                        // Applying this adjustment to the layer places the bottom-left corner of
+                        // the layer at the origin of the level.
+                        // Making this adjustment at the layer level, as opposed to using the
+                        // tilemap's default positioning, ensures all layers have the same
+                        // bottom-left corner placement regardless of grid_size.
+                        let tilemap_adjustment = Vec3::new(
+                            layer_instance.grid_size as f32,
+                            layer_instance.grid_size as f32,
+                            0.,
+                        ) / 2.;
+
                         let layer_offset = Vec3::new(
                             layer_instance.px_total_offset_x as f32,
                             -layer_instance.px_total_offset_y as f32,
@@ -691,7 +703,8 @@ pub fn spawn_level(
                             .entity(layer_entity)
                             .insert_bundle(tilemap_bundle)
                             .insert_bundle(SpatialBundle::from_transform(
-                                Transform::from_translation(layer_offset).with_scale(layer_scale),
+                                Transform::from_translation(layer_offset + tilemap_adjustment)
+                                    .with_scale(layer_scale),
                             ))
                             .insert(LayerMetadata::from(layer_instance))
                             .insert(Name::new(layer_instance.identifier.to_owned()));

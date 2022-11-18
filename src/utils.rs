@@ -200,6 +200,19 @@ pub fn ldtk_grid_coords_to_translation_relative_to_tile_layer(
         + Vec2::new(0., -grid_size.y as f32)
 }
 
+/// Performs LDtk grid coordinate to translation conversion, so that the resulting translation is
+/// in the center of the tile.
+///
+/// See also: [ldtk_grid_coords_to_translation_relative_to_tile_layer]
+pub fn ldtk_grid_coords_to_translation(
+    ldtk_coords: IVec2,
+    ldtk_grid_height: i32,
+    grid_size: IVec2,
+) -> Vec2 {
+    ldtk_grid_coords_to_translation_relative_to_tile_layer(ldtk_coords, ldtk_grid_height, grid_size)
+        + (grid_size.as_vec2() / 2.)
+}
+
 /// Performs LDtk pixel coordinate to translation conversion, with "pivot" support.
 ///
 /// In LDtk, the "pivot" of an entity indicates the percentage that an entity's visual is adjusted
@@ -535,6 +548,24 @@ mod tests {
                 IVec2::splat(1)
             ),
             Vec2::new(0., 5.)
+        );
+    }
+
+    #[test]
+    fn test_ldtk_grid_coords_to_translation() {
+        assert_eq!(
+            ldtk_grid_coords_to_translation(IVec2::new(1, 1), 4, IVec2::splat(32)),
+            Vec2::new(48., 80.)
+        );
+
+        assert_eq!(
+            ldtk_grid_coords_to_translation(IVec2::new(1, 1), 2, IVec2::splat(100)),
+            Vec2::new(150., 50.)
+        );
+
+        assert_eq!(
+            ldtk_grid_coords_to_translation(IVec2::new(0, 4), 10, IVec2::splat(1)),
+            Vec2::new(0.5, 5.5)
         );
     }
 

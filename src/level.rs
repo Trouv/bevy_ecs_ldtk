@@ -688,9 +688,9 @@ pub fn spawn_level(
                         commands
                             .entity(layer_entity)
                             .insert(tilemap_bundle)
-                            .insert(SpatialBundle::from_transform(
-                                Transform::from_translation(layer_offset + tilemap_adjustment),
-                            ))
+                            .insert(SpatialBundle::from_transform(Transform::from_translation(
+                                layer_offset + tilemap_adjustment,
+                            )))
                             .insert(LayerMetadata::from(layer_instance))
                             .insert(Name::new(layer_instance.identifier.to_owned()));
 

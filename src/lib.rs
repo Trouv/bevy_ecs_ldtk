@@ -162,7 +162,6 @@ mod plugin {
                 app = app.add_plugin(bevy_ecs_tilemap::TilemapPlugin);
             }
 
-
             app.add_stage_after(
                 CoreStage::Update,
                 LdtkStage::ProcessApi,

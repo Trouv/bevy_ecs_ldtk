@@ -1,7 +1,7 @@
 // This example shows off a more in-depth implementation of a game with `bevy_ecs_ldtk`.
 // Please run with `--release`.
 
-use bevy::{prelude::*};
+use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 
 use bevy_rapier2d::prelude::*;

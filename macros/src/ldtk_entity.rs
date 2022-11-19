@@ -229,11 +229,11 @@ fn expand_sprite_sheet_bundle_attribute(
             quote! {
                 #field_name: bevy::prelude::SpriteSheetBundle {
                     texture_atlas: texture_atlases.add(
-                        bevy::prelude::TextureAtlas::from_grid_with_padding(
+                        bevy::prelude::TextureAtlas::from_grid(
                             asset_server.load(#asset_path).into(),
                             bevy::prelude::Vec2::new(#tile_width, #tile_height),
-                            #columns, #rows, bevy::prelude::Vec2::splat(#padding),
-                            bevy::prelude::Vec2::splat(#offset),
+                            #columns, #rows, Some(bevy::prelude::Vec2::splat(#padding)),
+                            Some(bevy::prelude::Vec2::splat(#offset)),
                         )
                     ),
                     sprite: bevy::prelude::TextureAtlasSprite {

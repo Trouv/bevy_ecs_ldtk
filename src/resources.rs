@@ -2,8 +2,7 @@
 
 use crate::ldtk::Level;
 
-#[allow(unused_imports)]
-use bevy::prelude::{CoreStage, GlobalTransform, Resource};
+use bevy::prelude::*;
 
 #[allow(unused_imports)]
 use crate::components::{LdtkWorldBundle, LevelSet};

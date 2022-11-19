@@ -16,7 +16,7 @@ use crate::{
     utils::*,
 };
 
-use bevy::{prelude::*, render::render_resource::*, sprite};
+use bevy::{prelude::*, render::render_resource::*};
 use bevy_ecs_tilemap::{
     map::{
         TilemapGridSize, TilemapId, TilemapSize, TilemapSpacing, TilemapTexture, TilemapTileSize,
@@ -62,7 +62,7 @@ fn background_image_sprite_sheet_bundle(
 
         let max = min + size;
 
-        let crop_rect = sprite::Rect { min, max };
+        let crop_rect = Rect { min, max };
 
         texture_atlas.textures.push(crop_rect);
 
@@ -148,7 +148,7 @@ fn insert_spatial_bundle_for_layer_tiles(
             if let Some(tile_entity) = tile_entity {
                 let spatial_bundle = spatial_bundle_for_tiles(tile_pos.into(), grid_size);
 
-                commands.entity(tile_entity).insert_bundle(spatial_bundle);
+                commands.entity(tile_entity).insert(spatial_bundle);
                 commands.entity(tilemap_id.0).add_child(tile_entity);
             }
         }
@@ -236,17 +236,17 @@ pub fn spawn_level(
         let white_image_handle = images.add(white_image);
 
         if ldtk_settings.level_background == LevelBackground::Rendered {
-            let background_entity = commands.spawn().id();
+            let background_entity = commands.spawn_empty().id();
 
             let mut storage = TileStorage::empty(TilemapSize { x: 1, y: 1 });
 
             let tile_entity = commands
-                .spawn_bundle(TileBundle {
+                .spawn(TileBundle {
                     color: TileColor(level.bg_color),
                     tilemap_id: TilemapId(background_entity),
                     ..default()
                 })
-                .insert_bundle(SpatialBundle::default())
+                .insert(SpatialBundle::default())
                 .id();
 
             storage.set(&TilePos::default(), tile_entity);
@@ -261,13 +261,13 @@ pub fn spawn_level(
 
             commands
                 .entity(background_entity)
-                .insert_bundle(TilemapBundle {
+                .insert(TilemapBundle {
                     tile_size,
                     storage,
                     texture,
                     ..default()
                 })
-                .insert_bundle(SpatialBundle::from_transform(Transform::from_translation(
+                .insert(SpatialBundle::from_transform(Transform::from_translation(
                     translation,
                 )))
                 .add_child(tile_entity);
@@ -289,7 +289,7 @@ pub fn spawn_level(
                 ) {
                     Ok(sprite_sheet_bundle) => {
                         commands.entity(ldtk_entity).with_children(|parent| {
-                            parent.spawn_bundle(sprite_sheet_bundle);
+                            parent.spawn(sprite_sheet_bundle);
                         });
 
                         layer_z += 1;
@@ -333,7 +333,7 @@ pub fn spawn_level(
                             if !worldly_set.contains(&predicted_worldly) {
                                 let default_ldtk_entity: Box<dyn PhantomLdtkEntityTrait> =
                                     Box::new(PhantomLdtkEntity::<EntityInstanceBundle>::new());
-                                let mut entity_commands = commands.spawn();
+                                let mut entity_commands = commands.spawn_empty();
 
                                 ldtk_map_get_or_default(
                                     layer_instance.identifier.clone(),
@@ -352,7 +352,7 @@ pub fn spawn_level(
                                 );
 
                                 entity_commands
-                                    .insert_bundle(SpatialBundle {
+                                    .insert(SpatialBundle {
                                         transform,
                                         ..default()
                                     })
@@ -477,7 +477,7 @@ pub fn spawn_level(
                         })
                         .enumerate()
                     {
-                        let layer_entity = commands.spawn().id();
+                        let layer_entity = commands.spawn_empty().id();
 
                         let tilemap_bundle = if layer_instance.layer_instance_type == Type::IntGrid
                         {
@@ -687,10 +687,10 @@ pub fn spawn_level(
 
                         commands
                             .entity(layer_entity)
-                            .insert_bundle(tilemap_bundle)
-                            .insert_bundle(SpatialBundle::from_transform(
-                                Transform::from_translation(layer_offset + tilemap_adjustment),
-                            ))
+                            .insert(tilemap_bundle)
+                            .insert(SpatialBundle::from_transform(Transform::from_translation(
+                                layer_offset + tilemap_adjustment,
+                            )))
                             .insert(LayerMetadata::from(layer_instance))
                             .insert(Name::new(layer_instance.identifier.to_owned()));
 

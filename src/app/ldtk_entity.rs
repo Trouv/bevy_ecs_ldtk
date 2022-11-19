@@ -410,7 +410,7 @@ impl<B: LdtkEntity + Bundle> PhantomLdtkEntityTrait for PhantomLdtkEntity<B> {
         asset_server: &AssetServer,
         texture_atlases: &mut Assets<TextureAtlas>,
     ) -> &'b mut EntityCommands<'w, 's, 'a> {
-        entity_commands.insert_bundle(B::bundle_entity(
+        entity_commands.insert(B::bundle_entity(
             entity_instance,
             layer_instance,
             tileset,

@@ -174,7 +174,7 @@ impl<B: LdtkIntCell + Bundle> PhantomLdtkIntCellTrait for PhantomLdtkIntCell<B> 
         int_grid_cell: IntGridCell,
         layer_instance: &LayerInstance,
     ) -> &'b mut EntityCommands<'w, 's, 'a> {
-        entity_commands.insert_bundle(B::bundle_int_cell(int_grid_cell, layer_instance))
+        entity_commands.insert(B::bundle_int_cell(int_grid_cell, layer_instance))
     }
 }
 

@@ -1,13 +1,12 @@
 // Roughly equivalent to the "basic" example, except it doesn't use the LdtkEntity convenience
 // trait. As a result, you can run this example with --no-default-features
 
-use bevy::{prelude::*, render::texture::ImageSettings};
+use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 
 fn main() {
     App::new()
-        .insert_resource(ImageSettings::default_nearest()) // prevents blurry sprites
-        .add_plugins(DefaultPlugins)
+        .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
         .add_plugin(LdtkPlugin)
         .add_startup_system(setup)
         .add_system(process_my_entity)
@@ -16,9 +15,9 @@ fn main() {
 }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn_bundle(Camera2dBundle::default());
+    commands.spawn(Camera2dBundle::default());
 
-    commands.spawn_bundle(LdtkWorldBundle {
+    commands.spawn(LdtkWorldBundle {
         ldtk_handle: asset_server.load("my_project.ldtk"),
         ..Default::default()
     });
@@ -46,6 +45,8 @@ fn process_my_entity(
                     Vec2::new(tile.w as f32, tile.h as f32),
                     16,
                     95,
+                    None,
+                    None,
                 ));
 
                 let sprite = TextureAtlasSprite {
@@ -53,7 +54,7 @@ fn process_my_entity(
                     ..Default::default()
                 };
 
-                commands.entity(entity).insert_bundle(SpriteSheetBundle {
+                commands.entity(entity).insert(SpriteSheetBundle {
                     texture_atlas,
                     sprite,
                     transform: *transform,

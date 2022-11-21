@@ -1,7 +1,7 @@
 // This example shows off a more in-depth implementation of a game with `bevy_ecs_ldtk`.
 // Please run with `--release`.
 
-use bevy::{prelude::*, render::texture::ImageSettings};
+use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 
 use bevy_rapier2d::prelude::*;
@@ -11,8 +11,7 @@ mod systems;
 
 fn main() {
     App::new()
-        .insert_resource(ImageSettings::default_nearest()) // prevents blurry sprites
-        .add_plugins(DefaultPlugins)
+        .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
         .add_plugin(LdtkPlugin)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
         .insert_resource(RapierConfiguration {

@@ -52,9 +52,9 @@ fn main() {
 }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn_bundle(Camera2dBundle::default());
+    commands.spawn(Camera2dBundle::default());
 
-    commands.spawn_bundle(LdtkWorldBundle {
+    commands.spawn(LdtkWorldBundle {
         ldtk_handle: asset_server.load("my_project.ldtk"),
         ..Default::default()
     });
@@ -86,6 +86,7 @@ for additional level-loading options.
 ### Compatibility
 | bevy | bevy_ecs_tilemap | LDtk | bevy_ecs_ldtk |
 | --- | --- | --- | --- |
+| 0.9 | 0.9 | 1.1 | 0.5 |
 | 0.8 | 0.7 | 1.1 | 0.4 |
 | 0.7 | 0.6 | 1.1 | 0.3 |
 | 0.6 | 0.5 | 0.9 | 0.2 |

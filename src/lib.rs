@@ -28,9 +28,9 @@
 //! }
 //!
 //! fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-//!     commands.spawn_bundle(Camera2dBundle::default());
+//!     commands.spawn(Camera2dBundle::default());
 //!
-//!     commands.spawn_bundle(LdtkWorldBundle {
+//!     commands.spawn(LdtkWorldBundle {
 //!         ldtk_handle: asset_server.load("my_project.ldtk"),
 //!         ..Default::default()
 //!     });
@@ -156,53 +156,57 @@ mod plugin {
     pub struct LdtkPlugin;
 
     impl Plugin for LdtkPlugin {
-        fn build(&self, app: &mut App) {
-            app.add_plugin(bevy_ecs_tilemap::TilemapPlugin)
-                .add_stage_after(
-                    CoreStage::Update,
-                    LdtkStage::ProcessApi,
-                    SystemStage::parallel(),
-                )
-                .init_non_send_resource::<app::LdtkEntityMap>()
-                .init_non_send_resource::<app::LdtkIntCellMap>()
-                .init_resource::<resources::LdtkSettings>()
-                .add_asset::<assets::LdtkAsset>()
-                .init_asset_loader::<assets::LdtkLoader>()
-                .add_asset::<assets::LdtkLevel>()
-                .init_asset_loader::<assets::LdtkLevelLoader>()
-                .add_event::<resources::LevelEvent>()
-                .add_system_to_stage(
-                    CoreStage::PreUpdate,
-                    systems::process_ldtk_assets.label(LdtkSystemLabel::ProcessAssets),
-                )
-                .add_system_to_stage(
-                    CoreStage::PreUpdate,
-                    systems::process_ldtk_levels.label(LdtkSystemLabel::LevelSpawning),
-                )
-                .add_system_to_stage(
-                    LdtkStage::ProcessApi,
-                    systems::worldly_adoption.label(LdtkSystemLabel::Other),
-                )
-                .add_system_to_stage(
-                    LdtkStage::ProcessApi,
-                    systems::apply_level_selection.label(LdtkSystemLabel::LevelSelection),
-                )
-                .add_system_to_stage(
-                    LdtkStage::ProcessApi,
-                    systems::apply_level_set
-                        .label(LdtkSystemLabel::LevelSet)
-                        .after(LdtkSystemLabel::LevelSelection),
-                )
-                .add_system_to_stage(
-                    LdtkStage::ProcessApi,
-                    systems::clean_respawn_entities.exclusive_system().at_end(),
-                )
-                .add_system_to_stage(
-                    CoreStage::PostUpdate,
-                    systems::detect_level_spawned_events
-                        .chain(systems::fire_level_transformed_events)
-                        .label(LdtkSystemLabel::Other),
-                );
+        fn build(&self, mut app: &mut App) {
+            // Check if we have added the TileMap plugin
+            if !app.is_plugin_added::<bevy_ecs_tilemap::TilemapPlugin>() {
+                app = app.add_plugin(bevy_ecs_tilemap::TilemapPlugin);
+            }
+
+            app.add_stage_after(
+                CoreStage::Update,
+                LdtkStage::ProcessApi,
+                SystemStage::parallel(),
+            )
+            .init_non_send_resource::<app::LdtkEntityMap>()
+            .init_non_send_resource::<app::LdtkIntCellMap>()
+            .init_resource::<resources::LdtkSettings>()
+            .add_asset::<assets::LdtkAsset>()
+            .init_asset_loader::<assets::LdtkLoader>()
+            .add_asset::<assets::LdtkLevel>()
+            .init_asset_loader::<assets::LdtkLevelLoader>()
+            .add_event::<resources::LevelEvent>()
+            .add_system_to_stage(
+                CoreStage::PreUpdate,
+                systems::process_ldtk_assets.label(LdtkSystemLabel::ProcessAssets),
+            )
+            .add_system_to_stage(
+                CoreStage::PreUpdate,
+                systems::process_ldtk_levels.label(LdtkSystemLabel::LevelSpawning),
+            )
+            .add_system_to_stage(
+                LdtkStage::ProcessApi,
+                systems::worldly_adoption.label(LdtkSystemLabel::Other),
+            )
+            .add_system_to_stage(
+                LdtkStage::ProcessApi,
+                systems::apply_level_selection.label(LdtkSystemLabel::LevelSelection),
+            )
+            .add_system_to_stage(
+                LdtkStage::ProcessApi,
+                systems::apply_level_set
+                    .label(LdtkSystemLabel::LevelSet)
+                    .after(LdtkSystemLabel::LevelSelection),
+            )
+            .add_system_to_stage(
+                LdtkStage::ProcessApi,
+                systems::clean_respawn_entities.at_end(),
+            )
+            .add_system_to_stage(
+                CoreStage::PostUpdate,
+                systems::detect_level_spawned_events
+                    .pipe(systems::fire_level_transformed_events)
+                    .label(LdtkSystemLabel::Other),
+            );
         }
     }
 }

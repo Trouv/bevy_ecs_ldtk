@@ -190,9 +190,9 @@ fn pre_spawn_level(
         }
 
         child_builder
-            .spawn()
+            .spawn_empty()
             .insert(level_handle.clone())
-            .insert_bundle(SpatialBundle {
+            .insert(SpatialBundle {
                 transform: Transform::from_translation(translation),
                 ..default()
             })

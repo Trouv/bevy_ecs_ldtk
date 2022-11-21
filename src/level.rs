@@ -16,7 +16,7 @@ use crate::{
     utils::*,
 };
 
-use bevy::{prelude::*, render::render_resource::*, sprite};
+use bevy::{prelude::*, render::render_resource::*};
 use bevy_ecs_tilemap::{
     map::{
         TilemapGridSize, TilemapId, TilemapSize, TilemapSpacing, TilemapTexture, TilemapTileSize,
@@ -62,7 +62,7 @@ fn background_image_sprite_sheet_bundle(
 
         let max = min + size;
 
-        let crop_rect = sprite::Rect { min, max };
+        let crop_rect = Rect { min, max };
 
         texture_atlas.textures.push(crop_rect);
 
@@ -125,19 +125,12 @@ fn insert_metadata_to_tile(
     metadata_inserted
 }
 
-fn spatial_bundle_for_tiles(
-    grid_coords: GridCoords,
-    grid_size: i32,
-    layer_scale: Vec3,
-) -> SpatialBundle {
-    let mut translation =
-        grid_coords_to_translation_centered(grid_coords, IVec2::splat(grid_size)).extend(0.);
-    translation /= layer_scale;
+fn spatial_bundle_for_tiles(grid_coords: GridCoords, grid_size: i32) -> SpatialBundle {
+    let translation =
+        grid_coords_to_translation_relative_to_tile_layer(grid_coords, IVec2::splat(grid_size))
+            .extend(0.);
 
-    SpatialBundle {
-        transform: Transform::from_translation(translation),
-        ..default()
-    }
+    SpatialBundle::from_transform(Transform::from_translation(translation))
 }
 
 fn insert_spatial_bundle_for_layer_tiles(
@@ -145,7 +138,6 @@ fn insert_spatial_bundle_for_layer_tiles(
     storage: &TileStorage,
     size: &TilemapSize,
     grid_size: i32,
-    layer_scale: Vec3,
     tilemap_id: TilemapId,
 ) {
     for x in 0..size.x {
@@ -154,10 +146,9 @@ fn insert_spatial_bundle_for_layer_tiles(
             let tile_entity = storage.get(&tile_pos);
 
             if let Some(tile_entity) = tile_entity {
-                let spatial_bundle =
-                    spatial_bundle_for_tiles(tile_pos.into(), grid_size, layer_scale);
+                let spatial_bundle = spatial_bundle_for_tiles(tile_pos.into(), grid_size);
 
-                commands.entity(tile_entity).insert_bundle(spatial_bundle);
+                commands.entity(tile_entity).insert(spatial_bundle);
                 commands.entity(tilemap_id.0).add_child(tile_entity);
             }
         }
@@ -245,17 +236,17 @@ pub fn spawn_level(
         let white_image_handle = images.add(white_image);
 
         if ldtk_settings.level_background == LevelBackground::Rendered {
-            let background_entity = commands.spawn().id();
+            let background_entity = commands.spawn_empty().id();
 
             let mut storage = TileStorage::empty(TilemapSize { x: 1, y: 1 });
 
             let tile_entity = commands
-                .spawn_bundle(TileBundle {
+                .spawn(TileBundle {
                     color: TileColor(level.bg_color),
                     tilemap_id: TilemapId(background_entity),
                     ..default()
                 })
-                .insert_bundle(SpatialBundle::default())
+                .insert(SpatialBundle::default())
                 .id();
 
             storage.set(&TilePos::default(), tile_entity);
@@ -266,15 +257,19 @@ pub fn spawn_level(
             };
             let texture = TilemapTexture::Single(white_image_handle.clone());
 
+            let translation = Vec3::new(level.px_wid as f32, level.px_hei as f32, 0.) / 2.;
+
             commands
                 .entity(background_entity)
-                .insert_bundle(TilemapBundle {
+                .insert(TilemapBundle {
                     tile_size,
                     storage,
                     texture,
                     ..default()
                 })
-                .insert_bundle(SpatialBundle::default())
+                .insert(SpatialBundle::from_transform(Transform::from_translation(
+                    translation,
+                )))
                 .add_child(tile_entity);
             commands.entity(ldtk_entity).add_child(background_entity);
 
@@ -294,7 +289,7 @@ pub fn spawn_level(
                 ) {
                     Ok(sprite_sheet_bundle) => {
                         commands.entity(ldtk_entity).with_children(|parent| {
-                            parent.spawn_bundle(sprite_sheet_bundle);
+                            parent.spawn(sprite_sheet_bundle);
                         });
 
                         layer_z += 1;
@@ -338,7 +333,7 @@ pub fn spawn_level(
                             if !worldly_set.contains(&predicted_worldly) {
                                 let default_ldtk_entity: Box<dyn PhantomLdtkEntityTrait> =
                                     Box::new(PhantomLdtkEntity::<EntityInstanceBundle>::new());
-                                let mut entity_commands = commands.spawn();
+                                let mut entity_commands = commands.spawn_empty();
 
                                 ldtk_map_get_or_default(
                                     layer_instance.identifier.clone(),
@@ -357,7 +352,7 @@ pub fn spawn_level(
                                 );
 
                                 entity_commands
-                                    .insert_bundle(SpatialBundle {
+                                    .insert(SpatialBundle {
                                         transform,
                                         ..default()
                                     })
@@ -428,14 +423,6 @@ pub fn spawn_level(
                         _ => TilemapSpacing::default(),
                     };
 
-                    // The change to the settings.grid_size above is supposed to help handle cases
-                    // where the tileset's tile size and the layer's tile size are different.
-                    // However, changing the grid_size doesn't have any affect with the current
-                    // bevy_ecs_tilemap, so the workaround is to scale up the entire layer.
-                    let layer_scale = (Vec2::new(grid_size.x, grid_size.y)
-                        / Vec2::new(tile_size.x, tile_size.y))
-                    .extend(1.);
-
                     let texture = match tileset_definition {
                         Some(tileset_definition) => TilemapTexture::Single(
                             tileset_map.get(&tileset_definition.uid).unwrap().clone(),
@@ -490,7 +477,7 @@ pub fn spawn_level(
                         })
                         .enumerate()
                     {
-                        let layer_entity = commands.spawn().id();
+                        let layer_entity = commands.spawn_empty().id();
 
                         let tilemap_bundle = if layer_instance.layer_instance_type == Type::IntGrid
                         {
@@ -677,9 +664,20 @@ pub fn spawn_level(
                             &tilemap_bundle.storage,
                             &tilemap_bundle.size,
                             layer_instance.grid_size,
-                            layer_scale,
                             TilemapId(layer_entity),
                         );
+
+                        // Tile positions are anchored to the center of the tile.
+                        // Applying this adjustment to the layer places the bottom-left corner of
+                        // the layer at the origin of the level.
+                        // Making this adjustment at the layer level, as opposed to using the
+                        // tilemap's default positioning, ensures all layers have the same
+                        // bottom-left corner placement regardless of grid_size.
+                        let tilemap_adjustment = Vec3::new(
+                            layer_instance.grid_size as f32,
+                            layer_instance.grid_size as f32,
+                            0.,
+                        ) / 2.;
 
                         let layer_offset = Vec3::new(
                             layer_instance.px_total_offset_x as f32,
@@ -689,10 +687,10 @@ pub fn spawn_level(
 
                         commands
                             .entity(layer_entity)
-                            .insert_bundle(tilemap_bundle)
-                            .insert_bundle(SpatialBundle::from_transform(
-                                Transform::from_translation(layer_offset).with_scale(layer_scale),
-                            ))
+                            .insert(tilemap_bundle)
+                            .insert(SpatialBundle::from_transform(Transform::from_translation(
+                                layer_offset + tilemap_adjustment,
+                            )))
                             .insert(LayerMetadata::from(layer_instance))
                             .insert(Name::new(layer_instance.identifier.to_owned()));
 

@@ -15,7 +15,6 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(LdtkPlugin)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
-        .add_plugin(RapierDebugRenderPlugin::default()) // draws borders around colliders
         .insert_resource(RapierConfiguration {
             gravity: Vec2::new(0.0, -2000.0),
             ..Default::default()

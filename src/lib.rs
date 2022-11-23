@@ -147,6 +147,7 @@ mod plugin {
         /// As a result, you can expect minimal frame delay when updating these in
         /// [CoreStage::Update].
         ProcessApi,
+        SpawnLevelsStage,
     }
 
     /// Adds the default systems, assets, and resources used by `bevy_ecs_ldtk`.
@@ -167,6 +168,11 @@ mod plugin {
                 LdtkStage::ProcessApi,
                 SystemStage::parallel(),
             )
+            .add_stage_after(
+                LdtkStage::ProcessApi,
+                LdtkStage::SpawnLevelsStage,
+                SystemStage::parallel(),
+            )
             .init_non_send_resource::<app::LdtkEntityMap>()
             .init_non_send_resource::<app::LdtkIntCellMap>()
             .init_resource::<resources::LdtkSettings>()
@@ -176,11 +182,13 @@ mod plugin {
             .init_asset_loader::<assets::LdtkLevelLoader>()
             .add_event::<resources::LevelEvent>()
             .add_system_to_stage(
-                CoreStage::PreUpdate,
+                LdtkStage::SpawnLevelsStage,
                 systems::process_ldtk_assets.label(LdtkSystemLabel::ProcessAssets),
             )
             .add_system_to_stage(
-                CoreStage::PreUpdate,
+                // levels need to be spawned before PostUpdate, so that transforms will
+                // have time to propagate before the next update
+                LdtkStage::SpawnLevelsStage,
                 systems::process_ldtk_levels.label(LdtkSystemLabel::LevelSpawning),
             )
             .add_system_to_stage(

@@ -65,6 +65,7 @@ use crate::app::register_ldtk_objects::RegisterLdtkObjects;
 /// - `#[sprite_bundle("path/to/asset.png")]` will create the field using the image at the provided
 /// path in the assets folder.
 /// - `#[sprite_bundle]` will create the field using its Editor Visual image in LDtk, if it has one.
+/// Note that if your editor visual is part of a tilemap, you should use `#[sprite_sheet_bundle]` instead.
 /// ```
 /// # use bevy::prelude::*;
 /// # use bevy_ecs_ldtk::prelude::*;

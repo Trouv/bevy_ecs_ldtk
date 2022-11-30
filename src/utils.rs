@@ -84,12 +84,7 @@ pub fn calculate_transform_from_entity_instance(
 
     let size = IVec2::new(entity_instance.width, entity_instance.height);
 
-    let translation = ldtk_pixel_coords_to_translation_pivoted(
-        entity_instance.px,
-        level_height as i32,
-        size,
-        entity_instance.pivot,
-    );
+    let translation = ldtk_coord_conversion(entity_instance.px, level_height as i32).as_vec2();
     let scale = size.as_vec2() / def_size.as_vec2();
 
     Transform::from_translation(translation.extend(z_value)).with_scale(scale.extend(1.))

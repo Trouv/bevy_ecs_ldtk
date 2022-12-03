@@ -45,6 +45,14 @@ pub struct LevelSet {
     pub iids: HashSet<String>,
 }
 
+impl LevelSet {
+    pub fn from_iid<T: Into<String>>(iid: T) -> Self {
+        let mut iids = HashSet::default();
+        iids.insert(iid.into());
+        Self { iids }
+    }
+}
+
 /// [Component] that indicates that an ldtk entity should be a child of the world, not the level.
 ///
 /// By default, [LdtkEntity]s are children of the level they spawn in.

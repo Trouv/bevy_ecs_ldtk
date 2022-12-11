@@ -206,7 +206,9 @@ mod plugin {
                 systems::detect_level_spawned_events
                     .pipe(systems::fire_level_transformed_events)
                     .label(LdtkSystemLabel::Other),
-            );
+            )
+            .register_type::<GridCoords>()
+            .register_type::<LayerMetadata>();
         }
     }
 }

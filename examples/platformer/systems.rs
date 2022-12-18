@@ -145,8 +145,7 @@ pub fn spawn_wall_collision(
                     let mut row_plates: Vec<Plate> = Vec::new();
                     let mut plate_start = None;
 
-                    // + 1 to the width so the algorithm "terminates" plates that touch the right
-                    // edge
+                    // + 1 to the width so the algorithm "terminates" plates that touch the right edge
                     for x in 0..width + 1 {
                         match (plate_start, level_walls.contains(&GridCoords { x, y })) {
                             (Some(s), false) => {
@@ -165,40 +164,34 @@ pub fn spawn_wall_collision(
                 }
 
                 // combine "plates" into rectangles across multiple rows
+                let mut rect_builder: HashMap<Plate, Rect> = HashMap::new();
+                let mut prev_row: Vec<Plate> = Vec::new();
                 let mut wall_rects: Vec<Rect> = Vec::new();
-                let mut previous_rects: HashMap<Plate, Rect> = HashMap::new();
 
-                // an extra empty row so the algorithm "terminates" the rects that touch the top
-                // edge
+                // an extra empty row so the algorithm "finishes" the rects that touch the top edge
                 plate_stack.push(Vec::new());
 
-                for (y, row) in plate_stack.iter().enumerate() {
-                    let mut current_rects: HashMap<Plate, Rect> = HashMap::new();
-                    for plate in row {
-                        if let Some(previous_rect) = previous_rects.remove(plate) {
-                            current_rects.insert(
-                                *plate,
-                                Rect {
-                                    top: previous_rect.top + 1,
-                                    ..previous_rect
-                                },
-                            );
-                        } else {
-                            current_rects.insert(
-                                *plate,
-                                Rect {
-                                    bottom: y as i32,
-                                    top: y as i32,
-                                    left: plate.left,
-                                    right: plate.right,
-                                },
-                            );
+                for (y, current_row) in plate_stack.into_iter().enumerate() {
+                    for prev_plate in &prev_row {
+                        if !current_row.contains(prev_plate) {
+                            // remove the finished rect so that the same plate in the future starts a new rect
+                            if let Some(rect) = rect_builder.remove(prev_plate) {
+                                wall_rects.push(rect);
+                            }
                         }
                     }
-
-                    // Any plates that weren't removed above have terminated
-                    wall_rects.append(&mut previous_rects.values().copied().collect());
-                    previous_rects = current_rects;
+                    for plate in &current_row {
+                        rect_builder
+                            .entry(plate.clone())
+                            .and_modify(|e| e.top += 1)
+                            .or_insert(Rect {
+                                bottom: y as i32,
+                                top: y as i32,
+                                left: plate.left,
+                                right: plate.right,
+                            });
+                    }
+                    prev_row = current_row;
                 }
 
                 commands.entity(level_entity).with_children(|level| {

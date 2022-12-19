@@ -84,14 +84,13 @@ pub fn spawn_wall_collision(
 ) {
     /// Represents a wide wall that is 1 tile tall
     /// Used to spawn wall collisions
-    #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Hash)]
+    #[derive(Clone, Eq, PartialEq, Debug, Default, Hash)]
     struct Plate {
         left: i32,
         right: i32,
     }
 
     /// A simple rectangle type representing a wall of any size
-    #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Hash)]
     struct Rect {
         left: i32,
         right: i32,
@@ -115,7 +114,7 @@ pub fn spawn_wall_collision(
         if let Ok(grandparent) = parent_query.get(parent.get()) {
             level_to_wall_locations
                 .entry(grandparent.get())
-                .or_insert(HashSet::new())
+                .or_default()
                 .insert(grid_coords);
         }
     });

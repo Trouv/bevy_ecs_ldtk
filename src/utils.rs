@@ -86,7 +86,7 @@ pub fn calculate_transform_from_entity_instance(
 
     let translation = ldtk_pixel_coords_to_translation_pivoted(
         entity_instance.px,
-        level_height as i32,
+        level_height,
         size,
         entity_instance.pivot,
     );

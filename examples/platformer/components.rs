@@ -24,8 +24,8 @@ pub struct SensorBundle {
     pub rotation_constraints: LockedAxes,
 }
 
-impl From<EntityInstance> for ColliderBundle {
-    fn from(entity_instance: EntityInstance) -> ColliderBundle {
+impl From<&EntityInstance> for ColliderBundle {
+    fn from(entity_instance: &EntityInstance) -> ColliderBundle {
         let rotation_constraints = LockedAxes::ROTATION_LOCKED;
 
         match entity_instance.identifier.as_ref() {
@@ -81,8 +81,8 @@ impl From<IntGridCell> for SensorBundle {
 #[derive(Clone, Component, Debug, Eq, Default, PartialEq)]
 pub struct Items(Vec<String>);
 
-impl From<EntityInstance> for Items {
-    fn from(entity_instance: EntityInstance) -> Self {
+impl From<&EntityInstance> for Items {
+    fn from(entity_instance: &EntityInstance) -> Self {
         let mut items: Vec<String> = vec![];
 
         if let Some(field_instance) = entity_instance
@@ -128,7 +128,7 @@ pub struct PlayerBundle {
     pub climber: Climber,
     pub ground_detection: GroundDetection,
 
-    // Build Items Component manually by using `impl From<EntityInstance>
+    // Build Items Component manually by using `impl From<&EntityInstance>`
     #[from_entity_instance]
     items: Items,
 

@@ -318,7 +318,7 @@ fn expand_from_entity_instance_attribute(
     {
         syn::Meta::Path(_) => {
             quote! {
-                #field_name: <#field_type as From<bevy_ecs_ldtk::prelude::EntityInstance>>::from(entity_instance.clone()),
+                #field_name: <#field_type as From<&bevy_ecs_ldtk::prelude::EntityInstance>>::from(entity_instance),
             }
         }
         _ => {

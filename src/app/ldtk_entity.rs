@@ -207,19 +207,20 @@ use crate::app::register_ldtk_objects::RegisterLdtkObjects;
 /// ```
 ///
 /// ### `#[from_entity_instance]`
-/// Indicates that a component or bundle that implements [From<EntityInstance>] should be created
+/// Indicates that a component or bundle that implements [From<&EntityInstance>] should be created
 /// using that conversion.
 /// This allows for more modular and custom component construction, and for different structs that
 /// contain the same component to have different constructions of that component, without having to
 /// `impl LdtkEntity` for both of them.
-/// It also allows you to have an [EntityInstance] field, since all types `T` implement `From<T>`.
+/// It also allows you to have an [EntityInstance] field, since `EntityInstance` implements
+/// `From<&EntityInstance>`.
 /// ```
 /// # use bevy::prelude::*;
 /// # use bevy_ecs_ldtk::prelude::*;
 /// # #[derive(Component, Default)]
 /// # struct Sellable { value: i32 }
-/// impl From<EntityInstance> for Sellable {
-///     fn from(entity_instance: EntityInstance) -> Sellable {
+/// impl From<&EntityInstance> for Sellable {
+///     fn from(entity_instance: &EntityInstance) -> Sellable {
 ///         let sell_value = match entity_instance.identifier.as_str() {
 ///             "gem" => 1000,
 ///             "nickel" => 5,

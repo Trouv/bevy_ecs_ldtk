@@ -1023,6 +1023,13 @@ pub struct EntityInstance {
     pub width: i32,
 }
 
+// Allow using #[from_entity_instance] to add EntityInstance fields when deriving LdtkEntity
+impl From<&EntityInstance> for EntityInstance {
+    fn from(value: &EntityInstance) -> Self {
+        value.clone()
+    }
+}
+
 /// This object is used in Field Instances to describe an EntityRef value.
 #[derive(Eq, PartialEq, Debug, Default, Clone, Serialize, Deserialize)]
 pub struct FieldInstanceEntityReference {

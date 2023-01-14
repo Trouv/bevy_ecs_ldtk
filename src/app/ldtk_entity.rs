@@ -6,9 +6,6 @@ use crate::{
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::{collections::HashMap, marker::PhantomData};
 
-#[allow(unused_imports)]
-use crate::app::register_ldtk_objects::RegisterLdtkObjects;
-
 /// Provides a constructor which can be used for spawning entities from an LDtk file.
 ///
 /// After implementing this trait on a [Bundle], you can register it to spawn automatically for a

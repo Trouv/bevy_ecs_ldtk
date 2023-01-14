@@ -208,6 +208,8 @@ mod plugin {
                     .label(LdtkSystemLabel::Other),
             )
             .register_type::<GridCoords>()
+            .register_type::<TileMetadata>()
+            .register_type::<TileEnumTags>()
             .register_type::<LayerMetadata>();
         }
     }

@@ -1,3 +1,4 @@
+//! Provides [LdtkEntityAppExt] for registering bundles to spawn for given LDtk Entity identifiers.
 use crate::app::ldtk_entity::*;
 use bevy::prelude::*;
 

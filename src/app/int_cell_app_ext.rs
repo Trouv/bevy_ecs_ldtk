@@ -1,3 +1,4 @@
+//! Provides [LdtkIntCellAppExt] for registering bundles to spawn for given IntGrid values.
 use crate::app::ldtk_int_cell::*;
 use bevy::prelude::*;
 

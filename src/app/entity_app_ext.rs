@@ -1,13 +1,16 @@
 use crate::app::ldtk_entity::*;
 use bevy::prelude::*;
 
-/// Provides functions to register [Bundle]s to bevy's [App] for particular LDtk layer identifiers,
-/// entity identifiers, and IntGrid values.
+/// [Bundle]: bevy::prelude::Bundle
+/// [App]: bevy::prelude::App
 ///
-/// After being registered, [Entity]s will be spawned with these bundles when some IntGrid tile or
-/// entity meets the criteria you specify.
+/// Provides functions to register [Bundle]s to bevy's [App] for particular LDtk layer and entity
+/// identifiers.
 ///
-/// Not necessarily intended for custom implementations on your own types.
+/// After being registered, entities will be spawned with these [Bundle]s when some entity in LDtk
+/// meets the criteria you specify.
+///
+/// Not intended for custom implementations on your own types.
 pub trait LdtkEntityAppExt {
     /// Used internally by all the other LDtk entity registration functions.
     ///

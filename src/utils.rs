@@ -268,7 +268,7 @@ pub(crate) fn set_all_tiles_with_func(
 /// 3. Some, None
 /// 4. None, None
 ///
-/// Used for the defaulting functionality of [bevy_ecs_ldtk::app::RegisterLdtkObjects]
+/// Used for the defaulting functionality of the `AppExt` traits in [bevy_ecs_ldtk::app].
 pub(crate) fn try_each_optional_permutation<A, B, R>(
     a: A,
     b: B,
@@ -287,7 +287,7 @@ where
 /// The "get" function used on [bevy_ecs_ldtk::app::LdtkEntityMap] and
 /// [bevy_ecs_ldtk::app::LdtkIntCellMap].
 ///
-/// Due to the defaulting functionality of [bevy_ecs_ldtk::app::RegisterLdtkObjects], a single
+/// Due to the defaulting functionality of the `AppExt` traits in [bevy_ecs_ldtk::app], a single
 /// instance of an LDtk entity or int grid tile may match multiple registrations.
 /// This function is responsible for picking the correct registration while spawning these
 /// entities/tiles.

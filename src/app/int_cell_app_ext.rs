@@ -1,6 +1,16 @@
 use crate::app::ldtk_int_cell::*;
 use bevy::prelude::*;
 
+/// [Bundle]: bevy::prelude::Bundle
+/// [App]: bevy::prelude::App
+///
+/// Provides functions to register [Bundle]s to bevy's [App] for particular LDtk layer and IntGrid
+/// values.
+///
+/// After being registered, entities will be spawned with these [Bundle]s when some IntGrid cell in
+/// LDtk meets the criteria you specify.
+///
+/// Not intended for custom implementations on your own types.
 pub trait LdtkIntCellAppExt {
     /// Used internally by all the other LDtk int cell registration functions.
     ///

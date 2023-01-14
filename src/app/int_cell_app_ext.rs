@@ -4,7 +4,7 @@ use bevy::prelude::*;
 pub trait LdtkIntCellAppExt {
     /// Used internally by all the other LDtk int cell registration functions.
     ///
-    /// Similar to [RegisterLdtkObjects::register_ldtk_int_cell_for_layer], except it provides
+    /// Similar to [LdtkIntCellAppExt::register_ldtk_int_cell_for_layer], except it provides
     /// defaulting functionality:
     /// - Setting `layer_identifier` to [None] will make the registration apply to any IntGrid layer.
     /// - Setting `value` to [None] will make the registration apply to any IntGrid tile.
@@ -65,13 +65,13 @@ pub trait LdtkIntCellAppExt {
         )
     }
 
-    /// Similar to [RegisterLdtkObjects::register_ldtk_int_cell_for_layer], except it applies the
+    /// Similar to [LdtkIntCellAppExt::register_ldtk_int_cell_for_layer], except it applies the
     /// registration to all layers.
     fn register_ldtk_int_cell<B: LdtkIntCell + Bundle>(&mut self, value: i32) -> &mut Self {
         self.register_ldtk_int_cell_for_layer_optional::<B>(None, Some(value))
     }
 
-    /// Similar to [RegisterLdtkObjects::register_ldtk_int_cell_for_layer], except it applies the
+    /// Similar to [LdtkIntCellAppExt::register_ldtk_int_cell_for_layer], except it applies the
     /// registration to all tiles on the given layer.
     fn register_default_ldtk_int_cell_for_layer<B: LdtkIntCell + Bundle>(
         &mut self,
@@ -83,7 +83,7 @@ pub trait LdtkIntCellAppExt {
         )
     }
 
-    /// Similar to [RegisterLdtkObjects::register_ldtk_int_cell_for_layer], except it applies the
+    /// Similar to [LdtkIntCellAppExt::register_ldtk_int_cell_for_layer], except it applies the
     /// registration to any tile and any layer.
     fn register_default_ldtk_int_cell<B: LdtkIntCell + Bundle>(&mut self) -> &mut Self {
         self.register_ldtk_int_cell_for_layer_optional::<B>(None, None)

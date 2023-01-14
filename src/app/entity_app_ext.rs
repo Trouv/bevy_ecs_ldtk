@@ -11,7 +11,7 @@ use bevy::prelude::*;
 pub trait LdtkEntityAppExt {
     /// Used internally by all the other LDtk entity registration functions.
     ///
-    /// Similar to [RegisterLdtkObjects::register_ldtk_entity_for_layer], except it provides
+    /// Similar to [LdtkEntityAppExt::register_ldtk_entity_for_layer], except it provides
     /// defaulting functionality:
     /// - Setting `layer_identifier` to [None] will make the registration apply to any Entity layer.
     /// - Setting `entity_identifier` to [None] will make the registration apply to any LDtk entity.
@@ -72,7 +72,7 @@ pub trait LdtkEntityAppExt {
         )
     }
 
-    /// Similar to [RegisterLdtkObjects::register_ldtk_entity_for_layer], except it applies the
+    /// Similar to [LdtkEntityAppExt::register_ldtk_entity_for_layer], except it applies the
     /// registration to all layers.
     fn register_ldtk_entity<B: LdtkEntity + Bundle>(
         &mut self,
@@ -81,7 +81,7 @@ pub trait LdtkEntityAppExt {
         self.register_ldtk_entity_for_layer_optional::<B>(None, Some(entity_identifier.to_string()))
     }
 
-    /// Similar to [RegisterLdtkObjects::register_ldtk_entity_for_layer], except it applies the
+    /// Similar to [LdtkEntityAppExt::register_ldtk_entity_for_layer], except it applies the
     /// registration to all entities on the given layer.
     fn register_default_ldtk_entity_for_layer<B: LdtkEntity + Bundle>(
         &mut self,
@@ -90,7 +90,7 @@ pub trait LdtkEntityAppExt {
         self.register_ldtk_entity_for_layer_optional::<B>(Some(layer_identifier.to_string()), None)
     }
 
-    /// Similar to [RegisterLdtkObjects::register_ldtk_entity_for_layer], except it applies the
+    /// Similar to [LdtkEntityAppExt::register_ldtk_entity_for_layer], except it applies the
     /// registration to any entity and any layer.
     fn register_default_ldtk_entity<B: LdtkEntity + Bundle>(&mut self) -> &mut Self {
         self.register_ldtk_entity_for_layer_optional::<B>(None, None)

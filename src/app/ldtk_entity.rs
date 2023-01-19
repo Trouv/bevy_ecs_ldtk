@@ -7,6 +7,9 @@ use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::{collections::HashMap, marker::PhantomData};
 
 /// [LdtkEntityAppExt]: super::LdtkEntityAppExt
+/// [Bundle]: bevy::prelude::Bundle
+/// [App]: bevy::prelude::App
+/// [Component]: bevy::prelude::Component
 ///
 /// Provides a constructor which can be used for spawning entities from an LDtk file.
 ///
@@ -281,14 +284,14 @@ use std::{collections::HashMap, marker::PhantomData};
 pub trait LdtkEntity {
     /// The constructor used by the plugin when spawning entities from an LDtk file.
     /// Has access to resources/assets most commonly used for spawning 2d objects.
-    /// If you need access to more of the [World], you can create a system that queries for
+    /// If you need access to more of the [World](bevy::prelude::World), you can create a system that queries for
     /// `Added<EntityInstance>`, and flesh out the entity from there, instead of implementing this
     /// trait.
     /// This is because the plugin spawns an entity with an [EntityInstance] component if it's not
     /// registered to the app.
     ///
-    /// Note: whether or not the entity is registered to the app, the plugin will insert [Transform],
-    /// [GlobalTransform], [Name], and [Parent] components to the entity **after** this bundle is
+    /// Note: whether or not the entity is registered to the app, the plugin will insert a
+    /// [SpatialBundle](bevy::prelude::SpatialBundle) to the entity **after** this bundle is
     /// inserted.
     /// So, any custom implementations of these components within this trait will be overwritten.
     fn bundle_entity(

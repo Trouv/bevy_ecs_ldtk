@@ -2,6 +2,7 @@ use quote::quote;
 
 static LDTK_INT_CELL_ATTRIBUTE_NAME: &str = "ldtk_int_cell";
 static FROM_INT_GRID_CELL_ATTRIBUTE_NAME: &str = "from_int_grid_cell";
+static WITH_ATTRIBUTE_NAME: &str = "with";
 
 pub fn expand_ldtk_int_cell_derive(ast: &syn::DeriveInput) -> proc_macro::TokenStream {
     let struct_name = &ast.ident;
@@ -38,6 +39,15 @@ pub fn expand_ldtk_int_cell_derive(ast: &syn::DeriveInput) -> proc_macro::TokenS
             field_constructions.push(expand_from_int_grid_cell_attribute(
                 attribute, field_name, field_type,
             ));
+            continue;
+        }
+
+        let with = field
+            .attrs
+            .iter()
+            .find(|a| *a.path.get_ident().as_ref().unwrap() == WITH_ATTRIBUTE_NAME);
+        if let Some(attribute) = with {
+            field_constructions.push(expand_with_attribute(attribute, field_name, field_type));
             continue;
         }
 
@@ -98,6 +108,31 @@ fn expand_from_int_grid_cell_attribute(
         }
         _ => {
             panic!("#[from_int_grid_cell] attribute should take the form #[from_int_grid_cell]")
+        }
+    }
+}
+
+fn expand_with_attribute(
+    attribute: &syn::Attribute,
+    field_name: &syn::Ident,
+    _: &syn::Type,
+) -> proc_macro2::TokenStream {
+    match attribute
+        .parse_meta()
+        .expect("Cannot parse #[with...] attribute")
+    {
+        syn::Meta::List(syn::MetaList { nested, .. }) if nested.len() == 1 => {
+            match nested.first().unwrap() {
+                syn::NestedMeta::Meta(syn::Meta::Path(path)) => {
+                    quote! {
+                        #field_name: #path(int_grid_cell),
+                    }
+                }
+                _ => panic!("Expected function as the only argument of #[with(...)]"),
+            }
+        }
+        _ => {
+            panic!("#[with...] attribute should take the form #[with(function_name)]")
         }
     }
 }

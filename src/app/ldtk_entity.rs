@@ -254,7 +254,7 @@ use crate::app::register_ldtk_objects::RegisterLdtkObjects;
 /// Indicates that this component or bundle should be initialized with the given
 /// function.
 ///
-/// Note: The given function should have signature `fn (entity: EntityInstance) -> T`
+/// Note: The given function should have signature `fn (entity: &EntityInstance) -> T`
 /// where `T` is the field type. The function should also be accessible in the scope.
 ///
 /// ```
@@ -277,7 +277,7 @@ use crate::app::register_ldtk_objects::RegisterLdtkObjects;
 ///     collider: InventoryBundle,
 /// }
 ///
-/// fn player_initial_inventory(_: EntityInstance) -> InventoryBundle {
+/// fn player_initial_inventory(_: &EntityInstance) -> InventoryBundle {
 ///     InventoryBundle {
 ///         money: Money(4.0)
 ///     }

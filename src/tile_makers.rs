@@ -10,8 +10,9 @@
 use crate::{
     components::TileGridBundle,
     ldtk::{IntGridValueDefinition, TileInstance},
-    level::tile_to_grid_coords,
+    level::tile_to_tile_pos,
     utils::*,
+    GridCoords,
 };
 use bevy::prelude::*;
 use bevy_ecs_tilemap::tiles::{
@@ -93,6 +94,8 @@ pub(crate) fn tile_pos_to_int_grid_map(
 /// Used for spawning Tile, AutoTile and IntGrid layers with AutoTile functionality.
 pub(crate) fn tile_pos_to_tile_maker(
     grid_tiles: &[TileInstance],
+    layer_px_offset: IVec2,
+    layer_min_coords: GridCoords,
     layer_height_in_tiles: i32,
     layer_grid_size: i32,
 ) -> impl FnMut(TilePos) -> Option<TileBundle> {
@@ -100,7 +103,13 @@ pub(crate) fn tile_pos_to_tile_maker(
         .iter()
         .map(|t| {
             (
-                tile_to_grid_coords(t, layer_height_in_tiles, layer_grid_size).into(),
+                tile_to_tile_pos(
+                    t,
+                    layer_px_offset,
+                    layer_min_coords,
+                    layer_height_in_tiles,
+                    layer_grid_size,
+                ),
                 t.clone(),
             )
         })
@@ -158,26 +167,17 @@ pub(crate) fn tile_pos_to_tile_if_int_grid_nonzero_maker(
 /// 3. Returns none
 ///
 /// Used for spawning IntGrid layers with AutoTile functionality.
-pub(crate) fn tile_pos_to_int_grid_with_grid_tiles_tile_maker(
-    grid_tiles: &[TileInstance],
+pub(crate) fn tile_pos_to_int_grid_tile_maker(
     int_grid_csv: &[i32],
     layer_width_in_tiles: i32,
     layer_height_in_tiles: i32,
-    layer_grid_size: i32,
 ) -> impl FnMut(TilePos) -> Option<TileBundle> {
-    // Creating the tile makers outside of the returned tile maker so we only do it once.
-    let mut auto_tile_maker =
-        tile_pos_to_tile_maker(grid_tiles, layer_height_in_tiles, layer_grid_size);
-    let mut invisible_tile_maker = tile_pos_to_tile_if_int_grid_nonzero_maker(
+    tile_pos_to_tile_if_int_grid_nonzero_maker(
         tile_pos_to_invisible_tile,
         int_grid_csv,
         layer_width_in_tiles,
         layer_height_in_tiles,
-    );
-
-    move |tile_pos: TilePos| -> Option<TileBundle> {
-        auto_tile_maker(tile_pos).or_else(|| invisible_tile_maker(tile_pos))
-    }
+    )
 }
 
 /// Creates a tile maker that matches the colors of an ldtk IntGrid layer.
@@ -279,7 +279,8 @@ mod tests {
             },
         ];
 
-        let mut tile_maker = tile_pos_to_tile_maker(&grid_tiles, 2, 32);
+        let mut tile_maker =
+            tile_pos_to_tile_maker(&grid_tiles, IVec2::default(), GridCoords::default(), 2, 32);
 
         assert_eq!(
             tile_maker(TilePos { x: 0, y: 0 }).unwrap().texture_index.0,
@@ -332,7 +333,8 @@ mod tests {
             },
         ];
 
-        let mut tile_maker = tile_pos_to_tile_maker(&grid_tiles, 2, 32);
+        let mut tile_maker =
+            tile_pos_to_tile_maker(&grid_tiles, IVec2::default(), GridCoords::default(), 2, 32);
 
         assert!(!tile_maker(TilePos { x: 0, y: 0 }).unwrap().flip.x);
         assert!(tile_maker(TilePos { x: 0, y: 0 }).unwrap().flip.y);
@@ -345,55 +347,6 @@ mod tests {
 
         assert!(tile_maker(TilePos { x: 2, y: 1 }).unwrap().flip.x);
         assert!(tile_maker(TilePos { x: 2, y: 1 }).unwrap().flip.y);
-    }
-
-    #[test]
-    fn test_tile_pos_to_int_grid_with_grid_tiles_tile_maker() {
-        // Test is designed to have all permutations of tile/intgrid existence:
-        // 1. tile + nonzero intgrid
-        // 2. tile + zero intgrid
-        // 3. no tile + nonzero intgrid
-        // 4. no tile + zero intgrid
-
-        let grid_tiles = vec![
-            TileInstance {
-                px: IVec2::new(0, 0),
-                src: IVec2::new(0, 0),
-                t: 1,
-                ..Default::default()
-            },
-            TileInstance {
-                px: IVec2::new(32, 0),
-                src: IVec2::new(32, 0),
-                t: 2,
-                ..Default::default()
-            },
-        ];
-
-        let int_grid_csv = vec![1, 0, 2, 0];
-
-        let mut tile_maker =
-            tile_pos_to_int_grid_with_grid_tiles_tile_maker(&grid_tiles, &int_grid_csv, 2, 2, 32);
-
-        assert_eq!(
-            tile_maker(TilePos { x: 0, y: 0 }).unwrap().texture_index.0,
-            0
-        );
-        assert_eq!(tile_maker(TilePos { x: 0, y: 0 }).unwrap().visible.0, false);
-
-        assert!(tile_maker(TilePos { x: 1, y: 0 }).is_none());
-
-        assert_eq!(
-            tile_maker(TilePos { x: 0, y: 1 }).unwrap().texture_index.0,
-            1
-        );
-        assert_eq!(tile_maker(TilePos { x: 0, y: 1 }).unwrap().visible.0, true);
-
-        assert_eq!(
-            tile_maker(TilePos { x: 1, y: 1 }).unwrap().texture_index.0,
-            2
-        );
-        assert_eq!(tile_maker(TilePos { x: 1, y: 1 }).unwrap().visible.0, true);
     }
 
     #[test]

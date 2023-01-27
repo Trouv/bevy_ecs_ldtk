@@ -89,16 +89,19 @@ fn background_image_sprite_sheet_bundle(
     }
 }
 
-pub(crate) fn tile_to_grid_coords(
+pub(crate) fn tile_to_tile_pos(
     tile_instance: &TileInstance,
+    layer_px_offset: IVec2,
+    layer_min_coords: GridCoords,
     layer_height_in_tiles: i32,
     layer_grid_size: i32,
-) -> GridCoords {
-    ldtk_pixel_coords_to_grid_coords(
-        IVec2::new(tile_instance.px[0], tile_instance.px[1]),
+) -> TilePos {
+    (ldtk_pixel_coords_to_grid_coords(
+        tile_instance.px - layer_px_offset,
         layer_height_in_tiles,
         IVec2::splat(layer_grid_size),
-    )
+    ) - layer_min_coords)
+        .into()
 }
 
 fn insert_metadata_to_tile(
@@ -160,43 +163,118 @@ fn insert_tile_metadata_for_layer(
     commands: &mut Commands,
     tile_storage: &TileStorage,
     grid_tiles: &[TileInstance],
+    layer_px_offset: IVec2,
+    layer_min_coords: GridCoords,
     layer_instance: &LayerInstance,
     metadata_map: &HashMap<i32, TileMetadata>,
     enum_tags_map: &HashMap<i32, TileEnumTags>,
 ) {
     for tile in grid_tiles {
-        let grid_coords = tile_to_grid_coords(tile, layer_instance.c_hei, layer_instance.grid_size);
+        let tile_pos = tile_to_tile_pos(
+            tile,
+            layer_px_offset,
+            layer_min_coords,
+            layer_instance.c_hei,
+            layer_instance.grid_size,
+        );
 
-        let tile_entity = tile_storage.get(&grid_coords.into()).unwrap();
+        let tile_entity = tile_storage.get(&tile_pos).unwrap();
 
         insert_metadata_to_tile(commands, tile, tile_entity, metadata_map, enum_tags_map);
     }
 }
 
-fn layer_grid_tiles(grid_tiles: Vec<TileInstance>) -> Vec<Vec<TileInstance>> {
-    let mut layer = Vec::new();
-    let mut overflow = Vec::new();
-    for tile in grid_tiles {
-        if layer.iter().any(|t: &TileInstance| t.px == tile.px) {
-            overflow.push(tile);
-        } else {
-            layer.push(tile);
+fn intersects(a: &TileInstance, b: &TileInstance, grid_size: i32) -> bool {
+    a.px.x + grid_size > b.px.x
+        && a.px.y + grid_size > b.px.y
+        && b.px.x + grid_size > a.px.x
+        && b.px.y + grid_size > a.px.y
+}
+
+fn tile_offset(a: &TileInstance, grid_size: i32) -> IVec2 {
+    IVec2::new(a.px.x.rem_euclid(grid_size), a.px.y.rem_euclid(grid_size))
+}
+
+fn tile_coord(a: &TileInstance, grid_size: i32) -> IVec2 {
+    IVec2::new(a.px.x.div_euclid(grid_size), a.px.y.div_euclid(grid_size))
+}
+
+struct SubLayer {
+    offset: IVec2,
+    min: IVec2,
+    max: IVec2,
+    tiles: Vec<TileInstance>,
+}
+
+impl SubLayer {
+    fn size(&self) -> TilemapSize {
+        TilemapSize {
+            x: (self.max.x - self.min.x + 1) as u32,
+            y: (self.max.y - self.min.y + 1) as u32,
         }
     }
 
-    let mut layered_grid_tiles = vec![layer];
-    if !overflow.is_empty() {
-        layered_grid_tiles.extend(layer_grid_tiles(overflow));
+    fn min_coords(&self, layer_height_in_tiles: i32) -> GridCoords {
+        ldtk_grid_coords_to_grid_coords(IVec2::new(self.min.x, self.max.y), layer_height_in_tiles)
     }
-
-    layered_grid_tiles
 }
 
-fn tile_in_layer_bounds(tile: &TileInstance, layer_instance: &LayerInstance) -> bool {
-    tile.px.x >= 0
-        && tile.px.y >= 0
-        && tile.px.x < (layer_instance.c_wid * layer_instance.grid_size)
-        && tile.px.y < (layer_instance.c_hei * layer_instance.grid_size)
+#[derive(Default)]
+struct SubLayers {
+    layers: Vec<SubLayer>,
+}
+
+impl SubLayers {
+    fn intersects(&self, tile: &TileInstance, grid_size: i32) -> bool {
+        for layer in &self.layers {
+            for t in &layer.tiles {
+                if intersects(tile, t, grid_size) {
+                    return true;
+                }
+            }
+        }
+        false
+    }
+
+    fn insert(&mut self, tile: TileInstance, grid_size: i32) {
+        let offset = tile_offset(&tile, grid_size);
+        let coord = tile_coord(&tile, grid_size);
+        for layer in &mut self.layers {
+            if layer.offset == offset {
+                layer.min = layer.min.min(coord);
+                layer.max = layer.max.max(coord);
+                layer.tiles.push(tile);
+                return;
+            }
+        }
+        self.layers.push(SubLayer {
+            tiles: vec![tile],
+            offset,
+            max: coord,
+            min: coord,
+        })
+    }
+
+    fn unwrap(self) -> Vec<SubLayer> {
+        self.layers
+    }
+}
+
+fn layer_grid_tiles(grid_tiles: Vec<TileInstance>, grid_size: i32) -> Vec<SubLayer> {
+    let mut layers = SubLayers::default();
+    let mut overflow = Vec::new();
+    for tile in grid_tiles {
+        if layers.intersects(&tile, grid_size) {
+            overflow.push(tile);
+        } else {
+            layers.insert(tile, grid_size);
+        }
+    }
+    let mut layers = layers.unwrap();
+    if !overflow.is_empty() {
+        layers.extend(layer_grid_tiles(overflow, grid_size));
+    }
+    layers
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -368,11 +446,6 @@ pub fn spawn_level(
                     // 1. There is virtually no difference between AutoTile and Tile layers
                     // 2. IntGrid layers can sometimes have AutoTile functionality
 
-                    let size = TilemapSize {
-                        x: layer_instance.c_wid as u32,
-                        y: layer_instance.c_hei as u32,
-                    };
-
                     let tileset_definition = layer_instance
                         .tileset_def_uid
                         .map(|u| tileset_definition_map.get(&u).unwrap());
@@ -463,100 +536,92 @@ pub fn spawn_level(
                         }
                     }
 
-                    let mut grid_tiles = layer_instance.grid_tiles.clone();
-                    grid_tiles.extend(layer_instance.auto_layer_tiles.clone());
-
-                    for (i, grid_tiles) in layer_grid_tiles(grid_tiles)
-                        .into_iter()
-                        // filter out tiles that are out of bounds
-                        .map(|grid_tiles| {
-                            grid_tiles
-                                .into_iter()
-                                .filter(|tile| tile_in_layer_bounds(tile, layer_instance))
-                                .collect::<Vec<_>>()
-                        })
-                        .enumerate()
-                    {
-                        let layer_entity = commands.spawn_empty().id();
-
-                        let tilemap_bundle = if layer_instance.layer_instance_type == Type::IntGrid
-                        {
-                            // The current spawning of IntGrid layers doesn't allow using
-                            // LayerBuilder::new_batch().
-                            // So, the actual LayerBuilder usage diverges greatly here
-                            let mut storage = TileStorage::empty(size);
-
-                            match tileset_definition {
-                                Some(_) => {
-                                    set_all_tiles_with_func(
-                                        commands,
-                                        &mut storage,
-                                        size,
-                                        TilemapId(layer_entity),
-                                        tile_pos_to_tile_grid_bundle_maker(
-                                            tile_pos_to_transparent_tile_maker(
-                                                tile_pos_to_int_grid_with_grid_tiles_tile_maker(
-                                                    &grid_tiles,
-                                                    &layer_instance.int_grid_csv,
-                                                    layer_instance.c_wid,
-                                                    layer_instance.c_hei,
-                                                    layer_instance.grid_size,
+                    if layer_instance.layer_instance_type == Type::IntGrid {
+                        spawn_sub_layer(
+                            commands,
+                            layer_instance,
+                            SubLayer {
+                                offset: IVec2::default(),
+                                min: IVec2::default(),
+                                max: IVec2::new(layer_instance.c_wid, layer_instance.c_hei),
+                                tiles: Vec::new(),
+                            },
+                            &metadata_map,
+                            &enum_tags_map,
+                            grid_size,
+                            tile_size,
+                            spacing,
+                            &texture,
+                            ldtk_entity,
+                            &mut layer_z,
+                            |commands, storage, size, tilemap_id| {
+                                match tileset_definition {
+                                    Some(_) => {
+                                        set_all_tiles_with_func(
+                                            commands,
+                                            storage,
+                                            size,
+                                            tilemap_id,
+                                            tile_pos_to_tile_grid_bundle_maker(
+                                                tile_pos_to_transparent_tile_maker(
+                                                    tile_pos_to_int_grid_tile_maker(
+                                                        &layer_instance.int_grid_csv,
+                                                        layer_instance.c_wid,
+                                                        layer_instance.c_hei,
+                                                    ),
+                                                    layer_instance.opacity,
                                                 ),
-                                                layer_instance.opacity,
                                             ),
-                                        ),
-                                    );
-                                }
-                                None => {
-                                    let int_grid_value_defs = &layer_definition_map
-                                        .get(&layer_instance.layer_def_uid)
-                                        .expect("Encountered layer without definition")
-                                        .int_grid_values;
+                                        );
+                                    }
+                                    None => {
+                                        let int_grid_value_defs = &layer_definition_map
+                                            .get(&layer_instance.layer_def_uid)
+                                            .expect("Encountered layer without definition")
+                                            .int_grid_values;
 
-                                    match ldtk_settings.int_grid_rendering {
-                                        IntGridRendering::Colorful => {
-                                            set_all_tiles_with_func(
-                                                commands,
-                                                &mut storage,
-                                                size,
-                                                TilemapId(layer_entity),
-                                                tile_pos_to_tile_grid_bundle_maker(
-                                                    tile_pos_to_transparent_tile_maker(
-                                                        tile_pos_to_int_grid_colored_tile_maker(
-                                                            &layer_instance.int_grid_csv,
-                                                            int_grid_value_defs,
-                                                            layer_instance.c_wid,
-                                                            layer_instance.c_hei,
+                                        match ldtk_settings.int_grid_rendering {
+                                            IntGridRendering::Colorful => {
+                                                set_all_tiles_with_func(
+                                                    commands,
+                                                    storage,
+                                                    size,
+                                                    tilemap_id,
+                                                    tile_pos_to_tile_grid_bundle_maker(
+                                                        tile_pos_to_transparent_tile_maker(
+                                                            tile_pos_to_int_grid_colored_tile_maker(
+                                                                &layer_instance.int_grid_csv,
+                                                                int_grid_value_defs,
+                                                                layer_instance.c_wid,
+                                                                layer_instance.c_hei,
+                                                            ),
+                                                            layer_instance.opacity,
                                                         ),
-                                                        layer_instance.opacity,
                                                     ),
-                                                ),
-                                            );
-                                        }
-                                        IntGridRendering::Invisible => {
-                                            set_all_tiles_with_func(
-                                                commands,
-                                                &mut storage,
-                                                size,
-                                                TilemapId(layer_entity),
-                                                tile_pos_to_tile_grid_bundle_maker(
-                                                    tile_pos_to_transparent_tile_maker(
-                                                        tile_pos_to_tile_if_int_grid_nonzero_maker(
-                                                            tile_pos_to_invisible_tile,
-                                                            &layer_instance.int_grid_csv,
-                                                            layer_instance.c_wid,
-                                                            layer_instance.c_hei,
-                                                        ),
-                                                        layer_instance.opacity,
+                                                );
+                                            }
+                                            IntGridRendering::Invisible => {
+                                                set_all_tiles_with_func(
+                                            commands,
+                                            storage,
+                                            size,
+                                            tilemap_id,
+                                            tile_pos_to_tile_grid_bundle_maker(
+                                                tile_pos_to_transparent_tile_maker(
+                                                    tile_pos_to_tile_if_int_grid_nonzero_maker(
+                                                        tile_pos_to_invisible_tile,
+                                                        &layer_instance.int_grid_csv,
+                                                        layer_instance.c_wid,
+                                                        layer_instance.c_hei,
                                                     ),
+                                                    layer_instance.opacity,
                                                 ),
-                                            );
+                                            ),
+                                        );
+                                            }
                                         }
                                     }
-                                }
-                            }
-
-                            if i == 0 {
+                                };
                                 for (i, value) in layer_instance
                                     .int_grid_csv
                                     .iter()
@@ -564,10 +629,10 @@ pub fn spawn_level(
                                     .filter(|(_, v)| **v != 0)
                                 {
                                     let grid_coords = int_grid_index_to_grid_coords(
-                                        i,
-                                        layer_instance.c_wid as u32,
-                                        layer_instance.c_hei as u32,
-                                    ).expect("int_grid_csv indices should be within the bounds of 0..(layer_width * layer_height)");
+                                i,
+                                layer_instance.c_wid as u32,
+                                layer_instance.c_hei as u32,
+                            ).expect("int_grid_csv indices should be within the bounds of 0..(layer_width * layer_height)");
 
                                     let tile_entity = storage.get(&grid_coords.into()).unwrap();
 
@@ -588,118 +653,145 @@ pub fn spawn_level(
                                         layer_instance,
                                     );
                                 }
-                            }
+                            },
+                        );
+                    }
 
-                            if !(metadata_map.is_empty() && enum_tags_map.is_empty()) {
-                                insert_tile_metadata_for_layer(
-                                    commands,
-                                    &storage,
-                                    &grid_tiles,
-                                    layer_instance,
-                                    &metadata_map,
-                                    &enum_tags_map,
-                                );
-                            }
+                    let mut grid_tiles = layer_instance.grid_tiles.clone();
+                    grid_tiles.extend(layer_instance.auto_layer_tiles.clone());
 
-                            TilemapBundle {
-                                grid_size,
-                                size,
-                                spacing,
-                                storage,
-                                texture: texture.clone(),
-                                tile_size,
-                                ..default()
-                            }
-                        } else {
-                            let tile_bundle_maker = tile_pos_to_tile_grid_bundle_maker(
-                                tile_pos_to_transparent_tile_maker(
-                                    tile_pos_to_tile_maker(
-                                        &grid_tiles,
-                                        layer_instance.c_hei,
-                                        layer_instance.grid_size,
-                                    ),
-                                    layer_instance.opacity,
+                    for sub_layer in layer_grid_tiles(grid_tiles, layer_instance.grid_size) {
+                        let tile_bundle_maker =
+                            tile_pos_to_tile_grid_bundle_maker(tile_pos_to_transparent_tile_maker(
+                                tile_pos_to_tile_maker(
+                                    &sub_layer.tiles,
+                                    sub_layer.offset,
+                                    sub_layer.min_coords(layer_instance.c_hei),
+                                    layer_instance.c_hei,
+                                    layer_instance.grid_size,
                                 ),
-                            );
+                                layer_instance.opacity,
+                            ));
 
-                            // When we add metadata to tiles, we need to add additional
-                            // components to them.
-                            // This can't be accomplished using LayerBuilder::new_batch,
-                            // so the logic for building layers with metadata is slower.
-
-                            let mut storage = TileStorage::empty(size);
-
-                            set_all_tiles_with_func(
-                                commands,
-                                &mut storage,
-                                size,
-                                TilemapId(layer_entity),
-                                tile_bundle_maker,
-                            );
-
-                            if !(metadata_map.is_empty() && enum_tags_map.is_empty()) {
-                                insert_tile_metadata_for_layer(
-                                    commands,
-                                    &storage,
-                                    &grid_tiles,
-                                    layer_instance,
-                                    &metadata_map,
-                                    &enum_tags_map,
-                                );
-                            }
-
-                            TilemapBundle {
-                                grid_size,
-                                size,
-                                spacing,
-                                storage,
-                                texture: texture.clone(),
-                                tile_size,
-                                ..default()
-                            }
-                        };
-
-                        insert_spatial_bundle_for_layer_tiles(
+                        spawn_sub_layer(
                             commands,
-                            &tilemap_bundle.storage,
-                            &tilemap_bundle.size,
-                            layer_instance.grid_size,
-                            TilemapId(layer_entity),
+                            layer_instance,
+                            sub_layer,
+                            &metadata_map,
+                            &enum_tags_map,
+                            grid_size,
+                            tile_size,
+                            spacing,
+                            &texture,
+                            ldtk_entity,
+                            &mut layer_z,
+                            |commands, storage, size, tilemap_id| {
+                                set_all_tiles_with_func(
+                                    commands,
+                                    storage,
+                                    size,
+                                    tilemap_id,
+                                    tile_bundle_maker,
+                                );
+                            },
                         );
-
-                        // Tile positions are anchored to the center of the tile.
-                        // Applying this adjustment to the layer places the bottom-left corner of
-                        // the layer at the origin of the level.
-                        // Making this adjustment at the layer level, as opposed to using the
-                        // tilemap's default positioning, ensures all layers have the same
-                        // bottom-left corner placement regardless of grid_size.
-                        let tilemap_adjustment = Vec3::new(
-                            layer_instance.grid_size as f32,
-                            layer_instance.grid_size as f32,
-                            0.,
-                        ) / 2.;
-
-                        let layer_offset = Vec3::new(
-                            layer_instance.px_total_offset_x as f32,
-                            -layer_instance.px_total_offset_y as f32,
-                            layer_z as f32,
-                        );
-
-                        commands
-                            .entity(layer_entity)
-                            .insert(tilemap_bundle)
-                            .insert(SpatialBundle::from_transform(Transform::from_translation(
-                                layer_offset + tilemap_adjustment,
-                            )))
-                            .insert(LayerMetadata::from(layer_instance))
-                            .insert(Name::new(layer_instance.identifier.to_owned()));
-
-                        commands.entity(ldtk_entity).add_child(layer_entity);
-
-                        layer_z += 1;
                     }
                 }
             }
         }
     }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn spawn_sub_layer(
+    commands: &mut Commands,
+    layer_instance: &LayerInstance,
+    sub_layer: SubLayer,
+    metadata_map: &HashMap<i32, TileMetadata>,
+    enum_tags_map: &HashMap<i32, TileEnumTags>,
+    grid_size: TilemapGridSize,
+    tile_size: TilemapTileSize,
+    spacing: TilemapSpacing,
+    texture: &TilemapTexture,
+    ldtk_entity: Entity,
+    layer_z: &mut i32,
+    set_tiles: impl FnOnce(&mut Commands, &mut TileStorage, TilemapSize, TilemapId),
+) {
+    let layer_entity = commands.spawn_empty().id();
+
+    let size = sub_layer.size();
+
+    let mut storage = TileStorage::empty(size);
+
+    set_tiles(commands, &mut storage, size, TilemapId(layer_entity));
+
+    if !(metadata_map.is_empty() && enum_tags_map.is_empty()) {
+        insert_tile_metadata_for_layer(
+            commands,
+            &storage,
+            &sub_layer.tiles,
+            sub_layer.offset,
+            sub_layer.min_coords(layer_instance.c_hei),
+            layer_instance,
+            metadata_map,
+            enum_tags_map,
+        );
+    }
+
+    let tilemap_bundle = TilemapBundle {
+        grid_size,
+        size,
+        spacing,
+        storage,
+        texture: texture.clone(),
+        tile_size,
+        ..default()
+    };
+
+    insert_spatial_bundle_for_layer_tiles(
+        commands,
+        &tilemap_bundle.storage,
+        &tilemap_bundle.size,
+        layer_instance.grid_size,
+        TilemapId(layer_entity),
+    );
+
+    // Tile positions are anchored to the center of the tile.
+    // Applying this adjustment to the layer places the bottom-left corner of
+    // the layer at the origin of the level.
+    // Making this adjustment at the layer level, as opposed to using the
+    // tilemap's default positioning, ensures all layers have the same
+    // bottom-left corner placement regardless of grid_size.
+    let tilemap_adjustment = Vec3::new(
+        layer_instance.grid_size as f32,
+        layer_instance.grid_size as f32,
+        0.,
+    ) / 2.;
+
+    let layer_offset = Vec3::new(
+        layer_instance.px_total_offset_x as f32,
+        -layer_instance.px_total_offset_y as f32,
+        *layer_z as f32,
+    );
+
+    let sub_layer_min_coords: IVec2 =
+        IVec2::from(sub_layer.min_coords(layer_instance.c_hei)) * layer_instance.grid_size;
+    let sub_layer_offset = Vec3::new(
+        (sub_layer_min_coords.x + sub_layer.offset.x) as f32,
+        (sub_layer_min_coords.y + sub_layer.offset.y) as f32,
+        0.0,
+    );
+
+    commands
+        .entity(layer_entity)
+        .insert(tilemap_bundle)
+        .insert(SpatialBundle::from_transform(Transform::from_translation(
+            layer_offset + sub_layer_offset + tilemap_adjustment,
+        )))
+        .insert(LayerMetadata::from(layer_instance))
+        .insert(Name::new(layer_instance.identifier.to_owned()));
+
+    commands.entity(ldtk_entity).add_child(layer_entity);
+
+    *layer_z += 1;
 }

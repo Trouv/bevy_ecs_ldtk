@@ -105,6 +105,7 @@ mod components;
 pub mod ldtk;
 mod level;
 mod resources;
+pub mod spawn;
 pub mod systems;
 mod tile_makers;
 pub mod utils;

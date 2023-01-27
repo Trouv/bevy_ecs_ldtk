@@ -252,8 +252,8 @@ pub(crate) fn set_all_tiles_with_func(
             let tile_entity = func(tile_pos)
                 .map(|tile_bundle| commands.spawn(tile_bundle).insert(tilemap_id).id());
             match tile_entity {
-                Some(tile_entity) => storage.set(&tile_pos, tile_entity),
-                None => storage.remove(&tile_pos),
+                Some(tile_entity) => storage.set(tile_pos, tile_entity),
+                None => storage.remove(tile_pos),
             }
         }
     }

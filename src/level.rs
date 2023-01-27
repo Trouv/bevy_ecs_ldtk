@@ -143,7 +143,7 @@ fn insert_spatial_bundle_for_layer_tiles(
     for x in 0..size.x {
         for y in 0..size.y {
             let tile_pos = TilePos { x, y };
-            let tile_entity = storage.get(&tile_pos);
+            let tile_entity = storage.get(tile_pos);
 
             if let Some(tile_entity) = tile_entity {
                 let spatial_bundle = spatial_bundle_for_tiles(tile_pos.into(), grid_size);
@@ -167,7 +167,7 @@ fn insert_tile_metadata_for_layer(
     for tile in grid_tiles {
         let grid_coords = tile_to_grid_coords(tile, layer_instance.c_hei, layer_instance.grid_size);
 
-        let tile_entity = tile_storage.get(&grid_coords.into()).unwrap();
+        let tile_entity = tile_storage.get(grid_coords).unwrap();
 
         insert_metadata_to_tile(commands, tile, tile_entity, metadata_map, enum_tags_map);
     }
@@ -249,7 +249,7 @@ pub fn spawn_level(
                 .insert(SpatialBundle::default())
                 .id();
 
-            storage.set(&TilePos::default(), tile_entity);
+            storage.set(TilePos::default(), tile_entity);
 
             let tile_size = TilemapTileSize {
                 x: level.px_wid as f32,
@@ -569,7 +569,7 @@ pub fn spawn_level(
                                         layer_instance.c_hei as u32,
                                     ).expect("int_grid_csv indices should be within the bounds of 0..(layer_width * layer_height)");
 
-                                    let tile_entity = storage.get(&grid_coords.into()).unwrap();
+                                    let tile_entity = storage.get(grid_coords).unwrap();
 
                                     let mut entity_commands = commands.entity(tile_entity);
 

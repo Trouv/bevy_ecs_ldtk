@@ -1,7 +1,7 @@
 //! System functions used by the plugin for processing ldtk files.
 
 use crate::{
-    app::{LdtkEntityMap, LdtkIntCellMap},
+    app::SpawnHook,
     assets::{LdtkAsset, LdtkLevel},
     components::*,
     ldtk::TilesetDefinition,
@@ -10,7 +10,10 @@ use crate::{
     utils::*,
 };
 
-use bevy::{ecs::system::SystemState, prelude::*};
+use bevy::{
+    ecs::system::{SystemParam, SystemParamFetch, SystemState},
+    prelude::*,
+};
 use std::collections::{HashMap, HashSet};
 
 /// Detects [LdtkAsset] events and spawns levels as children of the [LdtkWorldBundle].
@@ -209,89 +212,97 @@ fn pre_spawn_level(
 /// Performs all the spawning of levels, layers, chunks, bundles, entities, tiles, etc. when an
 /// LdtkLevelBundle is added.
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
-pub fn process_ldtk_levels(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    mut images: ResMut<Assets<Image>>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
-    ldtk_assets: Res<Assets<LdtkAsset>>,
-    level_assets: Res<Assets<LdtkLevel>>,
-    ldtk_entity_map: NonSend<LdtkEntityMap>,
-    ldtk_int_cell_map: NonSend<LdtkIntCellMap>,
-    ldtk_query: Query<&Handle<LdtkAsset>>,
-    level_query: Query<
-        (
-            Entity,
-            &Handle<LdtkLevel>,
-            &Parent,
-            Option<&Respawn>,
-            Option<&Children>,
-        ),
-        Or<(Added<Handle<LdtkLevel>>, With<Respawn>)>,
-    >,
-    worldly_query: Query<&Worldly>,
-    mut level_events: EventWriter<LevelEvent>,
-    ldtk_settings: Res<LdtkSettings>,
-) {
-    for (ldtk_entity, level_handle, parent, respawn, children) in level_query.iter() {
-        // Checking if the level has any children is an okay method of checking whether it has
-        // already been processed.
-        // Users will most likely not be adding children to the level entity betwen its creation
-        // and its processing.
-        //
-        // Furthermore, there are no circumstances where an already-processed level entity needs to
-        // be processed again.
-        // In the case of respawning levels, the level entity will have its descendants *despawned*
-        // first, by a separate system.
-        let already_processed = matches!(children, Some(children) if !children.is_empty());
+pub fn process_ldtk_levels<H: SpawnHook>(mut spawn_hook: H) -> impl IntoSystemDescriptor<()> {
+    let closure =
+        move |mut commands: Commands,
+              asset_server: Res<AssetServer>,
+              mut images: ResMut<Assets<Image>>,
+              mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+              ldtk_assets: Res<Assets<LdtkAsset>>,
+              level_assets: Res<Assets<LdtkLevel>>,
+              ldtk_query: Query<&Handle<LdtkAsset>>,
+              level_query: Query<
+            (
+                Entity,
+                &Handle<LdtkLevel>,
+                &Parent,
+                Option<&Respawn>,
+                Option<&Children>,
+            ),
+            Or<(Added<Handle<LdtkLevel>>, With<Respawn>)>,
+        >,
+              worldly_query: Query<&Worldly>,
+              mut level_events: EventWriter<LevelEvent>,
+              ldtk_settings: Res<LdtkSettings>,
+              mut hook_param: <<H::Param<'_, '_> as SystemParam>::Fetch as SystemParamFetch<
+            '_,
+            '_,
+        >>::Item| {
+            {
+                for (ldtk_entity, level_handle, parent, respawn, children) in level_query.iter() {
+                    // Checking if the level has any children is an okay method of checking whether it has
+                    // already been processed.
+                    // Users will most likely not be adding children to the level entity betwen its creation
+                    // and its processing.
+                    //
+                    // Furthermore, there are no circumstances where an already-processed level entity needs to
+                    // be processed again.
+                    // In the case of respawning levels, the level entity will have its descendants *despawned*
+                    // first, by a separate system.
+                    let already_processed =
+                        matches!(children, Some(children) if !children.is_empty());
 
-        if !already_processed {
-            if let Ok(ldtk_handle) = ldtk_query.get(parent.get()) {
-                if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
-                    // Commence the spawning
-                    let tileset_definition_map: HashMap<i32, &TilesetDefinition> = ldtk_asset
-                        .project
-                        .defs
-                        .tilesets
-                        .iter()
-                        .map(|t| (t.uid, t))
-                        .collect();
+                    if !already_processed {
+                        if let Ok(ldtk_handle) = ldtk_query.get(parent.get()) {
+                            if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
+                                // Commence the spawning
+                                let tileset_definition_map: HashMap<i32, &TilesetDefinition> =
+                                    ldtk_asset
+                                        .project
+                                        .defs
+                                        .tilesets
+                                        .iter()
+                                        .map(|t| (t.uid, t))
+                                        .collect();
 
-                    let entity_definition_map =
-                        create_entity_definition_map(&ldtk_asset.project.defs.entities);
+                                let entity_definition_map =
+                                    create_entity_definition_map(&ldtk_asset.project.defs.entities);
 
-                    let layer_definition_map =
-                        create_layer_definition_map(&ldtk_asset.project.defs.layers);
+                                let layer_definition_map =
+                                    create_layer_definition_map(&ldtk_asset.project.defs.layers);
 
-                    let worldly_set = worldly_query.iter().cloned().collect();
+                                let worldly_set = worldly_query.iter().cloned().collect();
 
-                    if let Some(level) = level_assets.get(level_handle) {
-                        spawn_level(
-                            level,
-                            &mut commands,
-                            &asset_server,
-                            &mut images,
-                            &mut texture_atlases,
-                            &ldtk_entity_map,
-                            &ldtk_int_cell_map,
-                            &entity_definition_map,
-                            &layer_definition_map,
-                            &ldtk_asset.tileset_map,
-                            &tileset_definition_map,
-                            worldly_set,
-                            ldtk_entity,
-                            &ldtk_settings,
-                        );
-                        level_events.send(LevelEvent::Spawned(level.level.iid.clone()));
-                    }
+                                if let Some(level) = level_assets.get(level_handle) {
+                                    spawn_level(
+                                        level,
+                                        &mut commands,
+                                        &asset_server,
+                                        &mut images,
+                                        &mut texture_atlases,
+                                        &entity_definition_map,
+                                        &layer_definition_map,
+                                        &ldtk_asset.tileset_map,
+                                        &tileset_definition_map,
+                                        worldly_set,
+                                        ldtk_entity,
+                                        &ldtk_settings,
+                                        &mut spawn_hook,
+                                        &mut hook_param,
+                                    );
+                                    level_events.send(LevelEvent::Spawned(level.level.iid.clone()));
+                                }
 
-                    if respawn.is_some() {
-                        commands.entity(ldtk_entity).remove::<Respawn>();
+                                if respawn.is_some() {
+                                    commands.entity(ldtk_entity).remove::<Respawn>();
+                                }
+                            }
+                        }
                     }
                 }
             }
-        }
-    }
+        };
+    closure.into_descriptor()
 }
 
 /// Performs the "despawning" portion of the respawn process for `Respawn` entities.

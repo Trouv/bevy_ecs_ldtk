@@ -120,6 +120,8 @@ pub use bevy_ecs_ldtk_macros::*;
 mod plugin {
     //! Provides [LdtkPlugin] and its scheduling-related dependencies.
 
+    use crate::app::{DefaultSpawnHook, SpawnHook};
+
     use super::*;
 
     /// [SystemLabel] used by the plugin for scheduling its systems.
@@ -156,19 +158,30 @@ mod plugin {
     pub struct LdtkPlugin;
 
     impl Plugin for LdtkPlugin {
+        fn build(&self, app: &mut App) {
+            app.init_non_send_resource::<app::LdtkEntityMap>()
+                .init_non_send_resource::<app::LdtkIntCellMap>();
+            LdtkPluginWithSpawnHook(|| DefaultSpawnHook).build(app);
+        }
+    }
+
+    #[derive(Copy, Clone, Debug, Default)]
+    pub struct LdtkPluginWithSpawnHook<F>(pub F);
+
+    impl<F: Fn() -> H + Send + Sync + 'static, H: SpawnHook> Plugin for LdtkPluginWithSpawnHook<F> {
         fn build(&self, mut app: &mut App) {
             // Check if we have added the TileMap plugin
             if !app.is_plugin_added::<bevy_ecs_tilemap::TilemapPlugin>() {
                 app = app.add_plugin(bevy_ecs_tilemap::TilemapPlugin);
             }
 
+            let spawn_hook = self.0();
+
             app.add_stage_after(
                 CoreStage::Update,
                 LdtkStage::ProcessApi,
                 SystemStage::parallel(),
             )
-            .init_non_send_resource::<app::LdtkEntityMap>()
-            .init_non_send_resource::<app::LdtkIntCellMap>()
             .init_resource::<resources::LdtkSettings>()
             .add_asset::<assets::LdtkAsset>()
             .init_asset_loader::<assets::LdtkLoader>()
@@ -181,7 +194,7 @@ mod plugin {
             )
             .add_system_to_stage(
                 CoreStage::PreUpdate,
-                systems::process_ldtk_levels.label(LdtkSystemLabel::LevelSpawning),
+                systems::process_ldtk_levels(spawn_hook).label(LdtkSystemLabel::LevelSpawning),
             )
             .add_system_to_stage(
                 LdtkStage::ProcessApi,
@@ -219,14 +232,17 @@ pub mod prelude {
     //! `use bevy_ecs_ldtk::prelude::*;` to import commonly used items.
 
     pub use crate::{
-        app::{LdtkEntity, LdtkEntityAppExt, LdtkIntCell, LdtkIntCellAppExt},
+        app::{
+            EntityInput, IntCellInput, LdtkEntity, LdtkEntityAppExt, LdtkIntCell,
+            LdtkIntCellAppExt, SpawnHook,
+        },
         assets::{LdtkAsset, LdtkLevel},
         components::{
             EntityInstance, GridCoords, IntGridCell, LayerMetadata, LdtkWorldBundle, LevelSet,
             Respawn, TileEnumTags, TileMetadata, Worldly,
         },
         ldtk::{self, FieldValue, LayerInstance, TilesetDefinition},
-        plugin::LdtkPlugin,
+        plugin::{LdtkPlugin, LdtkPluginWithSpawnHook},
         resources::{
             IntGridRendering, LdtkSettings, LevelBackground, LevelEvent, LevelSelection,
             LevelSpawnBehavior, SetClearColor,

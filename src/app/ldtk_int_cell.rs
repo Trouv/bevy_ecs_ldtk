@@ -5,6 +5,7 @@ use crate::{
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::{collections::HashMap, marker::PhantomData};
 
+/// [LdtkIntCellAppExt]: super::LdtkIntCellAppExt
 /// [Bundle]: bevy::prelude::Bundle
 /// [App]: bevy::prelude::App
 /// [Component]: bevy::prelude::Component
@@ -12,7 +13,7 @@ use std::{collections::HashMap, marker::PhantomData};
 /// Provides a constructor which can be used for spawning additional components on IntGrid tiles.
 ///
 /// After implementing this trait on a [Bundle], you can register it to spawn automatically for a
-/// given int grid value via [RegisterLdtkObjects] on your [App].
+/// given int grid value via [LdtkIntCellAppExt] on your [App].
 ///
 /// For common use cases, you'll want to use derive-macro `#[derive(LdtkIntCell)]`, but you can
 /// also provide a custom implementation.
@@ -26,7 +27,7 @@ use std::{collections::HashMap, marker::PhantomData};
 ///
 /// ## Derive macro usage
 /// Using `#[derive(LdtkIntCell)]` on a [Bundle] struct will allow the type to be registered to the
-/// [App] via [RegisterLdtkObjects] functions:
+/// [App] via [LdtkIntCellAppExt] functions:
 /// ```no_run
 /// use bevy::prelude::*;
 /// use bevy_ecs_ldtk::prelude::*;
@@ -180,5 +181,5 @@ impl<B: LdtkIntCell + Bundle> PhantomLdtkIntCellTrait for PhantomLdtkIntCell<B> 
     }
 }
 
-/// Used by [RegisterLdtkObjects] to associate Ldtk IntGrid values with [LdtkIntCell]s.
+/// Used by [LdtkIntCellAppExt](super::LdtkIntCellAppExt) to associate Ldtk IntGrid values with [LdtkIntCell]s.
 pub type LdtkIntCellMap = HashMap<(Option<String>, Option<i32>), Box<dyn PhantomLdtkIntCellTrait>>;

@@ -371,3 +371,9 @@ pub struct LdtkWorldBundle {
     pub visibility: Visibility,
     pub computed_visibility: ComputedVisibility,
 }
+
+/// [Bundle] for creating a SpriteSheetBundle without using a tileset grid. Intended for use with [#[ldtk_entity]](LdtkEntity#ldtk_entity).
+#[derive(Bundle)]
+pub struct NoGridSpriteSheetBundle {
+    pub sprite_sheet: SpriteSheetBundle,
+}

@@ -116,6 +116,33 @@
 			"pivotX": 0,
 			"pivotY": 0,
 			"fieldDefs": []
+		},
+		{
+			"identifier": "NoGridEntity",
+			"uid": 7,
+			"tags": [],
+			"width": 32,
+			"height": 32,
+			"resizableX": false,
+			"resizableY": false,
+			"keepAspectRatio": false,
+			"tileOpacity": 1,
+			"fillOpacity": 0.08,
+			"lineOpacity": 0,
+			"hollow": false,
+			"color": "#BE4A2F",
+			"renderMode": "Tile",
+			"showName": true,
+			"tilesetId": 5,
+			"tileRenderMode": "FitInside",
+			"tileRect": { "tilesetUid": 5, "x": 0, "y": 32, "w": 64, "h": 64 },
+			"nineSliceBorders": [],
+			"maxCount": 0,
+			"limitScope": "PerLevel",
+			"limitBehavior": "MoveLastOne",
+			"pivotX": 0,
+			"pivotY": 0,
+			"fieldDefs": []
 		}
 	], "tilesets": [
 		{
@@ -235,6 +262,20 @@
 							"height": 32,
 							"defUid": 4,
 							"px": [80,128],
+							"fieldInstances": []
+						},
+						{
+							"__identifier": "NoGridEntity",
+							"__grid": [5,5],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": { "tilesetUid": 5, "x": 0, "y": 32, "w": 64, "h": 64 },
+							"__smartColor": "#BE4A2F",
+							"iid": "4ab090c0-7820-11ed-b270-153042a277f7",
+							"width": 32,
+							"height": 32,
+							"defUid": 7,
+							"px": [80,80],
 							"fieldInstances": []
 						}
 					]

@@ -1,7 +1,7 @@
 use crate::{
     components::{EntityInstanceBundle, GridCoords, Worldly},
     ldtk::{EntityInstance, LayerInstance, TilesetDefinition},
-    utils,
+    utils, NoGridSpriteSheetBundle,
 };
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::{collections::HashMap, marker::PhantomData};
@@ -104,6 +104,8 @@ use std::{collections::HashMap, marker::PhantomData};
 /// Similar to using [TextureAtlas::from_grid()].
 /// - `#[sprite_sheet_bundle]` will create the field using information from the LDtk Editor visual,
 /// if it has one.
+/// /// - `#[sprite_sheet_bundle(no_grid)]` will create the field using information from the LDtk Editor visual,
+/// if it has one, but without using a grid. Instead a single texture will be used.
 /// ```
 /// # use bevy::prelude::*;
 /// # use bevy_ecs_ldtk::prelude::*;
@@ -346,7 +348,29 @@ impl LdtkEntity for SpriteSheetBundle {
             tileset,
             tileset_definition,
             texture_atlases,
+            true,
         )
+    }
+}
+
+impl LdtkEntity for NoGridSpriteSheetBundle {
+    fn bundle_entity(
+        entity_instance: &EntityInstance,
+        _: &LayerInstance,
+        tileset: Option<&Handle<Image>>,
+        tileset_definition: Option<&TilesetDefinition>,
+        _: &AssetServer,
+        texture_atlases: &mut Assets<TextureAtlas>,
+    ) -> Self {
+        NoGridSpriteSheetBundle {
+            sprite_sheet: utils::sprite_sheet_bundle_from_entity_info(
+                entity_instance,
+                tileset,
+                tileset_definition,
+                texture_atlases,
+                false,
+            ),
+        }
     }
 }
 

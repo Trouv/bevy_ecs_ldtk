@@ -244,12 +244,24 @@ fn expand_sprite_sheet_bundle_attribute(
                 },
             }
         },
-        syn::Meta::Path(_) => {
+        syn::Meta::List(syn::MetaList { nested, .. }) if nested.len() == 1 => {
+            let mut nested_iter = nested.iter();
+
+            match nested_iter.next() {
+                Some(syn::NestedMeta::Meta(syn::Meta::Path(path))) if path.is_ident("no_grid") => {},
+                _ => panic!("Argument of #[sprite_sheet_bundle(...)] should be no_grid")
+            };
+
             quote! {
-                #field_name: bevy_ecs_ldtk::utils::sprite_sheet_bundle_from_entity_info(entity_instance, tileset, tileset_definition, texture_atlases),
+                #field_name: bevy_ecs_ldtk::utils::sprite_sheet_bundle_from_entity_info(entity_instance, tileset, tileset_definition, texture_atlases, false),
             }
         },
-        _ => panic!("#[sprite_sheet_bundle...] attribute should take the form #[sprite_sheet_bundle(\"asset/path.png\", tile_width, tile_height, columns, rows, padding, offset, index)] or #[sprite_sheet_bundle]"),
+        syn::Meta::Path(_) => {
+            quote! {
+                #field_name: bevy_ecs_ldtk::utils::sprite_sheet_bundle_from_entity_info(entity_instance, tileset, tileset_definition, texture_atlases, true),
+            }
+        },
+        _ => panic!("#[sprite_sheet_bundle...] attribute should take the form #[sprite_sheet_bundle(\"asset/path.png\", tile_width, tile_height, columns, rows, padding, offset, index)], #[sprite_sheet_bundle(no_grid)] or #[sprite_sheet_bundle]"),
     }
 }
 

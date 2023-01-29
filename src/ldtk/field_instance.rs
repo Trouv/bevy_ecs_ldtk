@@ -174,8 +174,7 @@ impl<'de> Deserialize<'de> for FieldInstance {
                     )
                 } else {
                     return Err(de::Error::custom(format!(
-                        "Encountered unknown field type: {}",
-                        t
+                        "Encountered unknown field type: {t}"
                     )));
                 }
             }

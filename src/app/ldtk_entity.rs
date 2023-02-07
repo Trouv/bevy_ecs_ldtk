@@ -10,6 +10,9 @@ use std::{collections::HashMap, marker::PhantomData};
 /// [Bundle]: bevy::prelude::Bundle
 /// [App]: bevy::prelude::App
 /// [Component]: bevy::prelude::Component
+/// [SpriteBundle]: bevy::prelude::SpriteBundle
+/// [SpriteSheetBundle]: bevy::prelude::SpriteSheetBundle
+/// [TextureAtlas]: bevy::prelude::TextureAtlas
 ///
 /// Provides a constructor which can be used for spawning entities from an LDtk file.
 ///
@@ -104,8 +107,10 @@ use std::{collections::HashMap, marker::PhantomData};
 /// Similar to using [TextureAtlas::from_grid()].
 /// - `#[sprite_sheet_bundle]` will create the field using information from the LDtk Editor visual,
 /// if it has one.
-/// /// - `#[sprite_sheet_bundle(no_grid)]` will create the field using information from the LDtk Editor visual,
-/// if it has one, but without using a grid. Instead a single texture will be used.
+/// - `#[sprite_sheet_bundle(no_grid)]` will create the field using information from the LDtk
+/// Editor visual, if it has one, but without using a grid. Instead a single texture will be used.
+/// This may be useful if the LDtk entity's visual uses a rectangle of tiles from its tileset,
+/// but will prevent using the generated [TextureAtlas] for animation purposes.
 /// ```
 /// # use bevy::prelude::*;
 /// # use bevy_ecs_ldtk::prelude::*;

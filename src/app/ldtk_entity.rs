@@ -1,7 +1,7 @@
 use crate::{
     components::{EntityInstanceBundle, GridCoords, Worldly},
     ldtk::{EntityInstance, LayerInstance, TilesetDefinition},
-    utils, NoGridSpriteSheetBundle,
+    utils,
 };
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::{collections::HashMap, marker::PhantomData};
@@ -350,27 +350,6 @@ impl LdtkEntity for SpriteSheetBundle {
             texture_atlases,
             true,
         )
-    }
-}
-
-impl LdtkEntity for NoGridSpriteSheetBundle {
-    fn bundle_entity(
-        entity_instance: &EntityInstance,
-        _: &LayerInstance,
-        tileset: Option<&Handle<Image>>,
-        tileset_definition: Option<&TilesetDefinition>,
-        _: &AssetServer,
-        texture_atlases: &mut Assets<TextureAtlas>,
-    ) -> Self {
-        NoGridSpriteSheetBundle {
-            sprite_sheet: utils::sprite_sheet_bundle_from_entity_info(
-                entity_instance,
-                tileset,
-                tileset_definition,
-                texture_atlases,
-                false,
-            ),
-        }
     }
 }
 

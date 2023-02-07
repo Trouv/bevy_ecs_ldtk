@@ -40,13 +40,6 @@ pub struct MyBundle {
 
 #[derive(Bundle, LdtkEntity)]
 pub struct NoGridEntity {
-    #[ldtk_entity]
-    #[bundle]
-    sprite_bundle: NoGridSpriteSheetBundle,
-}
-
-#[derive(Bundle, LdtkEntity)]
-pub struct NoGridEntityEquivalent {
     #[sprite_sheet_bundle(no_grid)]
     #[bundle]
     sprite_bundle: SpriteSheetBundle,

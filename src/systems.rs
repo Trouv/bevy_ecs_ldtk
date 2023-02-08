@@ -1,12 +1,14 @@
 //! System functions used by the plugin for processing ldtk files.
 
+#[cfg(feature = "render")]
+use crate::resources::SetClearColor;
 use crate::{
     app::{LdtkEntityMap, LdtkIntCellMap},
     assets::{LdtkAsset, LdtkLevel},
     components::*,
     ldtk::TilesetDefinition,
     level::spawn_level,
-    resources::{LdtkSettings, LevelEvent, LevelSelection, LevelSpawnBehavior, SetClearColor},
+    resources::{LdtkSettings, LevelEvent, LevelSelection, LevelSpawnBehavior},
     utils::*,
 };
 
@@ -19,9 +21,9 @@ pub fn process_ldtk_assets(
     mut commands: Commands,
     mut ldtk_events: EventReader<AssetEvent<LdtkAsset>>,
     ldtk_world_query: Query<(Entity, &Handle<LdtkAsset>)>,
-    ldtk_settings: Res<LdtkSettings>,
-    mut clear_color: ResMut<ClearColor>,
-    ldtk_assets: Res<Assets<LdtkAsset>>,
+    #[cfg(feature = "render")] ldtk_settings: Res<LdtkSettings>,
+    #[cfg(feature = "render")] mut clear_color: ResMut<ClearColor>,
+    #[cfg(feature = "render")] ldtk_assets: Res<Assets<LdtkAsset>>,
 ) {
     let mut ldtk_handles_to_respawn = HashSet::new();
     let mut ldtk_handles_for_clear_color = HashSet::new();
@@ -46,6 +48,7 @@ pub fn process_ldtk_assets(
         }
     }
 
+    #[cfg(feature = "render")]
     if ldtk_settings.set_clear_color == SetClearColor::FromEditorBackground {
         for handle in ldtk_handles_for_clear_color.iter() {
             if let Some(ldtk_asset) = ldtk_assets.get(handle) {
@@ -67,7 +70,7 @@ pub fn apply_level_selection(
     ldtk_settings: Res<LdtkSettings>,
     ldtk_assets: Res<Assets<LdtkAsset>>,
     mut level_set_query: Query<(&Handle<LdtkAsset>, &mut LevelSet)>,
-    mut clear_color: ResMut<ClearColor>,
+    #[cfg(feature = "render")] mut clear_color: ResMut<ClearColor>,
 ) {
     if let Some(level_selection) = level_selection {
         for (ldtk_handle, mut level_set) in level_set_query.iter_mut() {
@@ -92,6 +95,7 @@ pub fn apply_level_selection(
                     if *level_set != new_level_set {
                         *level_set = new_level_set;
 
+                        #[cfg(feature = "render")]
                         if ldtk_settings.set_clear_color == SetClearColor::FromLevelBackground {
                             clear_color.0 = level.bg_color;
                         }

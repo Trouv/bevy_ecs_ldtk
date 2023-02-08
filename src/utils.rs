@@ -15,7 +15,7 @@ use bevy_ecs_tilemap::{
 
 use std::{collections::HashMap, hash::Hash};
 
-/// The `int_grid_csv` field of a [LayerInstance] is a 1-dimensional [Vec<i32>].
+/// The `int_grid_csv` field of a [LayerInstance] is a 1-dimensional [`Vec<i32>`].
 /// This function can map the indices of this [Vec] to a corresponding [GridCoords].
 ///
 /// Will return [None] if the resulting [GridCoords] is out of the bounds implied by the width and

@@ -21,7 +21,7 @@
 //!     have been changed from vectors to [IVec2] and [Vec2].
 //! 11. Some "color" fields on [LdtkJson], [EntityDefinition], [IntGridValueDefinition], and
 //!     [Level] have been changed from [String]s to [Color].
-//! 12. [TilesetDefinition::rel_path]'s type changed from [String] to [Option<String>].
+//! 12. [TilesetDefinition::rel_path]'s type changed from [String] to [`Option<String>`].
 //! 13. All urls in docs have been changed to hyperlinks with `<>`
 //! 14. `Reflect` has been derived for [Type].
 

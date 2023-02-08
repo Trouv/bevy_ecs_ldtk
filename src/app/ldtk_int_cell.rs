@@ -89,7 +89,7 @@ use std::{collections::HashMap, marker::PhantomData};
 /// ```
 ///
 /// ### `#[from_int_grid_cell]`
-/// Indicates that a component or bundle that implements [From<IntGridCell>] should be created
+/// Indicates that a component or bundle that implements [`From<IntGridCell>`] should be created
 /// using that conversion.
 /// This allows for more modular and custom component construction, and for different structs that
 /// contain the same component to have different constructions of that component, without having to

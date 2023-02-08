@@ -125,6 +125,35 @@ use std::{collections::HashMap, marker::PhantomData};
 ///     damage: Damage,
 /// }
 /// ```
+///
+/// ### `#[with(...)]`
+///
+/// Indicates that this component or bundle should be initialized with the given
+/// function.
+///
+/// Note: The given function should have signature `fn (int_grid_cell: IntGridCell) -> T`
+/// where `T` is the field type. The function should also be accessible in the scope.
+///
+/// ```
+/// # use bevy::prelude::*;
+/// # use bevy_ecs_ldtk::prelude::*;
+/// # #[derive(Component, Default)]
+/// # struct Fluid { viscosity: i32 }
+/// # #[derive(Component, Default)]
+/// # struct Damage;
+/// fn initial_fluid(_: IntGridCell) -> Fluid {
+///     Fluid {
+///         viscosity: 20
+///     }
+/// }
+///
+/// #[derive(Bundle, LdtkIntCell)]
+/// pub struct Lava {
+///     #[with(initial_fluid)]
+///     fluid: Fluid,
+///     damage: Damage,
+/// }
+/// ```
 pub trait LdtkIntCell {
     /// The constructor used by the plugin when spawning additional components on IntGrid tiles.
     /// If you need access to more of the [World](bevy::prelude::World), you can create a system that queries for

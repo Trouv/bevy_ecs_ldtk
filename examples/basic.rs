@@ -10,7 +10,6 @@ fn main() {
         .add_startup_system(setup)
         .insert_resource(LevelSelection::Index(0))
         .register_ldtk_entity::<MyBundle>("MyEntityIdentifier")
-        .register_ldtk_entity::<NoGridEntity>("NoGridEntity")
         .run();
 }
 
@@ -34,13 +33,6 @@ pub struct MyBundle {
     a: ComponentA,
     b: ComponentB,
     #[sprite_sheet_bundle]
-    #[bundle]
-    sprite_bundle: SpriteSheetBundle,
-}
-
-#[derive(Bundle, LdtkEntity)]
-pub struct NoGridEntity {
-    #[sprite_sheet_bundle(no_grid)]
     #[bundle]
     sprite_bundle: SpriteSheetBundle,
 }

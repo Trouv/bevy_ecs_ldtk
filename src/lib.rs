@@ -96,6 +96,22 @@
 //! world.
 //! You can make them spawn according to their world location in LDtk by setting
 //! [LevelSpawnBehavior::UseWorldTranslation].
+//!
+//! ### Feature flags
+//!
+//! This crate uses the following set of [feature flags]:
+//! - `derive`: Enables the derive macros for [LdtkEntity] and [LdtkIntCell].
+//! - `render`: Enables rendering via [bevy_ecs_tilemap]'s `render` feature. Disable it if you want
+//! to run in headless mode.
+//! - `atlas`: Enables the `atlas` feature of [bevy_ecs_tilemap]. This is required for tile spacing
+//! to work on Tile and AutoTile layers.
+//!
+//! The `derive` and `render` features are enabled by default.
+//!
+//! [feature flags]: https://doc.rust-lang.org/cargo/reference/features.html#the-features-section
+//! [LdtkEntity]: app::LdtkEntity
+//! [LdtkIntCell]: app::LdtkEntity
+//! [bevy_ecs_tilemap]: https://docs.rs/bevy_ecs_tilemap
 
 use bevy::prelude::*;
 

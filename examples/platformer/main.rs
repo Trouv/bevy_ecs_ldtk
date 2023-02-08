@@ -45,5 +45,6 @@ fn main() {
         .register_ldtk_entity::<components::PlayerBundle>("Player")
         .register_ldtk_entity::<components::MobBundle>("Mob")
         .register_ldtk_entity::<components::ChestBundle>("Chest")
+        .register_ldtk_entity::<components::PumpkinsBundle>("Pumpkins")
         .run();
 }

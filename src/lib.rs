@@ -103,8 +103,8 @@
 //! - `derive`: Enables the derive macros for [LdtkEntity] and [LdtkIntCell].
 //! - `render`: Enables rendering via [bevy_ecs_tilemap]'s `render` feature. Disable it if you want
 //! to run in headless mode.
-//! - `atlas`: Enables the `atlas` feature of [bevy_ecs_tilemap]. This is required for tile spacing
-//! to work on Tile and AutoTile layers.
+//! - `atlas`: Enables the `atlas` feature of [bevy_ecs_tilemap]. This is required for WASM support
+//! and also for tile spacing to work on Tile and AutoTile layers.
 //!
 //! The `derive` and `render` features are enabled by default.
 //!

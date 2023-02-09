@@ -240,6 +240,13 @@ pub struct ChestBundle {
     pub collider_bundle: ColliderBundle,
 }
 
+#[derive(Clone, Default, Bundle, LdtkEntity)]
+pub struct PumpkinsBundle {
+    #[sprite_sheet_bundle(no_grid)]
+    #[bundle]
+    pub sprite_sheet_bundle: SpriteSheetBundle,
+}
+
 #[derive(Clone, Default, Component)]
 pub struct GroundDetection {
     pub on_ground: bool,

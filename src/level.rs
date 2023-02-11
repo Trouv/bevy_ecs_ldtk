@@ -1,10 +1,7 @@
 //! Functions related to spawning levels.
 
 use crate::{
-    app::{
-        LdtkEntity, LdtkEntityMap, LdtkIntCellMap, PhantomLdtkEntity, PhantomLdtkEntityTrait,
-        PhantomLdtkIntCell, PhantomLdtkIntCellTrait,
-    },
+    app::{EntityInput, IntCellInput, LdtkEntity, SpawnContext, SpawnHook},
     assets::{LdtkLevel, TilesetMap},
     components::*,
     ldtk::{
@@ -16,7 +13,11 @@ use crate::{
     utils::*,
 };
 
-use bevy::{prelude::*, render::render_resource::*};
+use bevy::{
+    ecs::system::{SystemParam, SystemParamFetch},
+    prelude::*,
+    render::render_resource::*,
+};
 use bevy_ecs_tilemap::{
     map::{
         TilemapGridSize, TilemapId, TilemapSize, TilemapSpacing, TilemapTexture, TilemapTileSize,
@@ -200,14 +201,12 @@ fn tile_in_layer_bounds(tile: &TileInstance, layer_instance: &LayerInstance) -> 
 }
 
 #[allow(clippy::too_many_arguments)]
-pub fn spawn_level(
+pub fn spawn_level<H: SpawnHook>(
     ldtk_level: &LdtkLevel,
     commands: &mut Commands,
     asset_server: &AssetServer,
     images: &mut Assets<Image>,
     texture_atlases: &mut Assets<TextureAtlas>,
-    ldtk_entity_map: &LdtkEntityMap,
-    ldtk_int_cell_map: &LdtkIntCellMap,
     entity_definition_map: &HashMap<i32, &EntityDefinition>,
     layer_definition_map: &HashMap<i32, &LayerDefinition>,
     tileset_map: &TilesetMap,
@@ -215,6 +214,8 @@ pub fn spawn_level(
     worldly_set: HashSet<Worldly>,
     ldtk_entity: Entity,
     ldtk_settings: &LdtkSettings,
+    hook: &mut H,
+    hook_param: &mut <<H::Param<'_, '_> as SystemParam>::Fetch as SystemParamFetch<'_, '_>>::Item,
 ) {
     let level = &ldtk_level.level;
 
@@ -331,24 +332,21 @@ pub fn spawn_level(
                             );
 
                             if !worldly_set.contains(&predicted_worldly) {
-                                let default_ldtk_entity: Box<dyn PhantomLdtkEntityTrait> =
-                                    Box::new(PhantomLdtkEntity::<EntityInstanceBundle>::new());
                                 let mut entity_commands = commands.spawn_empty();
 
-                                ldtk_map_get_or_default(
-                                    layer_instance.identifier.clone(),
-                                    entity_instance.identifier.clone(),
-                                    &default_ldtk_entity,
-                                    ldtk_entity_map,
-                                )
-                                .evaluate(
+                                hook.spawn_entity(
                                     &mut entity_commands,
-                                    entity_instance,
-                                    layer_instance,
-                                    tileset,
-                                    tileset_definition,
-                                    asset_server,
-                                    texture_atlases,
+                                    EntityInput {
+                                        entity_instance,
+                                        tileset,
+                                        tileset_definition,
+                                        context: SpawnContext {
+                                            layer_instance,
+                                            asset_server,
+                                            texture_atlases,
+                                        },
+                                    },
+                                    hook_param,
                                 );
 
                                 entity_commands
@@ -573,20 +571,18 @@ pub fn spawn_level(
 
                                     let mut entity_commands = commands.entity(tile_entity);
 
-                                    let default_ldtk_int_cell: Box<dyn PhantomLdtkIntCellTrait> =
-                                        Box::new(PhantomLdtkIntCell::<IntGridCellBundle>::new());
-
-                                    ldtk_map_get_or_default(
-                                        layer_instance.identifier.clone(),
-                                        *value,
-                                        &default_ldtk_int_cell,
-                                        ldtk_int_cell_map,
-                                    )
-                                    .evaluate(
+                                    hook.spawn_int_cell(
                                         &mut entity_commands,
-                                        IntGridCell { value: *value },
-                                        layer_instance,
-                                    );
+                                        IntCellInput {
+                                            int_grid_cell: IntGridCell { value: *value },
+                                            context: SpawnContext {
+                                                layer_instance,
+                                                asset_server,
+                                                texture_atlases,
+                                            },
+                                        },
+                                        hook_param,
+                                    )
                                 }
                             }
 

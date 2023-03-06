@@ -70,7 +70,6 @@ impl From<IntGridCell> for SensorBundle {
                 sensor: Sensor,
                 rotation_constraints,
                 active_events: ActiveEvents::COLLISION_EVENTS,
-                ..Default::default()
             }
         } else {
             SensorBundle::default()
@@ -189,23 +188,21 @@ impl LdtkEntity for Patrol {
             .find(|f| f.identifier == *"patrol")
             .unwrap();
         if let FieldValue::Points(ldtk_points) = &ldtk_patrol.value {
-            for ldtk_point in ldtk_points {
-                if let Some(ldtk_point) = ldtk_point {
-                    // The +1 is necessary here due to the pivot of the entities in the sample
-                    // file.
-                    // The patrols set up in the file look flat and grounded,
-                    // but technically they're not if you consider the pivot,
-                    // which is at the bottom-center for the skulls.
-                    let pixel_coords = (ldtk_point.as_vec2() + Vec2::new(0.5, 1.))
-                        * Vec2::splat(layer_instance.grid_size as f32);
+            for ldtk_point in ldtk_points.iter().flatten() {
+                // The +1 is necessary here due to the pivot of the entities in the sample
+                // file.
+                // The patrols set up in the file look flat and grounded,
+                // but technically they're not if you consider the pivot,
+                // which is at the bottom-center for the skulls.
+                let pixel_coords = (ldtk_point.as_vec2() + Vec2::new(0.5, 1.))
+                    * Vec2::splat(layer_instance.grid_size as f32);
 
-                    points.push(ldtk_pixel_coords_to_translation_pivoted(
-                        pixel_coords.as_ivec2(),
-                        layer_instance.c_hei * layer_instance.grid_size,
-                        IVec2::new(entity_instance.width, entity_instance.height),
-                        entity_instance.pivot,
-                    ));
-                }
+                points.push(ldtk_pixel_coords_to_translation_pivoted(
+                    pixel_coords.as_ivec2(),
+                    layer_instance.c_hei * layer_instance.grid_size,
+                    IVec2::new(entity_instance.width, entity_instance.height),
+                    entity_instance.pivot,
+                ));
             }
         }
 

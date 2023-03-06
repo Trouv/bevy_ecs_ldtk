@@ -138,19 +138,10 @@ mod plugin {
 
     use super::*;
 
-    /// [SystemLabel] used by the plugin for scheduling its systems.
-    #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash, SystemLabel)]
-    pub enum LdtkSystemLabel {
-        ProcessAssets,
-        LevelSelection,
-        LevelSet,
-        LevelSpawning,
-        Other,
-    }
-
     /// [StageLabel] for stages added by the plugin.
-    #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash, StageLabel)]
-    pub enum LdtkStage {
+    #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash, SystemSet)]
+    #[system_set(base)]
+    pub enum LdtkSystemSet {
         /// Occurs immediately after [CoreStage::Update].
         ///
         /// Used for systems that process components and resources provided by this plugin's API.
@@ -163,6 +154,7 @@ mod plugin {
         /// As a result, you can expect minimal frame delay when updating these in
         /// [CoreStage::Update].
         ProcessApi,
+        PostProcessApi,
     }
 
     /// Adds the default systems, assets, and resources used by `bevy_ecs_ldtk`.
@@ -178,10 +170,11 @@ mod plugin {
                 app = app.add_plugin(bevy_ecs_tilemap::TilemapPlugin);
             }
 
-            app.add_stage_after(
-                CoreStage::Update,
-                LdtkStage::ProcessApi,
-                SystemStage::parallel(),
+            app.configure_sets(
+                (LdtkSystemSet::ProcessApi, LdtkSystemSet::PostProcessApi)
+                    .chain()
+                    .after(CoreSet::Update)
+                    .before(CoreSet::PostUpdate),
             )
             .init_non_send_resource::<app::LdtkEntityMap>()
             .init_non_send_resource::<app::LdtkIntCellMap>()
@@ -191,37 +184,21 @@ mod plugin {
             .add_asset::<assets::LdtkLevel>()
             .init_asset_loader::<assets::LdtkLevelLoader>()
             .add_event::<resources::LevelEvent>()
-            .add_system_to_stage(
-                CoreStage::PreUpdate,
-                systems::process_ldtk_assets.label(LdtkSystemLabel::ProcessAssets),
+            .add_systems(
+                (systems::process_ldtk_assets, systems::process_ldtk_levels)
+                    .in_base_set(CoreSet::PreUpdate),
             )
-            .add_system_to_stage(
-                CoreStage::PreUpdate,
-                systems::process_ldtk_levels.label(LdtkSystemLabel::LevelSpawning),
+            .add_system(systems::worldly_adoption.in_base_set(LdtkSystemSet::ProcessApi))
+            .add_systems(
+                (systems::apply_level_selection, systems::apply_level_set)
+                    .chain()
+                    .in_base_set(LdtkSystemSet::ProcessApi),
             )
-            .add_system_to_stage(
-                LdtkStage::ProcessApi,
-                systems::worldly_adoption.label(LdtkSystemLabel::Other),
-            )
-            .add_system_to_stage(
-                LdtkStage::ProcessApi,
-                systems::apply_level_selection.label(LdtkSystemLabel::LevelSelection),
-            )
-            .add_system_to_stage(
-                LdtkStage::ProcessApi,
-                systems::apply_level_set
-                    .label(LdtkSystemLabel::LevelSet)
-                    .after(LdtkSystemLabel::LevelSelection),
-            )
-            .add_system_to_stage(
-                LdtkStage::ProcessApi,
-                systems::clean_respawn_entities.at_end(),
-            )
-            .add_system_to_stage(
-                CoreStage::PostUpdate,
+            .add_system(systems::clean_respawn_entities.in_base_set(LdtkSystemSet::PostProcessApi))
+            .add_system(
                 systems::detect_level_spawned_events
                     .pipe(systems::fire_level_transformed_events)
-                    .label(LdtkSystemLabel::Other),
+                    .in_base_set(CoreSet::PostUpdate),
             )
             .register_type::<GridCoords>()
             .register_type::<TileMetadata>()

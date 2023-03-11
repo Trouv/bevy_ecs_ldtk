@@ -26,7 +26,7 @@ thiserror = "1.0"
 
 [dev-dependencies]
 bevy = "0.10"
-bevy_rapier2d = "0.20"
+bevy_rapier2d = "0.21"
 rand = "0.8"
 
 [features]
@@ -41,5 +41,3 @@ path = "examples/platformer/main.rs"
 
 [patch.crates-io]
 bevy_ecs_tilemap = { version = "0.9", git = "https://github.com/geieredgar/bevy_ecs_tilemap", branch = "bevy_track" }
-bevy_rapier2d = { version = "0.20", git = "https://github.com/devil-ira/bevy_rapier", branch = "bevy-0.10" }
-nalgebra = { version = "0.32.1", git = "https://github.com/MarijnS95/nalgebra", branch = "glam-0.23" }

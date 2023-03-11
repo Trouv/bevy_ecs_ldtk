@@ -138,11 +138,11 @@ mod plugin {
 
     use super::*;
 
-    /// [StageLabel] for stages added by the plugin.
+    /// Base [SystemSet]s for systems added by the plugin.
     #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash, SystemSet)]
     #[system_set(base)]
     pub enum LdtkSystemSet {
-        /// Occurs immediately after [CoreStage::Update].
+        /// Occurs immediately after [CoreSet::UpdateFlush].
         ///
         /// Used for systems that process components and resources provided by this plugin's API.
         /// In particular, this stage processes..
@@ -152,9 +152,13 @@ mod plugin {
         /// - [components::Respawn]
         ///
         /// As a result, you can expect minimal frame delay when updating these in
-        /// [CoreStage::Update].
+        /// [CoreSet::Update].
         ProcessApi,
-        PostProcessApi,
+    }
+
+    #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash, SystemSet)]
+    enum InternalSystemSet {
+        PreClean,
     }
 
     /// Adds the default systems, assets, and resources used by `bevy_ecs_ldtk`.
@@ -170,10 +174,9 @@ mod plugin {
                 app = app.add_plugin(bevy_ecs_tilemap::TilemapPlugin);
             }
 
-            app.configure_sets(
-                (LdtkSystemSet::ProcessApi, LdtkSystemSet::PostProcessApi)
-                    .chain()
-                    .after(CoreSet::Update)
+            app.configure_set(
+                LdtkSystemSet::ProcessApi
+                    .after(CoreSet::UpdateFlush)
                     .before(CoreSet::PostUpdate),
             )
             .init_non_send_resource::<app::LdtkEntityMap>()
@@ -188,13 +191,23 @@ mod plugin {
                 (systems::process_ldtk_assets, systems::process_ldtk_levels)
                     .in_base_set(CoreSet::PreUpdate),
             )
-            .add_system(systems::worldly_adoption.in_base_set(LdtkSystemSet::ProcessApi))
+            .add_system(
+                systems::worldly_adoption
+                    .in_base_set(LdtkSystemSet::ProcessApi)
+                    .in_set(InternalSystemSet::PreClean),
+            )
             .add_systems(
                 (systems::apply_level_selection, systems::apply_level_set)
                     .chain()
-                    .in_base_set(LdtkSystemSet::ProcessApi),
+                    .in_base_set(LdtkSystemSet::ProcessApi)
+                    .in_set(InternalSystemSet::PreClean),
             )
-            .add_system(systems::clean_respawn_entities.in_base_set(LdtkSystemSet::PostProcessApi))
+            .add_systems(
+                (apply_system_buffers, systems::clean_respawn_entities)
+                    .chain()
+                    .in_base_set(LdtkSystemSet::ProcessApi)
+                    .after(InternalSystemSet::PreClean),
+            )
             .add_system(
                 systems::detect_level_spawned_events
                     .pipe(systems::fire_level_transformed_events)

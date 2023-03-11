@@ -157,8 +157,9 @@ mod plugin {
     }
 
     #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash, SystemSet)]
-    enum InternalSystemSet {
+    enum ProcessApiSet {
         PreClean,
+        Clean,
     }
 
     /// Adds the default systems, assets, and resources used by `bevy_ecs_ldtk`.
@@ -179,6 +180,11 @@ mod plugin {
                     .after(CoreSet::UpdateFlush)
                     .before(CoreSet::PostUpdate),
             )
+            .configure_sets(
+                (ProcessApiSet::PreClean, ProcessApiSet::Clean)
+                    .chain()
+                    .in_base_set(LdtkSystemSet::ProcessApi),
+            )
             .init_non_send_resource::<app::LdtkEntityMap>()
             .init_non_send_resource::<app::LdtkIntCellMap>()
             .init_resource::<resources::LdtkSettings>()
@@ -191,22 +197,16 @@ mod plugin {
                 (systems::process_ldtk_assets, systems::process_ldtk_levels)
                     .in_base_set(CoreSet::PreUpdate),
             )
-            .add_system(
-                systems::worldly_adoption
-                    .in_base_set(LdtkSystemSet::ProcessApi)
-                    .in_set(InternalSystemSet::PreClean),
-            )
+            .add_system(systems::worldly_adoption.in_set(ProcessApiSet::PreClean))
             .add_systems(
                 (systems::apply_level_selection, systems::apply_level_set)
                     .chain()
-                    .in_base_set(LdtkSystemSet::ProcessApi)
-                    .in_set(InternalSystemSet::PreClean),
+                    .in_set(ProcessApiSet::PreClean),
             )
             .add_systems(
                 (apply_system_buffers, systems::clean_respawn_entities)
                     .chain()
-                    .in_base_set(LdtkSystemSet::ProcessApi)
-                    .after(InternalSystemSet::PreClean),
+                    .in_set(ProcessApiSet::Clean),
             )
             .add_system(
                 systems::detect_level_spawned_events

@@ -142,7 +142,7 @@ mod plugin {
     #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash, SystemSet)]
     #[system_set(base)]
     pub enum LdtkSystemSet {
-        /// Occurs immediately after [CoreSet::UpdateFlush].
+        /// Scheduled after [CoreSet::UpdateFlush].
         ///
         /// Used for systems that process components and resources provided by this plugin's API.
         /// In particular, this stage processes..
@@ -153,6 +153,9 @@ mod plugin {
         ///
         /// As a result, you can expect minimal frame delay when updating these in
         /// [CoreSet::Update].
+        ///
+        /// You might need to add additional scheduling constraints to prevent race conditions
+        /// between systems in this set and other external systems.
         ProcessApi,
     }
 

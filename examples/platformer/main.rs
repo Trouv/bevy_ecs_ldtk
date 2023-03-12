@@ -2,7 +2,7 @@
 // Please run with `--release`.
 
 use bevy::prelude::*;
-use bevy_ecs_ldtk::{prelude::*, LdtkSystemSet};
+use bevy_ecs_ldtk::prelude::*;
 
 use bevy_rapier2d::prelude::*;
 

@@ -155,7 +155,8 @@ mod plugin {
         /// [CoreSet::Update].
         ///
         /// You might need to add additional scheduling constraints to prevent race conditions
-        /// between systems in this set and other external systems.
+        /// between systems in this set and other external systems. As an example, `bevy_rapier`'s
+        /// `PhysicsSet::BackendSync` should be scheduled after `LdtkSystemSet::ProcessApi`.
         ProcessApi,
     }
 

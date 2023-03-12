@@ -145,7 +145,7 @@ mod plugin {
         /// Scheduled after [CoreSet::UpdateFlush].
         ///
         /// Used for systems that process components and resources provided by this plugin's API.
-        /// In particular, this stage processes..
+        /// In particular, this set processes..
         /// - [resources::LevelSelection]
         /// - [components::LevelSet]
         /// - [components::Worldly]

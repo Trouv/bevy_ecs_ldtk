@@ -536,14 +536,17 @@ pub fn spawn_level(
                         }
                     }
 
-                    if layer_instance.layer_instance_type == Type::IntGrid {
+                    if layer_instance.layer_instance_type == Type::IntGrid
+                        && layer_instance.c_wid > 0
+                        && layer_instance.c_hei > 0
+                    {
                         spawn_sub_layer(
                             commands,
                             layer_instance,
                             SubLayer {
                                 offset: IVec2::default(),
                                 min: IVec2::default(),
-                                max: IVec2::new(layer_instance.c_wid, layer_instance.c_hei),
+                                max: IVec2::new(layer_instance.c_wid - 1, layer_instance.c_hei - 1),
                                 tiles: Vec::new(),
                             },
                             &metadata_map,

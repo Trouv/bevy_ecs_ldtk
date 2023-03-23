@@ -94,7 +94,6 @@ pub(crate) fn tile_pos_to_int_grid_map(
 /// Used for spawning Tile, AutoTile and IntGrid layers with AutoTile functionality.
 pub(crate) fn tile_pos_to_tile_maker(
     grid_tiles: &[TileInstance],
-    layer_px_offset: IVec2,
     layer_min_coords: GridCoords,
     layer_height_in_tiles: i32,
     layer_grid_size: i32,
@@ -103,13 +102,7 @@ pub(crate) fn tile_pos_to_tile_maker(
         .iter()
         .map(|t| {
             (
-                tile_to_tile_pos(
-                    t,
-                    layer_px_offset,
-                    layer_min_coords,
-                    layer_height_in_tiles,
-                    layer_grid_size,
-                ),
+                tile_to_tile_pos(t, layer_min_coords, layer_height_in_tiles, layer_grid_size),
                 t.clone(),
             )
         })
@@ -279,8 +272,7 @@ mod tests {
             },
         ];
 
-        let mut tile_maker =
-            tile_pos_to_tile_maker(&grid_tiles, IVec2::default(), GridCoords::default(), 2, 32);
+        let mut tile_maker = tile_pos_to_tile_maker(&grid_tiles, GridCoords::default(), 2, 32);
 
         assert_eq!(
             tile_maker(TilePos { x: 0, y: 0 }).unwrap().texture_index.0,
@@ -333,8 +325,7 @@ mod tests {
             },
         ];
 
-        let mut tile_maker =
-            tile_pos_to_tile_maker(&grid_tiles, IVec2::default(), GridCoords::default(), 2, 32);
+        let mut tile_maker = tile_pos_to_tile_maker(&grid_tiles, GridCoords::default(), 2, 32);
 
         assert!(!tile_maker(TilePos { x: 0, y: 0 }).unwrap().flip.x);
         assert!(tile_maker(TilePos { x: 0, y: 0 }).unwrap().flip.y);

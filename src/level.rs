@@ -91,13 +91,12 @@ fn background_image_sprite_sheet_bundle(
 
 pub(crate) fn tile_to_tile_pos(
     tile_instance: &TileInstance,
-    layer_px_offset: IVec2,
     layer_min_coords: GridCoords,
     layer_height_in_tiles: i32,
     layer_grid_size: i32,
 ) -> TilePos {
     (ldtk_pixel_coords_to_grid_coords(
-        tile_instance.px - layer_px_offset,
+        tile_instance.px,
         layer_height_in_tiles,
         IVec2::splat(layer_grid_size),
     ) - layer_min_coords)
@@ -163,7 +162,6 @@ fn insert_tile_metadata_for_layer(
     commands: &mut Commands,
     tile_storage: &TileStorage,
     grid_tiles: &[TileInstance],
-    layer_px_offset: IVec2,
     layer_min_coords: GridCoords,
     layer_instance: &LayerInstance,
     metadata_map: &HashMap<i32, TileMetadata>,
@@ -172,7 +170,6 @@ fn insert_tile_metadata_for_layer(
     for tile in grid_tiles {
         let tile_pos = tile_to_tile_pos(
             tile,
-            layer_px_offset,
             layer_min_coords,
             layer_instance.c_hei,
             layer_instance.grid_size,
@@ -668,7 +665,6 @@ pub fn spawn_level(
                             tile_pos_to_tile_grid_bundle_maker(tile_pos_to_transparent_tile_maker(
                                 tile_pos_to_tile_maker(
                                     &sub_layer.tiles,
-                                    sub_layer.offset,
                                     sub_layer.min_coords(layer_instance.c_hei),
                                     layer_instance.c_hei,
                                     layer_instance.grid_size,
@@ -733,7 +729,6 @@ fn spawn_sub_layer(
             commands,
             &storage,
             &sub_layer.tiles,
-            sub_layer.offset,
             sub_layer.min_coords(layer_instance.c_hei),
             layer_instance,
             metadata_map,

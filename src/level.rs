@@ -221,7 +221,7 @@ pub fn spawn_level(
     if let Some(layer_instances) = &level.layer_instances {
         let mut layer_z = 0;
 
-        // creating an image to use for the background color, and for intgrid colors
+        // creating an image to use for intgrid colors
         let white_image = Image::new_fill(
             Extent3d {
                 width: level.px_wid as u32,
@@ -236,19 +236,20 @@ pub fn spawn_level(
         let white_image_handle = images.add(white_image);
 
         if ldtk_settings.level_background == LevelBackground::Rendered {
-            let background_entity = commands.spawn_empty().id();
-
             let translation = Vec3::new(level.px_wid as f32, level.px_hei as f32, 0.) / 2.;
 
-            commands.entity(background_entity).insert(SpriteBundle {
-                sprite: Sprite {
-                    color: level.bg_color,
-                    custom_size: Some(Vec2::new(level.px_wid as f32, level.px_hei as f32)),
+            let background_entity = commands
+                .spawn(SpriteBundle {
+                    sprite: Sprite {
+                        color: level.bg_color,
+                        custom_size: Some(Vec2::new(level.px_wid as f32, level.px_hei as f32)),
+                        ..default()
+                    },
+                    transform: Transform::from_translation(translation),
                     ..default()
-                },
-                transform: Transform::from_translation(translation),
-                ..default()
-            });
+                })
+                .id();
+
             commands.entity(ldtk_entity).add_child(background_entity);
 
             layer_z += 1;

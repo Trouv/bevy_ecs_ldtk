@@ -238,39 +238,17 @@ pub fn spawn_level(
         if ldtk_settings.level_background == LevelBackground::Rendered {
             let background_entity = commands.spawn_empty().id();
 
-            let mut storage = TileStorage::empty(TilemapSize { x: 1, y: 1 });
-
-            let tile_entity = commands
-                .spawn(TileBundle {
-                    color: TileColor(level.bg_color),
-                    tilemap_id: TilemapId(background_entity),
-                    ..default()
-                })
-                .insert(SpatialBundle::default())
-                .id();
-
-            storage.set(&TilePos::default(), tile_entity);
-
-            let tile_size = TilemapTileSize {
-                x: level.px_wid as f32,
-                y: level.px_hei as f32,
-            };
-            let texture = TilemapTexture::Single(white_image_handle.clone());
-
             let translation = Vec3::new(level.px_wid as f32, level.px_hei as f32, 0.) / 2.;
 
-            commands
-                .entity(background_entity)
-                .insert(TilemapBundle {
-                    tile_size,
-                    storage,
-                    texture,
+            commands.entity(background_entity).insert(SpriteBundle {
+                sprite: Sprite {
+                    color: level.bg_color,
+                    custom_size: Some(Vec2::new(level.px_wid as f32, level.px_hei as f32)),
                     ..default()
-                })
-                .insert(SpatialBundle::from_transform(Transform::from_translation(
-                    translation,
-                )))
-                .add_child(tile_entity);
+                },
+                transform: Transform::from_translation(translation),
+                ..default()
+            });
             commands.entity(ldtk_entity).add_child(background_entity);
 
             layer_z += 1;

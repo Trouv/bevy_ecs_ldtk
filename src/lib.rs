@@ -145,7 +145,7 @@ mod plugin {
         /// Scheduled after [CoreSet::UpdateFlush].
         ///
         /// Used for systems that process components and resources provided by this plugin's API.
-        /// In particular, this stage processes..
+        /// In particular, this set processes..
         /// - [resources::LevelSelection]
         /// - [components::LevelSet]
         /// - [components::Worldly]
@@ -155,7 +155,8 @@ mod plugin {
         /// [CoreSet::Update].
         ///
         /// You might need to add additional scheduling constraints to prevent race conditions
-        /// between systems in this set and other external systems.
+        /// between systems in this set and other external systems. As an example, `bevy_rapier`'s
+        /// `PhysicsSet::BackendSync` should be scheduled after `LdtkSystemSet::ProcessApi`.
         ProcessApi,
     }
 
@@ -235,7 +236,7 @@ pub mod prelude {
             Respawn, TileEnumTags, TileMetadata, Worldly,
         },
         ldtk::{self, FieldValue, LayerInstance, TilesetDefinition},
-        plugin::LdtkPlugin,
+        plugin::{LdtkPlugin, LdtkSystemSet},
         resources::{
             IntGridRendering, LdtkSettings, LevelBackground, LevelEvent, LevelSelection,
             LevelSpawnBehavior, SetClearColor,

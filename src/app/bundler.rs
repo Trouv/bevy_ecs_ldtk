@@ -32,12 +32,57 @@ pub trait IntoBundle {
     fn into_bundle(self) -> Self::Bundle;
 }
 
-pub type BoxedIntoBundle = Box<dyn IntoBundle<Bundle = Box<dyn Bundle>>>;
+pub type BoxedBundler<B> = Box<dyn ReadOnlySystem<In = LdtkEntityMetadata, Out = B>>;
 
-pub type BoxedBundler = Box<dyn ReadOnlySystem<In = LdtkEntityMetadata, Out = BoxedIntoBundle>>;
+#[derive(Resource)]
+struct LdtkEntityBundlerRegistry<B> {
+    map: HashMap<String, BoxedBundler<B>>,
+}
 
-struct LdtkEntityBundlerRegistry {
-    map: HashMap<String, BoxedBundler>,
+#[derive(Default)]
+struct LayerTree {
+    layer_metadata: LayerMetadata,
+    entities: Vec<EntityInstance>,
+}
+
+#[derive(Default)]
+struct MetadataTree {
+    level_metadata: Level,
+    layers: Vec<LayerTree>,
+}
+
+fn ldtk_entity_bundler_pipe_wrapper<B: Bundle>(
+    In(metadata_tree): In<MetadataTree>,
+    mut commands: Commands,
+    world: &World,
+    mut registry: ResMut<LdtkEntityBundlerRegistry<B>>,
+) -> MetadataTree {
+    let mut bundles: Vec<B> = Vec::new();
+    for layer in metadata_tree.layers.iter() {
+        for entity in layer.entities.iter() {
+            if let Some(boxed_bundler) = registry.map.get_mut(&entity.identifier) {
+                let metadata = LdtkEntityMetadata {
+                    level_metadata: metadata_tree.level_metadata.clone(),
+                    layer_metadata: layer.layer_metadata.clone(),
+                    entity_instance: entity.clone(),
+                };
+
+                unsafe {
+                    bundles.push(boxed_bundler.run_unsafe(metadata, world));
+                }
+            }
+        }
+    }
+
+    commands.spawn_batch(bundles);
+
+    metadata_tree
+}
+
+fn consume_metadata(_: In<MetadataTree>) {}
+
+fn default_metadata_tree() -> MetadataTree {
+    MetadataTree::default()
 }
 
 mod test {
@@ -45,21 +90,7 @@ mod test {
 
     use super::*;
 
-    fn from_entity_instance(
-        In(metadata): In<LdtkEntityMetadata>,
-        _level_selection: Res<LevelSelection>,
-    ) -> EntityInstance {
-        metadata.entity_instance.clone()
-    }
-
-    fn implements_ldtk_entity_bundler<T, B, Marker>()
-    where
-        T: LdtkEntityBundler<B, Marker>,
-        B: Bundle,
-    {
-    }
-
-    fn new_bundler<B: Bundle, M>(condition: impl LdtkEntityBundler<B, M>) -> BoxedBundler {
+    fn new_bundler<B: Bundle, M>(condition: impl LdtkEntityBundler<B, M>) -> BoxedBundler<B> {
         let bundler_system = IntoSystem::into_system(condition);
         assert!(
             bundler_system.is_send(),
@@ -72,11 +103,12 @@ mod test {
 
     fn test() {
         let mut app = App::new();
-        let metadata = LdtkEntityMetadata::default();
 
-        let mut boxed = new_bundler(from_entity_instance);
-
-        let entity_instance = boxed.run(metadata, &mut app.world);
+        app.add_system(
+            default_metadata_tree
+                .pipe(ldtk_entity_bundler_pipe_wrapper::<SpriteSheetBundle>)
+                .pipe(consume_metadata),
+        );
 
         //from_entity_instance::<EntityInstance>.run(&metadata, &mut app.world);
     }

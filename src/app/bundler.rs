@@ -1,29 +1,37 @@
+use std::rc::Rc;
+
 use bevy::{ecs::system::ReadOnlySystem, prelude::*, utils::HashMap};
 
 use crate::{ldtk::Level, EntityInstance, LayerMetadata};
 
-#[derive(Default)]
-pub struct LdtkEntityMetadata {
-    pub entity_instance: EntityInstance,
-    pub layer_metadata: LayerMetadata,
-    pub level_metadata: Level,
+pub struct LdtkEntityMetadata<'a> {
+    pub entity_instance: &'a EntityInstance,
+    pub layer_metadata: &'a LayerMetadata,
+    pub level_metadata: &'a Level,
 }
 
-pub trait LdtkEntityBundler<B, Marker>:
-    IntoSystem<LdtkEntityMetadata, B, Marker, System = Self::ReadOnlySystem>
+pub trait LdtkEntityBundler<'a, B>: ReadOnlySystem<In = LdtkEntityMetadata<'a>, Out = B> {}
+
+impl<'a, B, F> LdtkEntityBundler<'a, B> for F where
+    F: ReadOnlySystem<In = LdtkEntityMetadata<'a>, Out = B>
+{
+}
+
+pub trait IntoLdtkEntityBundler<'a, B, Marker>:
+    IntoSystem<LdtkEntityMetadata<'a>, B, Marker, System = Self::LdtkEntityBundler>
 where
     B: Bundle,
 {
-    type ReadOnlySystem: ReadOnlySystem<In = LdtkEntityMetadata, Out = B>;
+    type LdtkEntityBundler: LdtkEntityBundler<'a, B>;
 }
 
-impl<B, Marker, F> LdtkEntityBundler<B, Marker> for F
+impl<'a, B, Marker, F> IntoLdtkEntityBundler<'a, B, Marker> for F
 where
     B: Bundle,
-    F: IntoSystem<LdtkEntityMetadata, B, Marker>,
-    F::System: ReadOnlySystem,
+    F: IntoSystem<LdtkEntityMetadata<'a>, B, Marker>,
+    F::System: LdtkEntityBundler<'a, B>,
 {
-    type ReadOnlySystem = F::System;
+    type LdtkEntityBundler = F::System;
 }
 
 pub trait IntoBundle {
@@ -32,7 +40,9 @@ pub trait IntoBundle {
     fn into_bundle(self) -> Self::Bundle;
 }
 
-pub type BoxedBundler<B> = Box<dyn ReadOnlySystem<In = LdtkEntityMetadata, Out = B>>;
+fn test_lifetime(input: In<EntityInstance>) -> impl Bundle {}
+
+pub type BoxedBundler<B> = Box<dyn for<'a> LdtkEntityBundler<'a, B>>;
 
 #[derive(Resource)]
 struct LdtkEntityBundlerRegistry<B> {
@@ -62,9 +72,9 @@ fn ldtk_entity_bundler_pipe_wrapper<B: Bundle>(
         for entity in layer.entities.iter() {
             if let Some(boxed_bundler) = registry.map.get_mut(&entity.identifier) {
                 let metadata = LdtkEntityMetadata {
-                    level_metadata: metadata_tree.level_metadata.clone(),
-                    layer_metadata: layer.layer_metadata.clone(),
-                    entity_instance: entity.clone(),
+                    level_metadata: &metadata_tree.level_metadata,
+                    layer_metadata: &layer.layer_metadata,
+                    entity_instance: &entity,
                 };
 
                 unsafe {
@@ -90,16 +100,16 @@ mod test {
 
     use super::*;
 
-    fn new_bundler<B: Bundle, M>(condition: impl LdtkEntityBundler<B, M>) -> BoxedBundler<B> {
-        let bundler_system = IntoSystem::into_system(condition);
-        assert!(
-            bundler_system.is_send(),
-            "Condition `{}` accesses `NonSend` resources. This is not currently supported.",
-            bundler_system.name()
-        );
+    //fn new_bundler<B: Bundle, M>(condition: impl LdtkEntityBundler<B, M>) -> BoxedBundler<B> {
+    //let bundler_system = IntoSystem::into_system(condition);
+    //assert!(
+    //bundler_system.is_send(),
+    //"Condition `{}` accesses `NonSend` resources. This is not currently supported.",
+    //bundler_system.name()
+    //);
 
-        Box::new(bundler_system)
-    }
+    //Box::new(bundler_system)
+    //}
 
     fn test() {
         let mut app = App::new();

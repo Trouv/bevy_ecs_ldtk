@@ -113,8 +113,6 @@
 //! [LdtkIntCell]: app::LdtkEntity
 //! [bevy_ecs_tilemap]: https://docs.rs/bevy_ecs_tilemap
 
-use bevy::prelude::*;
-
 pub mod app;
 mod assets;
 mod components;

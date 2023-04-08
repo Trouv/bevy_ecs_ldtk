@@ -1,6 +1,6 @@
 //! Provides [LdtkPlugin] and its scheduling-related dependencies.
-
-use super::*;
+use crate::{app, assets, components, resources, systems};
+use bevy::prelude::*;
 
 /// Base [SystemSet]s for systems added by the plugin.
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash, SystemSet)]
@@ -81,9 +81,9 @@ impl Plugin for LdtkPlugin {
                 .pipe(systems::fire_level_transformed_events)
                 .in_base_set(CoreSet::PostUpdate),
         )
-        .register_type::<GridCoords>()
-        .register_type::<TileMetadata>()
-        .register_type::<TileEnumTags>()
-        .register_type::<LayerMetadata>();
+        .register_type::<components::GridCoords>()
+        .register_type::<components::TileMetadata>()
+        .register_type::<components::TileEnumTags>()
+        .register_type::<components::LayerMetadata>();
     }
 }

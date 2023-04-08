@@ -13,18 +13,18 @@ pub enum LdtkFieldsError {
     UnexpectedNull { identifier: String },
 }
 
-macro_rules! create_get_field_methods_copy {
-    ($type_name:ident, $variant:ident, $type:ty) => {
+macro_rules! create_get_ambiguous_field_method_copy {
+    ($adjective:literal, $doc_name:ident, $type_name:ident, $variant:ident, $type:ty) => {
         paste! {
-            #[doc = " Get this item's nullable " $type_name " field value for the given identifier."]
+            #[doc = " Get this item's " $adjective $doc_name " field value for the given identifier."]
             ///
             /// # Errors
             /// - returns [LdtkFieldsError::FieldNotFound] if no field with the given identifier exists.
             #[doc = " - returns [LdtkFieldsError::WrongFieldType] if the field is not " $variant "."]
-            fn [< get_maybe_ $type_name _field >](
+            fn [< get_ $type_name _field >](
                 &self,
                 identifier: String,
-            ) -> Result<Option<$type>, LdtkFieldsError> {
+            ) -> Result<$type, LdtkFieldsError> {
                 match self.get_field(identifier.clone())? {
                     FieldValue::$variant($type_name) => Ok(*$type_name),
                     _ => Err(LdtkFieldsError::WrongFieldType {
@@ -32,26 +32,12 @@ macro_rules! create_get_field_methods_copy {
                     }),
                 }
             }
-
-            #[doc = " Get this item's non-null " $type_name " field value for the given identifier."]
-            ///
-            /// # Errors
-            /// - returns [LdtkFieldsError::FieldNotFound] if no field with the given identifier exists.
-            #[doc = " - returns [LdtkFieldsError::WrongFieldType] if the field is not " $variant "."]
-            /// - returns [LdtkFieldsError::UnexpectedNull] if the field is null.
-            fn [< get_ $type_name _field >](&self, identifier: String) -> Result<$type, LdtkFieldsError> {
-                if let Some($type_name) = self.[< get_maybe_ $type_name _field >](identifier.clone())? {
-                    Ok($type_name)
-                } else {
-                    Err(LdtkFieldsError::UnexpectedNull { identifier })
-                }
-            }
         }
-    };
+    }
 }
 
-macro_rules! create_get_field_methods_as_ref {
-    ($type_name:ident, $variant:ident, $maybe_type:ty, $type: ty) => {
+macro_rules! create_get_maybe_field_method {
+    ($type_name:ident, $variant:ident, $maybe_type:ty) => {
         paste! {
             #[doc = " Get this item's nullable " $type_name " field value for the given identifier."]
             ///
@@ -69,7 +55,13 @@ macro_rules! create_get_field_methods_as_ref {
                     }),
                 }
             }
+        }
+    }
+}
 
+macro_rules! create_get_field_method {
+    ($type_name:ident, $variant:ident, $type:ty) => {
+        paste! {
             #[doc = " Get this item's non-null " $type_name " field value for the given identifier."]
             ///
             /// # Errors
@@ -86,6 +78,23 @@ macro_rules! create_get_field_methods_as_ref {
         }
     };
 }
+
+macro_rules! create_get_field_methods_copy {
+    ($type_name:ident, $variant:ident, $type:ty) => {
+        paste! {
+            create_get_ambiguous_field_method_copy!("nullable ", $type_name, [< maybe_ $type_name >], $variant, Option<$type>);
+        }
+        create_get_field_method!($type_name, $variant, $type);
+    };
+}
+
+macro_rules! create_get_field_methods {
+    ($type_name:ident, $variant:ident, $maybe_type:ty, $type: ty) => {
+        create_get_maybe_field_method!($type_name, $variant, $maybe_type);
+        create_get_field_method!($type_name, $variant, $type);
+    };
+}
+
 pub trait LdtkFields {
     /// Immutable accessor for this item's field instances, by reference.
     fn field_instances(&self) -> &[FieldInstance];
@@ -112,23 +121,15 @@ pub trait LdtkFields {
     create_get_field_methods_copy!(int, Int, i32);
     create_get_field_methods_copy!(float, Float, f32);
 
-    /// Get this item's non-null bool field value for the given identifier.
-    ///
-    /// # Errors
-    /// - returns [LdtkFieldsError::FieldNotFound] if no field with the given identifier exists.
-    /// - returns [LdtkFieldsError::WrongFieldType] if the field is not Bool.
-    fn get_bool_field(&self, identifier: String) -> Result<bool, LdtkFieldsError> {
-        if let FieldValue::Bool(boolean) = self.get_field(identifier.clone())? {
-            Ok(*boolean)
-        } else {
-            Err(LdtkFieldsError::WrongFieldType { identifier })
-        }
-    }
+    create_get_ambiguous_field_method_copy!("", bool, bool, Bool, bool);
 
-    create_get_field_methods_as_ref!(string, String, &Option<String>, &str);
-    create_get_field_methods_as_ref!(file_path, FilePath, &Option<String>, &str);
-    create_get_field_methods_as_ref!(tile, Tile, &Option<TilesetRectangle>, &TilesetRectangle);
-    create_get_field_methods_as_ref!(
+    create_get_field_methods!(string, String, &Option<String>, &str);
+
+    create_get_ambiguous_field_method_copy!("", color, color, Color, Color);
+
+    create_get_field_methods!(file_path, FilePath, &Option<String>, &str);
+    create_get_field_methods!(tile, Tile, &Option<TilesetRectangle>, &TilesetRectangle);
+    create_get_field_methods!(
         entity_ref,
         EntityRef,
         &Option<FieldInstanceEntityReference>,

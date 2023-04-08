@@ -108,6 +108,9 @@
 //!
 //! The `derive` and `render` features are enabled by default.
 //!
+//! [App]: bevy::prelude::App
+//! [Commands]: bevy::prelude::Commands
+//! [Transform]: bevy::prelude::Transform
 //! [feature flags]: https://doc.rust-lang.org/cargo/reference/features.html#the-features-section
 //! [LdtkEntity]: app::LdtkEntity
 //! [LdtkIntCell]: app::LdtkEntity

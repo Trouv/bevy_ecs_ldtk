@@ -23,6 +23,7 @@ regex = "1"
 hex = "0.4"
 anyhow = "1.0"
 thiserror = "1.0"
+paste = "1.0"
 
 [dev-dependencies]
 bevy = "0.10"

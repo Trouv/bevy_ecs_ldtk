@@ -1,22 +1,62 @@
 use crate::ldtk::{FieldInstance, FieldValue};
+use paste::paste;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum LdtkFieldsError {
     #[error("could not find {identifier} field")]
     FieldNotFound { identifier: String },
-    #[error("found {identifier} field, but its type is not {requested_type}")]
-    WrongFieldType {
-        identifier: String,
-        requested_type: String,
-    },
+    #[error("found {identifier} field, but its type is not correct")]
+    WrongFieldType { identifier: String },
     #[error("found {identifier} field of the correct type, but it is null")]
     UnexpectedNull { identifier: String },
 }
 
+macro_rules! create_get_field_methods_copy {
+    ($type_name:ident, $variant:ident, $type:ty) => {
+        paste! {
+            #[doc = " Get this item's nullable " $type_name " field value for the given identifier."]
+            ///
+            /// # Errors
+            /// - returns [LdtkFieldsError::FieldNotFound] if no field with the given identifier exists.
+            #[doc = " - returns [LdtkFieldsError::WrongFieldType] if the field is not " $variant "."]
+            fn [< get_maybe_ $type_name _field >](
+                &self,
+                identifier: String,
+            ) -> Result<Option<$type>, LdtkFieldsError> {
+                match self.get_field(identifier.clone())? {
+                    FieldValue::$variant($type_name) => Ok(*$type_name),
+                    _ => Err(LdtkFieldsError::WrongFieldType {
+                        identifier,
+                    }),
+                }
+            }
+
+            #[doc = " Get this item's non-null " $type_name " field value for the given identifier."]
+            ///
+            /// # Errors
+            /// - returns [LdtkFieldsError::FieldNotFound] if no field with the given identifier exists.
+            #[doc = " - returns [LdtkFieldsError::WrongFieldType] if the field is not " $variant "."]
+            /// - returns [LdtkFieldsError::UnexpectedNull] if the field is null.
+            fn [< get_ $type_name _field >](&self, identifier: String) -> Result<$type, LdtkFieldsError> {
+                if let Some($type_name) = self.[< get_maybe_ $type_name _field >](identifier.clone())? {
+                    Ok($type_name)
+                } else {
+                    Err(LdtkFieldsError::UnexpectedNull { identifier })
+                }
+            }
+        }
+    };
+}
+
 pub trait LdtkFields {
+    /// Immutable accessor for this item's field instances, by reference.
     fn field_instances(&self) -> &[FieldInstance];
 
+    /// Get this item's field instance (with metadata) for given identifier.
+    ///
+    /// # Errors
+    /// - returns [LdtkFieldsError::FieldNotFound] if no field with the given identifier exists.
     fn get_field_instance(&self, identifier: String) -> Result<&FieldInstance, LdtkFieldsError> {
         self.field_instances()
             .iter()
@@ -24,25 +64,27 @@ pub trait LdtkFields {
             .ok_or(LdtkFieldsError::FieldNotFound { identifier })
     }
 
+    /// Get this item's field value for the given identifier.
+    ///
+    /// # Errors
+    /// - returns [LdtkFieldsError::FieldNotFound] if no field with the given identifier exists.
     fn get_field(&self, identifier: String) -> Result<&FieldValue, LdtkFieldsError> {
         Ok(&self.get_field_instance(identifier)?.value)
     }
 
-    fn get_maybe_int_field(&self, identifier: String) -> Result<Option<i32>, LdtkFieldsError> {
-        match self.get_field(identifier.clone())? {
-            FieldValue::Int(maybe_int) => Ok(*maybe_int),
-            _ => Err(LdtkFieldsError::WrongFieldType {
-                identifier,
-                requested_type: "Int".to_string(),
-            }),
-        }
-    }
+    create_get_field_methods_copy!(int, Int, i32);
+    create_get_field_methods_copy!(float, Float, f32);
 
-    fn get_int_field(&self, identifier: String) -> Result<i32, LdtkFieldsError> {
-        if let Some(int) = self.get_maybe_int_field(identifier.clone())? {
-            Ok(int)
+    /// Get this item's non-null " $type_name " field value for the given identifier.
+    ///
+    /// # Errors
+    /// - returns [LdtkFieldsError::FieldNotFound] if no field with the given identifier exists.
+    /// - returns [LdtkFieldsError::WrongFieldType] if the field is not Bool.
+    fn get_bool_field(&self, identifier: String) -> Result<bool, LdtkFieldsError> {
+        if let FieldValue::Bool(boolean) = self.get_field(identifier.clone())? {
+            Ok(*boolean)
         } else {
-            Err(LdtkFieldsError::UnexpectedNull { identifier })
+            Err(LdtkFieldsError::WrongFieldType { identifier })
         }
     }
 

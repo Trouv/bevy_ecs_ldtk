@@ -34,7 +34,7 @@ use crate::prelude::LdtkEntity;
 
 mod color;
 mod field_instance;
-mod ldtk_fields;
+pub mod ldtk_fields;
 
 pub use field_instance::*;
 

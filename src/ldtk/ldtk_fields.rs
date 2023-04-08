@@ -23,12 +23,12 @@ macro_rules! create_get_ambiguous_field_method_copy {
             #[doc = " - returns [LdtkFieldsError::WrongFieldType] if the field is not " $variant "."]
             fn [< get_ $type_name _field >](
                 &self,
-                identifier: String,
+                identifier: &str,
             ) -> Result<$type, LdtkFieldsError> {
-                match self.get_field(identifier.clone())? {
+                match self.get_field(identifier)? {
                     FieldValue::$variant($type_name) => Ok(*$type_name),
                     _ => Err(LdtkFieldsError::WrongFieldType {
-                        identifier,
+                        identifier: identifier.to_string(),
                     }),
                 }
             }
@@ -46,12 +46,12 @@ macro_rules! create_get_maybe_field_method {
             #[doc = " - returns [LdtkFieldsError::WrongFieldType] if the field is not " $variant "."]
             fn [< get_maybe_ $type_name _field >](
                 &self,
-                identifier: String,
+                identifier: &str,
             ) -> Result<$maybe_type, LdtkFieldsError> {
-                match self.get_field(identifier.clone())? {
+                match self.get_field(identifier)? {
                     FieldValue::$variant($type_name) => Ok($type_name),
                     _ => Err(LdtkFieldsError::WrongFieldType {
-                        identifier,
+                        identifier: identifier.to_string(),
                     }),
                 }
             }
@@ -68,11 +68,11 @@ macro_rules! create_get_field_method {
             /// - returns [LdtkFieldsError::FieldNotFound] if no field with the given identifier exists.
             #[doc = " - returns [LdtkFieldsError::WrongFieldType] if the field is not " $variant "."]
             /// - returns [LdtkFieldsError::UnexpectedNull] if the field is null.
-            fn [< get_ $type_name _field >](&self, identifier: String) -> Result<$type, LdtkFieldsError> {
+            fn [< get_ $type_name _field >](&self, identifier: &str) -> Result<$type, LdtkFieldsError> {
                 if let Some($type_name) = self.[< get_maybe_ $type_name _field >](identifier.clone())? {
                     Ok($type_name)
                 } else {
-                    Err(LdtkFieldsError::UnexpectedNull { identifier })
+                    Err(LdtkFieldsError::UnexpectedNull { identifier: identifier.to_string() })
                 }
             }
         }
@@ -103,18 +103,20 @@ pub trait LdtkFields {
     ///
     /// # Errors
     /// - returns [LdtkFieldsError::FieldNotFound] if no field with the given identifier exists.
-    fn get_field_instance(&self, identifier: String) -> Result<&FieldInstance, LdtkFieldsError> {
+    fn get_field_instance(&self, identifier: &str) -> Result<&FieldInstance, LdtkFieldsError> {
         self.field_instances()
             .iter()
             .find(|f| f.identifier == identifier)
-            .ok_or(LdtkFieldsError::FieldNotFound { identifier })
+            .ok_or(LdtkFieldsError::FieldNotFound {
+                identifier: identifier.to_string(),
+            })
     }
 
     /// Get this item's field value for the given identifier.
     ///
     /// # Errors
     /// - returns [LdtkFieldsError::FieldNotFound] if no field with the given identifier exists.
-    fn get_field(&self, identifier: String) -> Result<&FieldValue, LdtkFieldsError> {
+    fn get_field(&self, identifier: &str) -> Result<&FieldValue, LdtkFieldsError> {
         Ok(&self.get_field_instance(identifier)?.value)
     }
 

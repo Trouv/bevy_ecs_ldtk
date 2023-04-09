@@ -13,20 +13,20 @@ pub enum LdtkFieldsError {
     UnexpectedNull { identifier: String },
 }
 
-macro_rules! create_get_ambiguous_field_method_copy {
-    ($adjective:literal, $doc_name:ident, $type_name:ident, $variant:ident, $type:ty) => {
+macro_rules! create_get_ambiguous_field_method {
+    ($adjective:literal, $doc_name:ident, $var_name:ident, $variant:ident, $return_type:ty, $return_expr:expr) => {
         paste! {
             #[doc = " Get this item's " $adjective $doc_name " field value for the given identifier."]
             ///
             /// # Errors
             /// - returns [LdtkFieldsError::FieldNotFound] if no field with the given identifier exists.
             #[doc = " - returns [LdtkFieldsError::WrongFieldType] if the field is not " $variant "."]
-            fn [< get_ $type_name _field >](
+            fn [< get_ $var_name _field >](
                 &self,
                 identifier: &str,
-            ) -> Result<$type, LdtkFieldsError> {
+            ) -> Result<$return_type, LdtkFieldsError> {
                 match self.get_field(identifier)? {
-                    FieldValue::$variant($type_name) => Ok(*$type_name),
+                    FieldValue::$variant($var_name) => Ok($return_expr),
                     _ => Err(LdtkFieldsError::WrongFieldType {
                         identifier: identifier.to_string(),
                     }),
@@ -39,24 +39,25 @@ macro_rules! create_get_ambiguous_field_method_copy {
 macro_rules! create_get_maybe_field_method {
     ($type_name:ident, $variant:ident, $maybe_type:ty) => {
         paste! {
-            #[doc = " Get this item's nullable " $type_name " field value for the given identifier."]
-            ///
-            /// # Errors
-            /// - returns [LdtkFieldsError::FieldNotFound] if no field with the given identifier exists.
-            #[doc = " - returns [LdtkFieldsError::WrongFieldType] if the field is not " $variant "."]
-            fn [< get_maybe_ $type_name _field >](
-                &self,
-                identifier: &str,
-            ) -> Result<$maybe_type, LdtkFieldsError> {
-                match self.get_field(identifier)? {
-                    FieldValue::$variant($type_name) => Ok($type_name),
-                    _ => Err(LdtkFieldsError::WrongFieldType {
-                        identifier: identifier.to_string(),
-                    }),
-                }
-            }
+            create_get_ambiguous_field_method!("nullable ", $type_name, [< maybe_ $type_name >], $variant, $maybe_type, [< maybe_ $type_name >]);
         }
     }
+}
+
+macro_rules! create_get_maybe_field_method_copy {
+    ($type_name:ident, $variant:ident, $maybe_type:ty) => {
+        paste! {
+            create_get_ambiguous_field_method!("nullable ", $type_name, [< maybe_ $type_name >], $variant, $maybe_type, *[< maybe_ $type_name >]);
+        }
+    }
+}
+
+macro_rules! create_just_get_field_method_copy {
+    ($type_name:ident, $variant:ident, $type:ty) => {
+        paste! {
+            create_get_ambiguous_field_method!("", $type_name, $type_name, $variant, $type, *$type_name);
+        }
+    };
 }
 
 macro_rules! create_get_field_method {
@@ -81,9 +82,7 @@ macro_rules! create_get_field_method {
 
 macro_rules! create_get_field_methods_copy {
     ($type_name:ident, $variant:ident, $type:ty) => {
-        paste! {
-            create_get_ambiguous_field_method_copy!("nullable ", $type_name, [< maybe_ $type_name >], $variant, Option<$type>);
-        }
+        create_get_maybe_field_method_copy!($type_name, $variant, Option<$type>);
         create_get_field_method!($type_name, $variant, $type);
     };
 }
@@ -123,11 +122,11 @@ pub trait LdtkFields {
     create_get_field_methods_copy!(int, Int, i32);
     create_get_field_methods_copy!(float, Float, f32);
 
-    create_get_ambiguous_field_method_copy!("", bool, bool, Bool, bool);
+    create_just_get_field_method_copy!(bool, Bool, bool);
 
     create_get_field_methods!(string, String, &Option<String>, &str);
 
-    create_get_ambiguous_field_method_copy!("", color, color, Color, Color);
+    create_just_get_field_method_copy!(color, Color, Color);
 
     create_get_field_methods!(file_path, FilePath, &Option<String>, &str);
     create_get_field_methods!(tile, Tile, &Option<TilesetRectangle>, &TilesetRectangle);
@@ -139,5 +138,6 @@ pub trait LdtkFields {
     );
 
     create_get_field_methods_copy!(point, Point, IVec2);
+
     // implement similar methods for all `FieldValue` variants...
 }

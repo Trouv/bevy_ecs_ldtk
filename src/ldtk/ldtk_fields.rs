@@ -98,7 +98,7 @@ macro_rules! create_get_field_methods {
 }
 
 macro_rules! create_get_plural_fields_method {
-    ($type_name:ident, $variant:ident, $collected_type:ty) => {
+    ($type_name:ident, $variant:ident, $collected_type:ty, $map:expr) => {
         paste! {
             #[doc = " Get this item's non-null " $type_name " field value for the given identifier."]
             ///
@@ -110,7 +110,7 @@ macro_rules! create_get_plural_fields_method {
                 let $type_name = self.[< get_maybe_ $type_name _field >](identifier)?;
 
                 if $type_name.iter().all(|e| e.is_some()) {
-                    Ok($type_name.iter().flatten().collect())
+                    Ok($type_name.iter().flatten().map($map).collect())
                 } else {
                     Err(LdtkFieldsError::UnexpectedNull {
                         identifier: identifier.to_string(),
@@ -124,7 +124,11 @@ macro_rules! create_get_plural_fields_method {
 macro_rules! create_get_plural_fields_methods {
     ($type_name:ident, $variant:ident, $maybe_type:ty, $as_ref_type: ty) => {
         create_get_maybe_field_method!($type_name, $variant, &[$maybe_type]);
-        create_get_plural_fields_method!($type_name, $variant, Vec<$as_ref_type>);
+        create_get_plural_fields_method!($type_name, $variant, Vec<$as_ref_type>, |e| e);
+    };
+    ($type_name:ident, $variant:ident, $maybe_type:ty, $as_ref_type: ty, $map:expr) => {
+        create_get_maybe_field_method!($type_name, $variant, &[$maybe_type]);
+        create_get_plural_fields_method!($type_name, $variant, Vec<$as_ref_type>, $map);
     };
 }
 

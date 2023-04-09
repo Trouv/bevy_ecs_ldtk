@@ -1,4 +1,7 @@
-use crate::ldtk::{FieldInstance, FieldInstanceEntityReference, FieldValue, TilesetRectangle};
+use crate::ldtk::{
+    EntityInstance, FieldInstance, FieldInstanceEntityReference, FieldValue, Level,
+    TilesetRectangle,
+};
 use bevy::prelude::*;
 use paste::paste;
 use thiserror::Error;
@@ -205,4 +208,16 @@ pub trait LdtkFields {
     create_get_plural_fields_methods!(points, Points, Option<IVec2>, &IVec2);
 
     // implement similar methods for all `FieldValue` variants...
+}
+
+impl LdtkFields for EntityInstance {
+    fn field_instances(&self) -> &[FieldInstance] {
+        &self.field_instances
+    }
+}
+
+impl LdtkFields for Level {
+    fn field_instances(&self) -> &[FieldInstance] {
+        &self.field_instances
+    }
 }

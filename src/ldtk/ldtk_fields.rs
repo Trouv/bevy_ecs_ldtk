@@ -196,12 +196,12 @@ pub trait LdtkFields {
 
     create_just_get_plural_fields_method!(bools, Bools, bool);
 
-    create_get_plural_fields_methods!(strings, Strings, Option<String>, &String);
+    create_get_plural_fields_methods!(strings, Strings, Option<String>, &str, |e| e.as_str());
 
     create_just_get_plural_fields_method!(colors, Colors, Color);
 
-    create_get_plural_fields_methods!(file_paths, FilePaths, Option<String>, &String);
-    create_get_plural_fields_methods!(enums, Enums, Option<String>, &String);
+    create_get_plural_fields_methods!(file_paths, FilePaths, Option<String>, &str, |e| e.as_str());
+    create_get_plural_fields_methods!(enums, Enums, Option<String>, &str, |e| e.as_str());
     create_get_plural_fields_methods!(tiles, Tiles, Option<TilesetRectangle>, &TilesetRectangle);
     create_get_plural_fields_methods!(
         entity_refs,

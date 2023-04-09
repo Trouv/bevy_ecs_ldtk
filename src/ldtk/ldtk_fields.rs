@@ -88,9 +88,40 @@ macro_rules! create_get_field_methods_copy {
 }
 
 macro_rules! create_get_field_methods {
-    ($type_name:ident, $variant:ident, $maybe_type:ty, $type: ty) => {
+    ($type_name:ident, $variant:ident, $maybe_type:ty, $as_ref_type: ty) => {
         create_get_maybe_field_method!($type_name, $variant, $maybe_type);
-        create_get_field_method!($type_name, $variant, $type);
+        create_get_field_method!($type_name, $variant, $as_ref_type);
+    };
+}
+
+macro_rules! create_get_plural_fields_method {
+    ($type_name:ident, $variant:ident, $collected_type:ty) => {
+        paste! {
+            #[doc = " Get this item's non-null " $type_name " field value for the given identifier."]
+            ///
+            /// # Errors
+            /// - returns [LdtkFieldsError::FieldNotFound] if no field with the given identifier exists.
+            #[doc = " - returns [LdtkFieldsError::WrongFieldType] if the field is not " $variant "."]
+            /// - returns [LdtkFieldsError::UnexpectedNull] if **any** element of the field is null.
+            fn [< get_ $type_name _field >](&self, identifier: &str) -> Result<$collected_type, LdtkFieldsError> {
+                let $type_name = self.[< get_maybe_ $type_name _field >](identifier)?;
+
+                if $type_name.iter().all(|e| e.is_some()) {
+                    Ok($type_name.iter().flatten().collect())
+                } else {
+                    Err(LdtkFieldsError::UnexpectedNull {
+                        identifier: identifier.to_string(),
+                    })
+                }
+            }
+        }
+    };
+}
+
+macro_rules! create_get_plural_fields_methods {
+    ($type_name:ident, $variant:ident, $maybe_type:ty, $as_ref_type: ty) => {
+        create_get_maybe_field_method!($type_name, $variant, &[$maybe_type]);
+        create_get_plural_fields_method!($type_name, $variant, Vec<$as_ref_type>);
     };
 }
 
@@ -138,6 +169,8 @@ pub trait LdtkFields {
     );
 
     create_get_field_methods_copy!(point, Point, IVec2);
+
+    create_get_plural_fields_methods!(ints, Ints, Option<i32>, &i32);
 
     // implement similar methods for all `FieldValue` variants...
 }

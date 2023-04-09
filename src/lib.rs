@@ -235,7 +235,7 @@ pub mod prelude {
             EntityInstance, GridCoords, IntGridCell, LayerMetadata, LdtkWorldBundle, LevelSet,
             Respawn, TileEnumTags, TileMetadata, Worldly,
         },
-        ldtk::{self, FieldValue, LayerInstance, TilesetDefinition},
+        ldtk::{self, ldtk_fields::LdtkFields, FieldValue, LayerInstance, TilesetDefinition},
         plugin::{LdtkPlugin, LdtkSystemSet},
         resources::{
             IntGridRendering, LdtkSettings, LevelBackground, LevelEvent, LevelSelection,

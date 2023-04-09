@@ -125,6 +125,19 @@ macro_rules! create_get_plural_fields_methods {
     };
 }
 
+macro_rules! create_just_get_plural_fields_method {
+    ($type_name:ident, $variant:ident, $type:ty) => {
+        create_get_ambiguous_field_method!(
+            "",
+            $type_name,
+            $type_name,
+            $variant,
+            &[$type],
+            $type_name
+        );
+    };
+}
+
 pub trait LdtkFields {
     /// Immutable accessor for this item's field instances, by reference.
     fn field_instances(&self) -> &[FieldInstance];
@@ -160,6 +173,7 @@ pub trait LdtkFields {
     create_just_get_field_method_copy!(color, Color, Color);
 
     create_get_field_methods!(file_path, FilePath, &Option<String>, &str);
+    create_get_field_methods!(enumerator, Enum, &Option<String>, &str);
     create_get_field_methods!(tile, Tile, &Option<TilesetRectangle>, &TilesetRectangle);
     create_get_field_methods!(
         entity_ref,
@@ -171,6 +185,24 @@ pub trait LdtkFields {
     create_get_field_methods_copy!(point, Point, IVec2);
 
     create_get_plural_fields_methods!(ints, Ints, Option<i32>, &i32);
+    create_get_plural_fields_methods!(floats, Floats, Option<f32>, &f32);
+
+    create_just_get_plural_fields_method!(bools, Bools, bool);
+
+    create_get_plural_fields_methods!(strings, Strings, Option<String>, &String);
+
+    create_just_get_plural_fields_method!(colors, Colors, Color);
+
+    create_get_plural_fields_methods!(file_paths, FilePaths, Option<String>, &String);
+    create_get_plural_fields_methods!(enums, Enums, Option<String>, &String);
+    create_get_plural_fields_methods!(tiles, Tiles, Option<TilesetRectangle>, &TilesetRectangle);
+    create_get_plural_fields_methods!(
+        entity_refs,
+        EntityRefs,
+        Option<FieldInstanceEntityReference>,
+        &FieldInstanceEntityReference
+    );
+    create_get_plural_fields_methods!(points, Points, Option<IVec2>, &IVec2);
 
     // implement similar methods for all `FieldValue` variants...
 }

@@ -1,3 +1,4 @@
+//! Contains [LdtkFields] trait, providing convenience methods for accessing field instances.
 use crate::ldtk::{
     EntityInstance, FieldInstance, FieldInstanceEntityReference, FieldValue, Level,
     TilesetRectangle,
@@ -142,6 +143,7 @@ macro_rules! create_just_get_plural_fields_method {
     };
 }
 
+/// Convenience methods for accessing field instances.
 pub trait LdtkFields {
     /// Immutable accessor for this item's field instances, by reference.
     fn field_instances(&self) -> &[FieldInstance];

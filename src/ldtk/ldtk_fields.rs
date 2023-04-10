@@ -60,8 +60,8 @@ macro_rules! create_get_field_method {
             #[doc = " - returns [`LdtkFieldsError::WrongFieldType`] if the field is not [`FieldValue::" $variant "`]."]
             /// - returns [`LdtkFieldsError::UnexpectedNull`] if the field is null.
             fn [< get_ $type_name _field >](&self, identifier: &str) -> Result<$type, LdtkFieldsError> {
-                if let Some($type_name) = self.[< get_maybe_ $type_name _field >](identifier.clone())? {
-                    Ok($type_name)
+                if let Some([< $type_name _ >]) = self.[< get_maybe_ $type_name _field >](identifier.clone())? {
+                    Ok([< $type_name _ >])
                 } else {
                     Err(LdtkFieldsError::UnexpectedNull { identifier: identifier.to_string() })
                 }
@@ -217,7 +217,7 @@ pub trait LdtkFields {
     create_just_get_field_method_copy!(color, Color, Color);
 
     create_get_field_methods!(file_path, FilePath, &Option<String>, &str);
-    create_get_field_methods!(enumerator, Enum, &Option<String>, &str);
+    create_get_field_methods!(enum, Enum, &Option<String>, &str);
     create_get_field_methods!(tile, Tile, &Option<TilesetRectangle>, &TilesetRectangle);
     create_get_field_methods!(
         entity_ref,

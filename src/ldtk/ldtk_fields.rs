@@ -1,4 +1,4 @@
-//! Contains [LdtkFields] trait, providing convenience methods for accessing field instances.
+//! Contains [`LdtkFields`] trait, providing convenience methods for accessing field instances.
 use crate::ldtk::{
     EntityInstance, FieldInstance, FieldInstanceEntityReference, FieldValue, Level,
     TilesetRectangle,
@@ -7,13 +7,13 @@ use bevy::prelude::*;
 use paste::paste;
 use thiserror::Error;
 
-/// Errors related to the [LdtkFields] trait.
+/// Errors related to the [`LdtkFields`] trait.
 #[derive(Debug, Error)]
 pub enum LdtkFieldsError {
     /// Could not find a field instance with the given identifier.
     #[error("could not find {identifier} field")]
     FieldNotFound { identifier: String },
-    /// The field instance exists, but is the wrong [FieldValue] variant.
+    /// The field instance exists, but is the wrong [`FieldValue`] variant.
     #[error("found {identifier} field, but its type is not correct")]
     WrongFieldType { identifier: String },
     /// The field instance exists and is the correct variant, but the value is null.
@@ -27,8 +27,8 @@ macro_rules! create_base_get_field_method {
             #[doc = " Get this item's " $adjective $doc_name " field value for the given identifier."]
             ///
             /// # Errors
-            /// - returns [LdtkFieldsError::FieldNotFound] if no field with the given identifier exists.
-            #[doc = " - returns [LdtkFieldsError::WrongFieldType] if the field is not " $variant "."]
+            /// - returns [`LdtkFieldsError::FieldNotFound`] if no field with the given identifier exists.
+            #[doc = " - returns [`LdtkFieldsError::WrongFieldType`] if the field is not [`FieldValue::" $variant "`]."]
             fn [< get_ $var_name _field >](
                 &self,
                 identifier: &str,
@@ -50,9 +50,9 @@ macro_rules! create_get_field_method {
             #[doc = " Get this item's non-null " $type_name " field value for the given identifier."]
             ///
             /// # Errors
-            /// - returns [LdtkFieldsError::FieldNotFound] if no field with the given identifier exists.
-            #[doc = " - returns [LdtkFieldsError::WrongFieldType] if the field is not " $variant "."]
-            /// - returns [LdtkFieldsError::UnexpectedNull] if the field is null.
+            /// - returns [`LdtkFieldsError::FieldNotFound`] if no field with the given identifier exists.
+            #[doc = " - returns [`LdtkFieldsError::WrongFieldType`] if the field is not [`FieldValue::" $variant "`]."]
+            /// - returns [`LdtkFieldsError::UnexpectedNull`] if the field is null.
             fn [< get_ $type_name _field >](&self, identifier: &str) -> Result<$type, LdtkFieldsError> {
                 if let Some($type_name) = self.[< get_maybe_ $type_name _field >](identifier.clone())? {
                     Ok($type_name)
@@ -70,9 +70,9 @@ macro_rules! create_get_plural_fields_method {
             #[doc = " Get this item's non-null " $type_name " field value for the given identifier."]
             ///
             /// # Errors
-            /// - returns [LdtkFieldsError::FieldNotFound] if no field with the given identifier exists.
-            #[doc = " - returns [LdtkFieldsError::WrongFieldType] if the field is not " $variant "."]
-            /// - returns [LdtkFieldsError::UnexpectedNull] if **any** element of the field is null.
+            /// - returns [`LdtkFieldsError::FieldNotFound`] if no field with the given identifier exists.
+            #[doc = " - returns [`LdtkFieldsError::WrongFieldType`] if the field is not [`FieldValue::" $variant "`]."]
+            /// - returns [`LdtkFieldsError::UnexpectedNull`] if **any** element of the field is null.
             fn [< get_ $type_name _field >](&self, identifier: &str) -> Result<$collected_type, LdtkFieldsError> {
                 let $type_name = self.[< get_maybe_ $type_name _field >](identifier)?;
 
@@ -148,10 +148,10 @@ pub trait LdtkFields {
     /// Immutable accessor for this item's field instances, by reference.
     fn field_instances(&self) -> &[FieldInstance];
 
-    /// Get this item's field instance (with metadata) for given identifier.
+    /// Get this item's field instance (with metadata) for the given identifier.
     ///
     /// # Errors
-    /// - returns [LdtkFieldsError::FieldNotFound] if no field with the given identifier exists.
+    /// - returns [`LdtkFieldsError::FieldNotFound`] if no field with the given identifier exists.
     fn get_field_instance(&self, identifier: &str) -> Result<&FieldInstance, LdtkFieldsError> {
         self.field_instances()
             .iter()
@@ -164,7 +164,7 @@ pub trait LdtkFields {
     /// Get this item's field value for the given identifier.
     ///
     /// # Errors
-    /// - returns [LdtkFieldsError::FieldNotFound] if no field with the given identifier exists.
+    /// - returns [`LdtkFieldsError::FieldNotFound`] if no field with the given identifier exists.
     fn get_field(&self, identifier: &str) -> Result<&FieldValue, LdtkFieldsError> {
         Ok(&self.get_field_instance(identifier)?.value)
     }

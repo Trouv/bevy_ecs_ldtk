@@ -21,6 +21,10 @@ pub enum LdtkFieldsError {
     UnexpectedNull { identifier: String },
 }
 
+/// Base macro for generating a method that accesses a field instance and unwraps its [FieldValue]
+/// variant into the assigned type, or errors if it isn't the correct variant.
+///
+/// This macro is not intended for doing any further unwrapping, such as unwrapping an option.
 macro_rules! create_base_get_field_method {
     ($adjective:literal, $doc_name:ident, $var_name:ident, $variant:ident, $return_type:ty, $return_expr:expr) => {
         paste! {
@@ -44,6 +48,8 @@ macro_rules! create_base_get_field_method {
     }
 }
 
+/// Generates a `get_type_field` method corresponding to a `get_maybe_type_field` method,
+/// unwrapping the optional or erroring.
 macro_rules! create_get_field_method {
     ($type_name:ident, $variant:ident, $type:ty) => {
         paste! {
@@ -64,6 +70,8 @@ macro_rules! create_get_field_method {
     };
 }
 
+/// Generates a `get_types_field` method corresponding to a `get_maybe_types_field` method,
+/// unwrapping the optionals if they are all `Some` or erroring.
 macro_rules! create_get_plural_fields_method {
     ($type_name:ident, $variant:ident, $collected_type:ty, $map:expr) => {
         paste! {
@@ -88,6 +96,10 @@ macro_rules! create_get_plural_fields_method {
     };
 }
 
+/// Generates a `get_maybe_type_field` method for the given [FieldValue] variant,
+/// accessing a field instance and unwrapping it to the given variant or erroring.
+///
+/// Intended only for variants whose internal type is optional.
 macro_rules! create_get_maybe_field_method {
     ($type_name:ident, $variant:ident, $maybe_type:ty) => {
         paste! {
@@ -96,6 +108,11 @@ macro_rules! create_get_maybe_field_method {
     }
 }
 
+/// Generates a `get_maybe_type_field` method for the given [FieldValue] variant,
+/// accessing a field instance and unwrapping it to the given variant or erroring,
+/// and returning a copy to it instead of a reference.
+///
+/// Intended only for variants whose internal type is optional and can be cheaply copied.
 macro_rules! create_get_maybe_field_method_copy {
     ($type_name:ident, $variant:ident, $maybe_type:ty) => {
         paste! {
@@ -104,6 +121,11 @@ macro_rules! create_get_maybe_field_method_copy {
     }
 }
 
+/// Generates a `get_type_field` method for the given [FieldValue] variant,
+/// accessing a field instance and unwrapping it to the given variant or erroring,
+/// and returning a copy to it instead of a reference.
+///
+/// Intended only for variants whose internal type is **not** optional and can be cheaply copied.
 macro_rules! create_just_get_field_method_copy {
     ($type_name:ident, $variant:ident, $type:ty) => {
         paste! {
@@ -112,6 +134,10 @@ macro_rules! create_just_get_field_method_copy {
     };
 }
 
+/// Generates both `get_maybe_type_field` and `get_type_field` methods for the given [FieldValue]
+/// variant.
+///
+/// Intended only for variants whose internal type is optional and can be cheaply copied.
 macro_rules! create_get_field_methods_copy {
     ($type_name:ident, $variant:ident, $type:ty) => {
         create_get_maybe_field_method_copy!($type_name, $variant, Option<$type>);
@@ -119,6 +145,10 @@ macro_rules! create_get_field_methods_copy {
     };
 }
 
+/// Generates both `get_maybe_type_field` and `get_type_field` methods for the given [FieldValue]
+/// variant.
+///
+/// Intended only for variants whose internal type is optional.
 macro_rules! create_get_field_methods {
     ($type_name:ident, $variant:ident, $maybe_type:ty, $as_ref_type: ty) => {
         create_get_maybe_field_method!($type_name, $variant, $maybe_type);
@@ -126,6 +156,20 @@ macro_rules! create_get_field_methods {
     };
 }
 
+/// Generates a `get_types_field` method for the given [FieldValue] variant,
+/// accessing a field instance and unwrapping it to the given variant or erroring.
+///
+/// Intended only for variants whose internal type is a collection of a **non-optional** type.
+macro_rules! create_just_get_plural_fields_method {
+    ($type_name:ident, $variant:ident, $type:ty) => {
+        create_base_get_field_method!("", $type_name, $type_name, $variant, &[$type], $type_name);
+    };
+}
+
+/// Generates both `get_maybe_types_field` and `get_types_field` methods for the given [FieldValue]
+/// variant.
+///
+/// Intended only for variants whose internal type is a collection of an optional type.
 macro_rules! create_get_plural_fields_methods {
     ($type_name:ident, $variant:ident, $maybe_type:ty, $as_ref_type: ty) => {
         create_get_maybe_field_method!($type_name, $variant, &[$maybe_type]);
@@ -134,12 +178,6 @@ macro_rules! create_get_plural_fields_methods {
     ($type_name:ident, $variant:ident, $maybe_type:ty, $as_ref_type: ty, $map:expr) => {
         create_get_maybe_field_method!($type_name, $variant, &[$maybe_type]);
         create_get_plural_fields_method!($type_name, $variant, Vec<$as_ref_type>, $map);
-    };
-}
-
-macro_rules! create_just_get_plural_fields_method {
-    ($type_name:ident, $variant:ident, $type:ty) => {
-        create_base_get_field_method!("", $type_name, $type_name, $variant, &[$type], $type_name);
     };
 }
 

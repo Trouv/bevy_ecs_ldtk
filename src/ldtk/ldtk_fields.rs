@@ -6,13 +6,17 @@ use bevy::prelude::*;
 use paste::paste;
 use thiserror::Error;
 
+/// Errors related to the [LdtkFields] trait.
 #[derive(Debug, Error)]
 pub enum LdtkFieldsError {
+    /// Could not find a field instance with the given identifier.
     #[error("could not find {identifier} field")]
     FieldNotFound { identifier: String },
+    /// The field instance exists, but is the wrong [FieldValue] variant.
     #[error("found {identifier} field, but its type is not correct")]
     WrongFieldType { identifier: String },
-    #[error("found {identifier} field of the correct type, but it is null")]
+    /// The field instance exists and is the correct variant, but the value is null.
+    #[error("found {identifier} field of the correct type, but the value is null")]
     UnexpectedNull { identifier: String },
 }
 

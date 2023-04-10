@@ -20,7 +20,7 @@ pub enum LdtkFieldsError {
     UnexpectedNull { identifier: String },
 }
 
-macro_rules! create_get_ambiguous_field_method {
+macro_rules! create_base_get_field_method {
     ($adjective:literal, $doc_name:ident, $var_name:ident, $variant:ident, $return_type:ty, $return_expr:expr) => {
         paste! {
             #[doc = " Get this item's " $adjective $doc_name " field value for the given identifier."]
@@ -43,30 +43,6 @@ macro_rules! create_get_ambiguous_field_method {
     }
 }
 
-macro_rules! create_get_maybe_field_method {
-    ($type_name:ident, $variant:ident, $maybe_type:ty) => {
-        paste! {
-            create_get_ambiguous_field_method!("nullable ", $type_name, [< maybe_ $type_name >], $variant, $maybe_type, [< maybe_ $type_name >]);
-        }
-    }
-}
-
-macro_rules! create_get_maybe_field_method_copy {
-    ($type_name:ident, $variant:ident, $maybe_type:ty) => {
-        paste! {
-            create_get_ambiguous_field_method!("nullable ", $type_name, [< maybe_ $type_name >], $variant, $maybe_type, *[< maybe_ $type_name >]);
-        }
-    }
-}
-
-macro_rules! create_just_get_field_method_copy {
-    ($type_name:ident, $variant:ident, $type:ty) => {
-        paste! {
-            create_get_ambiguous_field_method!("", $type_name, $type_name, $variant, $type, *$type_name);
-        }
-    };
-}
-
 macro_rules! create_get_field_method {
     ($type_name:ident, $variant:ident, $type:ty) => {
         paste! {
@@ -84,20 +60,6 @@ macro_rules! create_get_field_method {
                 }
             }
         }
-    };
-}
-
-macro_rules! create_get_field_methods_copy {
-    ($type_name:ident, $variant:ident, $type:ty) => {
-        create_get_maybe_field_method_copy!($type_name, $variant, Option<$type>);
-        create_get_field_method!($type_name, $variant, $type);
-    };
-}
-
-macro_rules! create_get_field_methods {
-    ($type_name:ident, $variant:ident, $maybe_type:ty, $as_ref_type: ty) => {
-        create_get_maybe_field_method!($type_name, $variant, $maybe_type);
-        create_get_field_method!($type_name, $variant, $as_ref_type);
     };
 }
 
@@ -125,6 +87,44 @@ macro_rules! create_get_plural_fields_method {
     };
 }
 
+macro_rules! create_get_maybe_field_method {
+    ($type_name:ident, $variant:ident, $maybe_type:ty) => {
+        paste! {
+            create_base_get_field_method!("nullable ", $type_name, [< maybe_ $type_name >], $variant, $maybe_type, [< maybe_ $type_name >]);
+        }
+    }
+}
+
+macro_rules! create_get_maybe_field_method_copy {
+    ($type_name:ident, $variant:ident, $maybe_type:ty) => {
+        paste! {
+            create_base_get_field_method!("nullable ", $type_name, [< maybe_ $type_name >], $variant, $maybe_type, *[< maybe_ $type_name >]);
+        }
+    }
+}
+
+macro_rules! create_just_get_field_method_copy {
+    ($type_name:ident, $variant:ident, $type:ty) => {
+        paste! {
+            create_base_get_field_method!("", $type_name, $type_name, $variant, $type, *$type_name);
+        }
+    };
+}
+
+macro_rules! create_get_field_methods_copy {
+    ($type_name:ident, $variant:ident, $type:ty) => {
+        create_get_maybe_field_method_copy!($type_name, $variant, Option<$type>);
+        create_get_field_method!($type_name, $variant, $type);
+    };
+}
+
+macro_rules! create_get_field_methods {
+    ($type_name:ident, $variant:ident, $maybe_type:ty, $as_ref_type: ty) => {
+        create_get_maybe_field_method!($type_name, $variant, $maybe_type);
+        create_get_field_method!($type_name, $variant, $as_ref_type);
+    };
+}
+
 macro_rules! create_get_plural_fields_methods {
     ($type_name:ident, $variant:ident, $maybe_type:ty, $as_ref_type: ty) => {
         create_get_maybe_field_method!($type_name, $variant, &[$maybe_type]);
@@ -138,14 +138,7 @@ macro_rules! create_get_plural_fields_methods {
 
 macro_rules! create_just_get_plural_fields_method {
     ($type_name:ident, $variant:ident, $type:ty) => {
-        create_get_ambiguous_field_method!(
-            "",
-            $type_name,
-            $type_name,
-            $variant,
-            &[$type],
-            $type_name
-        );
+        create_base_get_field_method!("", $type_name, $type_name, $variant, &[$type], $type_name);
     };
 }
 
@@ -214,8 +207,6 @@ pub trait LdtkFields {
         &FieldInstanceEntityReference
     );
     create_get_plural_fields_methods!(points, Points, Option<IVec2>, &IVec2);
-
-    // implement similar methods for all `FieldValue` variants...
 }
 
 impl LdtkFields for EntityInstance {

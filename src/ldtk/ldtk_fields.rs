@@ -380,4 +380,49 @@ mod tests {
             ),
         ]
     }
+
+    macro_rules! test_get_field_methods {
+        ($type_name:ident, $maybe_ident:literal, $just_ident:literal, $wrong_ident:literal, $expected_maybe:expr, $expected_just:expr) => {
+            paste! {
+                #[test]
+                fn [< test_get_ $type_name _field_methods >]() {
+                    let field_instances = sample_field_instances();
+
+                    assert!(matches!(
+                        field_instances.[< get_maybe_ $type_name _field >]("NonExistent"),
+                        Err(LdtkFieldsError::FieldNotFound { .. })
+                    ));
+                    assert!(matches!(
+                        field_instances.[< get_maybe_ $type_name _field >]($wrong_ident),
+                        Err(LdtkFieldsError::WrongFieldType { .. })
+                    ));
+                    assert_eq!(
+                        field_instances.[< get_maybe_ $type_name _field >]($maybe_ident).unwrap(),
+                        None
+                    );
+                    assert_eq!(
+                        field_instances.[< get_maybe_ $type_name _field >]($just_ident).unwrap(),
+                        $expected_maybe
+                    );
+
+                    assert!(matches!(
+                        field_instances.[< get_ $type_name _field >]("NonExistent"),
+                        Err(LdtkFieldsError::FieldNotFound { .. })
+                    ));
+                    assert!(matches!(
+                        field_instances.[< get_ $type_name _field >]($wrong_ident),
+                        Err(LdtkFieldsError::WrongFieldType { .. })
+                    ));
+                    assert!(matches!(
+                        field_instances.[< get_ $type_name _field >]($maybe_ident),
+                        Err(LdtkFieldsError::UnexpectedNull { .. })
+                    ));
+                    assert_eq!(field_instances.[< get_ $type_name _field >]($just_ident).unwrap(), $expected_just);
+                }
+            }
+        };
+    }
+
+    test_get_field_methods!(int, "IntNone", "IntSome", "Bool", Some(0), 0);
+    test_get_field_methods!(float, "FloatNone", "FloatSome", "Bool", Some(1.0), 1.0);
 }

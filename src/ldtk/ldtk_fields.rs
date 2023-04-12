@@ -260,3 +260,124 @@ impl LdtkFields for Level {
         &self.field_instances
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    impl LdtkFields for Vec<FieldInstance> {
+        fn field_instances(&self) -> &[FieldInstance] {
+            &self
+        }
+    }
+
+    fn field_instance_from_value(identifier: &str, value: FieldValue) -> FieldInstance {
+        FieldInstance {
+            identifier: identifier.to_string(),
+            value,
+            field_instance_type: "".to_string(),
+            tile: None,
+            def_uid: 0,
+            real_editor_values: Vec::new(),
+        }
+    }
+
+    fn sample_field_instances() -> Vec<FieldInstance> {
+        use FieldValue::*;
+        vec![
+            field_instance_from_value("IntNone", Int(None)),
+            field_instance_from_value("IntSome", Int(Some(0))),
+            field_instance_from_value("FloatNone", Float(None)),
+            field_instance_from_value("FloatSome", Float(Some(1.0))),
+            field_instance_from_value("Bool", Bool(true)),
+            field_instance_from_value("StringNone", String(None)),
+            field_instance_from_value("StringSome", String(Some("two".to_string()))),
+            field_instance_from_value("Color", Color(bevy::prelude::Color::BLACK)),
+            field_instance_from_value("FilePathNone", FilePath(None)),
+            field_instance_from_value("FilePathSome", FilePath(Some("three".to_string()))),
+            field_instance_from_value("EnumNone", Enum(None)),
+            field_instance_from_value("EnumSome", Enum(Some("Four".to_string()))),
+            field_instance_from_value("TileNone", Tile(None)),
+            field_instance_from_value("TileSome", Tile(Some(TilesetRectangle::default()))),
+            field_instance_from_value("EntityRefNone", EntityRef(None)),
+            field_instance_from_value(
+                "EntityRefSome",
+                EntityRef(Some(FieldInstanceEntityReference::default())),
+            ),
+            field_instance_from_value("PointNone", Point(None)),
+            field_instance_from_value("PointSome", Point(Some(IVec2::default()))),
+            field_instance_from_value("IntsNullable", Ints(vec![None, Some(5)])),
+            field_instance_from_value("Ints", Ints(vec![Some(6), Some(7)])),
+            field_instance_from_value("FloatsNullable", Floats(vec![None, Some(8.)])),
+            field_instance_from_value("Floats", Floats(vec![Some(9.), Some(10.)])),
+            field_instance_from_value("Bools", Bools(vec![false, true])),
+            field_instance_from_value(
+                "StringsNullable",
+                Strings(vec![None, Some("eleven".to_string())]),
+            ),
+            field_instance_from_value(
+                "Strings",
+                Strings(vec![
+                    Some("twelve".to_string()),
+                    Some("thirteen".to_string()),
+                ]),
+            ),
+            field_instance_from_value(
+                "Colors",
+                Colors(vec![
+                    bevy::prelude::Color::BLACK,
+                    bevy::prelude::Color::WHITE,
+                ]),
+            ),
+            field_instance_from_value(
+                "FilePathsNullable",
+                FilePaths(vec![None, Some("fourteen".to_string())]),
+            ),
+            field_instance_from_value(
+                "FilePaths",
+                FilePaths(vec![
+                    Some("fifteen".to_string()),
+                    Some("sixteen".to_string()),
+                ]),
+            ),
+            field_instance_from_value(
+                "EnumsNullable",
+                Enums(vec![None, Some("Seventeen".to_string())]),
+            ),
+            field_instance_from_value(
+                "Enums",
+                Enums(vec![
+                    Some("Eighteen".to_string()),
+                    Some("Nineteen".to_string()),
+                ]),
+            ),
+            field_instance_from_value(
+                "TilesNullable",
+                Tiles(vec![None, Some(TilesetRectangle::default())]),
+            ),
+            field_instance_from_value(
+                "Tiles",
+                Tiles(vec![
+                    Some(TilesetRectangle::default()),
+                    Some(TilesetRectangle::default()),
+                ]),
+            ),
+            field_instance_from_value(
+                "EntityRefsNullable",
+                EntityRefs(vec![None, Some(FieldInstanceEntityReference::default())]),
+            ),
+            field_instance_from_value(
+                "EntityRefs",
+                EntityRefs(vec![
+                    Some(FieldInstanceEntityReference::default()),
+                    Some(FieldInstanceEntityReference::default()),
+                ]),
+            ),
+            field_instance_from_value("PointsNullable", Points(vec![None, Some(IVec2::default())])),
+            field_instance_from_value(
+                "Points",
+                Points(vec![Some(IVec2::default()), Some(IVec2::default())]),
+            ),
+        ]
+    }
+}

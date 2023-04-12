@@ -423,6 +423,29 @@ mod tests {
         };
     }
 
+    macro_rules! test_just_get_field_method {
+        ($type_name:ident, $ident:literal, $wrong_ident:literal, $expected:expr)  => {
+            paste! {
+                #[test]
+                fn [< test_get_ $type_name _field_methods >]() {
+                    let field_instances = sample_field_instances();
+
+                    assert!(matches!(
+                        field_instances.[< get_ $type_name _field >]("NonExistent"),
+                        Err(LdtkFieldsError::FieldNotFound { .. })
+                    ));
+                    assert!(matches!(
+                        field_instances.[< get_ $type_name _field >]($wrong_ident),
+                        Err(LdtkFieldsError::WrongFieldType { .. })
+                    ));
+                    assert_eq!(field_instances.[< get_ $type_name _field >]($ident).unwrap(), $expected);
+                }
+            }
+        };
+    }
+
     test_get_field_methods!(int, "IntNone", "IntSome", "Bool", Some(0), 0);
     test_get_field_methods!(float, "FloatNone", "FloatSome", "Bool", Some(1.0), 1.0);
+
+    test_just_get_field_method!(bool, "Bool", "Color", true);
 }

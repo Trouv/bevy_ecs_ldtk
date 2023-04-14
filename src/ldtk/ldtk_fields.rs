@@ -148,9 +148,9 @@ macro_rules! create_just_get_plural_fields_method {
 ///
 /// Intended only for variants whose internal type is a collection of an optional type.
 macro_rules! create_get_plural_fields_methods {
-    ($type_name:ident, $variant:ident, $maybe_type:ty, $as_ref_type: ty) => {
-        create_get_maybe_field_method!($type_name, $variant, &[$maybe_type]);
-        create_get_plural_fields_method!($type_name, $variant, $as_ref_type);
+    ($type_name:ident, $variant:ident, $type:ty) => {
+        create_get_maybe_field_method!($type_name, $variant, &[Option<$type>]);
+        create_get_plural_fields_method!($type_name, $variant, $type);
     };
 }
 
@@ -196,25 +196,20 @@ pub trait LdtkFields {
 
     create_get_field_methods!(point, Point, IVec2);
 
-    create_get_plural_fields_methods!(ints, Ints, Option<i32>, i32);
-    create_get_plural_fields_methods!(floats, Floats, Option<f32>, f32);
+    create_get_plural_fields_methods!(ints, Ints, i32);
+    create_get_plural_fields_methods!(floats, Floats, f32);
 
     create_just_get_plural_fields_method!(bools, Bools, bool);
 
-    create_get_plural_fields_methods!(strings, Strings, Option<String>, String);
+    create_get_plural_fields_methods!(strings, Strings, String);
 
     create_just_get_plural_fields_method!(colors, Colors, Color);
 
-    create_get_plural_fields_methods!(file_paths, FilePaths, Option<String>, String);
-    create_get_plural_fields_methods!(enums, Enums, Option<String>, String);
-    create_get_plural_fields_methods!(tiles, Tiles, Option<TilesetRectangle>, TilesetRectangle);
-    create_get_plural_fields_methods!(
-        entity_refs,
-        EntityRefs,
-        Option<FieldInstanceEntityReference>,
-        FieldInstanceEntityReference
-    );
-    create_get_plural_fields_methods!(points, Points, Option<IVec2>, IVec2);
+    create_get_plural_fields_methods!(file_paths, FilePaths, String);
+    create_get_plural_fields_methods!(enums, Enums, String);
+    create_get_plural_fields_methods!(tiles, Tiles, TilesetRectangle);
+    create_get_plural_fields_methods!(entity_refs, EntityRefs, FieldInstanceEntityReference);
+    create_get_plural_fields_methods!(points, Points, IVec2);
 }
 
 impl LdtkFields for EntityInstance {

@@ -52,17 +52,17 @@ macro_rules! create_base_get_field_method {
 /// Generates a `get_type_field` method corresponding to a `get_maybe_type_field` method,
 /// unwrapping the optional or erroring.
 macro_rules! create_get_field_method {
-    ($type_name:ident, $variant:ident, $type:ty) => {
+    ($variant:ident, $type:ty) => {
         paste! {
-            #[doc = " Get this item's non-null " $type_name " field value for the given identifier."]
+            #[doc = " Get this item's non-null " $variant " field value for the given identifier."]
             ///
             /// # Errors
             /// - returns [`LdtkFieldsError::FieldNotFound`] if no field with the given identifier exists.
             #[doc = " - returns [`LdtkFieldsError::WrongFieldType`] if the field is not [`FieldValue::" $variant "`]."]
             /// - returns [`LdtkFieldsError::UnexpectedNull`] if the field is null.
-            fn [< get_ $type_name _field >](&self, identifier: &str) -> Result<&$type, LdtkFieldsError> {
-                if let Some([< $type_name _ >]) = self.[< get_maybe_ $type_name _field >](identifier.clone())? {
-                    Ok([< $type_name _ >])
+            fn [< get_ $variant:snake _field >](&self, identifier: &str) -> Result<&$type, LdtkFieldsError> {
+                if let Some([< $variant:snake _ >]) = self.[< get_maybe_ $variant:snake _field >](identifier.clone())? {
+                    Ok([< $variant:snake _ >])
                 } else {
                     Err(LdtkFieldsError::UnexpectedNull { identifier: identifier.to_string() })
                 }
@@ -74,16 +74,16 @@ macro_rules! create_get_field_method {
 /// Generates a `get_types_field` method corresponding to a `get_maybe_types_field` method,
 /// unwrapping the optionals if they are all `Some` or erroring.
 macro_rules! create_get_plural_fields_method {
-    ($type_name:ident, $variant:ident, $item:ty) => {
+    ($variant:ident, $item:ty) => {
         paste! {
-            #[doc = " Get this item's non-null " $type_name " field value for the given identifier."]
+            #[doc = " Get this item's non-null " $variant " field value for the given identifier."]
             ///
             /// # Errors
             /// - returns [`LdtkFieldsError::FieldNotFound`] if no field with the given identifier exists.
             #[doc = " - returns [`LdtkFieldsError::WrongFieldType`] if the field is not [`FieldValue::" $variant "`]."]
             /// - returns [`LdtkFieldsError::UnexpectedNull`] if **any** element of the field is null.
-            fn [< get_ $type_name _field >](&self, identifier: &str) -> Result<Flatten<Iter<'_, Option<$item>>>, LdtkFieldsError> {
-                let $type_name = self.[< get_maybe_ $type_name _field >](identifier)?;
+            fn [< get_ $variant:snake _field >](&self, identifier: &str) -> Result<AllSomeIter<$item>, LdtkFieldsError> {
+                let [< $variant:snake >]= self.[< get_maybe_ $variant:snake _field >](identifier)?;
 
                 if $type_name.iter().all(|e| e.is_some()) {
                     Ok($type_name.iter().flatten())
@@ -102,9 +102,9 @@ macro_rules! create_get_plural_fields_method {
 ///
 /// Intended only for variants whose internal type is optional.
 macro_rules! create_get_maybe_field_method {
-    ($type_name:ident, $variant:ident, $maybe_type:ty) => {
+    ($variant:ident, $maybe_type:ty) => {
         paste! {
-            create_base_get_field_method!("nullable ", [< maybe_ $type_name >], $variant, $maybe_type);
+            create_base_get_field_method!("nullable ", [< maybe_ $variant:snake >], $variant, $maybe_type);
         }
     }
 }
@@ -115,9 +115,9 @@ macro_rules! create_get_maybe_field_method {
 ///
 /// Intended only for variants whose internal type is **not** optional and can be cheaply copied.
 macro_rules! create_just_get_field_method {
-    ($type_name:ident, $variant:ident, $type:ty) => {
+    ($variant:ident, $type:ty) => {
         paste! {
-            create_base_get_field_method!("", $type_name, $variant, &$type);
+            create_base_get_field_method!("", [< $variant:snake >], $variant, &$type);
         }
     };
 }
@@ -127,9 +127,9 @@ macro_rules! create_just_get_field_method {
 ///
 /// Intended only for variants whose internal type is optional.
 macro_rules! create_get_field_methods {
-    ($type_name:ident, $variant:ident, $type:ty) => {
-        create_get_maybe_field_method!($type_name, $variant, &Option<$type>);
-        create_get_field_method!($type_name, $variant, $type);
+    ($variant:ident, $type:ty) => {
+        create_get_maybe_field_method!($variant, &Option<$type>);
+        create_get_field_method!($variant, $type);
     };
 }
 
@@ -138,8 +138,10 @@ macro_rules! create_get_field_methods {
 ///
 /// Intended only for variants whose internal type is a collection of a **non-optional** type.
 macro_rules! create_just_get_plural_fields_method {
-    ($type_name:ident, $variant:ident, $type:ty) => {
-        create_base_get_field_method!("", $type_name, $variant, &[$type]);
+    ($variant:ident, $type:ty) => {
+        paste! {
+            create_base_get_field_method!("", [< $variant:snake >], $variant, &[$type]);
+        }
     };
 }
 
@@ -148,9 +150,9 @@ macro_rules! create_just_get_plural_fields_method {
 ///
 /// Intended only for variants whose internal type is a collection of an optional type.
 macro_rules! create_get_plural_fields_methods {
-    ($type_name:ident, $variant:ident, $type:ty) => {
-        create_get_maybe_field_method!($type_name, $variant, &[Option<$type>]);
-        create_get_plural_fields_method!($type_name, $variant, $type);
+    ($variant:ident, $type:ty) => {
+        create_get_maybe_field_method!($variant, &[Option<$type>]);
+        create_get_plural_fields_method!($variant, $type);
     };
 }
 
@@ -180,36 +182,36 @@ pub trait LdtkFields {
         Ok(&self.get_field_instance(identifier)?.value)
     }
 
-    create_get_field_methods!(int, Int, i32);
-    create_get_field_methods!(float, Float, f32);
+    create_get_field_methods!(Int, i32);
+    create_get_field_methods!(Float, f32);
 
-    create_just_get_field_method!(bool, Bool, bool);
+    create_just_get_field_method!(Bool, bool);
 
-    create_get_field_methods!(string, String, String);
+    create_get_field_methods!(String, String);
 
-    create_just_get_field_method!(color, Color, Color);
+    create_just_get_field_method!(Color, Color);
 
-    create_get_field_methods!(file_path, FilePath, String);
-    create_get_field_methods!(enum, Enum, String);
-    create_get_field_methods!(tile, Tile, TilesetRectangle);
-    create_get_field_methods!(entity_ref, EntityRef, FieldInstanceEntityReference);
+    create_get_field_methods!(FilePath, String);
+    create_get_field_methods!(Enum, String);
+    create_get_field_methods!(Tile, TilesetRectangle);
+    create_get_field_methods!(EntityRef, FieldInstanceEntityReference);
 
-    create_get_field_methods!(point, Point, IVec2);
+    create_get_field_methods!(Point, IVec2);
 
-    create_get_plural_fields_methods!(ints, Ints, i32);
-    create_get_plural_fields_methods!(floats, Floats, f32);
+    create_get_plural_fields_methods!(Ints, i32);
+    create_get_plural_fields_methods!(Floats, f32);
 
-    create_just_get_plural_fields_method!(bools, Bools, bool);
+    create_just_get_plural_fields_method!(Bools, bool);
 
-    create_get_plural_fields_methods!(strings, Strings, String);
+    create_get_plural_fields_methods!(Strings, String);
 
-    create_just_get_plural_fields_method!(colors, Colors, Color);
+    create_just_get_plural_fields_method!(Colors, Color);
 
-    create_get_plural_fields_methods!(file_paths, FilePaths, String);
-    create_get_plural_fields_methods!(enums, Enums, String);
-    create_get_plural_fields_methods!(tiles, Tiles, TilesetRectangle);
-    create_get_plural_fields_methods!(entity_refs, EntityRefs, FieldInstanceEntityReference);
-    create_get_plural_fields_methods!(points, Points, IVec2);
+    create_get_plural_fields_methods!(FilePaths, String);
+    create_get_plural_fields_methods!(Enums, String);
+    create_get_plural_fields_methods!(Tiles, TilesetRectangle);
+    create_get_plural_fields_methods!(EntityRefs, FieldInstanceEntityReference);
+    create_get_plural_fields_methods!(Points, IVec2);
 }
 
 impl LdtkFields for EntityInstance {

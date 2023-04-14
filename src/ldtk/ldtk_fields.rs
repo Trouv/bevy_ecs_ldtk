@@ -5,10 +5,11 @@ use crate::ldtk::{
 };
 use bevy::prelude::*;
 use paste::paste;
+use std::{iter::Flatten, slice::Iter};
 use thiserror::Error;
 
 /// Errors related to the [`LdtkFields`] trait.
-#[derive(Debug, Error)]
+#[derive(Debug, PartialEq, Eq, Error)]
 pub enum LdtkFieldsError {
     /// Could not find a field instance with the given identifier.
     #[error("could not find {identifier} field")]
@@ -73,7 +74,7 @@ macro_rules! create_get_field_method {
 /// Generates a `get_types_field` method corresponding to a `get_maybe_types_field` method,
 /// unwrapping the optionals if they are all `Some` or erroring.
 macro_rules! create_get_plural_fields_method {
-    ($type_name:ident, $variant:ident, $collected_type:ty, $map:expr) => {
+    ($type_name:ident, $variant:ident, $item:ty, $map:expr) => {
         paste! {
             #[doc = " Get this item's non-null " $type_name " field value for the given identifier."]
             ///
@@ -81,11 +82,11 @@ macro_rules! create_get_plural_fields_method {
             /// - returns [`LdtkFieldsError::FieldNotFound`] if no field with the given identifier exists.
             #[doc = " - returns [`LdtkFieldsError::WrongFieldType`] if the field is not [`FieldValue::" $variant "`]."]
             /// - returns [`LdtkFieldsError::UnexpectedNull`] if **any** element of the field is null.
-            fn [< get_ $type_name _field >](&self, identifier: &str) -> Result<$collected_type, LdtkFieldsError> {
+            fn [< get_ $type_name _field >](&self, identifier: &str) -> Result<Flatten<Iter<'_, Option<$item>>>, LdtkFieldsError> {
                 let $type_name = self.[< get_maybe_ $type_name _field >](identifier)?;
 
                 if $type_name.iter().all(|e| e.is_some()) {
-                    Ok($type_name.iter().flatten().map($map).collect())
+                    Ok($type_name.iter().flatten())
                 } else {
                     Err(LdtkFieldsError::UnexpectedNull {
                         identifier: identifier.to_string(),
@@ -173,11 +174,7 @@ macro_rules! create_just_get_plural_fields_method {
 macro_rules! create_get_plural_fields_methods {
     ($type_name:ident, $variant:ident, $maybe_type:ty, $as_ref_type: ty) => {
         create_get_maybe_field_method!($type_name, $variant, &[$maybe_type]);
-        create_get_plural_fields_method!($type_name, $variant, Vec<$as_ref_type>, |e| e);
-    };
-    ($type_name:ident, $variant:ident, $maybe_type:ty, $as_ref_type: ty, $map:expr) => {
-        create_get_maybe_field_method!($type_name, $variant, &[$maybe_type]);
-        create_get_plural_fields_method!($type_name, $variant, Vec<$as_ref_type>, $map);
+        create_get_plural_fields_method!($type_name, $variant, $as_ref_type, |e| e);
     };
 }
 
@@ -212,12 +209,12 @@ pub trait LdtkFields {
 
     create_just_get_field_method_copy!(bool, Bool, bool);
 
-    create_get_field_methods!(string, String, &Option<String>, &str);
+    create_get_field_methods!(string, String, &Option<String>, &String);
 
     create_just_get_field_method_copy!(color, Color, Color);
 
-    create_get_field_methods!(file_path, FilePath, &Option<String>, &str);
-    create_get_field_methods!(enum, Enum, &Option<String>, &str);
+    create_get_field_methods!(file_path, FilePath, &Option<String>, &String);
+    create_get_field_methods!(enum, Enum, &Option<String>, &String);
     create_get_field_methods!(tile, Tile, &Option<TilesetRectangle>, &TilesetRectangle);
     create_get_field_methods!(
         entity_ref,
@@ -228,25 +225,25 @@ pub trait LdtkFields {
 
     create_get_field_methods_copy!(point, Point, IVec2);
 
-    create_get_plural_fields_methods!(ints, Ints, Option<i32>, &i32);
-    create_get_plural_fields_methods!(floats, Floats, Option<f32>, &f32);
+    create_get_plural_fields_methods!(ints, Ints, Option<i32>, i32);
+    create_get_plural_fields_methods!(floats, Floats, Option<f32>, f32);
 
     create_just_get_plural_fields_method!(bools, Bools, bool);
 
-    create_get_plural_fields_methods!(strings, Strings, Option<String>, &str, |e| e.as_str());
+    create_get_plural_fields_methods!(strings, Strings, Option<String>, String);
 
     create_just_get_plural_fields_method!(colors, Colors, Color);
 
-    create_get_plural_fields_methods!(file_paths, FilePaths, Option<String>, &str, |e| e.as_str());
-    create_get_plural_fields_methods!(enums, Enums, Option<String>, &str, |e| e.as_str());
-    create_get_plural_fields_methods!(tiles, Tiles, Option<TilesetRectangle>, &TilesetRectangle);
+    create_get_plural_fields_methods!(file_paths, FilePaths, Option<String>, String);
+    create_get_plural_fields_methods!(enums, Enums, Option<String>, String);
+    create_get_plural_fields_methods!(tiles, Tiles, Option<TilesetRectangle>, TilesetRectangle);
     create_get_plural_fields_methods!(
         entity_refs,
         EntityRefs,
         Option<FieldInstanceEntityReference>,
-        &FieldInstanceEntityReference
+        FieldInstanceEntityReference
     );
-    create_get_plural_fields_methods!(points, Points, Option<IVec2>, &IVec2);
+    create_get_plural_fields_methods!(points, Points, Option<IVec2>, IVec2);
 }
 
 impl LdtkFields for EntityInstance {

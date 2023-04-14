@@ -27,7 +27,7 @@ pub enum LdtkFieldsError {
 ///
 /// This macro is not intended for doing any further unwrapping, such as unwrapping an option.
 macro_rules! create_base_get_field_method {
-    ($adjective:literal, $doc_name:ident, $var_name:ident, $variant:ident, $return_type:ty, $return_expr:expr) => {
+    ($adjective:literal, $doc_name:ident, $var_name:ident, $variant:ident, $return_type:ty) => {
         paste! {
             #[doc = " Get this item's " $adjective $doc_name " field value for the given identifier."]
             ///
@@ -39,7 +39,7 @@ macro_rules! create_base_get_field_method {
                 identifier: &str,
             ) -> Result<$return_type, LdtkFieldsError> {
                 match self.get_field(identifier)? {
-                    FieldValue::$variant($var_name) => Ok($return_expr),
+                    FieldValue::$variant($var_name) => Ok($var_name),
                     _ => Err(LdtkFieldsError::WrongFieldType {
                         identifier: identifier.to_string(),
                     }),
@@ -104,7 +104,7 @@ macro_rules! create_get_plural_fields_method {
 macro_rules! create_get_maybe_field_method {
     ($type_name:ident, $variant:ident, $maybe_type:ty) => {
         paste! {
-            create_base_get_field_method!("nullable ", $type_name, [< maybe_ $type_name >], $variant, $maybe_type, [< maybe_ $type_name >]);
+            create_base_get_field_method!("nullable ", $type_name, [< maybe_ $type_name >], $variant, $maybe_type);
         }
     }
 }
@@ -117,7 +117,7 @@ macro_rules! create_get_maybe_field_method {
 macro_rules! create_just_get_field_method {
     ($type_name:ident, $variant:ident, $type:ty) => {
         paste! {
-            create_base_get_field_method!("", $type_name, $type_name, $variant, $type, $type_name);
+            create_base_get_field_method!("", $type_name, $type_name, $variant, $type);
         }
     };
 }
@@ -139,7 +139,7 @@ macro_rules! create_get_field_methods {
 /// Intended only for variants whose internal type is a collection of a **non-optional** type.
 macro_rules! create_just_get_plural_fields_method {
     ($type_name:ident, $variant:ident, $type:ty) => {
-        create_base_get_field_method!("", $type_name, $type_name, $variant, &[$type], $type_name);
+        create_base_get_field_method!("", $type_name, $type_name, $variant, &[$type]);
     };
 }
 

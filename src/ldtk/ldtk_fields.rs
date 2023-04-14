@@ -127,9 +127,9 @@ macro_rules! create_just_get_field_method {
 ///
 /// Intended only for variants whose internal type is optional.
 macro_rules! create_get_field_methods {
-    ($type_name:ident, $variant:ident, $maybe_type:ty, $as_ref_type: ty) => {
-        create_get_maybe_field_method!($type_name, $variant, $maybe_type);
-        create_get_field_method!($type_name, $variant, $as_ref_type);
+    ($type_name:ident, $variant:ident, $type:ty) => {
+        create_get_maybe_field_method!($type_name, $variant, &Option<$type>);
+        create_get_field_method!($type_name, $variant, &$type);
     };
 }
 
@@ -180,26 +180,21 @@ pub trait LdtkFields {
         Ok(&self.get_field_instance(identifier)?.value)
     }
 
-    create_get_field_methods!(int, Int, &Option<i32>, &i32);
-    create_get_field_methods!(float, Float, &Option<f32>, &f32);
+    create_get_field_methods!(int, Int, i32);
+    create_get_field_methods!(float, Float, f32);
 
     create_just_get_field_method!(bool, Bool, &bool);
 
-    create_get_field_methods!(string, String, &Option<String>, &String);
+    create_get_field_methods!(string, String, String);
 
     create_just_get_field_method!(color, Color, &Color);
 
-    create_get_field_methods!(file_path, FilePath, &Option<String>, &String);
-    create_get_field_methods!(enum, Enum, &Option<String>, &String);
-    create_get_field_methods!(tile, Tile, &Option<TilesetRectangle>, &TilesetRectangle);
-    create_get_field_methods!(
-        entity_ref,
-        EntityRef,
-        &Option<FieldInstanceEntityReference>,
-        &FieldInstanceEntityReference
-    );
+    create_get_field_methods!(file_path, FilePath, String);
+    create_get_field_methods!(enum, Enum, String);
+    create_get_field_methods!(tile, Tile, TilesetRectangle);
+    create_get_field_methods!(entity_ref, EntityRef, FieldInstanceEntityReference);
 
-    create_get_field_methods!(point, Point, &Option<IVec2>, &IVec2);
+    create_get_field_methods!(point, Point, IVec2);
 
     create_get_plural_fields_methods!(ints, Ints, Option<i32>, i32);
     create_get_plural_fields_methods!(floats, Floats, Option<f32>, f32);

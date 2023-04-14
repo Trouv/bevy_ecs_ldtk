@@ -60,7 +60,7 @@ macro_rules! create_get_field_method {
             /// - returns [`LdtkFieldsError::FieldNotFound`] if no field with the given identifier exists.
             #[doc = " - returns [`LdtkFieldsError::WrongFieldType`] if the field is not [`FieldValue::" $variant "`]."]
             /// - returns [`LdtkFieldsError::UnexpectedNull`] if the field is null.
-            fn [< get_ $type_name _field >](&self, identifier: &str) -> Result<$type, LdtkFieldsError> {
+            fn [< get_ $type_name _field >](&self, identifier: &str) -> Result<&$type, LdtkFieldsError> {
                 if let Some([< $type_name _ >]) = self.[< get_maybe_ $type_name _field >](identifier.clone())? {
                     Ok([< $type_name _ >])
                 } else {
@@ -129,7 +129,7 @@ macro_rules! create_just_get_field_method {
 macro_rules! create_get_field_methods {
     ($type_name:ident, $variant:ident, $type:ty) => {
         create_get_maybe_field_method!($type_name, $variant, &Option<$type>);
-        create_get_field_method!($type_name, $variant, &$type);
+        create_get_field_method!($type_name, $variant, $type);
     };
 }
 

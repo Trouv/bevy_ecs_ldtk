@@ -117,7 +117,7 @@ macro_rules! create_get_maybe_field_method {
 macro_rules! create_just_get_field_method {
     ($type_name:ident, $variant:ident, $type:ty) => {
         paste! {
-            create_base_get_field_method!("", $type_name, $type_name, $variant, $type);
+            create_base_get_field_method!("", $type_name, $type_name, $variant, &$type);
         }
     };
 }
@@ -183,11 +183,11 @@ pub trait LdtkFields {
     create_get_field_methods!(int, Int, i32);
     create_get_field_methods!(float, Float, f32);
 
-    create_just_get_field_method!(bool, Bool, &bool);
+    create_just_get_field_method!(bool, Bool, bool);
 
     create_get_field_methods!(string, String, String);
 
-    create_just_get_field_method!(color, Color, &Color);
+    create_just_get_field_method!(color, Color, Color);
 
     create_get_field_methods!(file_path, FilePath, String);
     create_get_field_methods!(enum, Enum, String);

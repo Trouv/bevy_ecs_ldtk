@@ -127,10 +127,10 @@ macro_rules! create_get_maybe_field_method_copy {
 /// and returning a copy to it instead of a reference.
 ///
 /// Intended only for variants whose internal type is **not** optional and can be cheaply copied.
-macro_rules! create_just_get_field_method_copy {
+macro_rules! create_just_get_field_method {
     ($type_name:ident, $variant:ident, $type:ty) => {
         paste! {
-            create_base_get_field_method!("", $type_name, $type_name, $variant, $type, *$type_name);
+            create_base_get_field_method!("", $type_name, $type_name, $variant, $type, $type_name);
         }
     };
 }
@@ -204,14 +204,14 @@ pub trait LdtkFields {
         Ok(&self.get_field_instance(identifier)?.value)
     }
 
-    create_get_field_methods_copy!(int, Int, i32);
-    create_get_field_methods_copy!(float, Float, f32);
+    create_get_field_methods!(int, Int, &Option<i32>, &i32);
+    create_get_field_methods!(float, Float, &Option<f32>, &f32);
 
-    create_just_get_field_method_copy!(bool, Bool, bool);
+    create_just_get_field_method!(bool, Bool, &bool);
 
     create_get_field_methods!(string, String, &Option<String>, &String);
 
-    create_just_get_field_method_copy!(color, Color, Color);
+    create_just_get_field_method!(color, Color, &Color);
 
     create_get_field_methods!(file_path, FilePath, &Option<String>, &String);
     create_get_field_methods!(enum, Enum, &Option<String>, &String);
@@ -223,7 +223,7 @@ pub trait LdtkFields {
         &FieldInstanceEntityReference
     );
 
-    create_get_field_methods_copy!(point, Point, IVec2);
+    create_get_field_methods!(point, Point, &Option<IVec2>, &IVec2);
 
     create_get_plural_fields_methods!(ints, Ints, Option<i32>, i32);
     create_get_plural_fields_methods!(floats, Floats, Option<f32>, f32);

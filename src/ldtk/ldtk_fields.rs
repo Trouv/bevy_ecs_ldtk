@@ -109,19 +109,6 @@ macro_rules! create_get_maybe_field_method {
     }
 }
 
-/// Generates a `get_maybe_type_field` method for the given [FieldValue] variant,
-/// accessing a field instance and unwrapping it to the given variant or erroring,
-/// and returning a copy to it instead of a reference.
-///
-/// Intended only for variants whose internal type is optional and can be cheaply copied.
-macro_rules! create_get_maybe_field_method_copy {
-    ($type_name:ident, $variant:ident, $maybe_type:ty) => {
-        paste! {
-            create_base_get_field_method!("nullable ", $type_name, [< maybe_ $type_name >], $variant, $maybe_type, *[< maybe_ $type_name >]);
-        }
-    }
-}
-
 /// Generates a `get_type_field` method for the given [FieldValue] variant,
 /// accessing a field instance and unwrapping it to the given variant or erroring,
 /// and returning a copy to it instead of a reference.
@@ -132,17 +119,6 @@ macro_rules! create_just_get_field_method {
         paste! {
             create_base_get_field_method!("", $type_name, $type_name, $variant, $type, $type_name);
         }
-    };
-}
-
-/// Generates both `get_maybe_type_field` and `get_type_field` methods for the given [FieldValue]
-/// variant.
-///
-/// Intended only for variants whose internal type is optional and can be cheaply copied.
-macro_rules! create_get_field_methods_copy {
-    ($type_name:ident, $variant:ident, $type:ty) => {
-        create_get_maybe_field_method_copy!($type_name, $variant, Option<$type>);
-        create_get_field_method!($type_name, $variant, $type);
     };
 }
 

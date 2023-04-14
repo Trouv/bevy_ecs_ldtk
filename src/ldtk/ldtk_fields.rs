@@ -74,7 +74,7 @@ macro_rules! create_get_field_method {
 /// Generates a `get_types_field` method corresponding to a `get_maybe_types_field` method,
 /// unwrapping the optionals if they are all `Some` or erroring.
 macro_rules! create_get_plural_fields_method {
-    ($type_name:ident, $variant:ident, $item:ty, $map:expr) => {
+    ($type_name:ident, $variant:ident, $item:ty) => {
         paste! {
             #[doc = " Get this item's non-null " $type_name " field value for the given identifier."]
             ///
@@ -150,7 +150,7 @@ macro_rules! create_just_get_plural_fields_method {
 macro_rules! create_get_plural_fields_methods {
     ($type_name:ident, $variant:ident, $maybe_type:ty, $as_ref_type: ty) => {
         create_get_maybe_field_method!($type_name, $variant, &[$maybe_type]);
-        create_get_plural_fields_method!($type_name, $variant, $as_ref_type, |e| e);
+        create_get_plural_fields_method!($type_name, $variant, $as_ref_type);
     };
 }
 

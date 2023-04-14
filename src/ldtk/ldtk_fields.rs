@@ -8,6 +8,34 @@ use paste::paste;
 use std::{iter::Flatten, slice::Iter};
 use thiserror::Error;
 
+pub struct NotAllSomeError;
+
+pub struct AllSomeIter<'a, T> {
+    flattened: Flatten<Iter<'a, Option<T>>>,
+}
+
+impl<'a, T> Iterator for AllSomeIter<'a, T> {
+    type Item = &'a T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.flattened.next()
+    }
+}
+
+impl<'a, T> TryFrom<&'a [Option<T>]> for AllSomeIter<'a, T> {
+    type Error = NotAllSomeError;
+
+    fn try_from(value: &'a [Option<T>]) -> Result<Self, Self::Error> {
+        if value.iter().all(|v| v.is_some()) {
+            Ok(AllSomeIter {
+                flattened: value.iter().flatten(),
+            })
+        } else {
+            Err(NotAllSomeError)
+        }
+    }
+}
+
 /// Errors related to the [`LdtkFields`] trait.
 #[derive(Debug, PartialEq, Eq, Error)]
 pub enum LdtkFieldsError {
@@ -85,13 +113,7 @@ macro_rules! create_get_plural_fields_method {
             fn [< get_ $variant:snake _field >](&self, identifier: &str) -> Result<AllSomeIter<$item>, LdtkFieldsError> {
                 let [< $variant:snake >]= self.[< get_maybe_ $variant:snake _field >](identifier)?;
 
-                if $type_name.iter().all(|e| e.is_some()) {
-                    Ok($type_name.iter().flatten())
-                } else {
-                    Err(LdtkFieldsError::UnexpectedNull {
-                        identifier: identifier.to_string(),
-                    })
-                }
+                [< $variant:snake >].try_into().map_err(|_| LdtkFieldsError::UnexpectedNull { identifier: identifier.to_string() })
             }
         }
     };

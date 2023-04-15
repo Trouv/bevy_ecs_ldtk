@@ -445,7 +445,7 @@ mod tests {
                         field_instances
                             .$method_name($ident)
                             .unwrap()
-                            .copied()
+                            .cloned()
                             .collect::<Vec<_>>(),
                         $value
                     );
@@ -576,11 +576,141 @@ mod tests {
 
     test_ambiguous_get_field_method!(
         get_maybe_ints_field,
-        "Bool",
+        "Bools",
         "IntsNullable",
         [None, Some(5)],
         "Ints",
         [Some(6), Some(7)]
     );
-    test_iter_fields_method!(iter_ints_field, "Bool", "IntsNullable", "Ints", [6, 7]);
+    test_iter_fields_method!(iter_ints_field, "Bools", "IntsNullable", "Ints", [6, 7]);
+
+    test_ambiguous_get_field_method!(
+        get_maybe_floats_field,
+        "Bools",
+        "FloatsNullable",
+        [None, Some(8.)],
+        "Floats",
+        [Some(9.), Some(10.)]
+    );
+    test_iter_fields_method!(
+        iter_floats_field,
+        "Bools",
+        "FloatsNullable",
+        "Floats",
+        [9., 10.]
+    );
+
+    test_ambiguous_get_field_method!(get_bools_field, "Colors", "Bools", [false, true]);
+
+    test_ambiguous_get_field_method!(
+        get_maybe_strings_field,
+        "Bools",
+        "StringsNullable",
+        [None, Some("eleven".to_string())],
+        "Strings",
+        [Some("twelve".to_string()), Some("thirteen".to_string())]
+    );
+    test_iter_fields_method!(
+        iter_strings_field,
+        "Bools",
+        "StringsNullable",
+        "Strings",
+        ["twelve".to_string(), "thirteen".to_string()]
+    );
+
+    test_ambiguous_get_field_method!(
+        get_colors_field,
+        "Bools",
+        "Colors",
+        [Color::BLACK, Color::WHITE]
+    );
+
+    test_ambiguous_get_field_method!(
+        get_maybe_file_paths_field,
+        "Bools",
+        "FilePathsNullable",
+        [None, Some("fourteen".to_string())],
+        "FilePaths",
+        [Some("fifteen".to_string()), Some("sixteen".to_string())]
+    );
+    test_iter_fields_method!(
+        iter_file_paths_field,
+        "Bools",
+        "FilePathsNullable",
+        "FilePaths",
+        ["fifteen".to_string(), "sixteen".to_string()]
+    );
+
+    test_ambiguous_get_field_method!(
+        get_maybe_enums_field,
+        "Bools",
+        "EnumsNullable",
+        [None, Some("Seventeen".to_string())],
+        "Enums",
+        [Some("Eighteen".to_string()), Some("Nineteen".to_string())]
+    );
+    test_iter_fields_method!(
+        iter_enums_field,
+        "Bools",
+        "EnumsNullable",
+        "Enums",
+        ["Eighteen".to_string(), "Nineteen".to_string()]
+    );
+
+    test_ambiguous_get_field_method!(
+        get_maybe_tiles_field,
+        "Bools",
+        "TilesNullable",
+        [None, Some(TilesetRectangle::default())],
+        "Tiles",
+        [
+            Some(TilesetRectangle::default()),
+            Some(TilesetRectangle::default())
+        ]
+    );
+    test_iter_fields_method!(
+        iter_tiles_field,
+        "Bools",
+        "TilesNullable",
+        "Tiles",
+        [TilesetRectangle::default(), TilesetRectangle::default()]
+    );
+
+    test_ambiguous_get_field_method!(
+        get_maybe_entity_refs_field,
+        "Bools",
+        "EntityRefsNullable",
+        [None, Some(FieldInstanceEntityReference::default())],
+        "EntityRefs",
+        [
+            Some(FieldInstanceEntityReference::default()),
+            Some(FieldInstanceEntityReference::default())
+        ]
+    );
+    test_iter_fields_method!(
+        iter_entity_refs_field,
+        "Bools",
+        "EntityRefsNullable",
+        "EntityRefs",
+        [
+            FieldInstanceEntityReference::default(),
+            FieldInstanceEntityReference::default()
+        ]
+    );
+
+    test_ambiguous_get_field_method!(
+        get_maybe_points_field,
+        "Bools",
+        "PointsNullable",
+        [None, Some(IVec2::default())],
+        "Points",
+        [Some(IVec2::default()), Some(IVec2::default())]
+    );
+    test_iter_fields_method!(
+        iter_points_field,
+        "Bools",
+        "PointsNullable",
+        "Points",
+        [IVec2::default(), IVec2::default()]
+    );
 }

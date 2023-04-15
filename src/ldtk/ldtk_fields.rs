@@ -368,71 +368,219 @@ mod tests {
         ]
     }
 
-    macro_rules! test_get_field_methods {
-        ($type_name:ident, $maybe_ident:literal, $just_ident:literal, $wrong_ident:literal, $expected_maybe:expr, $expected_just:expr) => {
+    macro_rules! test_ambiguous_get_field_method {
+        ($method_name:ident, $wrong_ident:literal, $( $ident:literal, $value:expr ),*) => {
             paste! {
                 #[test]
-                fn [< test_get_ $type_name _field_methods >]() {
+                fn [< test_ $method_name >]() {
                     let field_instances = sample_field_instances();
 
                     assert!(matches!(
-                        field_instances.[< get_maybe_ $type_name _field >]("NonExistent"),
+                        field_instances.$method_name("NonExistent"),
                         Err(LdtkFieldsError::FieldNotFound { .. })
                     ));
                     assert!(matches!(
-                        field_instances.[< get_maybe_ $type_name _field >]($wrong_ident),
+                        field_instances.$method_name($wrong_ident),
                         Err(LdtkFieldsError::WrongFieldType { .. })
                     ));
-                    assert_eq!(
-                        field_instances.[< get_maybe_ $type_name _field >]($maybe_ident).unwrap(),
-                        None
-                    );
-                    assert_eq!(
-                        field_instances.[< get_maybe_ $type_name _field >]($just_ident).unwrap(),
-                        $expected_maybe
-                    );
-
-                    assert!(matches!(
-                        field_instances.[< get_ $type_name _field >]("NonExistent"),
-                        Err(LdtkFieldsError::FieldNotFound { .. })
-                    ));
-                    assert!(matches!(
-                        field_instances.[< get_ $type_name _field >]($wrong_ident),
-                        Err(LdtkFieldsError::WrongFieldType { .. })
-                    ));
-                    assert!(matches!(
-                        field_instances.[< get_ $type_name _field >]($maybe_ident),
-                        Err(LdtkFieldsError::UnexpectedNull { .. })
-                    ));
-                    assert_eq!(field_instances.[< get_ $type_name _field >]($just_ident).unwrap(), $expected_just);
+                    $(
+                        assert_eq!(
+                            *field_instances.$method_name($ident).unwrap(),
+                            $value
+                        );
+                    )*
                 }
             }
         };
     }
 
     macro_rules! test_just_get_field_method {
-        ($type_name:ident, $ident:literal, $wrong_ident:literal, $expected:expr)  => {
+        ($method_name:ident, $wrong_ident:literal, $nullable_ident:literal, $ident:literal, $value:expr) => {
             paste! {
                 #[test]
-                fn [< test_get_ $type_name _field_methods >]() {
+                fn [< test_ $method_name >]() {
                     let field_instances = sample_field_instances();
 
                     assert!(matches!(
-                        field_instances.[< get_ $type_name _field >]("NonExistent"),
+                        field_instances.$method_name("NonExistent"),
                         Err(LdtkFieldsError::FieldNotFound { .. })
                     ));
                     assert!(matches!(
-                        field_instances.[< get_ $type_name _field >]($wrong_ident),
+                        field_instances.$method_name($wrong_ident),
                         Err(LdtkFieldsError::WrongFieldType { .. })
                     ));
-                    assert_eq!(field_instances.[< get_ $type_name _field >]($ident).unwrap(), $expected);
+                    assert!(matches!(
+                        field_instances.$method_name($nullable_ident),
+                        Err(LdtkFieldsError::UnexpectedNull { .. })
+                    ));
+                    assert_eq!(
+                        *field_instances.$method_name($ident).unwrap(),
+                        $value
+                    );
                 }
             }
         };
     }
 
-    test_get_field_methods!(int, "IntNone", "IntSome", "Bool", Some(0), 0);
-    test_get_field_methods!(float, "FloatNone", "FloatSome", "Bool", Some(1.0), 1.0);
+    macro_rules! test_iter_fields_method {
+        ($method_name:ident, $wrong_ident:literal, $nullable_ident:literal, $ident:literal, $value:expr) => {
+            paste! {
+                #[test]
+                fn [< test_ $method_name >]() {
+                    let field_instances = sample_field_instances();
 
-    test_just_get_field_method!(bool, "Bool", "Color", true);
+                    assert!(matches!(
+                        field_instances.$method_name("NonExistent"),
+                        Err(LdtkFieldsError::FieldNotFound { .. })
+                    ));
+                    assert!(matches!(
+                        field_instances.$method_name($wrong_ident),
+                        Err(LdtkFieldsError::WrongFieldType { .. })
+                    ));
+                    assert!(matches!(
+                        field_instances.$method_name($nullable_ident),
+                        Err(LdtkFieldsError::UnexpectedNull { .. })
+                    ));
+                    assert_eq!(
+                        field_instances
+                            .$method_name($ident)
+                            .unwrap()
+                            .copied()
+                            .collect::<Vec<_>>(),
+                        $value
+                    );
+                }
+            }
+        };
+    }
+
+    test_ambiguous_get_field_method!(
+        get_maybe_int_field,
+        "Bool",
+        "IntNone",
+        None,
+        "IntSome",
+        Some(0)
+    );
+    test_just_get_field_method!(get_int_field, "Bool", "IntNone", "IntSome", 0);
+
+    test_ambiguous_get_field_method!(
+        get_maybe_float_field,
+        "Bool",
+        "FloatNone",
+        None,
+        "FloatSome",
+        Some(1.)
+    );
+    test_just_get_field_method!(get_float_field, "Bool", "FloatNone", "FloatSome", 1.);
+
+    test_ambiguous_get_field_method!(get_bool_field, "Color", "Bool", true);
+
+    test_ambiguous_get_field_method!(
+        get_maybe_string_field,
+        "Bool",
+        "StringNone",
+        None,
+        "StringSome",
+        Some("two".to_string())
+    );
+    test_just_get_field_method!(
+        get_string_field,
+        "Bool",
+        "StringNone",
+        "StringSome",
+        "two".to_string()
+    );
+
+    test_ambiguous_get_field_method!(get_color_field, "Bool", "Color", Color::BLACK);
+
+    test_ambiguous_get_field_method!(
+        get_maybe_file_path_field,
+        "Bool",
+        "FilePathNone",
+        None,
+        "FilePathSome",
+        Some("three".to_string())
+    );
+    test_just_get_field_method!(
+        get_file_path_field,
+        "Bool",
+        "FilePathNone",
+        "FilePathSome",
+        "three".to_string()
+    );
+
+    test_ambiguous_get_field_method!(
+        get_maybe_enum_field,
+        "Bool",
+        "EnumNone",
+        None,
+        "EnumSome",
+        Some("Four".to_string())
+    );
+    test_just_get_field_method!(
+        get_enum_field,
+        "Bool",
+        "EnumNone",
+        "EnumSome",
+        "Four".to_string()
+    );
+
+    test_ambiguous_get_field_method!(
+        get_maybe_tile_field,
+        "Bool",
+        "TileNone",
+        None,
+        "TileSome",
+        Some(TilesetRectangle::default())
+    );
+    test_just_get_field_method!(
+        get_tile_field,
+        "Bool",
+        "TileNone",
+        "TileSome",
+        TilesetRectangle::default()
+    );
+
+    test_ambiguous_get_field_method!(
+        get_maybe_entity_ref_field,
+        "Bool",
+        "EntityRefNone",
+        None,
+        "EntityRefSome",
+        Some(FieldInstanceEntityReference::default())
+    );
+    test_just_get_field_method!(
+        get_entity_ref_field,
+        "Bool",
+        "EntityRefNone",
+        "EntityRefSome",
+        FieldInstanceEntityReference::default()
+    );
+
+    test_ambiguous_get_field_method!(
+        get_maybe_point_field,
+        "Bool",
+        "PointNone",
+        None,
+        "PointSome",
+        Some(IVec2::default())
+    );
+    test_just_get_field_method!(
+        get_point_field,
+        "Bool",
+        "PointNone",
+        "PointSome",
+        IVec2::default()
+    );
+
+    test_ambiguous_get_field_method!(
+        get_maybe_ints_field,
+        "Bool",
+        "IntsNullable",
+        [None, Some(5)],
+        "Ints",
+        [Some(6), Some(7)]
+    );
+    test_iter_fields_method!(iter_ints_field, "Bool", "IntsNullable", "Ints", [6, 7]);
 }

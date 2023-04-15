@@ -103,10 +103,9 @@ macro_rules! create_get_maybe_field_method {
 }
 
 /// Generates a `get_type_field` method for the given [FieldValue] variant,
-/// accessing a field instance and unwrapping it to the given variant or erroring,
-/// and returning a copy to it instead of a reference.
+/// accessing a field instance and unwrapping it to the given variant or erroring.
 ///
-/// Intended only for variants whose internal type is **not** optional and can be cheaply copied.
+/// Intended only for variants whose internal type is **not** optional.
 macro_rules! create_just_get_field_method {
     ($variant:ident, $type:ty) => {
         paste! {

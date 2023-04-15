@@ -84,10 +84,9 @@ impl From<&EntityInstance> for Items {
     fn from(entity_instance: &EntityInstance) -> Self {
         Items(
             entity_instance
-                .get_enums_field("items")
+                .iter_enums_field("items")
                 .expect("items field should be correctly typed")
-                .into_iter()
-                .map(|s| s.to_string())
+                .cloned()
                 .collect(),
         )
     }
@@ -172,10 +171,10 @@ impl LdtkEntity for Patrol {
         ));
 
         let ldtk_patrol_points = entity_instance
-            .get_points_field("patrol")
+            .iter_points_field("patrol")
             .expect("patrol field should be correclty typed");
 
-        for ldtk_point in ldtk_patrol_points.iter() {
+        for ldtk_point in ldtk_patrol_points {
             // The +1 is necessary here due to the pivot of the entities in the sample
             // file.
             // The patrols set up in the file look flat and grounded,

@@ -1,10 +1,15 @@
 //! Assets and AssetLoaders for loading ldtk files.
 
-use crate::{ldtk, resources::LevelSelection};
+use crate::{
+    ldtk::{self, Type},
+    level,
+    resources::LevelSelection,
+};
 use bevy::{
     asset::{AssetLoader, AssetPath, LoadContext, LoadedAsset},
     prelude::*,
     reflect::TypeUuid,
+    render::render_resource::{Extent3d, TextureDimension, TextureFormat},
     utils::BoxedFuture,
 };
 use std::{collections::HashMap, path::Path};
@@ -32,6 +37,7 @@ pub struct LdtkAsset {
     pub project: ldtk::LdtkJson,
     pub tileset_map: TilesetMap,
     pub level_map: LevelMap,
+    pub int_grid_image_handle: Option<Handle<Image>>,
 }
 
 impl ldtk::LdtkJson {
@@ -141,10 +147,32 @@ impl AssetLoader for LdtkLoader {
                 }
             }
 
+            let int_grid_image_handle = project
+                .defs
+                .layers
+                .iter()
+                .filter(|l| l.purple_type == Type::IntGrid && l.tileset_def_uid.is_none())
+                .max_by(|layer_a, layer_b| layer_a.grid_size.cmp(&layer_b.grid_size))
+                .map(|l| {
+                    let image = Image::new_fill(
+                        Extent3d {
+                            width: l.grid_size as u32,
+                            height: l.grid_size as u32,
+                            depth_or_array_layers: 1,
+                        },
+                        TextureDimension::D2,
+                        &[255, 255, 255, 255],
+                        TextureFormat::Rgba8UnormSrgb,
+                    );
+
+                    load_context.set_labeled_asset("int_grid_image", LoadedAsset::new(image))
+                });
+
             let ldtk_asset = LdtkAsset {
                 project,
                 tileset_map,
                 level_map,
+                int_grid_image_handle,
             };
             load_context.set_default_asset(
                 LoadedAsset::new(ldtk_asset)

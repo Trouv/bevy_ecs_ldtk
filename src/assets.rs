@@ -2,7 +2,6 @@
 
 use crate::{
     ldtk::{self, Type},
-    level,
     resources::LevelSelection,
 };
 use bevy::{

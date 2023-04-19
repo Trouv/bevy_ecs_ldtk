@@ -16,7 +16,7 @@ use crate::{
     utils::*,
 };
 
-use bevy::{prelude::*, render::render_resource::*};
+use bevy::prelude::*;
 use bevy_ecs_tilemap::{
     map::{
         TilemapGridSize, TilemapId, TilemapSize, TilemapSpacing, TilemapTexture, TilemapTileSize,

@@ -212,6 +212,7 @@ pub fn spawn_level(
     layer_definition_map: &HashMap<i32, &LayerDefinition>,
     tileset_map: &TilesetMap,
     tileset_definition_map: &HashMap<i32, &TilesetDefinition>,
+    int_grid_image_handle: &Option<Handle<Image>>,
     worldly_set: HashSet<Worldly>,
     ldtk_entity: Entity,
     ldtk_settings: &LdtkSettings,

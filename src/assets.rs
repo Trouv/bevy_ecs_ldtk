@@ -46,6 +46,26 @@ impl ldtk::LdtkJson {
             .iter()
             .chain(self.worlds.iter().flat_map(|w| &w.levels))
     }
+
+    fn create_int_grid_image(&self) -> Option<Image> {
+        self.defs
+            .layers
+            .iter()
+            .filter(|l| l.purple_type == Type::IntGrid && l.tileset_def_uid.is_none())
+            .max_by(|layer_a, layer_b| layer_a.grid_size.cmp(&layer_b.grid_size))
+            .map(|l| {
+                Image::new_fill(
+                    Extent3d {
+                        width: l.grid_size as u32,
+                        height: l.grid_size as u32,
+                        depth_or_array_layers: 1,
+                    },
+                    TextureDimension::D2,
+                    &[255, 255, 255, 255],
+                    TextureFormat::Rgba8UnormSrgb,
+                )
+            })
+    }
 }
 
 impl LdtkAsset {
@@ -146,26 +166,9 @@ impl AssetLoader for LdtkLoader {
                 }
             }
 
-            let int_grid_image_handle = project
-                .defs
-                .layers
-                .iter()
-                .filter(|l| l.purple_type == Type::IntGrid && l.tileset_def_uid.is_none())
-                .max_by(|layer_a, layer_b| layer_a.grid_size.cmp(&layer_b.grid_size))
-                .map(|l| {
-                    let image = Image::new_fill(
-                        Extent3d {
-                            width: l.grid_size as u32,
-                            height: l.grid_size as u32,
-                            depth_or_array_layers: 1,
-                        },
-                        TextureDimension::D2,
-                        &[255, 255, 255, 255],
-                        TextureFormat::Rgba8UnormSrgb,
-                    );
-
-                    load_context.set_labeled_asset("int_grid_image", LoadedAsset::new(image))
-                });
+            let int_grid_image_handle = project.create_int_grid_image().map(|image| {
+                load_context.set_labeled_asset("int_grid_image", LoadedAsset::new(image))
+            });
 
             let ldtk_asset = LdtkAsset {
                 project,

@@ -33,6 +33,7 @@ pub struct LdtkAsset {
     pub project: ldtk::LdtkJson,
     pub tileset_map: TilesetMap,
     pub level_map: LevelMap,
+    /// Image used for rendering int grid colors.
     pub int_grid_image_handle: Option<Handle<Image>>,
 }
 

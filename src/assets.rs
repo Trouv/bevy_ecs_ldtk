@@ -250,3 +250,113 @@ impl AssetLoader for LdtkLevelLoader {
         &["ldtkl"]
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::ldtk::{Definitions, LayerDefinition, Type};
+
+    use super::*;
+
+    #[test]
+    fn int_grid_image_is_white() {
+        let definitions = Definitions {
+            layers: vec![LayerDefinition {
+                purple_type: Type::IntGrid,
+                grid_size: 16,
+                ..default()
+            }],
+            ..default()
+        };
+
+        let image = definitions.create_int_grid_image().unwrap();
+
+        for byte in image.data.iter() {
+            assert_eq!(*byte, 255);
+        }
+    }
+
+    #[test]
+    fn int_grid_image_is_size_of_max_int_grid_layer() {
+        let definitions = Definitions {
+            layers: vec![
+                LayerDefinition {
+                    purple_type: Type::IntGrid,
+                    grid_size: 16,
+                    ..default()
+                },
+                LayerDefinition {
+                    purple_type: Type::IntGrid,
+                    grid_size: 32,
+                    ..default()
+                },
+                LayerDefinition {
+                    purple_type: Type::IntGrid,
+                    grid_size: 2,
+                    ..default()
+                },
+                // Excludes non-intgrid layers
+                LayerDefinition {
+                    purple_type: Type::AutoLayer,
+                    grid_size: 64,
+                    ..default()
+                },
+                LayerDefinition {
+                    purple_type: Type::Tiles,
+                    grid_size: 64,
+                    ..default()
+                },
+                LayerDefinition {
+                    purple_type: Type::Entities,
+                    grid_size: 64,
+                    ..default()
+                },
+                // Excludes intgrid layers w/ tileset
+                LayerDefinition {
+                    purple_type: Type::IntGrid,
+                    grid_size: 64,
+                    tileset_def_uid: Some(1),
+                    ..default()
+                },
+            ],
+            ..default()
+        };
+
+        let image = definitions.create_int_grid_image().unwrap();
+
+        assert_eq!(image.size(), Vec2::splat(32.));
+    }
+
+    #[test]
+    fn no_int_grid_image_for_no_elligible_int_grid_layers() {
+        let definitions = Definitions {
+            layers: vec![
+                // Excludes non-intgrid layers
+                LayerDefinition {
+                    purple_type: Type::AutoLayer,
+                    grid_size: 64,
+                    ..default()
+                },
+                LayerDefinition {
+                    purple_type: Type::Tiles,
+                    grid_size: 64,
+                    ..default()
+                },
+                LayerDefinition {
+                    purple_type: Type::Entities,
+                    grid_size: 64,
+                    ..default()
+                },
+                // Excludes intgrid layers w/ tileset
+                LayerDefinition {
+                    purple_type: Type::IntGrid,
+                    grid_size: 64,
+                    tileset_def_uid: Some(1),
+                    ..default()
+                },
+            ],
+            ..default()
+        };
+
+        assert!(definitions.create_int_grid_image().is_none());
+    }
+}

@@ -47,6 +47,13 @@ impl ldtk::LdtkJson {
             .chain(self.worlds.iter().flat_map(|w| &w.levels))
     }
 
+    /// Creates image that will be used for rendering IntGrid colors.
+    ///
+    /// The resulting image is completely white and can be thought of as a single tile of the grid.
+    /// The image is only as big as the biggest int grid layer's grid size.
+    ///
+    /// Can return `None` if there are no IntGrid layers that will be rendered by color.
+    /// IntGrid layers that have a tileset are excluded since they will not be rendered by color.
     fn create_int_grid_image(&self) -> Option<Image> {
         self.defs
             .layers

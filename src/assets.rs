@@ -1,9 +1,6 @@
 //! Assets and AssetLoaders for loading ldtk files.
 
-use crate::{
-    ldtk::{self, Type},
-    resources::LevelSelection,
-};
+use crate::{ldtk, resources::LevelSelection};
 use bevy::{
     asset::{AssetLoader, AssetPath, LoadContext, LoadedAsset},
     prelude::*,
@@ -39,14 +36,7 @@ pub struct LdtkAsset {
     pub int_grid_image_handle: Option<Handle<Image>>,
 }
 
-impl ldtk::LdtkJson {
-    /// Used for [LdtkAsset::iter_levels].
-    pub fn iter_levels(&self) -> impl Iterator<Item = &ldtk::Level> {
-        self.levels
-            .iter()
-            .chain(self.worlds.iter().flat_map(|w| &w.levels))
-    }
-
+impl ldtk::Definitions {
     /// Creates image that will be used for rendering IntGrid colors.
     ///
     /// The resulting image is completely white and can be thought of as a single tile of the grid.
@@ -55,10 +45,9 @@ impl ldtk::LdtkJson {
     /// Can return `None` if there are no IntGrid layers that will be rendered by color.
     /// IntGrid layers that have a tileset are excluded since they will not be rendered by color.
     fn create_int_grid_image(&self) -> Option<Image> {
-        self.defs
-            .layers
+        self.layers
             .iter()
-            .filter(|l| l.purple_type == Type::IntGrid && l.tileset_def_uid.is_none())
+            .filter(|l| l.purple_type == ldtk::Type::IntGrid && l.tileset_def_uid.is_none())
             .max_by(|layer_a, layer_b| layer_a.grid_size.cmp(&layer_b.grid_size))
             .map(|l| {
                 Image::new_fill(
@@ -72,6 +61,15 @@ impl ldtk::LdtkJson {
                     TextureFormat::Rgba8UnormSrgb,
                 )
             })
+    }
+}
+
+impl ldtk::LdtkJson {
+    /// Used for [LdtkAsset::iter_levels].
+    pub fn iter_levels(&self) -> impl Iterator<Item = &ldtk::Level> {
+        self.levels
+            .iter()
+            .chain(self.worlds.iter().flat_map(|w| &w.levels))
     }
 }
 
@@ -173,7 +171,7 @@ impl AssetLoader for LdtkLoader {
                 }
             }
 
-            let int_grid_image_handle = project.create_int_grid_image().map(|image| {
+            let int_grid_image_handle = project.defs.create_int_grid_image().map(|image| {
                 load_context.set_labeled_asset("int_grid_image", LoadedAsset::new(image))
             });
 

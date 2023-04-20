@@ -544,7 +544,7 @@ pub struct EnumValueDefinition {
     pub tile_id: Option<i32>,
 }
 
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Default, Clone, Serialize, Deserialize)]
 pub struct LayerDefinition {
     /// Type of the layer (*IntGrid, Entities, Tiles or AutoLayer*)
     #[serde(rename = "__type")]

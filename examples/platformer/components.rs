@@ -82,25 +82,13 @@ pub struct Items(Vec<String>);
 
 impl From<&EntityInstance> for Items {
     fn from(entity_instance: &EntityInstance) -> Self {
-        let mut items: Vec<String> = vec![];
-
-        if let Some(field_instance) = entity_instance
-            .field_instances
-            .iter()
-            .find(|f| f.identifier == *"items")
-        {
-            // convert &String to String which returns vec![String::from("Knife"), String::from("Boot")]
-            items = match &field_instance.value {
-                FieldValue::Enums(v) => v
-                    .iter()
-                    .flatten()
-                    .map(|s| s.into())
-                    .collect::<Vec<String>>(),
-                _ => vec![],
-            };
-        }
-
-        Self(items)
+        Items(
+            entity_instance
+                .iter_enums_field("items")
+                .expect("items field should be correctly typed")
+                .cloned()
+                .collect(),
+        )
     }
 }
 
@@ -182,28 +170,25 @@ impl LdtkEntity for Patrol {
             entity_instance.pivot,
         ));
 
-        let ldtk_patrol = entity_instance
-            .field_instances
-            .iter()
-            .find(|f| f.identifier == *"patrol")
-            .unwrap();
-        if let FieldValue::Points(ldtk_points) = &ldtk_patrol.value {
-            for ldtk_point in ldtk_points.iter().flatten() {
-                // The +1 is necessary here due to the pivot of the entities in the sample
-                // file.
-                // The patrols set up in the file look flat and grounded,
-                // but technically they're not if you consider the pivot,
-                // which is at the bottom-center for the skulls.
-                let pixel_coords = (ldtk_point.as_vec2() + Vec2::new(0.5, 1.))
-                    * Vec2::splat(layer_instance.grid_size as f32);
+        let ldtk_patrol_points = entity_instance
+            .iter_points_field("patrol")
+            .expect("patrol field should be correclty typed");
 
-                points.push(ldtk_pixel_coords_to_translation_pivoted(
-                    pixel_coords.as_ivec2(),
-                    layer_instance.c_hei * layer_instance.grid_size,
-                    IVec2::new(entity_instance.width, entity_instance.height),
-                    entity_instance.pivot,
-                ));
-            }
+        for ldtk_point in ldtk_patrol_points {
+            // The +1 is necessary here due to the pivot of the entities in the sample
+            // file.
+            // The patrols set up in the file look flat and grounded,
+            // but technically they're not if you consider the pivot,
+            // which is at the bottom-center for the skulls.
+            let pixel_coords = (ldtk_point.as_vec2() + Vec2::new(0.5, 1.))
+                * Vec2::splat(layer_instance.grid_size as f32);
+
+            points.push(ldtk_pixel_coords_to_translation_pivoted(
+                pixel_coords.as_ivec2(),
+                layer_instance.c_hei * layer_instance.grid_size,
+                IVec2::new(entity_instance.width, entity_instance.height),
+                entity_instance.pivot,
+            ));
         }
 
         Patrol {

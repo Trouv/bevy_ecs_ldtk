@@ -32,8 +32,10 @@ use std::collections::HashMap;
 #[allow(unused_imports)]
 use crate::prelude::LdtkEntity;
 
+pub mod all_some_iter;
 mod color;
 mod field_instance;
+pub mod ldtk_fields;
 
 pub use field_instance::*;
 

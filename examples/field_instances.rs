@@ -14,6 +14,7 @@ fn main() {
         .add_plugin(LdtkPlugin)
         .insert_resource(LevelSelection::default())
         .add_startup_system(setup)
+        .add_system(resolve_mother_references)
         .register_ldtk_entity::<EnemyBundle>("Enemy")
         .run();
 }
@@ -117,7 +118,7 @@ fn equipment_drops_from_field(entity_instance: &EntityInstance) -> EquipmentDrop
     EquipmentDrops { drops }
 }
 
-#[derive(Clone, Debug, Default, Deref, DerefMut, Component)]
+#[derive(Clone, Debug, Default, Eq, PartialEq, Deref, DerefMut, Component)]
 struct LdtkEntityIid(String);
 
 impl From<&EntityInstance> for LdtkEntityIid {
@@ -141,3 +142,27 @@ fn unresolved_mother_from_mother_field(entity_instance: &EntityInstance) -> Unre
 
 #[derive(Debug, Deref, DerefMut, Component)]
 struct Mother(Entity);
+
+fn resolve_mother_references(
+    mut commands: Commands,
+    unresolved_mothers: Query<(Entity, &UnresolvedMotherRef), Added<UnresolvedMotherRef>>,
+    ldtk_entities: Query<(Entity, &LdtkEntityIid)>,
+) {
+    for (child_entity, unresolved_mother_ref) in unresolved_mothers.iter() {
+        if let Some(mother_iid) = unresolved_mother_ref.0.as_ref() {
+            let (mother_entity, _) = ldtk_entities
+                .iter()
+                .find(|(_, iid)| *iid == mother_iid)
+                .expect("enemy's mother entity should exist");
+
+            commands
+                .entity(child_entity)
+                .remove::<UnresolvedMotherRef>()
+                .insert(Mother(mother_entity));
+        } else {
+            commands
+                .entity(child_entity)
+                .remove::<UnresolvedMotherRef>();
+        }
+    }
+}

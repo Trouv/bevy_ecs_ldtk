@@ -2,6 +2,7 @@ use std::str::FromStr;
 
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use thiserror::Error;
 
 fn main() {
@@ -9,6 +10,7 @@ fn main() {
         .add_plugins(
             DefaultPlugins.set(ImagePlugin::default_nearest()), // prevents blurry sprites
         )
+        .add_plugin(WorldInspectorPlugin::new())
         .add_plugin(LdtkPlugin)
         .insert_resource(LevelSelection::default())
         .add_startup_system(setup)

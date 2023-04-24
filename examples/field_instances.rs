@@ -16,6 +16,10 @@ fn main() {
         .add_startup_system(setup)
         .add_system(resolve_mother_references)
         .register_ldtk_entity::<EnemyBundle>("Enemy")
+        .register_type::<Health>()
+        .register_type::<EquipmentDrops>()
+        .register_type::<Mother>()
+        .register_type::<LdtkEntityIid>()
         .run();
 }
 
@@ -34,7 +38,6 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
 #[derive(Default, Bundle, LdtkEntity)]
 struct EnemyBundle {
-    enemy: Enemy,
     #[with(name_from_field)]
     name: Name,
     #[with(health_from_field)]
@@ -49,9 +52,6 @@ struct EnemyBundle {
     sprite_sheet_bundle: SpriteSheetBundle,
 }
 
-#[derive(Debug, Default, Component)]
-struct Enemy;
-
 fn name_from_field(entity_instance: &EntityInstance) -> Name {
     Name::new(
         entity_instance
@@ -61,7 +61,7 @@ fn name_from_field(entity_instance: &EntityInstance) -> Name {
     )
 }
 
-#[derive(Debug, Default, Component)]
+#[derive(Debug, Default, Component, Reflect)]
 struct Health(i32);
 
 fn health_from_field(entity_instance: &EntityInstance) -> Health {
@@ -76,7 +76,7 @@ fn health_from_field(entity_instance: &EntityInstance) -> Health {
 #[error("this equipment type doesn't exist")]
 struct EquipmentNotFound;
 
-#[derive(Debug)]
+#[derive(Debug, Reflect, FromReflect)]
 enum EquipmentType {
     Helmet,
     Armor,
@@ -102,7 +102,7 @@ impl FromStr for EquipmentType {
     }
 }
 
-#[derive(Debug, Default, Component)]
+#[derive(Debug, Default, Component, Reflect)]
 struct EquipmentDrops {
     drops: Vec<EquipmentType>,
 }
@@ -118,7 +118,7 @@ fn equipment_drops_from_field(entity_instance: &EntityInstance) -> EquipmentDrop
     EquipmentDrops { drops }
 }
 
-#[derive(Clone, Debug, Default, Eq, PartialEq, Deref, DerefMut, Component)]
+#[derive(Clone, Debug, Default, Eq, PartialEq, Deref, DerefMut, Component, Reflect)]
 struct LdtkEntityIid(String);
 
 impl From<&EntityInstance> for LdtkEntityIid {
@@ -140,7 +140,7 @@ fn unresolved_mother_from_mother_field(entity_instance: &EntityInstance) -> Unre
     )
 }
 
-#[derive(Debug, Deref, DerefMut, Component)]
+#[derive(Debug, Deref, DerefMut, Component, Reflect)]
 struct Mother(Entity);
 
 fn resolve_mother_references(

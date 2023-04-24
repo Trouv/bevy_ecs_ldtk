@@ -29,8 +29,41 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
 }
 
+#[derive(Default, Bundle, LdtkEntity)]
+struct EnemyBundle {
+    enemy: Enemy,
+    #[with(name_from_field)]
+    name: Name,
+    #[with(health_from_field)]
+    health: Health,
+    #[with(equipment_drops_from_field)]
+    equipment_drops: EquipmentDrops,
+    #[sprite_sheet_bundle]
+    sprite_sheet_bundle: SpriteSheetBundle,
+}
+
 #[derive(Debug, Default, Component)]
 struct Enemy;
+
+fn name_from_field(entity_instance: &EntityInstance) -> Name {
+    Name::new(
+        entity_instance
+            .get_string_field("name")
+            .expect("expected entity to have name field")
+            .clone(),
+    )
+}
+
+#[derive(Debug, Default, Component)]
+struct Health(i32);
+
+fn health_from_field(entity_instance: &EntityInstance) -> Health {
+    Health(
+        *entity_instance
+            .get_int_field("health")
+            .expect("expected entity to have health field"),
+    )
+}
 
 #[derive(Debug, Error)]
 #[error("this equipment type doesn't exist")]
@@ -67,24 +100,13 @@ struct EquipmentDrops {
     drops: Vec<EquipmentType>,
 }
 
-impl From<&EntityInstance> for EquipmentDrops {
-    fn from(value: &EntityInstance) -> Self {
-        let drops = value
-            .iter_enums_field("equipment_drops")
-            .unwrap()
-            .map(|field| EquipmentType::from_str(field))
-            .collect::<Result<_, _>>()
-            .unwrap();
+fn equipment_drops_from_field(entity_instance: &EntityInstance) -> EquipmentDrops {
+    let drops = entity_instance
+        .iter_enums_field("equipment_drops")
+        .expect("expected entity to have equipment_drops field")
+        .map(|field| EquipmentType::from_str(field))
+        .collect::<Result<_, _>>()
+        .unwrap();
 
-        EquipmentDrops { drops }
-    }
-}
-
-#[derive(Default, Bundle, LdtkEntity)]
-struct EnemyBundle {
-    enemy: Enemy,
-    #[from_entity_instance]
-    equipment_drops: EquipmentDrops,
-    #[sprite_sheet_bundle]
-    sprite_sheet_bundle: SpriteSheetBundle,
+    EquipmentDrops { drops }
 }

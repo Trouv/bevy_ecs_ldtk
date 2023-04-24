@@ -1,3 +1,6 @@
+//! This example shows a few ways in which you can use data stored on field instances.
+//! The level at hand has some enemies in it, and they have some special properties defined as
+//! field instances: -
 use std::str::FromStr;
 
 use bevy::prelude::*;

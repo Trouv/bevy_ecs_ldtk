@@ -1,13 +1,18 @@
-use bevy::{prelude::*, render::texture::DEFAULT_IMAGE_HANDLE};
+use std::str::FromStr;
+
+use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
+use thiserror::Error;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
+        .add_plugins(
+            DefaultPlugins.set(ImagePlugin::default_nearest()), // prevents blurry sprites
+        )
         .add_plugin(LdtkPlugin)
         .insert_resource(LevelSelection::default())
         .add_startup_system(setup)
-        .register_ldtk_entity::<EntityWithFieldsBundle>("EntityWithFields")
+        .register_ldtk_entity::<EnemyBundle>("Enemy")
         .run();
 }
 
@@ -19,68 +24,67 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     commands.entity(map_entity).insert(LdtkWorldBundle {
         ldtk_handle,
+        transform: Transform::from_scale(Vec3::splat(2.)),
         ..Default::default()
     });
 }
 
-#[derive(Clone, Default, Bundle)]
-struct EntityWithFieldsBundle {
-    #[bundle]
-    sprite_bundle: SpriteBundle,
+#[derive(Debug, Default, Component)]
+struct Enemy;
+
+#[derive(Debug, Error)]
+#[error("this equipment type doesn't exist")]
+struct EquipmentNotFound;
+
+#[derive(Debug)]
+enum EquipmentType {
+    Helmet,
+    Armor,
+    Boots,
+    Sword,
+    Shield,
 }
 
-impl LdtkEntity for EntityWithFieldsBundle {
-    fn bundle_entity(
-        entity_instance: &EntityInstance,
-        _: &LayerInstance,
-        _: Option<&Handle<Image>>,
-        _: Option<&TilesetDefinition>,
-        _: &AssetServer,
-        _: &mut Assets<TextureAtlas>,
-    ) -> EntityWithFieldsBundle {
-        println!("EntityWithFields added, here are some facts:");
-        for field_instance in &entity_instance.field_instances {
-            println!(
-                "    its {} {}",
-                field_instance.identifier,
-                explain_field(&field_instance.value)
-            );
-        }
+impl FromStr for EquipmentType {
+    type Err = EquipmentNotFound;
 
-        let mut sprite = Sprite {
-            custom_size: Some(Vec2::splat(16.)),
-            ..Default::default()
-        };
-        if let Some(color_field) = entity_instance
-            .field_instances
-            .iter()
-            .find(|f| f.identifier == *"Color")
-        {
-            if let FieldValue::Color(color) = color_field.value {
-                sprite.color = color;
-            }
-        }
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        use EquipmentType::*;
 
-        EntityWithFieldsBundle {
-            sprite_bundle: SpriteBundle {
-                sprite,
-                texture: DEFAULT_IMAGE_HANDLE.typed(),
-                ..Default::default()
-            },
+        match s {
+            "Helmet" => Ok(Helmet),
+            "Armor" => Ok(Armor),
+            "Boots" => Ok(Boots),
+            "Sword" => Ok(Sword),
+            "Shield" => Ok(Shield),
+            _ => Err(EquipmentNotFound),
         }
     }
 }
 
-fn explain_field(value: &FieldValue) -> String {
-    match value {
-        FieldValue::Int(Some(i)) => format!("has an integer of {}", i),
-        FieldValue::Float(Some(f)) => format!("has a float of {}", f),
-        FieldValue::Bool(b) => format!("is {}", b),
-        FieldValue::String(Some(s)) => format!("says {}", s),
-        FieldValue::Color(c) => format!("has the color {:?}", c),
-        FieldValue::Enum(Some(e)) => format!("is the variant {}", e),
-        FieldValue::FilePath(Some(f)) => format!("references {}", f),
-        FieldValue::Point(Some(p)) => format!("is at ({}, {})", p.x, p.y),
-        a => format!("is hard to explain: {:?}", a),
+#[derive(Debug, Default, Component)]
+struct EquipmentDrops {
+    drops: Vec<EquipmentType>,
+}
+
+impl From<&EntityInstance> for EquipmentDrops {
+    fn from(value: &EntityInstance) -> Self {
+        let drops = value
+            .iter_enums_field("equipment_drops")
+            .unwrap()
+            .map(|field| EquipmentType::from_str(field))
+            .collect::<Result<_, _>>()
+            .unwrap();
+
+        EquipmentDrops { drops }
     }
+}
+
+#[derive(Default, Bundle, LdtkEntity)]
+struct EnemyBundle {
+    enemy: Enemy,
+    #[from_entity_instance]
+    equipment_drops: EquipmentDrops,
+    #[sprite_sheet_bundle]
+    sprite_sheet_bundle: SpriteSheetBundle,
 }

@@ -11,7 +11,7 @@
 	"iid": "e5d71f40-c640-11ed-8b6c-3f97242aa928",
 	"jsonVersion": "1.2.5",
 	"appBuildId": 465554,
-	"nextUid": 95,
+	"nextUid": 96,
 	"identifierStyle": "Capitalize",
 	"toc": [],
 	"worldLayout": "Free",
@@ -550,7 +550,40 @@
 		{ "id": "Boots", "tileId": 18, "color": 8869439, "__tileSrcRect": [64,32,32,32] },
 		{ "id": "Sword", "tileId": 19, "color": 12363427, "__tileSrcRect": [96,32,32,32] },
 		{ "id": "Shield", "tileId": 20, "color": 10662597, "__tileSrcRect": [128,32,32,32] }
-	], "iconTilesetUid": 31, "externalRelPath": null, "externalFileChecksum": null, "tags": [] }], "externalEnums": [], "levelFields": [] },
+	], "iconTilesetUid": 31, "externalRelPath": null, "externalFileChecksum": null, "tags": [] }], "externalEnums": [], "levelFields": [
+		{
+			"identifier": "title",
+			"doc": null,
+			"__type": "String",
+			"uid": 95,
+			"type": "F_String",
+			"isArray": false,
+			"canBeNull": false,
+			"arrayMinLength": null,
+			"arrayMaxLength": null,
+			"editorDisplayMode": "Hidden",
+			"editorDisplayPos": "Above",
+			"editorLinkStyle": "StraightArrow",
+			"editorAlwaysShow": false,
+			"editorShowInWorld": true,
+			"editorCutLongValues": true,
+			"editorTextSuffix": null,
+			"editorTextPrefix": null,
+			"useForSmartColor": false,
+			"min": null,
+			"max": null,
+			"regex": null,
+			"acceptFileTypes": null,
+			"defaultOverride": null,
+			"textLanguageMode": null,
+			"symmetricalRef": false,
+			"autoChainRef": true,
+			"allowOutOfLevelRef": true,
+			"allowedRefs": "OnlySame",
+			"allowedRefTags": [],
+			"tilesetUid": null
+		}
+	] },
 	"levels": [
 		{
 			"identifier": "World_Level_0",
@@ -571,7 +604,10 @@
 			"__smartColor": "#ADADB5",
 			"__bgPos": null,
 			"externalRelPath": null,
-			"fieldInstances": [],
+			"fieldInstances": [{ "__identifier": "title", "__value": "Bat Dungeon", "__type": "String", "__tile": null, "defUid": 95, "realEditorValues": [{
+				"id": "V_String",
+				"params": ["Bat Dungeon"]
+			}] }],
 			"layerInstances": [
 				{
 					"__identifier": "Entities",

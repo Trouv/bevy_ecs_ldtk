@@ -402,7 +402,7 @@
 					"tilesetUid": null
 				},
 				{
-					"identifier": "gold",
+					"identifier": "health",
 					"doc": null,
 					"__type": "Int",
 					"uid": 34,
@@ -614,7 +614,7 @@
 									"id": "V_String",
 									"params": ["Boss"]
 								}] },
-								{ "__identifier": "gold", "__value": 200, "__type": "Int", "__tile": null, "defUid": 34, "realEditorValues": [{ "id": "V_Int", "params": [200] }] },
+								{ "__identifier": "health", "__value": 200, "__type": "Int", "__tile": null, "defUid": 34, "realEditorValues": [{ "id": "V_Int", "params": [200] }] },
 								{ "__identifier": "equipment_drops", "__value": [ "Helmet", "Armor", "Boots", "Sword", "Shield" ], "__type": "Array<LocalEnum.Equipment>", "__tile": null, "defUid": 32, "realEditorValues": [
 									{
 										"id": "V_String",
@@ -657,7 +657,7 @@
 									"id": "V_String",
 									"params": ["Ludwig"]
 								}] },
-								{ "__identifier": "gold", "__value": 50, "__type": "Int", "__tile": null, "defUid": 34, "realEditorValues": [{ "id": "V_Int", "params": [50] }] },
+								{ "__identifier": "health", "__value": 50, "__type": "Int", "__tile": null, "defUid": 34, "realEditorValues": [{ "id": "V_Int", "params": [50] }] },
 								{ "__identifier": "equipment_drops", "__value": [ "Armor", "Shield" ], "__type": "Array<LocalEnum.Equipment>", "__tile": null, "defUid": 32, "realEditorValues": [ {
 									"id": "V_String",
 									"params": ["Armor"]
@@ -693,7 +693,7 @@
 									"id": "V_String",
 									"params": ["Iggy"]
 								}] },
-								{ "__identifier": "gold", "__value": 40, "__type": "Int", "__tile": null, "defUid": 34, "realEditorValues": [{ "id": "V_Int", "params": [40] }] },
+								{ "__identifier": "health", "__value": 40, "__type": "Int", "__tile": null, "defUid": 34, "realEditorValues": [{ "id": "V_Int", "params": [40] }] },
 								{ "__identifier": "equipment_drops", "__value": [ "Boots", "Helmet" ], "__type": "Array<LocalEnum.Equipment>", "__tile": null, "defUid": 32, "realEditorValues": [ {
 									"id": "V_String",
 									"params": ["Boots"]
@@ -729,10 +729,10 @@
 									"id": "V_String",
 									"params": ["Larry"]
 								}] },
-								{ "__identifier": "gold", "__value": 10, "__type": "Int", "__tile": null, "defUid": 34, "realEditorValues": [{ "id": "V_Int", "params": [10] }] },
-								{ "__identifier": "equipment_drops", "__value": ["Boots"], "__type": "Array<LocalEnum.Equipment>", "__tile": null, "defUid": 32, "realEditorValues": [{
+								{ "__identifier": "health", "__value": 10, "__type": "Int", "__tile": null, "defUid": 34, "realEditorValues": [{ "id": "V_Int", "params": [10] }] },
+								{ "__identifier": "equipment_drops", "__value": ["Armor"], "__type": "Array<LocalEnum.Equipment>", "__tile": null, "defUid": 32, "realEditorValues": [{
 									"id": "V_String",
-									"params": ["Boots"]
+									"params": ["Armor"]
 								}] },
 								{ "__identifier": "mother", "__value": {
 									"entityIid": "69b312b0-c640-11ed-8b6c-8f6519e0d2b4",
@@ -762,7 +762,7 @@
 									"id": "V_String",
 									"params": ["Wendy"]
 								}] },
-								{ "__identifier": "gold", "__value": 30, "__type": "Int", "__tile": null, "defUid": 34, "realEditorValues": [{ "id": "V_Int", "params": [30] }] },
+								{ "__identifier": "health", "__value": 30, "__type": "Int", "__tile": null, "defUid": 34, "realEditorValues": [{ "id": "V_Int", "params": [30] }] },
 								{ "__identifier": "equipment_drops", "__value": ["Armor"], "__type": "Array<LocalEnum.Equipment>", "__tile": null, "defUid": 32, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["Armor"]
@@ -795,7 +795,7 @@
 									"id": "V_String",
 									"params": ["Morton"]
 								}] },
-								{ "__identifier": "gold", "__value": 20, "__type": "Int", "__tile": null, "defUid": 34, "realEditorValues": [{ "id": "V_Int", "params": [20] }] },
+								{ "__identifier": "health", "__value": 20, "__type": "Int", "__tile": null, "defUid": 34, "realEditorValues": [{ "id": "V_Int", "params": [20] }] },
 								{ "__identifier": "equipment_drops", "__value": ["Helmet"], "__type": "Array<LocalEnum.Equipment>", "__tile": null, "defUid": 32, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["Helmet"]

@@ -16,7 +16,7 @@ use crate::{
     utils::*,
 };
 
-use bevy::{prelude::*, render::render_resource::*};
+use bevy::prelude::*;
 use bevy_ecs_tilemap::{
     map::{
         TilemapGridSize, TilemapId, TilemapSize, TilemapSpacing, TilemapTexture, TilemapTileSize,
@@ -212,6 +212,7 @@ pub fn spawn_level(
     layer_definition_map: &HashMap<i32, &LayerDefinition>,
     tileset_map: &TilesetMap,
     tileset_definition_map: &HashMap<i32, &TilesetDefinition>,
+    int_grid_image_handle: &Option<Handle<Image>>,
     worldly_set: HashSet<Worldly>,
     ldtk_entity: Entity,
     ldtk_settings: &LdtkSettings,
@@ -220,20 +221,6 @@ pub fn spawn_level(
 
     if let Some(layer_instances) = &level.layer_instances {
         let mut layer_z = 0;
-
-        // creating an image to use for intgrid colors
-        let white_image = Image::new_fill(
-            Extent3d {
-                width: level.px_wid as u32,
-                height: level.px_hei as u32,
-                depth_or_array_layers: 1,
-            },
-            TextureDimension::D2,
-            &[255, 255, 255, 255],
-            TextureFormat::Rgba8UnormSrgb,
-        );
-
-        let white_image_handle = images.add(white_image);
 
         if ldtk_settings.level_background == LevelBackground::Rendered {
             let translation = Vec3::new(level.px_wid as f32, level.px_hei as f32, 0.) / 2.;
@@ -402,11 +389,15 @@ pub fn spawn_level(
                         _ => TilemapSpacing::default(),
                     };
 
-                    let texture = match tileset_definition {
-                        Some(tileset_definition) => TilemapTexture::Single(
+                    let texture = match (tileset_definition, int_grid_image_handle) {
+                        (Some(tileset_definition), _) => TilemapTexture::Single(
                             tileset_map.get(&tileset_definition.uid).unwrap().clone(),
                         ),
-                        None => TilemapTexture::Single(white_image_handle.clone()),
+                        (None, Some(handle)) => TilemapTexture::Single(handle.clone()),
+                        _ => {
+                            warn!("unable to render tilemap layer, it has no tileset and no intgrid layers were expected");
+                            continue;
+                        }
                     };
 
                     let metadata_map: HashMap<i32, TileMetadata> = tileset_definition

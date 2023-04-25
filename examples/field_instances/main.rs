@@ -24,6 +24,8 @@ use bevy_ecs_ldtk::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use thiserror::Error;
 
+mod enemy;
+
 fn main() {
     App::new()
         .add_plugins(
@@ -35,7 +37,7 @@ fn main() {
         .add_system(resolve_mother_references)
         .init_resource::<LevelTitle>()
         .add_system(set_level_title_to_current_level.run_if(on_event::<LevelEvent>()))
-        .register_ldtk_entity::<EnemyBundle>("Enemy")
+        .register_ldtk_entity::<enemy::EnemyBundle>("Enemy")
         // The rest of this is bevy_inspector_egui boilerplate
         .add_plugin(WorldInspectorPlugin::new())
         .register_type::<Health>()
@@ -56,31 +58,6 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         transform: Transform::from_scale(Vec3::splat(2.)),
         ..Default::default()
     });
-}
-
-#[derive(Default, Bundle, LdtkEntity)]
-struct EnemyBundle {
-    #[with(name_from_field)]
-    name: Name,
-    #[with(health_from_field)]
-    health: Health,
-    #[with(equipment_drops_from_field)]
-    equipment_drops: EquipmentDrops,
-    #[with(unresolved_mother_from_mother_field)]
-    unresolved_mother: UnresolvedMotherRef,
-    #[from_entity_instance]
-    ldtk_entity_iid: LdtkEntityIid,
-    #[sprite_sheet_bundle]
-    sprite_sheet_bundle: SpriteSheetBundle,
-}
-
-fn name_from_field(entity_instance: &EntityInstance) -> Name {
-    Name::new(
-        entity_instance
-            .get_string_field("name")
-            .expect("expected entity to have non-nullable name string field")
-            .clone(),
-    )
 }
 
 #[derive(Debug, Default, Component, Reflect)]

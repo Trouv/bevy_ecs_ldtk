@@ -1,6 +1,10 @@
+//! Contains [LevelTitle] and the system that sets its value.
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 
+/// Resource storing the current level's title.
+///
+/// This is sourced from the "title" field of the level in LDtk.
 #[derive(Debug, Default, Deref, DerefMut, Resource, Reflect)]
 #[reflect(Resource)]
 pub struct LevelTitle(String);

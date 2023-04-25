@@ -1,6 +1,8 @@
+//! Contains the [Mother] component and the ECS logic supporting it.
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 
+/// Component storing an ldtk entity's iid.
 #[derive(Clone, Debug, Default, Eq, PartialEq, Deref, DerefMut, Component, Reflect)]
 pub struct LdtkEntityIid(String);
 
@@ -10,6 +12,11 @@ impl From<&EntityInstance> for LdtkEntityIid {
     }
 }
 
+/// Component that eventually transforms into the [Mother] component.
+///
+/// This just stores the entity iid of the mother entity.
+/// The initial value of this is sourced from the entity's "mother" field in LDtk.
+/// In [resolve_mother_references], this gets resolved to the actual bevy Entity of the mother.
 #[derive(Debug, Default, Deref, DerefMut, Component)]
 pub struct UnresolvedMotherRef(Option<LdtkEntityIid>);
 
@@ -25,6 +32,7 @@ impl UnresolvedMotherRef {
     }
 }
 
+/// Component defining a relation - the "mother" of this entity.
 #[derive(Debug, Deref, DerefMut, Component, Reflect)]
 pub struct Mother(Entity);
 

@@ -1,6 +1,10 @@
+//! Contains [Health] component.
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 
+/// Component storing the current health of the entity.
+///
+/// The initial value of this is sourced from the entity's "health" field in LDtk.
 #[derive(Debug, Default, Component, Reflect)]
 pub struct Health(i32);
 

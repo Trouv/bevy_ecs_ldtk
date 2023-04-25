@@ -1,13 +1,11 @@
+//! Contains [EquipmentDrops] component and some of its dependent types.
 use std::str::FromStr;
 
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 use thiserror::Error;
 
-#[derive(Debug, Error)]
-#[error("the given equipment value doesn't exist")]
-struct NoSuchEquipment;
-
+/// This enum mirrors an equivalent enum in the LDtk project called "Equipment".
 #[derive(Debug, Reflect, FromReflect)]
 enum EquipmentType {
     Helmet,
@@ -16,6 +14,10 @@ enum EquipmentType {
     Sword,
     Shield,
 }
+
+#[derive(Debug, Error)]
+#[error("the given equipment value doesn't exist")]
+struct NoSuchEquipment;
 
 impl FromStr for EquipmentType {
     type Err = NoSuchEquipment;
@@ -34,6 +36,9 @@ impl FromStr for EquipmentType {
     }
 }
 
+/// Component defining what equipment an entity might drop if it dies.
+///
+/// This is sourced from the "equipment_drops" field of the entity in LDtk.
 #[derive(Debug, Default, Component, Reflect)]
 pub struct EquipmentDrops {
     drops: Vec<EquipmentType>,

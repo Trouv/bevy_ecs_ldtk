@@ -1,3 +1,4 @@
+//! Contains [EnemyBundle] which is the main [LdtkEntity] for this example.
 use crate::{
     equipment::EquipmentDrops,
     health::Health,
@@ -6,6 +7,7 @@ use crate::{
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 
+/// The main [LdtkEntity] for this example.
 #[derive(Default, Bundle, LdtkEntity)]
 pub struct EnemyBundle {
     #[with(name_from_field)]

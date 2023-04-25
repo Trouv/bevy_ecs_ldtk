@@ -25,6 +25,7 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use thiserror::Error;
 
 mod enemy;
+mod health;
 
 fn main() {
     App::new()
@@ -40,7 +41,7 @@ fn main() {
         .register_ldtk_entity::<enemy::EnemyBundle>("Enemy")
         // The rest of this is bevy_inspector_egui boilerplate
         .add_plugin(WorldInspectorPlugin::new())
-        .register_type::<Health>()
+        .register_type::<health::Health>()
         .register_type::<EquipmentDrops>()
         .register_type::<Mother>()
         .register_type::<LdtkEntityIid>()
@@ -58,17 +59,6 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         transform: Transform::from_scale(Vec3::splat(2.)),
         ..Default::default()
     });
-}
-
-#[derive(Debug, Default, Component, Reflect)]
-struct Health(i32);
-
-fn health_from_field(entity_instance: &EntityInstance) -> Health {
-    Health(
-        *entity_instance
-            .get_int_field("health")
-            .expect("expected entity to have non-nullable health int field"),
-    )
 }
 
 #[derive(Debug, Error)]

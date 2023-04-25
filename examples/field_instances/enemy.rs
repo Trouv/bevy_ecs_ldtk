@@ -1,3 +1,4 @@
+use crate::health::Health;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 
@@ -5,8 +6,8 @@ use bevy_ecs_ldtk::prelude::*;
 pub struct EnemyBundle {
     #[with(name_from_field)]
     name: Name,
-    #[with(crate::health_from_field)]
-    health: crate::Health,
+    #[with(Health::from_field)]
+    health: Health,
     #[with(crate::equipment_drops_from_field)]
     equipment_drops: crate::EquipmentDrops,
     #[with(crate::unresolved_mother_from_mother_field)]

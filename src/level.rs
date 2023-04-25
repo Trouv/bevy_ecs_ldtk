@@ -301,6 +301,11 @@ pub fn spawn_level(
                                     Box::new(PhantomLdtkEntity::<EntityInstanceBundle>::new());
                                 let mut entity_commands = commands.spawn_empty();
 
+                                // insert Name before evaluating LdtkEntitys so that user-provided
+                                // names aren't overwritten
+                                entity_commands
+                                    .insert(Name::new(entity_instance.identifier.to_owned()));
+
                                 ldtk_map_get_or_default(
                                     layer_instance.identifier.clone(),
                                     entity_instance.identifier.clone(),
@@ -317,12 +322,10 @@ pub fn spawn_level(
                                     texture_atlases,
                                 );
 
-                                entity_commands
-                                    .insert(SpatialBundle {
-                                        transform,
-                                        ..default()
-                                    })
-                                    .insert(Name::new(entity_instance.identifier.to_owned()));
+                                entity_commands.insert(SpatialBundle {
+                                    transform,
+                                    ..default()
+                                });
                             }
                         }
                     });

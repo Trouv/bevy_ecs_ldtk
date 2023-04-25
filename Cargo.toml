@@ -40,3 +40,7 @@ render = ["bevy_ecs_tilemap/render"]
 [[example]]
 name = "platformer"
 path = "examples/platformer/main.rs"
+
+[[example]]
+name = "field_instances"
+path = "examples/field_instances/main.rs"

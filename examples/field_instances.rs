@@ -33,8 +33,8 @@ fn main() {
         .insert_resource(LevelSelection::default())
         .add_startup_system(setup)
         .add_system(resolve_mother_references)
-        .init_resource::<CurrentLevelTitle>()
-        .add_system(set_level_name_to_current_level.run_if(on_event::<LevelEvent>()))
+        .init_resource::<LevelTitle>()
+        .add_system(set_level_title_to_current_level.run_if(on_event::<LevelEvent>()))
         .register_ldtk_entity::<EnemyBundle>("Enemy")
         // The rest of this is bevy_inspector_egui boilerplate
         .add_plugin(WorldInspectorPlugin::new())
@@ -42,7 +42,7 @@ fn main() {
         .register_type::<EquipmentDrops>()
         .register_type::<Mother>()
         .register_type::<LdtkEntityIid>()
-        .register_type::<CurrentLevelTitle>()
+        .register_type::<LevelTitle>()
         .run();
 }
 
@@ -191,13 +191,13 @@ fn resolve_mother_references(
 
 #[derive(Debug, Default, Deref, DerefMut, Resource, Reflect)]
 #[reflect(Resource)]
-struct CurrentLevelTitle(String);
+struct LevelTitle(String);
 
-fn set_level_name_to_current_level(
+fn set_level_title_to_current_level(
     mut level_events: EventReader<LevelEvent>,
     level_handles: Query<&Handle<LdtkLevel>>,
     level_assets: Res<Assets<LdtkLevel>>,
-    mut current_level_title: ResMut<CurrentLevelTitle>,
+    mut current_level_title: ResMut<LevelTitle>,
 ) {
     for level_event in level_events.iter() {
         if matches!(level_event, LevelEvent::Transformed(_)) {

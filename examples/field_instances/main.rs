@@ -24,6 +24,7 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 mod enemy;
 mod equipment;
 mod health;
+mod level_title;
 mod mother;
 
 fn main() {
@@ -35,8 +36,8 @@ fn main() {
         .insert_resource(LevelSelection::default())
         .add_startup_system(setup)
         .add_system(mother::resolve_mother_references)
-        .init_resource::<LevelTitle>()
-        .add_system(set_level_title_to_current_level.run_if(on_event::<LevelEvent>()))
+        .init_resource::<level_title::LevelTitle>()
+        .add_system(level_title::set_level_title_to_current_level.run_if(on_event::<LevelEvent>()))
         .register_ldtk_entity::<enemy::EnemyBundle>("Enemy")
         // The rest of this is bevy_inspector_egui boilerplate
         .add_plugin(WorldInspectorPlugin::new())
@@ -44,7 +45,7 @@ fn main() {
         .register_type::<equipment::EquipmentDrops>()
         .register_type::<mother::LdtkEntityIid>()
         .register_type::<mother::Mother>()
-        .register_type::<LevelTitle>()
+        .register_type::<level_title::LevelTitle>()
         .run();
 }
 
@@ -58,34 +59,4 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         transform: Transform::from_scale(Vec3::splat(2.)),
         ..Default::default()
     });
-}
-
-#[derive(Debug, Default, Deref, DerefMut, Resource, Reflect)]
-#[reflect(Resource)]
-struct LevelTitle(String);
-
-fn set_level_title_to_current_level(
-    mut level_events: EventReader<LevelEvent>,
-    level_handles: Query<&Handle<LdtkLevel>>,
-    level_assets: Res<Assets<LdtkLevel>>,
-    mut current_level_title: ResMut<LevelTitle>,
-) {
-    for level_event in level_events.iter() {
-        if matches!(level_event, LevelEvent::Transformed(_)) {
-            let level_handle = level_handles
-                .get_single()
-                .expect("only one level should be spawned at a time in this example");
-
-            let level_asset = level_assets
-                .get(&level_handle)
-                .expect("level asset should be loaded before LevelEvent::Transformed");
-
-            let title = level_asset
-                .level
-                .get_string_field("title")
-                .expect("level should have non-nullable title string field");
-
-            **current_level_title = title.clone();
-        }
-    }
 }

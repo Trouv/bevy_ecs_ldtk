@@ -95,8 +95,8 @@ fn health_from_field(entity_instance: &EntityInstance) -> Health {
 }
 
 #[derive(Debug, Error)]
-#[error("this equipment type doesn't exist")]
-struct EquipmentNotFound;
+#[error("the given equipment value doesn't exist")]
+struct NoSuchEquipment;
 
 #[derive(Debug, Reflect, FromReflect)]
 enum EquipmentType {
@@ -108,7 +108,7 @@ enum EquipmentType {
 }
 
 impl FromStr for EquipmentType {
-    type Err = EquipmentNotFound;
+    type Err = NoSuchEquipment;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         use EquipmentType::*;
@@ -119,7 +119,7 @@ impl FromStr for EquipmentType {
             "Boots" => Ok(Boots),
             "Sword" => Ok(Sword),
             "Shield" => Ok(Shield),
-            _ => Err(EquipmentNotFound),
+            _ => Err(NoSuchEquipment),
         }
     }
 }

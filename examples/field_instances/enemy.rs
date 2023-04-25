@@ -1,4 +1,8 @@
-use crate::{equipment::EquipmentDrops, health::Health};
+use crate::{
+    equipment::EquipmentDrops,
+    health::Health,
+    mother::{LdtkEntityIid, UnresolvedMotherRef},
+};
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 
@@ -10,10 +14,10 @@ pub struct EnemyBundle {
     health: Health,
     #[with(EquipmentDrops::from_field)]
     equipment_drops: EquipmentDrops,
-    #[with(crate::unresolved_mother_from_mother_field)]
-    unresolved_mother: crate::UnresolvedMotherRef,
+    #[with(UnresolvedMotherRef::from_mother_field)]
+    unresolved_mother: UnresolvedMotherRef,
     #[from_entity_instance]
-    ldtk_entity_iid: crate::LdtkEntityIid,
+    ldtk_entity_iid: LdtkEntityIid,
     #[sprite_sheet_bundle]
     sprite_sheet_bundle: SpriteSheetBundle,
 }

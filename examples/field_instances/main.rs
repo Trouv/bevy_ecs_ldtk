@@ -24,6 +24,7 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 mod enemy;
 mod equipment;
 mod health;
+mod mother;
 
 fn main() {
     App::new()
@@ -33,7 +34,7 @@ fn main() {
         .add_plugin(LdtkPlugin)
         .insert_resource(LevelSelection::default())
         .add_startup_system(setup)
-        .add_system(resolve_mother_references)
+        .add_system(mother::resolve_mother_references)
         .init_resource::<LevelTitle>()
         .add_system(set_level_title_to_current_level.run_if(on_event::<LevelEvent>()))
         .register_ldtk_entity::<enemy::EnemyBundle>("Enemy")
@@ -41,8 +42,8 @@ fn main() {
         .add_plugin(WorldInspectorPlugin::new())
         .register_type::<health::Health>()
         .register_type::<equipment::EquipmentDrops>()
-        .register_type::<LdtkEntityIid>()
-        .register_type::<Mother>()
+        .register_type::<mother::LdtkEntityIid>()
+        .register_type::<mother::Mother>()
         .register_type::<LevelTitle>()
         .run();
 }
@@ -57,55 +58,6 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         transform: Transform::from_scale(Vec3::splat(2.)),
         ..Default::default()
     });
-}
-
-#[derive(Clone, Debug, Default, Eq, PartialEq, Deref, DerefMut, Component, Reflect)]
-struct LdtkEntityIid(String);
-
-impl From<&EntityInstance> for LdtkEntityIid {
-    fn from(value: &EntityInstance) -> Self {
-        LdtkEntityIid(value.iid.clone())
-    }
-}
-
-#[derive(Debug, Default, Deref, DerefMut, Component)]
-struct UnresolvedMotherRef(Option<LdtkEntityIid>);
-
-fn unresolved_mother_from_mother_field(entity_instance: &EntityInstance) -> UnresolvedMotherRef {
-    UnresolvedMotherRef(
-        entity_instance
-            .get_maybe_entity_ref_field("mother")
-            .expect("expected entity to have mother entity ref field")
-            .as_ref()
-            .map(|entity_ref| LdtkEntityIid(entity_ref.entity_iid.clone())),
-    )
-}
-
-#[derive(Debug, Deref, DerefMut, Component, Reflect)]
-struct Mother(Entity);
-
-fn resolve_mother_references(
-    mut commands: Commands,
-    unresolved_mothers: Query<(Entity, &UnresolvedMotherRef), Added<UnresolvedMotherRef>>,
-    ldtk_entities: Query<(Entity, &LdtkEntityIid)>,
-) {
-    for (child_entity, unresolved_mother_ref) in unresolved_mothers.iter() {
-        if let Some(mother_iid) = unresolved_mother_ref.0.as_ref() {
-            let (mother_entity, _) = ldtk_entities
-                .iter()
-                .find(|(_, iid)| *iid == mother_iid)
-                .expect("enemy's mother entity should exist");
-
-            commands
-                .entity(child_entity)
-                .remove::<UnresolvedMotherRef>()
-                .insert(Mother(mother_entity));
-        } else {
-            commands
-                .entity(child_entity)
-                .remove::<UnresolvedMotherRef>();
-        }
-    }
 }
 
 #[derive(Debug, Default, Deref, DerefMut, Resource, Reflect)]

@@ -17,14 +17,12 @@
 //!
 //! Explore the resulting world in the provided bevy inspector egui window!
 
-use std::str::FromStr;
-
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
-use thiserror::Error;
 
 mod enemy;
+mod equipment;
 mod health;
 
 fn main() {
@@ -42,9 +40,9 @@ fn main() {
         // The rest of this is bevy_inspector_egui boilerplate
         .add_plugin(WorldInspectorPlugin::new())
         .register_type::<health::Health>()
-        .register_type::<EquipmentDrops>()
-        .register_type::<Mother>()
+        .register_type::<equipment::EquipmentDrops>()
         .register_type::<LdtkEntityIid>()
+        .register_type::<Mother>()
         .register_type::<LevelTitle>()
         .run();
 }
@@ -59,52 +57,6 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         transform: Transform::from_scale(Vec3::splat(2.)),
         ..Default::default()
     });
-}
-
-#[derive(Debug, Error)]
-#[error("the given equipment value doesn't exist")]
-struct NoSuchEquipment;
-
-#[derive(Debug, Reflect, FromReflect)]
-enum EquipmentType {
-    Helmet,
-    Armor,
-    Boots,
-    Sword,
-    Shield,
-}
-
-impl FromStr for EquipmentType {
-    type Err = NoSuchEquipment;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        use EquipmentType::*;
-
-        match s {
-            "Helmet" => Ok(Helmet),
-            "Armor" => Ok(Armor),
-            "Boots" => Ok(Boots),
-            "Sword" => Ok(Sword),
-            "Shield" => Ok(Shield),
-            _ => Err(NoSuchEquipment),
-        }
-    }
-}
-
-#[derive(Debug, Default, Component, Reflect)]
-struct EquipmentDrops {
-    drops: Vec<EquipmentType>,
-}
-
-fn equipment_drops_from_field(entity_instance: &EntityInstance) -> EquipmentDrops {
-    let drops = entity_instance
-        .iter_enums_field("equipment_drops")
-        .expect("expected entity to have non-nullable equipment_drops enums field")
-        .map(|field| EquipmentType::from_str(field))
-        .collect::<Result<_, _>>()
-        .unwrap();
-
-    EquipmentDrops { drops }
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Deref, DerefMut, Component, Reflect)]

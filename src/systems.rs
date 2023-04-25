@@ -267,6 +267,8 @@ pub fn process_ldtk_levels(
                     let layer_definition_map =
                         create_layer_definition_map(&ldtk_asset.project.defs.layers);
 
+                    let int_grid_image_handle = &ldtk_asset.int_grid_image_handle;
+
                     let worldly_set = worldly_query.iter().cloned().collect();
 
                     if let Some(level) = level_assets.get(level_handle) {
@@ -282,6 +284,7 @@ pub fn process_ldtk_levels(
                             &layer_definition_map,
                             &ldtk_asset.tileset_map,
                             &tileset_definition_map,
+                            int_grid_image_handle,
                             worldly_set,
                             ldtk_entity,
                             &ldtk_settings,

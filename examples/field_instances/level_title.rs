@@ -22,7 +22,7 @@ pub fn set_level_title_to_current_level(
                 .expect("only one level should be spawned at a time in this example");
 
             let level_asset = level_assets
-                .get(&level_handle)
+                .get(level_handle)
                 .expect("level asset should be loaded before LevelEvent::Transformed");
 
             let title = level_asset

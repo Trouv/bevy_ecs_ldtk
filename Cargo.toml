@@ -29,6 +29,7 @@ paste = "1.0"
 bevy = "0.10"
 bevy_rapier2d = "0.21"
 rand = "0.8"
+bevy-inspector-egui = "0.18"
 
 [features]
 default = ["derive", "render"]
@@ -39,3 +40,7 @@ render = ["bevy_ecs_tilemap/render"]
 [[example]]
 name = "platformer"
 path = "examples/platformer/main.rs"
+
+[[example]]
+name = "field_instances"
+path = "examples/field_instances/main.rs"

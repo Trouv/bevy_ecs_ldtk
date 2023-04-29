@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.7.0](https://github.com/Trouv/bevy_ecs_ldtk/compare/v0.6.0...v0.7.0) (2023-04-29)
+
+
+### ⚠ BREAKING CHANGES
+
+* Most likely won't affect users - `LdtkAsset` has gained a `int_grid_image_handle` field, breaking any manual construction of it.
+
+### Features
+
+* add LdtkFields trait with convenience methods for accessing field instances ([#180](https://github.com/Trouv/bevy_ecs_ldtk/issues/180)) ([a8dba24](https://github.com/Trouv/bevy_ecs_ldtk/commit/a8dba247ffee79c1eae2a2669c7ca0c6e5d17dd9))
+
+
+### Bug Fixes
+
+* create IntGrid white-image on asset load and minimize its size ([#183](https://github.com/Trouv/bevy_ecs_ldtk/issues/183)) ([23fd924](https://github.com/Trouv/bevy_ecs_ldtk/commit/23fd9244484505c50e2f6232aaf7a7d6355e0452))
+* insert Name component before evaluating `LdtkEntity` ([#186](https://github.com/Trouv/bevy_ecs_ldtk/issues/186)) ([a5c1579](https://github.com/Trouv/bevy_ecs_ldtk/commit/a5c157936bb25bf1a13b4796ce2eea880cfa6687))
+
+
+### Documentation Changes
+
+* rewrite field_instances example, demonstrating LdtkFields API ([#187](https://github.com/Trouv/bevy_ecs_ldtk/issues/187)) ([7be6635](https://github.com/Trouv/bevy_ecs_ldtk/commit/7be663592ff7a173491f1f8d1679445c882d8752))
+
 ## [0.6.0](https://github.com/Trouv/bevy_ecs_ldtk/compare/v0.5.0...v0.6.0) (2023-03-31)
 
 

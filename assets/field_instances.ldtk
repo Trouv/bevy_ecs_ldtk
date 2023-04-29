@@ -5,12 +5,12 @@
 		"doc": "https://ldtk.io/json",
 		"schema": "https://ldtk.io/files/JSON_SCHEMA.json",
 		"appAuthor": "Sebastien 'deepnight' Benard",
-		"appVersion": "1.2.5",
+		"appVersion": "1.3.0",
 		"url": "https://ldtk.io"
 	},
 	"iid": "e5d71f40-c640-11ed-8b6c-3f97242aa928",
-	"jsonVersion": "1.2.5",
-	"appBuildId": 465554,
+	"jsonVersion": "1.3.0",
+	"appBuildId": 467428,
 	"nextUid": 96,
 	"identifierStyle": "Capitalize",
 	"toc": [],
@@ -33,6 +33,7 @@
 	"pngFilePattern": null,
 	"backupOnSave": false,
 	"backupLimit": 10,
+	"backupRelPath": null,
 	"levelNamePattern": "%world_Level_%idx",
 	"tutorialDesc": null,
 	"customCommands": [],
@@ -103,6 +104,12 @@
 					"yModulo": 1,
 					"xOffset": 0,
 					"yOffset": 0,
+					"tileXOffset": 0,
+					"tileYOffset": 0,
+					"tileRandomXMin": 0,
+					"tileRandomXMax": 0,
+					"tileRandomYMin": 0,
+					"tileRandomYMax": 0,
 					"checker": "None",
 					"tileMode": "Single",
 					"pivotX": 0,
@@ -127,6 +134,12 @@
 					"yModulo": 1,
 					"xOffset": 0,
 					"yOffset": 0,
+					"tileXOffset": 0,
+					"tileYOffset": 0,
+					"tileRandomXMin": 0,
+					"tileRandomXMax": 0,
+					"tileRandomYMin": 0,
+					"tileRandomYMax": 0,
 					"checker": "None",
 					"tileMode": "Single",
 					"pivotX": 0,
@@ -151,6 +164,12 @@
 					"yModulo": 1,
 					"xOffset": 0,
 					"yOffset": 0,
+					"tileXOffset": 0,
+					"tileYOffset": 0,
+					"tileRandomXMin": 0,
+					"tileRandomXMax": 0,
+					"tileRandomYMin": 0,
+					"tileRandomYMax": 0,
 					"checker": "None",
 					"tileMode": "Single",
 					"pivotX": 0,
@@ -175,6 +194,12 @@
 					"yModulo": 1,
 					"xOffset": 0,
 					"yOffset": 0,
+					"tileXOffset": 0,
+					"tileYOffset": 0,
+					"tileRandomXMin": 0,
+					"tileRandomXMax": 0,
+					"tileRandomYMin": 0,
+					"tileRandomYMax": 0,
 					"checker": "None",
 					"tileMode": "Single",
 					"pivotX": 0,
@@ -199,6 +224,12 @@
 					"yModulo": 2,
 					"xOffset": 0,
 					"yOffset": 0,
+					"tileXOffset": 0,
+					"tileYOffset": 0,
+					"tileRandomXMin": 0,
+					"tileRandomXMax": 0,
+					"tileRandomYMin": 0,
+					"tileRandomYMax": 0,
 					"checker": "Horizontal",
 					"tileMode": "Stamp",
 					"pivotX": 0,
@@ -223,6 +254,12 @@
 					"yModulo": 1,
 					"xOffset": 0,
 					"yOffset": 0,
+					"tileXOffset": 0,
+					"tileYOffset": 0,
+					"tileRandomXMin": 0,
+					"tileRandomXMax": 0,
+					"tileRandomYMin": 0,
+					"tileRandomYMax": 0,
 					"checker": "None",
 					"tileMode": "Single",
 					"pivotX": 0,
@@ -247,6 +284,12 @@
 					"yModulo": 1,
 					"xOffset": 0,
 					"yOffset": 0,
+					"tileXOffset": 0,
+					"tileYOffset": 0,
+					"tileRandomXMin": 0,
+					"tileRandomXMax": 0,
+					"tileRandomYMin": 0,
+					"tileRandomYMax": 0,
 					"checker": "None",
 					"tileMode": "Single",
 					"pivotX": 0,
@@ -300,6 +343,12 @@
 					"yModulo": 2,
 					"xOffset": 0,
 					"yOffset": 0,
+					"tileXOffset": 0,
+					"tileYOffset": 0,
+					"tileRandomXMin": 0,
+					"tileRandomXMax": 0,
+					"tileRandomYMin": 0,
+					"tileRandomYMax": 0,
 					"checker": "Horizontal",
 					"tileMode": "Stamp",
 					"pivotX": 0,
@@ -324,6 +373,12 @@
 					"yModulo": 1,
 					"xOffset": 0,
 					"yOffset": 0,
+					"tileXOffset": 0,
+					"tileYOffset": 0,
+					"tileRandomXMin": 0,
+					"tileRandomXMax": 0,
+					"tileRandomYMin": 0,
+					"tileRandomYMax": 0,
 					"checker": "None",
 					"tileMode": "Single",
 					"pivotX": 0,
@@ -380,6 +435,7 @@
 					"arrayMinLength": null,
 					"arrayMaxLength": null,
 					"editorDisplayMode": "Hidden",
+					"editorDisplayScale": 1,
 					"editorDisplayPos": "Above",
 					"editorLinkStyle": "StraightArrow",
 					"editorAlwaysShow": false,
@@ -398,6 +454,7 @@
 					"autoChainRef": true,
 					"allowOutOfLevelRef": true,
 					"allowedRefs": "OnlySame",
+					"allowedRefsEntityUid": null,
 					"allowedRefTags": [],
 					"tilesetUid": null
 				},
@@ -412,6 +469,7 @@
 					"arrayMinLength": null,
 					"arrayMaxLength": null,
 					"editorDisplayMode": "Hidden",
+					"editorDisplayScale": 1,
 					"editorDisplayPos": "Above",
 					"editorLinkStyle": "StraightArrow",
 					"editorAlwaysShow": false,
@@ -430,6 +488,7 @@
 					"autoChainRef": true,
 					"allowOutOfLevelRef": true,
 					"allowedRefs": "OnlySame",
+					"allowedRefsEntityUid": null,
 					"allowedRefTags": [],
 					"tilesetUid": null
 				},
@@ -444,6 +503,7 @@
 					"arrayMinLength": null,
 					"arrayMaxLength": null,
 					"editorDisplayMode": "Hidden",
+					"editorDisplayScale": 1,
 					"editorDisplayPos": "Above",
 					"editorLinkStyle": "StraightArrow",
 					"editorAlwaysShow": false,
@@ -462,6 +522,7 @@
 					"autoChainRef": true,
 					"allowOutOfLevelRef": true,
 					"allowedRefs": "OnlySame",
+					"allowedRefsEntityUid": null,
 					"allowedRefTags": [],
 					"tilesetUid": null
 				},
@@ -476,6 +537,7 @@
 					"arrayMinLength": null,
 					"arrayMaxLength": null,
 					"editorDisplayMode": "RefLinkBetweenCenters",
+					"editorDisplayScale": 1,
 					"editorDisplayPos": "Above",
 					"editorLinkStyle": "CurvedArrow",
 					"editorAlwaysShow": false,
@@ -494,6 +556,7 @@
 					"autoChainRef": true,
 					"allowOutOfLevelRef": true,
 					"allowedRefs": "OnlySame",
+					"allowedRefsEntityUid": null,
 					"allowedRefTags": [],
 					"tilesetUid": null
 				}
@@ -545,11 +608,11 @@
 			}
 		}
 	], "enums": [{ "identifier": "Equipment", "uid": 2, "values": [
-		{ "id": "Helmet", "tileId": 16, "color": 12496031, "__tileSrcRect": [0,32,32,32] },
-		{ "id": "Armor", "tileId": 17, "color": 10777205, "__tileSrcRect": [32,32,32,32] },
-		{ "id": "Boots", "tileId": 18, "color": 8869439, "__tileSrcRect": [64,32,32,32] },
-		{ "id": "Sword", "tileId": 19, "color": 12363427, "__tileSrcRect": [96,32,32,32] },
-		{ "id": "Shield", "tileId": 20, "color": 10662597, "__tileSrcRect": [128,32,32,32] }
+		{ "id": "Helmet", "tileRect": { "tilesetUid": 31, "x": 0, "y": 32, "w": 32, "h": 32 }, "tileId": -1, "color": 12496031, "__tileSrcRect": [0,32,32,32] },
+		{ "id": "Armor", "tileRect": { "tilesetUid": 31, "x": 32, "y": 32, "w": 32, "h": 32 }, "tileId": -1, "color": 10777205, "__tileSrcRect": [32,32,32,32] },
+		{ "id": "Boots", "tileRect": { "tilesetUid": 31, "x": 64, "y": 32, "w": 32, "h": 32 }, "tileId": -1, "color": 8869439, "__tileSrcRect": [64,32,32,32] },
+		{ "id": "Sword", "tileRect": { "tilesetUid": 31, "x": 96, "y": 32, "w": 32, "h": 32 }, "tileId": -1, "color": 12363427, "__tileSrcRect": [96,32,32,32] },
+		{ "id": "Shield", "tileRect": { "tilesetUid": 31, "x": 128, "y": 32, "w": 32, "h": 32 }, "tileId": -1, "color": 10662597, "__tileSrcRect": [128,32,32,32] }
 	], "iconTilesetUid": 31, "externalRelPath": null, "externalFileChecksum": null, "tags": [] }], "externalEnums": [], "levelFields": [
 		{
 			"identifier": "title",
@@ -562,6 +625,7 @@
 			"arrayMinLength": null,
 			"arrayMaxLength": null,
 			"editorDisplayMode": "Hidden",
+			"editorDisplayScale": 1,
 			"editorDisplayPos": "Above",
 			"editorLinkStyle": "StraightArrow",
 			"editorAlwaysShow": false,
@@ -580,6 +644,7 @@
 			"autoChainRef": true,
 			"allowOutOfLevelRef": true,
 			"allowedRefs": "OnlySame",
+			"allowedRefsEntityUid": null,
 			"allowedRefTags": [],
 			"tilesetUid": null
 		}
@@ -604,7 +669,7 @@
 			"__smartColor": "#ADADB5",
 			"__bgPos": null,
 			"externalRelPath": null,
-			"fieldInstances": [{ "__identifier": "title", "__value": "Bat Dungeon", "__type": "String", "__tile": null, "defUid": 95, "realEditorValues": [{
+			"fieldInstances": [{ "__identifier": "title", "__type": "String", "__value": "Bat Dungeon", "__tile": null, "defUid": 95, "realEditorValues": [{
 				"id": "V_String",
 				"params": ["Bat Dungeon"]
 			}] }],
@@ -646,12 +711,12 @@
 							"defUid": 1,
 							"px": [64,112],
 							"fieldInstances": [
-								{ "__identifier": "name", "__value": "Boss", "__type": "String", "__tile": null, "defUid": 33, "realEditorValues": [{
+								{ "__identifier": "name", "__type": "String", "__value": "Boss", "__tile": null, "defUid": 33, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["Boss"]
 								}] },
-								{ "__identifier": "health", "__value": 200, "__type": "Int", "__tile": null, "defUid": 34, "realEditorValues": [{ "id": "V_Int", "params": [200] }] },
-								{ "__identifier": "equipment_drops", "__value": [ "Helmet", "Armor", "Boots", "Sword", "Shield" ], "__type": "Array<LocalEnum.Equipment>", "__tile": null, "defUid": 32, "realEditorValues": [
+								{ "__identifier": "health", "__type": "Int", "__value": 200, "__tile": null, "defUid": 34, "realEditorValues": [{ "id": "V_Int", "params": [200] }] },
+								{ "__identifier": "equipment_drops", "__type": "Array<LocalEnum.Equipment>", "__value": [ "Helmet", "Armor", "Boots", "Sword", "Shield" ], "__tile": null, "defUid": 32, "realEditorValues": [
 									{
 										"id": "V_String",
 										"params": ["Helmet"]
@@ -673,7 +738,7 @@
 										"params": ["Shield"]
 									}
 								] },
-								{ "__identifier": "mother", "__value": null, "__type": "EntityRef", "__tile": null, "defUid": 94, "realEditorValues": [] }
+								{ "__identifier": "mother", "__type": "EntityRef", "__value": null, "__tile": null, "defUid": 94, "realEditorValues": [] }
 							]
 						},
 						{
@@ -689,24 +754,24 @@
 							"defUid": 1,
 							"px": [96,160],
 							"fieldInstances": [
-								{ "__identifier": "name", "__value": "Ludwig", "__type": "String", "__tile": null, "defUid": 33, "realEditorValues": [{
+								{ "__identifier": "name", "__type": "String", "__value": "Ludwig", "__tile": null, "defUid": 33, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["Ludwig"]
 								}] },
-								{ "__identifier": "health", "__value": 50, "__type": "Int", "__tile": null, "defUid": 34, "realEditorValues": [{ "id": "V_Int", "params": [50] }] },
-								{ "__identifier": "equipment_drops", "__value": [ "Armor", "Shield" ], "__type": "Array<LocalEnum.Equipment>", "__tile": null, "defUid": 32, "realEditorValues": [ {
+								{ "__identifier": "health", "__type": "Int", "__value": 50, "__tile": null, "defUid": 34, "realEditorValues": [{ "id": "V_Int", "params": [50] }] },
+								{ "__identifier": "equipment_drops", "__type": "Array<LocalEnum.Equipment>", "__value": [ "Armor", "Shield" ], "__tile": null, "defUid": 32, "realEditorValues": [ {
 									"id": "V_String",
 									"params": ["Armor"]
 								}, {
 									"id": "V_String",
 									"params": ["Shield"]
 								} ] },
-								{ "__identifier": "mother", "__value": {
+								{ "__identifier": "mother", "__type": "EntityRef", "__value": {
 									"entityIid": "69b312b0-c640-11ed-8b6c-8f6519e0d2b4",
 									"layerIid": "c48a6353-8dc0-11ec-9c6a-599e25186db6",
 									"levelIid": "c48a6350-8dc0-11ec-9c6a-5d5f58c254f8",
-									"worldIid": "e5d7e290-c640-11ed-8b6c-216192a0eef2"
-								}, "__type": "EntityRef", "__tile": null, "defUid": 94, "realEditorValues": [{
+									"worldIid": "16e77f10-c640-11ed-bac6-f73079c09163"
+								}, "__tile": null, "defUid": 94, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["69b312b0-c640-11ed-8b6c-8f6519e0d2b4"]
 								}] }
@@ -725,24 +790,24 @@
 							"defUid": 1,
 							"px": [144,144],
 							"fieldInstances": [
-								{ "__identifier": "name", "__value": "Iggy", "__type": "String", "__tile": null, "defUid": 33, "realEditorValues": [{
+								{ "__identifier": "name", "__type": "String", "__value": "Iggy", "__tile": null, "defUid": 33, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["Iggy"]
 								}] },
-								{ "__identifier": "health", "__value": 40, "__type": "Int", "__tile": null, "defUid": 34, "realEditorValues": [{ "id": "V_Int", "params": [40] }] },
-								{ "__identifier": "equipment_drops", "__value": [ "Boots", "Helmet" ], "__type": "Array<LocalEnum.Equipment>", "__tile": null, "defUid": 32, "realEditorValues": [ {
+								{ "__identifier": "health", "__type": "Int", "__value": 40, "__tile": null, "defUid": 34, "realEditorValues": [{ "id": "V_Int", "params": [40] }] },
+								{ "__identifier": "equipment_drops", "__type": "Array<LocalEnum.Equipment>", "__value": [ "Boots", "Helmet" ], "__tile": null, "defUid": 32, "realEditorValues": [ {
 									"id": "V_String",
 									"params": ["Boots"]
 								}, {
 									"id": "V_String",
 									"params": ["Helmet"]
 								} ] },
-								{ "__identifier": "mother", "__value": {
+								{ "__identifier": "mother", "__type": "EntityRef", "__value": {
 									"entityIid": "69b312b0-c640-11ed-8b6c-8f6519e0d2b4",
 									"layerIid": "c48a6353-8dc0-11ec-9c6a-599e25186db6",
 									"levelIid": "c48a6350-8dc0-11ec-9c6a-5d5f58c254f8",
-									"worldIid": "e5d7e290-c640-11ed-8b6c-216192a0eef2"
-								}, "__type": "EntityRef", "__tile": null, "defUid": 94, "realEditorValues": [{
+									"worldIid": "16e77f10-c640-11ed-bac6-f73079c09163"
+								}, "__tile": null, "defUid": 94, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["69b312b0-c640-11ed-8b6c-8f6519e0d2b4"]
 								}] }
@@ -761,21 +826,21 @@
 							"defUid": 1,
 							"px": [112,96],
 							"fieldInstances": [
-								{ "__identifier": "name", "__value": "Larry", "__type": "String", "__tile": null, "defUid": 33, "realEditorValues": [{
+								{ "__identifier": "name", "__type": "String", "__value": "Larry", "__tile": null, "defUid": 33, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["Larry"]
 								}] },
-								{ "__identifier": "health", "__value": 10, "__type": "Int", "__tile": null, "defUid": 34, "realEditorValues": [{ "id": "V_Int", "params": [10] }] },
-								{ "__identifier": "equipment_drops", "__value": ["Armor"], "__type": "Array<LocalEnum.Equipment>", "__tile": null, "defUid": 32, "realEditorValues": [{
+								{ "__identifier": "health", "__type": "Int", "__value": 10, "__tile": null, "defUid": 34, "realEditorValues": [{ "id": "V_Int", "params": [10] }] },
+								{ "__identifier": "equipment_drops", "__type": "Array<LocalEnum.Equipment>", "__value": ["Armor"], "__tile": null, "defUid": 32, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["Armor"]
 								}] },
-								{ "__identifier": "mother", "__value": {
+								{ "__identifier": "mother", "__type": "EntityRef", "__value": {
 									"entityIid": "69b312b0-c640-11ed-8b6c-8f6519e0d2b4",
 									"layerIid": "c48a6353-8dc0-11ec-9c6a-599e25186db6",
 									"levelIid": "c48a6350-8dc0-11ec-9c6a-5d5f58c254f8",
-									"worldIid": "e5d7e290-c640-11ed-8b6c-216192a0eef2"
-								}, "__type": "EntityRef", "__tile": null, "defUid": 94, "realEditorValues": [{
+									"worldIid": "16e77f10-c640-11ed-bac6-f73079c09163"
+								}, "__tile": null, "defUid": 94, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["69b312b0-c640-11ed-8b6c-8f6519e0d2b4"]
 								}] }
@@ -794,21 +859,21 @@
 							"defUid": 1,
 							"px": [192,128],
 							"fieldInstances": [
-								{ "__identifier": "name", "__value": "Wendy", "__type": "String", "__tile": null, "defUid": 33, "realEditorValues": [{
+								{ "__identifier": "name", "__type": "String", "__value": "Wendy", "__tile": null, "defUid": 33, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["Wendy"]
 								}] },
-								{ "__identifier": "health", "__value": 30, "__type": "Int", "__tile": null, "defUid": 34, "realEditorValues": [{ "id": "V_Int", "params": [30] }] },
-								{ "__identifier": "equipment_drops", "__value": ["Armor"], "__type": "Array<LocalEnum.Equipment>", "__tile": null, "defUid": 32, "realEditorValues": [{
+								{ "__identifier": "health", "__type": "Int", "__value": 30, "__tile": null, "defUid": 34, "realEditorValues": [{ "id": "V_Int", "params": [30] }] },
+								{ "__identifier": "equipment_drops", "__type": "Array<LocalEnum.Equipment>", "__value": ["Armor"], "__tile": null, "defUid": 32, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["Armor"]
 								}] },
-								{ "__identifier": "mother", "__value": {
+								{ "__identifier": "mother", "__type": "EntityRef", "__value": {
 									"entityIid": "69b312b0-c640-11ed-8b6c-8f6519e0d2b4",
 									"layerIid": "c48a6353-8dc0-11ec-9c6a-599e25186db6",
 									"levelIid": "c48a6350-8dc0-11ec-9c6a-5d5f58c254f8",
-									"worldIid": "e5d7e290-c640-11ed-8b6c-216192a0eef2"
-								}, "__type": "EntityRef", "__tile": null, "defUid": 94, "realEditorValues": [{
+									"worldIid": "16e77f10-c640-11ed-bac6-f73079c09163"
+								}, "__tile": null, "defUid": 94, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["69b312b0-c640-11ed-8b6c-8f6519e0d2b4"]
 								}] }
@@ -827,21 +892,21 @@
 							"defUid": 1,
 							"px": [160,80],
 							"fieldInstances": [
-								{ "__identifier": "name", "__value": "Morton", "__type": "String", "__tile": null, "defUid": 33, "realEditorValues": [{
+								{ "__identifier": "name", "__type": "String", "__value": "Morton", "__tile": null, "defUid": 33, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["Morton"]
 								}] },
-								{ "__identifier": "health", "__value": 20, "__type": "Int", "__tile": null, "defUid": 34, "realEditorValues": [{ "id": "V_Int", "params": [20] }] },
-								{ "__identifier": "equipment_drops", "__value": ["Helmet"], "__type": "Array<LocalEnum.Equipment>", "__tile": null, "defUid": 32, "realEditorValues": [{
+								{ "__identifier": "health", "__type": "Int", "__value": 20, "__tile": null, "defUid": 34, "realEditorValues": [{ "id": "V_Int", "params": [20] }] },
+								{ "__identifier": "equipment_drops", "__type": "Array<LocalEnum.Equipment>", "__value": ["Helmet"], "__tile": null, "defUid": 32, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["Helmet"]
 								}] },
-								{ "__identifier": "mother", "__value": {
+								{ "__identifier": "mother", "__type": "EntityRef", "__value": {
 									"entityIid": "69b312b0-c640-11ed-8b6c-8f6519e0d2b4",
 									"layerIid": "c48a6353-8dc0-11ec-9c6a-599e25186db6",
 									"levelIid": "c48a6350-8dc0-11ec-9c6a-5d5f58c254f8",
-									"worldIid": "e5d7e290-c640-11ed-8b6c-216192a0eef2"
-								}, "__type": "EntityRef", "__tile": null, "defUid": 94, "realEditorValues": [{
+									"worldIid": "16e77f10-c640-11ed-bac6-f73079c09163"
+								}, "__tile": null, "defUid": 94, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["69b312b0-c640-11ed-8b6c-8f6519e0d2b4"]
 								}] }
@@ -1345,5 +1410,6 @@
 			"__neighbours": []
 		}
 	],
-	"worlds": []
+	"worlds": [],
+	"dummyWorldIid": "16e77f10-c640-11ed-bac6-f73079c09163"
 }

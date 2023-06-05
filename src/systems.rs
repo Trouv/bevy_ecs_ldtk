@@ -73,6 +73,11 @@ pub fn apply_level_selection(
     #[cfg(feature = "render")] mut clear_color: ResMut<ClearColor>,
 ) {
     if let Some(level_selection) = level_selection {
+        if !level_selection.is_changed() && !ldtk_settings.is_changed() && !ldtk_assets.is_changed()
+        {
+            return;
+        }
+
         for (ldtk_handle, mut level_set) in level_set_query.iter_mut() {
             if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
                 if let Some(level) = ldtk_asset.get_level(&level_selection) {

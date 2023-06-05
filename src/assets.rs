@@ -1,6 +1,6 @@
 //! Assets and AssetLoaders for loading ldtk files.
 
-use crate::{ldtk, resources::LevelSelection};
+use crate::{ldtk, resources::LevelSelection, EntityInstance};
 use bevy::{
     asset::{AssetLoader, AssetPath, LoadContext, LoadedAsset},
     prelude::*,
@@ -23,6 +23,8 @@ pub type TilesetMap = HashMap<i32, Handle<Image>>;
 /// Used in [LdtkAsset]. Key is the level iid.
 pub type LevelMap = HashMap<String, Handle<LdtkLevel>>;
 
+pub type EntityMap = HashMap<String, EntityInstance>;
+
 /// Main asset for loading ldtk files.
 ///
 /// Load your ldtk project with the asset server, then insert the handle into the
@@ -33,6 +35,7 @@ pub struct LdtkAsset {
     pub project: ldtk::LdtkJson,
     pub tileset_map: TilesetMap,
     pub level_map: LevelMap,
+    pub entity_map: EntityMap,
     /// Image used for rendering int grid colors.
     pub int_grid_image_handle: Option<Handle<Image>>,
 }
@@ -172,6 +175,18 @@ impl AssetLoader for LdtkLoader {
                 }
             }
 
+            let mut entity_map = HashMap::new();
+
+            for level in &project.levels {
+                if let Some(layer_instances) = level.layer_instances.as_ref() {
+                    for layer_instance in layer_instances.iter() {
+                        for entity_instance in &layer_instance.entity_instances {
+                            entity_map.insert(entity_instance.iid.clone(), entity_instance.clone());
+                        }
+                    }
+                }
+            }
+
             let int_grid_image_handle = project.defs.create_int_grid_image().map(|image| {
                 load_context.set_labeled_asset("int_grid_image", LoadedAsset::new(image))
             });
@@ -180,6 +195,7 @@ impl AssetLoader for LdtkLoader {
                 project,
                 tileset_map,
                 level_map,
+                entity_map,
                 int_grid_image_handle,
             };
             load_context.set_default_asset(

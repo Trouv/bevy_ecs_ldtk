@@ -1,6 +1,10 @@
 //! Assets and AssetLoaders for loading ldtk files.
 
-use crate::{ldtk, resources::LevelSelection};
+use crate::{
+    ldtk::{self, Level},
+    resources::LevelSelection,
+    EntityIid, EntityInstance,
+};
 use bevy::{
     asset::{AssetLoader, AssetPath, LoadContext, LoadedAsset},
     prelude::*,
@@ -23,6 +27,18 @@ pub type TilesetMap = HashMap<i32, Handle<Image>>;
 /// Used in [LdtkAsset]. Key is the level iid.
 pub type LevelMap = HashMap<String, Handle<LdtkLevel>>;
 
+/// Used in [LdtkAsset]. Enables faster lookups in [LdtkAsset::get_entity_instance()].
+#[derive(Clone, Debug, Default, Eq, Hash, PartialEq, Component, Reflect)]
+pub struct EntityIndexes {
+    world_index: Option<usize>,
+    level_index: usize,
+    layer_index: usize,
+    entity_index: usize,
+}
+
+/// Used in [LdtkAsset]. Enables faster lookups in [LdtkAsset::get_entity_instance()].
+pub type EntityIndex = HashMap<EntityIid, EntityIndexes>;
+
 /// Main asset for loading ldtk files.
 ///
 /// Load your ldtk project with the asset server, then insert the handle into the
@@ -33,6 +49,7 @@ pub struct LdtkAsset {
     pub project: ldtk::LdtkJson,
     pub tileset_map: TilesetMap,
     pub level_map: LevelMap,
+    pub entity_index: EntityIndex,
     /// Image used for rendering int grid colors.
     pub int_grid_image_handle: Option<Handle<Image>>,
 }
@@ -107,6 +124,21 @@ impl LdtkAsset {
             .find(|(i, l)| level_selection.is_match(i, l))
             .map(|(_, l)| l)
     }
+
+    /// Find a particular entity instance using an [EntityIid].
+    pub fn get_entity_instance(&self, entity_iid: &EntityIid) -> Option<&EntityInstance> {
+        let indexes = self.entity_index.get(entity_iid)?;
+
+        let levels = if let Some(world_index) = indexes.world_index {
+            &self.project.worlds.get(world_index)?.levels
+        } else {
+            &self.project.levels
+        };
+
+        let level = levels.get(indexes.level_index)?;
+        let layer_instance = level.layer_instances.as_ref()?.get(indexes.layer_index)?;
+        layer_instance.entity_instances.get(indexes.entity_index)
+    }
 }
 
 #[derive(Copy, Clone, Debug, Default)]
@@ -176,10 +208,53 @@ impl AssetLoader for LdtkLoader {
                 load_context.set_labeled_asset("int_grid_image", LoadedAsset::new(image))
             });
 
+            fn build_entity_index_for_levels(
+                world_index: Option<usize>,
+                levels: &[Level],
+            ) -> EntityIndex {
+                let mut entity_index = HashMap::new();
+
+                for (level_index, level) in levels.iter().enumerate() {
+                    if let Some(layer_instances) = level.layer_instances.as_ref() {
+                        for (layer_index, layer_instance) in layer_instances.iter().enumerate() {
+                            for (index, entity_instance) in
+                                layer_instance.entity_instances.iter().enumerate()
+                            {
+                                entity_index.insert(
+                                    EntityIid::new(entity_instance.iid.clone()),
+                                    EntityIndexes {
+                                        world_index,
+                                        level_index,
+                                        layer_index,
+                                        entity_index: index,
+                                    },
+                                );
+                            }
+                        }
+                    }
+                }
+
+                entity_index
+            }
+
+            let mut entity_index = HashMap::new();
+
+            if project.worlds.is_empty() {
+                entity_index.extend(build_entity_index_for_levels(None, &project.levels));
+            } else {
+                for (world_index, world) in project.worlds.iter().enumerate() {
+                    entity_index.extend(build_entity_index_for_levels(
+                        Some(world_index),
+                        &world.levels,
+                    ));
+                }
+            }
+
             let ldtk_asset = LdtkAsset {
                 project,
                 tileset_map,
                 level_map,
+                entity_index,
                 int_grid_image_handle,
             };
             load_context.set_default_asset(

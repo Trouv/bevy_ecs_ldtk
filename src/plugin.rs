@@ -81,6 +81,7 @@ impl Plugin for LdtkPlugin {
                 .pipe(systems::fire_level_transformed_events)
                 .in_base_set(CoreSet::PostUpdate),
         )
+        .register_type::<components::EntityIid>()
         .register_type::<components::GridCoords>()
         .register_type::<components::TileMetadata>()
         .register_type::<components::TileEnumTags>()

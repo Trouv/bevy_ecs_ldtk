@@ -16,7 +16,10 @@ use crate::{
     utils::*,
 };
 
-use bevy::prelude::*;
+use bevy::{
+    prelude::*,
+    utils::{HashMap, HashSet},
+};
 use bevy_ecs_tilemap::{
     map::{
         TilemapGridSize, TilemapId, TilemapSize, TilemapSpacing, TilemapTexture, TilemapTileSize,
@@ -24,7 +27,6 @@ use bevy_ecs_tilemap::{
     tiles::{TilePos, TileStorage},
     TilemapBundle,
 };
-use std::collections::{HashMap, HashSet};
 
 use thiserror::Error;
 

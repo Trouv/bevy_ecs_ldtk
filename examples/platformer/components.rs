@@ -1,7 +1,5 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::HashSet};
 use bevy_ecs_ldtk::{prelude::*, utils::ldtk_pixel_coords_to_translation_pivoted};
-
-use std::collections::HashSet;
 
 use bevy_rapier2d::prelude::*;
 

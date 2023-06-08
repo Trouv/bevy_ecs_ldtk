@@ -2,11 +2,10 @@
 
 pub use crate::ldtk::EntityInstance;
 use crate::ldtk::{LayerInstance, Type};
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::HashSet};
 
 use std::{
     borrow::Cow,
-    collections::HashSet,
     ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign},
 };
 

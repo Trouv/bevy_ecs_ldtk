@@ -6,9 +6,9 @@ use bevy::{
     prelude::*,
     reflect::TypeUuid,
     render::render_resource::{Extent3d, TextureDimension, TextureFormat},
-    utils::BoxedFuture,
+    utils::{BoxedFuture, HashMap},
 };
-use std::{collections::HashMap, path::Path};
+use std::path::Path;
 
 #[allow(unused_imports)]
 use crate::components::LdtkWorldBundle;

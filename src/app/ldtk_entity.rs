@@ -3,8 +3,8 @@ use crate::{
     ldtk::{EntityInstance, LayerInstance, TilesetDefinition},
     utils,
 };
-use bevy::{ecs::system::EntityCommands, prelude::*};
-use std::{collections::HashMap, marker::PhantomData};
+use bevy::{ecs::system::EntityCommands, prelude::*, utils::HashMap};
+use std::marker::PhantomData;
 
 /// [LdtkEntityAppExt]: super::LdtkEntityAppExt
 /// [Bundle]: bevy::prelude::Bundle

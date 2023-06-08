@@ -25,9 +25,11 @@
 //! 13. All urls in docs have been changed to hyperlinks with `<>`
 //! 14. `Reflect` has been derived for [Type].
 
-use bevy::prelude::{Color, IVec2, Vec2};
+use bevy::{
+    prelude::{Color, IVec2, Vec2},
+    utils::HashMap,
+};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 #[allow(unused_imports)]
 use crate::prelude::LdtkEntity;

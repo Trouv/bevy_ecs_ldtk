@@ -12,8 +12,11 @@ use crate::{
     utils::*,
 };
 
-use bevy::{ecs::system::SystemState, prelude::*};
-use std::collections::{HashMap, HashSet};
+use bevy::{
+    ecs::system::SystemState,
+    prelude::*,
+    utils::{HashMap, HashSet},
+};
 
 /// Detects [LdtkAsset] events and spawns levels as children of the [LdtkWorldBundle].
 #[allow(clippy::too_many_arguments)]

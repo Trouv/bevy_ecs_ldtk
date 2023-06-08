@@ -2,8 +2,8 @@ use crate::{
     components::{IntGridCell, IntGridCellBundle},
     ldtk::LayerInstance,
 };
-use bevy::{ecs::system::EntityCommands, prelude::*};
-use std::{collections::HashMap, marker::PhantomData};
+use bevy::{ecs::system::EntityCommands, prelude::*, utils::HashMap};
+use std::marker::PhantomData;
 
 /// [LdtkIntCellAppExt]: super::LdtkIntCellAppExt
 /// [Bundle]: bevy::prelude::Bundle

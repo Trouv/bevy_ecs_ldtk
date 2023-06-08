@@ -13,12 +13,10 @@ use crate::{
     level::tile_to_grid_coords,
     utils::*,
 };
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::HashMap};
 use bevy_ecs_tilemap::tiles::{
     TileBundle, TileColor, TileFlip, TilePos, TileTextureIndex, TileVisible,
 };
-
-use std::collections::HashMap;
 
 #[derive(Clone, Eq, PartialEq, Debug, Default, Hash)]
 pub(crate) struct TilePosMap<T> {

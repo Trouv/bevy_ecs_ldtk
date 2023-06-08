@@ -1,5 +1,7 @@
 //! Utility functions used internally by the plugin that have been exposed to the public api.
 
+use std::hash::Hash;
+
 #[allow(unused_imports)]
 use crate::{
     app::LdtkEntity,
@@ -7,13 +9,11 @@ use crate::{
 };
 
 use crate::{components::TileGridBundle, ldtk::*};
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::HashMap};
 use bevy_ecs_tilemap::{
     map::{TilemapId, TilemapSize},
     tiles::{TilePos, TileStorage},
 };
-
-use std::{collections::HashMap, hash::Hash};
 
 /// The `int_grid_csv` field of a [LayerInstance] is a 1-dimensional [`Vec<i32>`].
 /// This function can map the indices of this [Vec] to a corresponding [GridCoords].

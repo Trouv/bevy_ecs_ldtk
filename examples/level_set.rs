@@ -2,9 +2,8 @@
 // The setup system puts several level iids in the LevelSet, so an entire LDtk world layer is
 // spawned.
 
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::HashSet};
 use bevy_ecs_ldtk::prelude::*;
-use std::collections::HashSet;
 
 use rand::prelude::*;
 

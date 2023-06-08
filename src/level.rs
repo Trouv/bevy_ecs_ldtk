@@ -303,8 +303,10 @@ pub fn spawn_level(
 
                                 // insert Name before evaluating LdtkEntitys so that user-provided
                                 // names aren't overwritten
-                                entity_commands
-                                    .insert(Name::new(entity_instance.identifier.to_owned()));
+                                entity_commands.insert((
+                                    EntityIid::new(entity_instance.iid.to_owned()),
+                                    Name::new(entity_instance.identifier.to_owned()),
+                                ));
 
                                 ldtk_map_get_or_default(
                                     layer_instance.identifier.clone(),

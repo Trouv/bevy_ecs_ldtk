@@ -10,11 +10,13 @@ use std::borrow::Cow;
 pub struct EntityIid(Cow<'static, str>);
 
 impl EntityIid {
+    /// Construct an [`EntityIid`].
     pub fn new(iid: impl Into<Cow<'static, str>>) -> Self {
         let iid = iid.into();
         EntityIid(iid)
     }
 
+    /// Returns the internal entity iid as a `&str`.
     #[inline(always)]
     pub fn as_str(&self) -> &str {
         &self.0

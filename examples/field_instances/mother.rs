@@ -2,23 +2,13 @@
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 
-/// Component storing an ldtk entity's iid.
-#[derive(Clone, Debug, Default, Eq, PartialEq, Deref, DerefMut, Component, Reflect)]
-pub struct LdtkEntityIid(String);
-
-impl From<&EntityInstance> for LdtkEntityIid {
-    fn from(value: &EntityInstance) -> Self {
-        LdtkEntityIid(value.iid.clone())
-    }
-}
-
 /// Component that eventually transforms into the [Mother] component.
 ///
 /// This just stores the entity iid of the mother entity.
 /// The initial value of this is sourced from the entity's "mother" field in LDtk.
 /// In [resolve_mother_references], this gets resolved to the actual bevy Entity of the mother.
 #[derive(Debug, Default, Deref, DerefMut, Component)]
-pub struct UnresolvedMotherRef(Option<LdtkEntityIid>);
+pub struct UnresolvedMotherRef(Option<EntityIid>);
 
 impl UnresolvedMotherRef {
     pub fn from_mother_field(entity_instance: &EntityInstance) -> UnresolvedMotherRef {
@@ -27,7 +17,7 @@ impl UnresolvedMotherRef {
                 .get_maybe_entity_ref_field("mother")
                 .expect("expected entity to have mother entity ref field")
                 .as_ref()
-                .map(|entity_ref| LdtkEntityIid(entity_ref.entity_iid.clone())),
+                .map(|entity_ref| EntityIid::new(entity_ref.entity_iid.clone())),
         )
     }
 }
@@ -39,7 +29,7 @@ pub struct Mother(Entity);
 pub fn resolve_mother_references(
     mut commands: Commands,
     unresolved_mothers: Query<(Entity, &UnresolvedMotherRef), Added<UnresolvedMotherRef>>,
-    ldtk_entities: Query<(Entity, &LdtkEntityIid)>,
+    ldtk_entities: Query<(Entity, &EntityIid)>,
 ) {
     for (child_entity, unresolved_mother_ref) in unresolved_mothers.iter() {
         if let Some(mother_iid) = unresolved_mother_ref.0.as_ref() {

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/Trouv/bevy_ecs_ldtk/compare/v0.7.0...v0.8.0) (2023-06-18)
+
+
+### Features
+
+* add `EntityIid` component which is added to all entities by default ([#194](https://github.com/Trouv/bevy_ecs_ldtk/issues/194)) ([d99f1ae](https://github.com/Trouv/bevy_ecs_ldtk/commit/d99f1ae7eec28114d9277e5c5063418234fcc261))
+
 ## [0.7.0](https://github.com/Trouv/bevy_ecs_ldtk/compare/v0.6.0...v0.7.0) (2023-04-29)
 
 

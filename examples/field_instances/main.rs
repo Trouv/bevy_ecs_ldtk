@@ -45,7 +45,6 @@ fn main() {
         .add_plugin(WorldInspectorPlugin::new())
         .register_type::<health::Health>()
         .register_type::<equipment::EquipmentDrops>()
-        .register_type::<mother::LdtkEntityIid>()
         .register_type::<mother::Mother>()
         .register_type::<level_title::LevelTitle>()
         .run();

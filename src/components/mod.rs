@@ -1,4 +1,6 @@
 //! [Component]s and [Bundle]s used by the plugin.
+mod entity_iid;
+pub use entity_iid::EntityIid;
 
 pub use crate::ldtk::EntityInstance;
 use crate::ldtk::{LayerInstance, Type};

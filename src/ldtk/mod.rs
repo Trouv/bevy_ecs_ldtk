@@ -9,23 +9,26 @@
 //! Any changes should be documented here for maintenance purposes:
 //! 1. [serde] has been imported with `use` instead of `extern`
 //! 2. All struct fields have been made public.
-//! 3. [Eq], [PartialEq], [Debug], [Default], and [Clone] have been derived wherever possible.
+//! 3. [Copy], [Clone], [Default], [Debug], [Eq], and [PartialEq] have been derived wherever possible.
 //! 4. [i64] and [f64] have been changed to [i32] and [f32].
-//! 5. [LimitBehavior], [LimitScope], [RenderMode], [TileRenderMode], and [Type] have been given
-//!    custom [Default] implementations.
+//! 5. All enums have [Default] derived. The first variant is selected as default, exception for
+//!    [LimitBehavior], [LimitScope], [RenderMode], [TileRenderMode], and [Type].
 //! 6. `Component` has been derived for [EntityInstance].
 //! 7. Documentation added for [EntityInstance], which required the unused import of [LdtkEntity].
 //! 8. [FieldInstance] has been moved to its own module, and is re-exported here.
 //! 9. Comment at the top of the file has been replaced with this documentation.
 //! 10. Some "coordinate" fields on [LevelBackgroundPosition], [EntityInstance], and [TileInstance]
 //!     have been changed from vectors to [IVec2] and [Vec2].
-//! 11. Some "color" fields on [LdtkJson], [EntityDefinition], [IntGridValueDefinition], and
-//!     [Level] have been changed from [String]s to [Color].
-//! 12. [TilesetDefinition::rel_path]'s type changed from [String] to [`Option<String>`].
-//! 13. All urls in docs have been changed to hyperlinks with `<>`
-//! 14. `Reflect` has been derived for [Type].
+//! 11. Some "color" fields on [LdtkJson], [EntityDefinition], [IntGridValueDefinition],
+//!     [LayerDefinition], [Level], and [EntityInstance] have been changed from [String]s to
+//!     [Color]. They also are given a serde attribute for using the "color" or "color::optional"
+//!     modules.
+//! 12. All urls in docs have been changed to hyperlinks with `<>`
+//! 13. `Reflect` has been derived for [Type].
+//! 14. `From<&EntityInstance>` implemented for [`EntityInstance]`
+//! 15. [`LayerInstance::layer_instance_type`] changed from [`String`] to [`Type`].
 
-use bevy::prelude::{Color, IVec2, Vec2};
+use bevy::prelude::{Color, Component, IVec2, Reflect, Vec2};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -44,7 +47,7 @@ pub use field_instance::*;
 /// This is the root of any Project JSON file. It contains:  - the project settings, - an
 /// array of levels, - a group of definitions (that can probably be safely ignored for most
 /// users).
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct LdtkJson {
     /// This object is not actually used by LDtk. It ONLY exists to force explicit references to
     /// all types, to make sure QuickType finds them and integrate all of them. Otherwise,
@@ -68,9 +71,17 @@ pub struct LdtkJson {
     #[serde(rename = "backupOnSave")]
     pub backup_on_save: bool,
 
+    /// Target relative path to store backup files
+    #[serde(rename = "backupRelPath")]
+    pub backup_rel_path: Option<String>,
+
     /// Project background color
     #[serde(rename = "bgColor", with = "color")]
     pub bg_color: Color,
+
+    /// An array of command lines that can be ran manually by the user
+    #[serde(rename = "customCommands")]
+    pub custom_commands: Vec<LdtkCustomCommand>,
 
     /// Default grid size for new layers
     #[serde(rename = "defaultGridSize")]
@@ -104,6 +115,14 @@ pub struct LdtkJson {
     #[serde(rename = "defs")]
     pub defs: Definitions,
 
+    /// If the project isn't in MultiWorlds mode, this is the IID of the internal "dummy" World.
+    #[serde(rename = "dummyWorldIid")]
+    pub dummy_world_iid: String,
+
+    /// If TRUE, the exported PNGs will include the level background (color or image).
+    #[serde(rename = "exportLevelBg")]
+    pub export_level_bg: bool,
+
     /// **WARNING**: this deprecated value is no longer exported since version 0.9.3  Replaced
     /// by: `imageExportMode`
     #[serde(rename = "exportPng")]
@@ -129,6 +148,10 @@ pub struct LdtkJson {
     /// values: `Capitalize`, `Uppercase`, `Lowercase`, `Free`
     #[serde(rename = "identifierStyle")]
     pub identifier_style: IdentifierStyle,
+
+    /// Unique project identifier
+    #[serde(rename = "iid")]
+    pub iid: String,
 
     /// "Image export" option when saving project. Possible values: `None`, `OneImagePerLayer`,
     /// `OneImagePerLevel`, `LayersAndLevels`
@@ -165,7 +188,12 @@ pub struct LdtkJson {
     /// If TRUE, a very simplified will be generated on saving, for quicker & easier engine
     /// integration.
     #[serde(rename = "simplifiedExport")]
-    simplified_export: bool,
+    pub simplified_export: bool,
+
+    /// All instances of entities that have their `exportToToc` flag enabled are listed in this
+    /// array.
+    #[serde(rename = "toc")]
+    pub toc: Vec<LdtkTableOfContentEntry>,
 
     /// This optional description is used by LDtk Samples to show up some informations and
     /// instructions.
@@ -192,19 +220,27 @@ pub struct LdtkJson {
     #[serde(rename = "worldLayout")]
     pub world_layout: Option<WorldLayout>,
 
-    /// This array is not used yet in current LDtk version (so, for now, it's always
-    /// empty).<br/><br/>In a later update, it will be possible to have multiple Worlds in a
-    /// single project, each containing multiple Levels.<br/><br/>What will change when "Multiple
-    /// worlds" support will be added to LDtk:<br/><br/> - in current version, a LDtk project
-    /// file can only contain a single world with multiple levels in it. In this case, levels and
-    /// world layout related settings are stored in the root of the JSON.<br/> - after the
-    /// "Multiple worlds" update, there will be a `worlds` array in root, each world containing
-    /// levels and layout settings. Basically, it's pretty much only about moving the `levels`
-    /// array to the `worlds` array, along with world layout related values (eg. `worldGridWidth`
-    /// etc).<br/><br/>If you want to start supporting this future update easily, please refer to
-    /// this documentation: <https://github.com/deepnight/ldtk/issues/231>
+    /// This array will be empty, unless you enable the Multi-Worlds in the project advanced
+    /// settings.<br/><br/> - in current version, a LDtk project file can only contain a single
+    /// world with multiple levels in it. In this case, levels and world layout related settings
+    /// are stored in the root of the JSON.<br/> - with "Multi-worlds" enabled, there will be a
+    /// `worlds` array in root, each world containing levels and layout settings. Basically, it's
+    /// pretty much only about moving the `levels` array to the `worlds` array, along with world
+    /// layout related values (eg. `worldGridWidth` etc).<br/><br/>If you want to start
+    /// supporting this future update easily, please refer to this documentation:
+    /// <https://github.com/deepnight/ldtk/issues/231>
     #[serde(rename = "worlds")]
     pub worlds: Vec<World>,
+}
+
+#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
+pub struct LdtkCustomCommand {
+    #[serde(rename = "command")]
+    pub command: String,
+
+    /// Possible values: `Manual`, `AfterLoad`, `BeforeSave`, `AfterSave`
+    #[serde(rename = "when")]
+    pub when: When,
 }
 
 /// If you're writing your own LDtk importer, you should probably just ignore *most* stuff in
@@ -215,7 +251,7 @@ pub struct LdtkJson {
 /// **Tilesets** and **Enums**.
 ///
 /// A structure containing all the definitions of this project
-#[derive(PartialEq, Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Definitions {
     /// All entities definitions, including their custom fields
     #[serde(rename = "entities")]
@@ -243,11 +279,20 @@ pub struct Definitions {
     pub tilesets: Vec<TilesetDefinition>,
 }
 
-#[derive(PartialEq, Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct EntityDefinition {
     /// Base entity color
     #[serde(rename = "color", with = "color")]
     pub color: Color,
+
+    /// User defined documentation for this element to provide help/tips to level designers.
+    #[serde(rename = "doc")]
+    pub doc: Option<String>,
+
+    /// If enabled, all instances of this entity will be listed in the project "Table of content"
+    /// object.
+    #[serde(rename = "exportToToc")]
+    pub export_to_toc: bool,
 
     /// Array of field definitions
     #[serde(rename = "fieldDefs")]
@@ -288,6 +333,22 @@ pub struct EntityDefinition {
     #[serde(rename = "maxCount")]
     pub max_count: i32,
 
+    /// Max pixel height (only applies if the entity is resizable on Y)
+    #[serde(rename = "maxHeight")]
+    pub max_height: Option<i32>,
+
+    /// Max pixel width (only applies if the entity is resizable on X)
+    #[serde(rename = "maxWidth")]
+    pub max_width: Option<i32>,
+
+    /// Min pixel height (only applies if the entity is resizable on Y)
+    #[serde(rename = "minHeight")]
+    pub min_height: Option<i32>,
+
+    /// Min pixel width (only applies if the entity is resizable on X)
+    #[serde(rename = "minWidth")]
+    pub min_width: Option<i32>,
+
     /// An array of 4 dimensions for the up/right/down/left borders (in this order) when using
     /// 9-slice mode for `tileRenderMode`.<br/>  If the tileRenderMode is not NineSlice, then
     /// this array is empty.<br/>  See: <https://en.wikipedia.org/wiki/9-slice_scaling>
@@ -322,8 +383,8 @@ pub struct EntityDefinition {
     #[serde(rename = "tags")]
     pub tags: Vec<String>,
 
-    /// **WARNING**: this deprecated value will be *removed* completely on version 1.2.0+
-    /// Replaced by: `tileRect`
+    /// **WARNING**: this deprecated value is no longer exported since version 1.2.0  Replaced
+    /// by: `tileRect`
     #[serde(rename = "tileId")]
     pub tile_id: Option<i32>,
 
@@ -355,7 +416,7 @@ pub struct EntityDefinition {
 
 /// This section is mostly only intended for the LDtk editor app itself. You can safely
 /// ignore it.
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct FieldDefinition {
     /// Human readable value type. Possible values: `Int, Float, String, Bool, Color,
     /// ExternEnum.XXX, LocalEnum.XXX, Point, FilePath`.<br/>  If the field is an array, this
@@ -370,9 +431,12 @@ pub struct FieldDefinition {
     #[serde(rename = "acceptFileTypes")]
     pub accept_file_types: Option<Vec<String>>,
 
-    /// Possible values: `Any`, `OnlySame`, `OnlyTags`
+    /// Possible values: `Any`, `OnlySame`, `OnlyTags`, `OnlySpecificEntity`
     #[serde(rename = "allowedRefs")]
     pub allowed_refs: AllowedRefs,
+
+    #[serde(rename = "allowedRefsEntityUid")]
+    pub allowed_refs_entity_uid: Option<i32>,
 
     #[serde(rename = "allowedRefTags")]
     pub allowed_ref_tags: Vec<String>,
@@ -400,14 +464,19 @@ pub struct FieldDefinition {
     #[serde(rename = "defaultOverride")]
     pub default_override: Option<serde_json::Value>,
 
+    /// User defined documentation for this field to provide help/tips to level designers about
+    /// accepted values.
+    #[serde(rename = "doc")]
+    pub doc: Option<String>,
+
     #[serde(rename = "editorAlwaysShow")]
     pub editor_always_show: bool,
 
     #[serde(rename = "editorCutLongValues")]
     pub editor_cut_long_values: bool,
 
-    /// Possible values: `Hidden`, `ValueOnly`, `NameAndValue`, `EntityTile`, `Points`,
-    /// `PointStar`, `PointPath`, `PointPathLoop`, `RadiusPx`, `RadiusGrid`,
+    /// Possible values: `Hidden`, `ValueOnly`, `NameAndValue`, `EntityTile`, `LevelTile`,
+    /// `Points`, `PointStar`, `PointPath`, `PointPathLoop`, `RadiusPx`, `RadiusGrid`,
     /// `ArrayCountWithLabel`, `ArrayCountNoLabel`, `RefLinkBetweenPivots`,
     /// `RefLinkBetweenCenters`
     #[serde(rename = "editorDisplayMode")]
@@ -416,6 +485,16 @@ pub struct FieldDefinition {
     /// Possible values: `Above`, `Center`, `Beneath`
     #[serde(rename = "editorDisplayPos")]
     pub editor_display_pos: EditorDisplayPos,
+
+    #[serde(rename = "editorDisplayScale")]
+    pub editor_display_scale: f32,
+
+    /// Possible values: `ZigZag`, `StraightArrow`, `CurvedArrow`, `ArrowsLine`, `DashedLine`
+    #[serde(rename = "editorLinkStyle")]
+    pub editor_link_style: EditorLinkStyle,
+
+    #[serde(rename = "editorShowInWorld")]
+    pub editor_show_in_world: bool,
 
     #[serde(rename = "editorTextPrefix")]
     pub editor_text_prefix: Option<String>,
@@ -473,7 +552,7 @@ pub struct FieldDefinition {
 }
 
 /// This object represents a custom sub rectangle in a Tileset image.
-#[derive(Eq, PartialEq, Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub struct TilesetRectangle {
     /// Height in pixels
     #[serde(rename = "h")]
@@ -496,7 +575,7 @@ pub struct TilesetRectangle {
     pub y: i32,
 }
 
-#[derive(Eq, PartialEq, Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub struct EnumDefinition {
     #[serde(rename = "externalFileChecksum")]
     pub external_file_checksum: Option<String>,
@@ -526,10 +605,10 @@ pub struct EnumDefinition {
     pub values: Vec<EnumValueDefinition>,
 }
 
-#[derive(Eq, PartialEq, Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub struct EnumValueDefinition {
-    /// An array of 4 Int values that refers to the tile in the tileset image: `[ x, y, width,
-    /// height ]`
+    /// **WARNING**: this deprecated value will be *removed* completely on version 1.4.0+
+    /// Replaced by: `tileRect`
     #[serde(rename = "__tileSrcRect")]
     pub tile_src_rect: Option<Vec<i32>>,
 
@@ -541,12 +620,17 @@ pub struct EnumValueDefinition {
     #[serde(rename = "id")]
     pub id: String,
 
-    /// The optional ID of the tile
+    /// **WARNING**: this deprecated value will be *removed* completely on version 1.4.0+
+    /// Replaced by: `tileRect`
     #[serde(rename = "tileId")]
     pub tile_id: Option<i32>,
+
+    /// Optional tileset rectangle to represents this value
+    #[serde(rename = "tileRect")]
+    pub tile_rect: Option<TilesetRectangle>,
 }
 
-#[derive(PartialEq, Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct LayerDefinition {
     /// Type of the layer (*IntGrid, Entities, Tiles or AutoLayer*)
     #[serde(rename = "__type")]
@@ -559,14 +643,22 @@ pub struct LayerDefinition {
     #[serde(rename = "autoSourceLayerDefUid")]
     pub auto_source_layer_def_uid: Option<i32>,
 
-    /// **WARNING**: this deprecated value will be *removed* completely on version 1.2.0+
-    /// Replaced by: `tilesetDefUid`
+    /// **WARNING**: this deprecated value is no longer exported since version 1.2.0  Replaced
+    /// by: `tilesetDefUid`
     #[serde(rename = "autoTilesetDefUid")]
     pub auto_tileset_def_uid: Option<i32>,
+
+    /// Allow editor selections when the layer is not currently active.
+    #[serde(rename = "canSelectWhenInactive")]
+    pub can_select_when_inactive: bool,
 
     /// Opacity of the layer (0 to 1.0)
     #[serde(rename = "displayOpacity")]
     pub display_opacity: f32,
+
+    /// User defined documentation for this element to provide help/tips to level designers.
+    #[serde(rename = "doc")]
+    pub doc: Option<String>,
 
     /// An array of tags to forbid some Entities in this layer
     #[serde(rename = "excludedTags")]
@@ -629,6 +721,11 @@ pub struct LayerDefinition {
     #[serde(rename = "pxOffsetY")]
     pub px_offset_y: i32,
 
+    /// If TRUE, the content of this layer will be used when rendering levels in a simplified way
+    /// for the world view
+    #[serde(rename = "renderInWorldView")]
+    pub render_in_world_view: bool,
+
     /// An array of tags to filter Entities that can be added to this layer
     #[serde(rename = "requiredTags")]
     pub required_tags: Vec<String>,
@@ -655,12 +752,16 @@ pub struct LayerDefinition {
     #[serde(rename = "type")]
     pub purple_type: Type,
 
+    /// User defined color for the UI
+    #[serde(rename = "uiColor", with = "color::optional")]
+    pub ui_color: Option<Color>,
+
     /// Unique Int identifier
     #[serde(rename = "uid")]
     pub uid: i32,
 }
 
-#[derive(PartialEq, Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub struct AutoLayerRuleGroup {
     #[serde(rename = "active")]
     pub active: bool,
@@ -680,16 +781,22 @@ pub struct AutoLayerRuleGroup {
 
     #[serde(rename = "uid")]
     pub uid: i32,
+
+    #[serde(rename = "usesWizard")]
+    pub uses_wizard: bool,
 }
 
 /// This complex section isn't meant to be used by game devs at all, as these rules are
 /// completely resolved internally by the editor before any saving. You should just ignore
 /// this part.
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub struct AutoLayerRuleDefinition {
     /// If FALSE, the rule effect isn't applied, and no tiles are generated.
     #[serde(rename = "active")]
     pub active: bool,
+
+    #[serde(rename = "alpha")]
+    pub alpha: f32,
 
     /// When TRUE, the rule will prevent other rules to be applied in the same cell if it matches
     /// (TRUE by default).
@@ -753,6 +860,30 @@ pub struct AutoLayerRuleDefinition {
     #[serde(rename = "tileMode")]
     pub tile_mode: TileMode,
 
+    /// Max random offset for X tile pos
+    #[serde(rename = "tileRandomXMax")]
+    pub tile_random_x_max: i32,
+
+    /// Min random offset for X tile pos
+    #[serde(rename = "tileRandomXMin")]
+    pub tile_random_x_min: i32,
+
+    /// Max random offset for Y tile pos
+    #[serde(rename = "tileRandomYMax")]
+    pub tile_random_y_max: i32,
+
+    /// Min random offset for Y tile pos
+    #[serde(rename = "tileRandomYMin")]
+    pub tile_random_y_min: i32,
+
+    /// Tile X offset
+    #[serde(rename = "tileXOffset")]
+    pub tile_x_offset: i32,
+
+    /// Tile Y offset
+    #[serde(rename = "tileYOffset")]
+    pub tile_y_offset: i32,
+
     /// Unique Int identifier
     #[serde(rename = "uid")]
     pub uid: i32,
@@ -775,7 +906,7 @@ pub struct AutoLayerRuleDefinition {
 }
 
 /// IntGrid value definition
-#[derive(PartialEq, Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct IntGridValueDefinition {
     #[serde(rename = "color", with = "color")]
     pub color: Color,
@@ -783,6 +914,9 @@ pub struct IntGridValueDefinition {
     /// User defined unique identifier
     #[serde(rename = "identifier")]
     pub identifier: Option<String>,
+
+    #[serde(rename = "tile")]
+    pub tile: Option<TilesetRectangle>,
 
     /// The IntGrid value itself
     #[serde(rename = "value")]
@@ -792,7 +926,7 @@ pub struct IntGridValueDefinition {
 /// The `Tileset` definition is the most important part among project definitions. It
 /// contains some extra informations about each integrated tileset. If you only had to parse
 /// one definition section, that would be the one.
-#[derive(Eq, PartialEq, Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub struct TilesetDefinition {
     /// Grid-based height
     #[serde(rename = "__cHei")]
@@ -867,7 +1001,7 @@ pub struct TilesetDefinition {
 }
 
 /// In a tileset definition, user defined meta-data of a tile.
-#[derive(Eq, PartialEq, Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub struct TileCustomMetadata {
     #[serde(rename = "data")]
     pub data: String,
@@ -877,7 +1011,7 @@ pub struct TileCustomMetadata {
 }
 
 /// In a tileset definition, enum based tag infos
-#[derive(Eq, PartialEq, Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub struct EnumTagValue {
     #[serde(rename = "enumValueId")]
     pub enum_value_id: String,
@@ -889,13 +1023,16 @@ pub struct EnumTagValue {
 /// This object is not actually used by LDtk. It ONLY exists to force explicit references to
 /// all types, to make sure QuickType finds them and integrate all of them. Otherwise,
 /// Quicktype will drop types that are not explicitely used.
-#[derive(PartialEq, Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ForcedRefs {
     #[serde(rename = "AutoLayerRuleGroup")]
     pub auto_layer_rule_group: Option<AutoLayerRuleGroup>,
 
     #[serde(rename = "AutoRuleDef")]
     pub auto_rule_def: Option<AutoLayerRuleDefinition>,
+
+    #[serde(rename = "CustomCommand")]
+    pub custom_command: Option<LdtkCustomCommand>,
 
     #[serde(rename = "Definitions")]
     pub definitions: Option<Definitions>,
@@ -907,7 +1044,7 @@ pub struct ForcedRefs {
     pub entity_instance: Option<EntityInstance>,
 
     #[serde(rename = "EntityReferenceInfos")]
-    pub entity_reference_infos: Option<FieldInstanceEntityReference>,
+    pub entity_reference_infos: Option<ReferenceToAnEntityInstance>,
 
     #[serde(rename = "EnumDef")]
     pub enum_def: Option<EnumDefinition>,
@@ -925,7 +1062,7 @@ pub struct ForcedRefs {
     pub field_instance: Option<FieldInstance>,
 
     #[serde(rename = "GridPoint")]
-    pub grid_point: Option<FieldInstanceGridPoint>,
+    pub grid_point: Option<GridPoint>,
 
     #[serde(rename = "IntGridValueDef")]
     pub int_grid_value_def: Option<IntGridValueDefinition>,
@@ -948,6 +1085,9 @@ pub struct ForcedRefs {
     #[serde(rename = "NeighbourLevel")]
     pub neighbour_level: Option<NeighbourLevel>,
 
+    #[serde(rename = "TableOfContentEntry")]
+    pub table_of_content_entry: Option<LdtkTableOfContentEntry>,
+
     #[serde(rename = "Tile")]
     pub tile: Option<TileInstance>,
 
@@ -969,7 +1109,7 @@ pub struct ForcedRefs {
 /// When loading levels, you can flesh out LDtk entities in your own system by querying for
 /// `Added<EntityInstance>`.
 /// Or, you can hook into the entity's spawning process using [LdtkEntity].
-#[derive(PartialEq, Debug, Default, Clone, Serialize, Deserialize, bevy::prelude::Component)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize, Component)]
 pub struct EntityInstance {
     /// Grid-based coordinates (`[x,y]` format)
     #[serde(rename = "__grid")]
@@ -1025,16 +1165,15 @@ pub struct EntityInstance {
     pub width: i32,
 }
 
-// Allow using #[from_entity_instance] to add EntityInstance fields when deriving LdtkEntity
 impl From<&EntityInstance> for EntityInstance {
     fn from(value: &EntityInstance) -> Self {
         value.clone()
     }
 }
 
-/// This object is used in Field Instances to describe an EntityRef value.
-#[derive(Eq, PartialEq, Debug, Default, Clone, Serialize, Deserialize)]
-pub struct FieldInstanceEntityReference {
+/// This object describes the "location" of an Entity instance in the project worlds.
+#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
+pub struct ReferenceToAnEntityInstance {
     /// IID of the refered EntityInstance
     #[serde(rename = "entityIid")]
     pub entity_iid: String,
@@ -1053,8 +1192,8 @@ pub struct FieldInstanceEntityReference {
 }
 
 /// This object is just a grid-based coordinate used in Field values.
-#[derive(Eq, PartialEq, Debug, Default, Clone, Serialize, Deserialize)]
-pub struct FieldInstanceGridPoint {
+#[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
+pub struct GridPoint {
     /// X grid-based coordinate
     #[serde(rename = "cx")]
     pub cx: i32,
@@ -1065,7 +1204,7 @@ pub struct FieldInstanceGridPoint {
 }
 
 /// IntGrid value instance
-#[derive(Eq, PartialEq, Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub struct IntGridValueInstance {
     /// Coordinate ID in the layer grid
     #[serde(rename = "coordId")]
@@ -1076,7 +1215,7 @@ pub struct IntGridValueInstance {
     pub v: i32,
 }
 
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct LayerInstance {
     /// Grid-based height
     #[serde(rename = "__cHei")]
@@ -1135,8 +1274,8 @@ pub struct LayerInstance {
     #[serde(rename = "iid")]
     pub iid: String,
 
-    /// **WARNING**: this deprecated value will be *removed* completely on version 1.0.0+
-    /// Replaced by: `intGridCsv`
+    /// **WARNING**: this deprecated value is no longer exported since version 1.0.0  Replaced
+    /// by: `intGridCsv`
     #[serde(rename = "intGrid")]
     pub int_grid: Option<Vec<IntGridValueInstance>>,
 
@@ -1165,12 +1304,14 @@ pub struct LayerInstance {
     pub override_tileset_uid: Option<i32>,
 
     /// X offset in pixels to render this layer, usually 0 (IMPORTANT: this should be added to
-    /// the `LayerDef` optional offset, see `__pxTotalOffsetX`)
+    /// the `LayerDef` optional offset, so you should probably prefer using `__pxTotalOffsetX`
+    /// which contains the total offset value)
     #[serde(rename = "pxOffsetX")]
     pub px_offset_x: i32,
 
     /// Y offset in pixels to render this layer, usually 0 (IMPORTANT: this should be added to
-    /// the `LayerDef` optional offset, see `__pxTotalOffsetY`)
+    /// the `LayerDef` optional offset, so you should probably prefer using `__pxTotalOffsetX`
+    /// which contains the total offset value)
     #[serde(rename = "pxOffsetY")]
     pub px_offset_y: i32,
 
@@ -1184,8 +1325,12 @@ pub struct LayerInstance {
 }
 
 /// This structure represents a single tile from a given Tileset.
-#[derive(Eq, PartialEq, Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct TileInstance {
+    /// Alpha/opacity of the tile (0-1, defaults to 1)
+    #[serde(rename = "a")]
+    pub a: f32,
+
     /// Internal data used by the editor.<br/>  For auto-layer tiles: `[ruleId, coordId]`.<br/>
     /// For tile-layer tiles: `[coordId]`.
     #[serde(rename = "d")]
@@ -1219,7 +1364,7 @@ pub struct TileInstance {
 /// except heavy sections, like the `layerInstances` array (which will be null). The
 /// `externalRelPath` string points to the `ldtkl` file.  A `ldtkl` file is just a JSON file
 /// containing exactly what is described below.
-#[derive(PartialEq, Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Level {
     /// Background color of the level (same as `bgColor`, except the default value is
     /// automatically used here if its value is `null`)
@@ -1256,7 +1401,7 @@ pub struct Level {
 
     /// An enum defining the way the background image (if any) is positioned on the level. See
     /// `__bgPos` for resulting position info. Possible values: &lt;`null`&gt;, `Unscaled`,
-    /// `Contain`, `Cover`, `CoverDirty`
+    /// `Contain`, `Cover`, `CoverDirty`, `Repeat`
     #[serde(rename = "bgPos")]
     pub level_bg_pos: Option<BgPos>,
 
@@ -1325,7 +1470,7 @@ pub struct Level {
 }
 
 /// Level background image position info
-#[derive(PartialEq, Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct LevelBackgroundPosition {
     /// An array of 4 float values describing the cropped sub-rectangle of the displayed
     /// background image. This cropping happens when original is larger than the level bounds.
@@ -1345,7 +1490,7 @@ pub struct LevelBackgroundPosition {
 }
 
 /// Nearby level info
-#[derive(Eq, PartialEq, Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub struct NeighbourLevel {
     /// A single lowercase character tipping on the level location (`n`orth, `s`outh, `w`est,
     /// `e`ast).
@@ -1356,16 +1501,25 @@ pub struct NeighbourLevel {
     #[serde(rename = "levelIid")]
     pub level_iid: String,
 
-    /// **WARNING**: this deprecated value will be *removed* completely on version 1.2.0+
-    /// Replaced by: `levelIid`
+    /// **WARNING**: this deprecated value is no longer exported since version 1.2.0  Replaced
+    /// by: `levelIid`
     #[serde(rename = "levelUid")]
     pub level_uid: Option<i32>,
 }
 
-/// **IMPORTANT**: this type is not used *yet* in current LDtk version. It's only presented
-/// here as a preview of a planned feature.  A World contains multiple levels, and it has its
-/// own layout settings.
-#[derive(PartialEq, Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
+pub struct LdtkTableOfContentEntry {
+    #[serde(rename = "identifier")]
+    pub identifier: String,
+
+    #[serde(rename = "instances")]
+    pub instances: Vec<ReferenceToAnEntityInstance>,
+}
+
+/// **IMPORTANT**: this type is available as a preview. You can rely on it to update your
+/// importers, for when it will be officially available.  A World contains multiple levels,
+/// and it has its own layout settings.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct World {
     /// Default new level height
     #[serde(rename = "defaultLevelHeight")]
@@ -1403,25 +1557,47 @@ pub struct World {
     pub world_layout: Option<WorldLayout>,
 }
 
-/// Possible values: `Any`, `OnlySame`, `OnlyTags`
-#[derive(Eq, PartialEq, Debug, Clone, Serialize, Deserialize)]
+/// Possible values: `Manual`, `AfterLoad`, `BeforeSave`, `AfterSave`
+#[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
+pub enum When {
+    #[default]
+    #[serde(rename = "AfterLoad")]
+    AfterLoad,
+
+    #[serde(rename = "AfterSave")]
+    AfterSave,
+
+    #[serde(rename = "BeforeSave")]
+    BeforeSave,
+
+    #[serde(rename = "Manual")]
+    Manual,
+}
+
+/// Possible values: `Any`, `OnlySame`, `OnlyTags`, `OnlySpecificEntity`
+#[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub enum AllowedRefs {
+    #[default]
     #[serde(rename = "Any")]
     Any,
 
     #[serde(rename = "OnlySame")]
     OnlySame,
 
+    #[serde(rename = "OnlySpecificEntity")]
+    OnlySpecificEntity,
+
     #[serde(rename = "OnlyTags")]
     OnlyTags,
 }
 
-/// Possible values: `Hidden`, `ValueOnly`, `NameAndValue`, `EntityTile`, `Points`,
-/// `PointStar`, `PointPath`, `PointPathLoop`, `RadiusPx`, `RadiusGrid`,
+/// Possible values: `Hidden`, `ValueOnly`, `NameAndValue`, `EntityTile`, `LevelTile`,
+/// `Points`, `PointStar`, `PointPath`, `PointPathLoop`, `RadiusPx`, `RadiusGrid`,
 /// `ArrayCountWithLabel`, `ArrayCountNoLabel`, `RefLinkBetweenPivots`,
 /// `RefLinkBetweenCenters`
-#[derive(Eq, PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub enum EditorDisplayMode {
+    #[default]
     #[serde(rename = "ArrayCountNoLabel")]
     ArrayCountNoLabel,
 
@@ -1433,6 +1609,9 @@ pub enum EditorDisplayMode {
 
     #[serde(rename = "Hidden")]
     Hidden,
+
+    #[serde(rename = "LevelTile")]
+    LevelTile,
 
     #[serde(rename = "NameAndValue")]
     NameAndValue,
@@ -1466,8 +1645,9 @@ pub enum EditorDisplayMode {
 }
 
 /// Possible values: `Above`, `Center`, `Beneath`
-#[derive(Eq, PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub enum EditorDisplayPos {
+    #[default]
     #[serde(rename = "Above")]
     Above,
 
@@ -1478,8 +1658,29 @@ pub enum EditorDisplayPos {
     Center,
 }
 
-#[derive(Eq, PartialEq, Debug, Clone, Serialize, Deserialize)]
+/// Possible values: `ZigZag`, `StraightArrow`, `CurvedArrow`, `ArrowsLine`, `DashedLine`
+#[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
+pub enum EditorLinkStyle {
+    #[default]
+    #[serde(rename = "ArrowsLine")]
+    ArrowsLine,
+
+    #[serde(rename = "CurvedArrow")]
+    CurvedArrow,
+
+    #[serde(rename = "DashedLine")]
+    DashedLine,
+
+    #[serde(rename = "StraightArrow")]
+    StraightArrow,
+
+    #[serde(rename = "ZigZag")]
+    ZigZag,
+}
+
+#[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub enum TextLanguageMode {
+    #[default]
     #[serde(rename = "LangC")]
     LangC,
 
@@ -1512,11 +1713,12 @@ pub enum TextLanguageMode {
 }
 
 /// Possible values: `DiscardOldOnes`, `PreventAdding`, `MoveLastOne`
-#[derive(Eq, PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub enum LimitBehavior {
     #[serde(rename = "DiscardOldOnes")]
     DiscardOldOnes,
 
+    #[default]
     #[serde(rename = "MoveLastOne")]
     MoveLastOne,
 
@@ -1524,19 +1726,14 @@ pub enum LimitBehavior {
     PreventAdding,
 }
 
-impl Default for LimitBehavior {
-    fn default() -> Self {
-        Self::MoveLastOne
-    }
-}
-
 /// If TRUE, the maxCount is a "per world" limit, if FALSE, it's a "per level". Possible
 /// values: `PerLayer`, `PerLevel`, `PerWorld`
-#[derive(Eq, PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub enum LimitScope {
     #[serde(rename = "PerLayer")]
     PerLayer,
 
+    #[default]
     #[serde(rename = "PerLevel")]
     PerLevel,
 
@@ -1544,14 +1741,8 @@ pub enum LimitScope {
     PerWorld,
 }
 
-impl Default for LimitScope {
-    fn default() -> Self {
-        Self::PerLevel
-    }
-}
-
 /// Possible values: `Rectangle`, `Ellipse`, `Tile`, `Cross`
-#[derive(Eq, PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub enum RenderMode {
     #[serde(rename = "Cross")]
     Cross,
@@ -1559,6 +1750,7 @@ pub enum RenderMode {
     #[serde(rename = "Ellipse")]
     Ellipse,
 
+    #[default]
     #[serde(rename = "Rectangle")]
     Rectangle,
 
@@ -1566,20 +1758,15 @@ pub enum RenderMode {
     Tile,
 }
 
-impl Default for RenderMode {
-    fn default() -> Self {
-        Self::Rectangle
-    }
-}
-
 /// An enum describing how the the Entity tile is rendered inside the Entity bounds. Possible
 /// values: `Cover`, `FitInside`, `Repeat`, `Stretch`, `FullSizeCropped`,
 /// `FullSizeUncropped`, `NineSlice`
-#[derive(Eq, PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub enum TileRenderMode {
     #[serde(rename = "Cover")]
     Cover,
 
+    #[default]
     #[serde(rename = "FitInside")]
     FitInside,
 
@@ -1599,15 +1786,10 @@ pub enum TileRenderMode {
     Stretch,
 }
 
-impl Default for TileRenderMode {
-    fn default() -> Self {
-        Self::FitInside
-    }
-}
-
 /// Checker mode Possible values: `None`, `Horizontal`, `Vertical`
-#[derive(Eq, PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub enum Checker {
+    #[default]
     #[serde(rename = "Horizontal")]
     Horizontal,
 
@@ -1619,8 +1801,9 @@ pub enum Checker {
 }
 
 /// Defines how tileIds array is used Possible values: `Single`, `Stamp`
-#[derive(Eq, PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub enum TileMode {
+    #[default]
     #[serde(rename = "Single")]
     Single,
 
@@ -1630,7 +1813,7 @@ pub enum TileMode {
 
 /// Type of the layer as Haxe Enum Possible values: `IntGrid`, `Entities`, `Tiles`,
 /// `AutoLayer`
-#[derive(Eq, PartialEq, Debug, Clone, bevy::prelude::Reflect, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize, Reflect)]
 pub enum Type {
     #[serde(rename = "AutoLayer")]
     AutoLayer,
@@ -1641,24 +1824,21 @@ pub enum Type {
     #[serde(rename = "IntGrid")]
     IntGrid,
 
+    #[default]
     #[serde(rename = "Tiles")]
     Tiles,
 }
 
-impl Default for Type {
-    fn default() -> Self {
-        Self::Tiles
-    }
-}
-
-#[derive(Eq, PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub enum EmbedAtlas {
+    #[default]
     #[serde(rename = "LdtkIcons")]
     LdtkIcons,
 }
 
-#[derive(Eq, PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub enum Flag {
+    #[default]
     #[serde(rename = "DiscardPreCsvIntGrid")]
     DiscardPreCsvIntGrid,
 
@@ -1678,8 +1858,9 @@ pub enum Flag {
     UseMultilinesType,
 }
 
-#[derive(Eq, PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub enum BgPos {
+    #[default]
     #[serde(rename = "Contain")]
     Contain,
 
@@ -1689,12 +1870,16 @@ pub enum BgPos {
     #[serde(rename = "CoverDirty")]
     CoverDirty,
 
+    #[serde(rename = "Repeat")]
+    Repeat,
+
     #[serde(rename = "Unscaled")]
     Unscaled,
 }
 
-#[derive(Eq, PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub enum WorldLayout {
+    #[default]
     #[serde(rename = "Free")]
     Free,
 
@@ -1710,8 +1895,9 @@ pub enum WorldLayout {
 
 /// Naming convention for Identifiers (first-letter uppercase, full uppercase etc.) Possible
 /// values: `Capitalize`, `Uppercase`, `Lowercase`, `Free`
-#[derive(Eq, PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub enum IdentifierStyle {
+    #[default]
     #[serde(rename = "Capitalize")]
     Capitalize,
 
@@ -1727,8 +1913,9 @@ pub enum IdentifierStyle {
 
 /// "Image export" option when saving project. Possible values: `None`, `OneImagePerLayer`,
 /// `OneImagePerLevel`, `LayersAndLevels`
-#[derive(Eq, PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub enum ImageExportMode {
+    #[default]
     #[serde(rename = "LayersAndLevels")]
     LayersAndLevels,
 

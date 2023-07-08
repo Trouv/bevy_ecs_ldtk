@@ -2,7 +2,7 @@ use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
 
 #[allow(unused_imports)]
 use super::{
-    EntityInstance, FieldInstanceEntityReference, FieldInstanceGridPoint, Level, TilesetRectangle,
+    EntityInstance, ReferenceToAnEntityInstance, FieldInstanceGridPoint, Level, TilesetRectangle,
 };
 use bevy::prelude::*;
 use regex::Regex;
@@ -101,7 +101,7 @@ impl<'de> Deserialize<'de> for FieldInstance {
                 Option::<TilesetRectangle>::deserialize(helper.value).map_err(de::Error::custom)?,
             ),
             "EntityRef" => FieldValue::EntityRef(
-                Option::<FieldInstanceEntityReference>::deserialize(helper.value)
+                Option::<ReferenceToAnEntityInstance>::deserialize(helper.value)
                     .map_err(de::Error::custom)?,
             ),
             "Point" => {
@@ -142,7 +142,7 @@ impl<'de> Deserialize<'de> for FieldInstance {
                     .map_err(de::Error::custom)?,
             ),
             "Array<EntityRef>" => FieldValue::EntityRefs(
-                Vec::<Option<FieldInstanceEntityReference>>::deserialize(helper.value)
+                Vec::<Option<ReferenceToAnEntityInstance>>::deserialize(helper.value)
                     .map_err(de::Error::custom)?,
             ),
             "Array<Point>" => {
@@ -209,7 +209,7 @@ pub enum FieldValue {
     FilePath(Option<String>),
     Enum(Option<String>),
     Tile(Option<TilesetRectangle>),
-    EntityRef(Option<FieldInstanceEntityReference>),
+    EntityRef(Option<ReferenceToAnEntityInstance>),
     #[serde(serialize_with = "serialize_point")]
     Point(Option<IVec2>),
     Ints(Vec<Option<i32>>),
@@ -222,7 +222,7 @@ pub enum FieldValue {
     FilePaths(Vec<Option<String>>),
     Enums(Vec<Option<String>>),
     Tiles(Vec<Option<TilesetRectangle>>),
-    EntityRefs(Vec<Option<FieldInstanceEntityReference>>),
+    EntityRefs(Vec<Option<ReferenceToAnEntityInstance>>),
     #[serde(serialize_with = "serialize_points")]
     Points(Vec<Option<IVec2>>),
 }

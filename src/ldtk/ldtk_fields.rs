@@ -1,6 +1,6 @@
 //! Contains [`LdtkFields`] trait, providing convenience methods for accessing field instances.
 use crate::ldtk::{
-    all_some_iter::AllSomeIter, EntityInstance, FieldInstance, FieldInstanceEntityReference,
+    all_some_iter::AllSomeIter, EntityInstance, FieldInstance, ReferenceToAnEntityInstance,
     FieldValue, Level, TilesetRectangle,
 };
 use bevy::prelude::*;
@@ -186,7 +186,7 @@ pub trait LdtkFields {
     create_get_field_methods!(FilePath, String);
     create_get_field_methods!(Enum, String);
     create_get_field_methods!(Tile, TilesetRectangle);
-    create_get_field_methods!(EntityRef, FieldInstanceEntityReference);
+    create_get_field_methods!(EntityRef, ReferenceToAnEntityInstance);
 
     create_get_field_methods!(Point, IVec2);
 
@@ -202,7 +202,7 @@ pub trait LdtkFields {
     create_plural_fields_methods!(FilePaths, String);
     create_plural_fields_methods!(Enums, String);
     create_plural_fields_methods!(Tiles, TilesetRectangle);
-    create_plural_fields_methods!(EntityRefs, FieldInstanceEntityReference);
+    create_plural_fields_methods!(EntityRefs, ReferenceToAnEntityInstance);
     create_plural_fields_methods!(Points, IVec2);
 }
 
@@ -259,7 +259,7 @@ mod tests {
             field_instance_from_value("EntityRefNone", EntityRef(None)),
             field_instance_from_value(
                 "EntityRefSome",
-                EntityRef(Some(FieldInstanceEntityReference::default())),
+                EntityRef(Some(ReferenceToAnEntityInstance::default())),
             ),
             field_instance_from_value("PointNone", Point(None)),
             field_instance_from_value("PointSome", Point(Some(IVec2::default()))),
@@ -321,13 +321,13 @@ mod tests {
             ),
             field_instance_from_value(
                 "EntityRefsNullable",
-                EntityRefs(vec![None, Some(FieldInstanceEntityReference::default())]),
+                EntityRefs(vec![None, Some(ReferenceToAnEntityInstance::default())]),
             ),
             field_instance_from_value(
                 "EntityRefs",
                 EntityRefs(vec![
-                    Some(FieldInstanceEntityReference::default()),
-                    Some(FieldInstanceEntityReference::default()),
+                    Some(ReferenceToAnEntityInstance::default()),
+                    Some(ReferenceToAnEntityInstance::default()),
                 ]),
             ),
             field_instance_from_value("PointsNullable", Points(vec![None, Some(IVec2::default())])),
@@ -518,14 +518,14 @@ mod tests {
         "EntityRefNone",
         None,
         "EntityRefSome",
-        Some(FieldInstanceEntityReference::default())
+        Some(ReferenceToAnEntityInstance::default())
     );
     test_just_get_field_method!(
         get_entity_ref_field,
         "Bool",
         "EntityRefNone",
         "EntityRefSome",
-        FieldInstanceEntityReference::default()
+        ReferenceToAnEntityInstance::default()
     );
 
     test_ambiguous_get_field_method!(
@@ -650,11 +650,11 @@ mod tests {
         get_maybe_entity_refs_field,
         "Bools",
         "EntityRefsNullable",
-        [None, Some(FieldInstanceEntityReference::default())],
+        [None, Some(ReferenceToAnEntityInstance::default())],
         "EntityRefs",
         [
-            Some(FieldInstanceEntityReference::default()),
-            Some(FieldInstanceEntityReference::default())
+            Some(ReferenceToAnEntityInstance::default()),
+            Some(ReferenceToAnEntityInstance::default())
         ]
     );
     test_iter_fields_method!(
@@ -663,8 +663,8 @@ mod tests {
         "EntityRefsNullable",
         "EntityRefs",
         [
-            FieldInstanceEntityReference::default(),
-            FieldInstanceEntityReference::default()
+            ReferenceToAnEntityInstance::default(),
+            ReferenceToAnEntityInstance::default()
         ]
     );
 

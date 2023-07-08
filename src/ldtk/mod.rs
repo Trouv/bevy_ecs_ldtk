@@ -251,7 +251,7 @@ pub struct LdtkCustomCommand {
 /// **Tilesets** and **Enums**.
 ///
 /// A structure containing all the definitions of this project
-#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Definitions {
     /// All entities definitions, including their custom fields
     #[serde(rename = "entities")]
@@ -761,7 +761,7 @@ pub struct LayerDefinition {
     pub uid: i32,
 }
 
-#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct AutoLayerRuleGroup {
     #[serde(rename = "active")]
     pub active: bool,
@@ -789,7 +789,7 @@ pub struct AutoLayerRuleGroup {
 /// This complex section isn't meant to be used by game devs at all, as these rules are
 /// completely resolved internally by the editor before any saving. You should just ignore
 /// this part.
-#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct AutoLayerRuleDefinition {
     /// If FALSE, the rule effect isn't applied, and no tiles are generated.
     #[serde(rename = "active")]

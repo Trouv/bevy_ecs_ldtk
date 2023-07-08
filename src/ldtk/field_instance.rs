@@ -2,7 +2,7 @@ use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
 
 #[allow(unused_imports)]
 use super::{
-    EntityInstance, ReferenceToAnEntityInstance, FieldInstanceGridPoint, Level, TilesetRectangle,
+    EntityInstance, ReferenceToAnEntityInstance, GridPoint, Level, TilesetRectangle,
 };
 use bevy::prelude::*;
 use regex::Regex;
@@ -105,7 +105,7 @@ impl<'de> Deserialize<'de> for FieldInstance {
                     .map_err(de::Error::custom)?,
             ),
             "Point" => {
-                let point_helper = Option::<FieldInstanceGridPoint>::deserialize(helper.value)
+                let point_helper = Option::<GridPoint>::deserialize(helper.value)
                     .map_err(de::Error::custom)?;
 
                 FieldValue::Point(point_helper.map(|p| IVec2::new(p.cx, p.cy)))
@@ -147,7 +147,7 @@ impl<'de> Deserialize<'de> for FieldInstance {
             ),
             "Array<Point>" => {
                 let point_helpers =
-                    Vec::<Option<FieldInstanceGridPoint>>::deserialize(helper.value)
+                    Vec::<Option<GridPoint>>::deserialize(helper.value)
                         .map_err(de::Error::custom)?;
 
                 let points = point_helpers
@@ -233,7 +233,7 @@ fn serialize_colors<S: Serializer>(colors: &[Color], serializer: S) -> Result<S:
 }
 
 fn serialize_point<S: Serializer>(point: &Option<IVec2>, serializer: S) -> Result<S::Ok, S::Error> {
-    let point_helper = point.map(|p| FieldInstanceGridPoint { cx: p.x, cy: p.y });
+    let point_helper = point.map(|p| GridPoint { cx: p.x, cy: p.y });
     point_helper.serialize(serializer)
 }
 

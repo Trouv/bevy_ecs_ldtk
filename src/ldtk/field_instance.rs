@@ -1,9 +1,7 @@
 use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
 
 #[allow(unused_imports)]
-use super::{
-    EntityInstance, ReferenceToAnEntityInstance, GridPoint, Level, TilesetRectangle,
-};
+use super::{EntityInstance, GridPoint, Level, ReferenceToAnEntityInstance, TilesetRectangle};
 use bevy::prelude::*;
 use regex::Regex;
 
@@ -105,8 +103,8 @@ impl<'de> Deserialize<'de> for FieldInstance {
                     .map_err(de::Error::custom)?,
             ),
             "Point" => {
-                let point_helper = Option::<GridPoint>::deserialize(helper.value)
-                    .map_err(de::Error::custom)?;
+                let point_helper =
+                    Option::<GridPoint>::deserialize(helper.value).map_err(de::Error::custom)?;
 
                 FieldValue::Point(point_helper.map(|p| IVec2::new(p.cx, p.cy)))
             }
@@ -146,9 +144,8 @@ impl<'de> Deserialize<'de> for FieldInstance {
                     .map_err(de::Error::custom)?,
             ),
             "Array<Point>" => {
-                let point_helpers =
-                    Vec::<Option<GridPoint>>::deserialize(helper.value)
-                        .map_err(de::Error::custom)?;
+                let point_helpers = Vec::<Option<GridPoint>>::deserialize(helper.value)
+                    .map_err(de::Error::custom)?;
 
                 let points = point_helpers
                     .into_iter()

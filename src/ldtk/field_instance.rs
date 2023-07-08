@@ -9,7 +9,7 @@ use regex::Regex;
 
 use crate::ldtk::color;
 
-#[derive(PartialEq, Debug, Clone, Serialize)]
+#[derive(PartialEq, Debug, Clone, Serialize, Reflect, FromReflect)]
 pub struct FieldInstance {
     /// Field definition identifier
     #[serde(rename = "__identifier")]
@@ -43,6 +43,7 @@ pub struct FieldInstance {
     pub def_uid: i32,
 
     /// Editor internal raw values
+    #[reflect(ignore)]
     #[serde(rename = "realEditorValues")]
     pub real_editor_values: Vec<Option<serde_json::Value>>,
 }
@@ -191,7 +192,7 @@ impl<'de> Deserialize<'de> for FieldInstance {
     }
 }
 
-#[derive(PartialEq, Debug, Clone, Serialize)]
+#[derive(PartialEq, Debug, Clone, Serialize, Reflect, FromReflect)]
 #[serde(untagged)]
 /// The actual value of a field instance on a [Level] or [EntityInstance].
 ///

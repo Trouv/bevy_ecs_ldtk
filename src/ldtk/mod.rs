@@ -23,7 +23,12 @@
 //!     [Level] have been changed from [String]s to [Color].
 //! 12. [TilesetDefinition::rel_path]'s type changed from [String] to [`Option<String>`].
 //! 13. All urls in docs have been changed to hyperlinks with `<>`
-//! 14. `Reflect` has been derived for [Type].
+//! 14. `Reflect` and `FromReflect` have been derived for 
+//! [TilesetRectangle] [EnumDefinition] [EnumValueDefinition] [EntityInstance]
+//! [FieldInstance] [FieldValue] [FieldInstanceEntityReference] [IntGridValue] 
+//! [LayerInstance] [TileInstance] [Level] [LevelBackGroundPosition] [Type] [Flag] 
+//! [NeighbourLevel] [World] [TileRenderMode] [Checker] [TileMode] [BgPos] [WorldLayout]
+//! reflect(Ignore) for FieldInstance.real_editor_values because its an external struct
 
 use bevy::{prelude::{Color, IVec2, Vec2}, reflect::{FromReflect, Reflect}};
 use serde::{Deserialize, Serialize};

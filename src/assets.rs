@@ -27,7 +27,7 @@ pub type LevelMap = HashMap<String, Handle<LdtkLevel>>;
 ///
 /// Load your ldtk project with the asset server, then insert the handle into the
 /// [LdtkWorldBundle].
-#[derive(Clone, TypeUuid)]
+#[derive(Clone, TypeUuid, Reflect, FromReflect)]
 #[uuid = "ecfb87b7-9cd9-4970-8482-f2f68b770d31"]
 pub struct LdtkAsset {
     pub project: ldtk::LdtkJson,

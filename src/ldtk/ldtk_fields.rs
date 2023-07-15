@@ -224,7 +224,7 @@ mod tests {
 
     impl LdtkFields for Vec<FieldInstance> {
         fn field_instances(&self) -> &[FieldInstance] {
-            &self
+            self
         }
     }
 

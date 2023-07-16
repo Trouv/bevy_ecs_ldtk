@@ -203,7 +203,7 @@ impl AssetLoader for LdtkLoader {
 /// The label is just the level's identifier.
 ///
 /// Loaded as a dependency to the [LdtkAsset] when loading an ldtk file with external levels.
-#[derive(TypeUuid)]
+#[derive(TypeUuid, Reflect, FromReflect)]
 #[uuid = "5448469b-2134-44f5-a86c-a7b829f70a0c"]
 pub struct LdtkLevel {
     pub level: ldtk::Level,

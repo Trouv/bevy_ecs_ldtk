@@ -309,7 +309,7 @@ impl From<&LayerInstance> for LayerMetadata {
             px_total_offset_y: instance.px_total_offset_y,
             tileset_def_uid: instance.tileset_def_uid,
             tileset_rel_path: instance.tileset_rel_path.clone(),
-            layer_instance_type: instance.layer_instance_type.clone(),
+            layer_instance_type: instance.layer_instance_type,
             iid: instance.iid.clone(),
             layer_def_uid: instance.layer_def_uid,
             level_id: instance.level_id,

@@ -5,7 +5,7 @@ use crate::{
         LdtkEntity, LdtkEntityMap, LdtkIntCellMap, PhantomLdtkEntity, PhantomLdtkEntityTrait,
         PhantomLdtkIntCell, PhantomLdtkIntCellTrait,
     },
-    assets::{LdtkLevel, TilesetMap},
+    assets::LdtkLevel,
     components::*,
     ldtk::{
         EntityDefinition, EnumTagValue, LayerDefinition, LayerInstance, LevelBackgroundPosition,
@@ -210,7 +210,7 @@ pub fn spawn_level(
     ldtk_int_cell_map: &LdtkIntCellMap,
     entity_definition_map: &HashMap<i32, &EntityDefinition>,
     layer_definition_map: &HashMap<i32, &LayerDefinition>,
-    tileset_map: &TilesetMap,
+    tileset_map: &HashMap<i32, Handle<Image>>,
     tileset_definition_map: &HashMap<i32, &TilesetDefinition>,
     int_grid_image_handle: &Option<Handle<Image>>,
     worldly_set: HashSet<Worldly>,

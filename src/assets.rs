@@ -20,9 +20,6 @@ fn ldtk_path_to_asset_path<'b>(ldtk_path: &Path, rel_path: &str) -> AssetPath<'b
 /// Used in [LdtkAsset]. Key is the tileset definition uid.
 pub type TilesetMap = HashMap<i32, Handle<Image>>;
 
-/// Used in [LdtkAsset]. Key is the level iid.
-pub type LevelMap = HashMap<String, Handle<LdtkLevel>>;
-
 /// Main asset for loading ldtk files.
 ///
 /// Load your ldtk project with the asset server, then insert the handle into the
@@ -32,7 +29,8 @@ pub type LevelMap = HashMap<String, Handle<LdtkLevel>>;
 pub struct LdtkAsset {
     pub project: ldtk::LdtkJson,
     pub tileset_map: TilesetMap,
-    pub level_map: LevelMap,
+    /// Map from level iids to level handles.
+    pub level_map: HashMap<String, Handle<LdtkLevel>>,
     /// Image used for rendering int grid colors.
     pub int_grid_image_handle: Option<Handle<Image>>,
 }

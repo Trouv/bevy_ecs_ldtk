@@ -22,7 +22,7 @@ use crate::components::LdtkWorldBundle;
 #[uuid = "ecfb87b7-9cd9-4970-8482-f2f68b770d31"]
 pub struct LdtkProject {
     /// Raw ldtk project data.
-    pub project: ldtk::LdtkJson,
+    pub data: ldtk::LdtkJson,
     /// Map from tileset uids to image handles for the loaded tileset.
     pub tileset_map: HashMap<i32, Handle<Image>>,
     /// Map from level iids to level handles.
@@ -50,7 +50,7 @@ impl LdtkProject {
     /// These levels will have "incomplete" data if you use LDtk's external levels feature.
     /// To always get full level data, you'll need to access `Assets<LdtkLevel>`.
     pub fn iter_levels(&self) -> impl Iterator<Item = &ldtk::Level> {
-        self.project.iter_levels()
+        self.data.iter_levels()
     }
 
     /// Find a particular level using a [LevelSelection].
@@ -76,13 +76,13 @@ impl AssetLoader for LdtkProjectLoader {
         load_context: &'a mut LoadContext,
     ) -> BoxedFuture<'a, anyhow::Result<()>> {
         Box::pin(async move {
-            let project: ldtk::LdtkJson = serde_json::from_slice(bytes)?;
+            let data: ldtk::LdtkJson = serde_json::from_slice(bytes)?;
 
             let mut external_level_paths = Vec::new();
             let mut level_map = HashMap::new();
             let mut background_images = Vec::new();
-            if project.external_levels {
-                for level in project.iter_levels() {
+            if data.external_levels {
+                for level in data.iter_levels() {
                     if let Some(external_rel_path) = &level.external_rel_path {
                         let asset_path =
                             ldtk_path_to_asset_path(load_context.path(), external_rel_path);
@@ -92,7 +92,7 @@ impl AssetLoader for LdtkProjectLoader {
                     }
                 }
             } else {
-                for level in project.iter_levels() {
+                for level in data.iter_levels() {
                     let label = level.identifier.as_ref();
 
                     let mut background_image = None;
@@ -115,7 +115,7 @@ impl AssetLoader for LdtkProjectLoader {
 
             let mut tileset_rel_paths = Vec::new();
             let mut tileset_map = HashMap::new();
-            for tileset in &project.defs.tilesets {
+            for tileset in &data.defs.tilesets {
                 if let Some(tileset_path) = &tileset.rel_path {
                     let asset_path = ldtk_path_to_asset_path(load_context.path(), tileset_path);
 
@@ -129,12 +129,12 @@ impl AssetLoader for LdtkProjectLoader {
                 }
             }
 
-            let int_grid_image_handle = project.defs.create_int_grid_image().map(|image| {
+            let int_grid_image_handle = data.defs.create_int_grid_image().map(|image| {
                 load_context.set_labeled_asset("int_grid_image", LoadedAsset::new(image))
             });
 
             let ldtk_asset = LdtkProject {
-                project,
+                data,
                 tileset_map,
                 level_map,
                 int_grid_image_handle,

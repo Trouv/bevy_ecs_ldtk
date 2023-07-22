@@ -24,6 +24,7 @@ fn ldtk_path_to_asset_path<'b>(ldtk_path: &Path, rel_path: &str) -> AssetPath<'b
 #[derive(Clone, TypeUuid)]
 #[uuid = "ecfb87b7-9cd9-4970-8482-f2f68b770d31"]
 pub struct LdtkAsset {
+    /// Raw ldtk project data.
     pub project: ldtk::LdtkJson,
     /// Map from tileset uids to image handles for the loaded tileset.
     pub tileset_map: HashMap<i32, Handle<Image>>,

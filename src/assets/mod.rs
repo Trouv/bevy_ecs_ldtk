@@ -11,7 +11,7 @@ use bevy::{
 use std::path::Path;
 
 mod ldtk_project;
-pub use ldtk_project::{LdtkLoader, LdtkProject};
+pub use ldtk_project::{LdtkProject, LdtkProjectLoader};
 
 fn ldtk_path_to_asset_path<'b>(ldtk_path: &Path, rel_path: &str) -> AssetPath<'b> {
     ldtk_path.parent().unwrap().join(Path::new(rel_path)).into()

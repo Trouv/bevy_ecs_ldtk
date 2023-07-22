@@ -67,9 +67,9 @@ impl LdtkProject {
 }
 
 #[derive(Copy, Clone, Debug, Default)]
-pub struct LdtkLoader;
+pub struct LdtkProjectLoader;
 
-impl AssetLoader for LdtkLoader {
+impl AssetLoader for LdtkProjectLoader {
     fn load<'a>(
         &'a self,
         bytes: &'a [u8],

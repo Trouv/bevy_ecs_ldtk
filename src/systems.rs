@@ -4,7 +4,7 @@
 use crate::resources::SetClearColor;
 use crate::{
     app::{LdtkEntityMap, LdtkIntCellMap},
-    assets::{LdtkAsset, LdtkLevel},
+    assets::{LdtkLevel, LdtkProject},
     components::*,
     ldtk::TilesetDefinition,
     level::spawn_level,
@@ -15,15 +15,15 @@ use crate::{
 use bevy::{ecs::system::SystemState, prelude::*};
 use std::collections::{HashMap, HashSet};
 
-/// Detects [LdtkAsset] events and spawns levels as children of the [LdtkWorldBundle].
+/// Detects [LdtkProject] events and spawns levels as children of the [LdtkWorldBundle].
 #[allow(clippy::too_many_arguments)]
 pub fn process_ldtk_assets(
     mut commands: Commands,
-    mut ldtk_events: EventReader<AssetEvent<LdtkAsset>>,
-    ldtk_world_query: Query<(Entity, &Handle<LdtkAsset>)>,
+    mut ldtk_events: EventReader<AssetEvent<LdtkProject>>,
+    ldtk_world_query: Query<(Entity, &Handle<LdtkProject>)>,
     #[cfg(feature = "render")] ldtk_settings: Res<LdtkSettings>,
     #[cfg(feature = "render")] mut clear_color: ResMut<ClearColor>,
-    #[cfg(feature = "render")] ldtk_assets: Res<Assets<LdtkAsset>>,
+    #[cfg(feature = "render")] ldtk_assets: Res<Assets<LdtkProject>>,
 ) {
     let mut ldtk_handles_to_respawn = HashSet::new();
     let mut ldtk_handles_for_clear_color = HashSet::new();
@@ -68,8 +68,8 @@ pub fn process_ldtk_assets(
 pub fn apply_level_selection(
     level_selection: Option<Res<LevelSelection>>,
     ldtk_settings: Res<LdtkSettings>,
-    ldtk_assets: Res<Assets<LdtkAsset>>,
-    mut level_set_query: Query<(&Handle<LdtkAsset>, &mut LevelSet)>,
+    ldtk_assets: Res<Assets<LdtkProject>>,
+    mut level_set_query: Query<(&Handle<LdtkProject>, &mut LevelSet)>,
     #[cfg(feature = "render")] mut clear_color: ResMut<ClearColor>,
 ) {
     if let Some(level_selection) = level_selection {
@@ -114,11 +114,11 @@ pub fn apply_level_set(
         Entity,
         &LevelSet,
         Option<&Children>,
-        &Handle<LdtkAsset>,
+        &Handle<LdtkProject>,
         Option<&Respawn>,
     )>,
     ldtk_level_query: Query<&Handle<LdtkLevel>>,
-    ldtk_assets: Res<Assets<LdtkAsset>>,
+    ldtk_assets: Res<Assets<LdtkProject>>,
     level_assets: Res<Assets<LdtkLevel>>,
     ldtk_settings: Res<LdtkSettings>,
     mut level_events: EventWriter<LevelEvent>,
@@ -175,7 +175,7 @@ pub fn apply_level_set(
 
 fn pre_spawn_level(
     child_builder: &mut ChildBuilder,
-    ldtk_asset: &LdtkAsset,
+    ldtk_asset: &LdtkProject,
     level_iid: &str,
     ldtk_settings: &LdtkSettings,
 ) {
@@ -218,11 +218,11 @@ pub fn process_ldtk_levels(
     asset_server: Res<AssetServer>,
     mut images: ResMut<Assets<Image>>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
-    ldtk_assets: Res<Assets<LdtkAsset>>,
+    ldtk_assets: Res<Assets<LdtkProject>>,
     level_assets: Res<Assets<LdtkLevel>>,
     ldtk_entity_map: NonSend<LdtkEntityMap>,
     ldtk_int_cell_map: NonSend<LdtkIntCellMap>,
-    ldtk_query: Query<&Handle<LdtkAsset>>,
+    ldtk_query: Query<&Handle<LdtkProject>>,
     level_query: Query<
         (
             Entity,
@@ -309,7 +309,7 @@ pub fn process_ldtk_levels(
 pub fn clean_respawn_entities(world: &mut World) {
     #[allow(clippy::type_complexity)]
     let mut system_state: SystemState<(
-        Query<&Children, (With<Handle<LdtkAsset>>, With<Respawn>)>,
+        Query<&Children, (With<Handle<LdtkProject>>, With<Respawn>)>,
         Query<(Entity, &Handle<LdtkLevel>), With<Respawn>>,
         Query<&Handle<LdtkLevel>, Without<Respawn>>,
         Query<Entity, With<Worldly>>,

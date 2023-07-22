@@ -23,7 +23,7 @@ fn ldtk_path_to_asset_path<'b>(ldtk_path: &Path, rel_path: &str) -> AssetPath<'b
 /// [LdtkWorldBundle].
 #[derive(Clone, TypeUuid)]
 #[uuid = "ecfb87b7-9cd9-4970-8482-f2f68b770d31"]
-pub struct LdtkAsset {
+pub struct LdtkProject {
     /// Raw ldtk project data.
     pub project: ldtk::LdtkJson,
     /// Map from tileset uids to image handles for the loaded tileset.
@@ -63,7 +63,7 @@ impl ldtk::Definitions {
 }
 
 impl ldtk::LdtkJson {
-    /// Used for [LdtkAsset::iter_levels].
+    /// Used for [LdtkProject::iter_levels].
     pub fn iter_levels(&self) -> impl Iterator<Item = &ldtk::Level> {
         self.levels
             .iter()
@@ -71,7 +71,7 @@ impl ldtk::LdtkJson {
     }
 }
 
-impl LdtkAsset {
+impl LdtkProject {
     pub fn world_height(&self) -> i32 {
         let mut world_height = 0;
         for level in self.iter_levels() {
@@ -86,7 +86,7 @@ impl LdtkAsset {
     /// This abstraction avoids compatibility issues between pre-multi-world and post-multi-world
     /// LDtk projects.
     ///
-    /// Note: the returned levels are the ones existent in the [LdtkAsset].
+    /// Note: the returned levels are the ones existent in the [LdtkProject].
     /// These levels will have "incomplete" data if you use LDtk's external levels feature.
     /// To always get full level data, you'll need to access `Assets<LdtkLevel>`.
     pub fn iter_levels(&self) -> impl Iterator<Item = &ldtk::Level> {
@@ -95,7 +95,7 @@ impl LdtkAsset {
 
     /// Find a particular level using a [LevelSelection].
     ///
-    /// Note: the returned level is the one existent in the [LdtkAsset].
+    /// Note: the returned level is the one existent in the [LdtkProject].
     /// This level will have "incomplete" data if you use LDtk's external levels feature.
     /// To always get full level data, you'll need to access `Assets<LdtkLevel>`.
     pub fn get_level(&self, level_selection: &LevelSelection) -> Option<&ldtk::Level> {
@@ -173,7 +173,7 @@ impl AssetLoader for LdtkLoader {
                 load_context.set_labeled_asset("int_grid_image", LoadedAsset::new(image))
             });
 
-            let ldtk_asset = LdtkAsset {
+            let ldtk_asset = LdtkProject {
                 project,
                 tileset_map,
                 level_map,
@@ -196,10 +196,10 @@ impl AssetLoader for LdtkLoader {
 
 /// Secondary asset for loading ldtk files, specific to level data.
 ///
-/// Loaded as a labeled asset when loading a standalone ldtk file with [LdtkAsset].
+/// Loaded as a labeled asset when loading a standalone ldtk file with [LdtkProject].
 /// The label is just the level's identifier.
 ///
-/// Loaded as a dependency to the [LdtkAsset] when loading an ldtk file with external levels.
+/// Loaded as a dependency to the [LdtkProject] when loading an ldtk file with external levels.
 #[derive(TypeUuid, Reflect, FromReflect)]
 #[uuid = "5448469b-2134-44f5-a86c-a7b829f70a0c"]
 pub struct LdtkLevel {

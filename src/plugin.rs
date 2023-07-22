@@ -56,7 +56,7 @@ impl Plugin for LdtkPlugin {
         .init_non_send_resource::<app::LdtkEntityMap>()
         .init_non_send_resource::<app::LdtkIntCellMap>()
         .init_resource::<resources::LdtkSettings>()
-        .add_asset::<assets::LdtkAsset>()
+        .add_asset::<assets::LdtkProject>()
         .init_asset_loader::<assets::LdtkLoader>()
         .add_asset::<assets::LdtkLevel>()
         .init_asset_loader::<assets::LdtkLevelLoader>()

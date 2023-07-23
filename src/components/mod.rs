@@ -335,7 +335,6 @@ pub struct Respawn;
 
 #[derive(Copy, Clone, Debug, Default, Bundle)]
 pub(crate) struct TileGridBundle {
-    #[bundle]
     pub tile_bundle: TileBundle,
     pub grid_coords: GridCoords,
 }

@@ -114,7 +114,7 @@ pub struct LdtkSettings {
 /// Events fired by the plugin related to level spawning/despawning.
 ///
 /// Each variant stores the level's `iid` in LDtk.
-#[derive(Clone, Eq, PartialEq, Debug, Hash)]
+#[derive(Clone, Eq, PartialEq, Debug, Hash, Event)]
 pub enum LevelEvent {
     /// Indicates that a level has been triggered to spawn, but hasn't been spawned yet.
     SpawnTriggered(String),

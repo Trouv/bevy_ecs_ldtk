@@ -4,7 +4,6 @@ use bevy::prelude::*;
 
 /// Base [SystemSet]s for systems added by the plugin.
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash, SystemSet)]
-#[system_set(base)]
 pub enum LdtkSystemSet {
     /// Scheduled after [CoreSet::UpdateFlush].
     ///
@@ -40,18 +39,18 @@ impl Plugin for LdtkPlugin {
     fn build(&self, mut app: &mut App) {
         // Check if we have added the TileMap plugin
         if !app.is_plugin_added::<bevy_ecs_tilemap::TilemapPlugin>() {
-            app = app.add_plugin(bevy_ecs_tilemap::TilemapPlugin);
+            app = app.add_plugins(bevy_ecs_tilemap::TilemapPlugin);
         }
 
         app.configure_set(
+            PostUpdate,
             LdtkSystemSet::ProcessApi
-                .after(CoreSet::UpdateFlush)
-                .before(CoreSet::PostUpdate),
         )
         .configure_sets(
+            PostUpdate,
             (ProcessApiSet::PreClean, ProcessApiSet::Clean)
                 .chain()
-                .in_base_set(LdtkSystemSet::ProcessApi),
+                .in_set(LdtkSystemSet::ProcessApi),
         )
         .init_non_send_resource::<app::LdtkEntityMap>()
         .init_non_send_resource::<app::LdtkIntCellMap>()
@@ -62,24 +61,26 @@ impl Plugin for LdtkPlugin {
         .init_asset_loader::<assets::LdtkLevelLoader>()
         .add_event::<resources::LevelEvent>()
         .add_systems(
+            PreUpdate,
             (systems::process_ldtk_assets, systems::process_ldtk_levels)
-                .in_base_set(CoreSet::PreUpdate),
         )
-        .add_system(systems::worldly_adoption.in_set(ProcessApiSet::PreClean))
+        .add_systems(PostUpdate, systems::worldly_adoption.in_set(ProcessApiSet::PreClean))
         .add_systems(
+            PostUpdate,
             (systems::apply_level_selection, systems::apply_level_set)
                 .chain()
                 .in_set(ProcessApiSet::PreClean),
         )
         .add_systems(
-            (apply_system_buffers, systems::clean_respawn_entities)
+                PostUpdate,
+            (apply_deferred, systems::clean_respawn_entities)
                 .chain()
                 .in_set(ProcessApiSet::Clean),
         )
-        .add_system(
+        .add_systems(
+            PostUpdate,
             systems::detect_level_spawned_events
                 .pipe(systems::fire_level_transformed_events)
-                .in_base_set(CoreSet::PostUpdate),
         )
         .register_type::<components::EntityIid>()
         .register_type::<components::GridCoords>()

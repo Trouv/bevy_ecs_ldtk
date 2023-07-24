@@ -15,7 +15,9 @@ use bevy::{
 #[derive(TypeUuid, Reflect, FromReflect)]
 #[uuid = "5448469b-2134-44f5-a86c-a7b829f70a0c"]
 pub struct LdtkLevel {
+    /// Raw ldtk level data.
     pub data: ldtk::Level,
+    /// Handle for the background image of this level.
     pub background_image: Option<Handle<Image>>,
 }
 

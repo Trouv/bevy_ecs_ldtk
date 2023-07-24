@@ -1,6 +1,6 @@
 use crate::{
     assets::{ldtk_path_to_asset_path, LdtkLevel},
-    ldtk,
+    ldtk::{LdtkJson, Level},
     resources::LevelSelection,
 };
 use bevy::{
@@ -22,7 +22,7 @@ use crate::components::LdtkWorldBundle;
 #[uuid = "ecfb87b7-9cd9-4970-8482-f2f68b770d31"]
 pub struct LdtkProject {
     /// Raw ldtk project data.
-    pub data: ldtk::LdtkJson,
+    pub data: LdtkJson,
     /// Map from tileset uids to image handles for the loaded tileset.
     pub tileset_map: HashMap<i32, Handle<Image>>,
     /// Map from level iids to level handles.
@@ -49,7 +49,7 @@ impl LdtkProject {
     /// Note: the returned levels are the ones existent in the [LdtkProject].
     /// These levels will have "incomplete" data if you use LDtk's external levels feature.
     /// To always get full level data, you'll need to access `Assets<LdtkLevel>`.
-    pub fn iter_levels(&self) -> impl Iterator<Item = &ldtk::Level> {
+    pub fn iter_levels(&self) -> impl Iterator<Item = &Level> {
         self.data.iter_levels()
     }
 
@@ -58,7 +58,7 @@ impl LdtkProject {
     /// Note: the returned level is the one existent in the [LdtkProject].
     /// This level will have "incomplete" data if you use LDtk's external levels feature.
     /// To always get full level data, you'll need to access `Assets<LdtkLevel>`.
-    pub fn get_level(&self, level_selection: &LevelSelection) -> Option<&ldtk::Level> {
+    pub fn get_level(&self, level_selection: &LevelSelection) -> Option<&Level> {
         self.iter_levels()
             .enumerate()
             .find(|(i, l)| level_selection.is_match(i, l))
@@ -76,7 +76,7 @@ impl AssetLoader for LdtkProjectLoader {
         load_context: &'a mut LoadContext,
     ) -> BoxedFuture<'a, anyhow::Result<()>> {
         Box::pin(async move {
-            let data: ldtk::LdtkJson = serde_json::from_slice(bytes)?;
+            let data: LdtkJson = serde_json::from_slice(bytes)?;
 
             let mut external_level_paths = Vec::new();
             let mut level_map = HashMap::new();

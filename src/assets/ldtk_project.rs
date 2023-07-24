@@ -33,12 +33,8 @@ pub struct LdtkProject {
 
 impl LdtkProject {
     pub fn world_height(&self) -> i32 {
-        let mut world_height = 0;
-        for level in self.iter_levels() {
-            world_height = world_height.max(level.world_y + level.px_hei);
-        }
-
-        world_height
+        self.iter_levels()
+            .fold(0, |max, level| max.max(level.world_y + level.px_hei))
     }
 
     /// Get an iterator of all the levels in the LDtk file.

@@ -289,7 +289,7 @@ pub fn process_ldtk_levels(
                             ldtk_entity,
                             &ldtk_settings,
                         );
-                        level_events.send(LevelEvent::Spawned(level.level.iid.clone()));
+                        level_events.send(LevelEvent::Spawned(level.data.iid.clone()));
                     }
 
                     if respawn.is_some() {

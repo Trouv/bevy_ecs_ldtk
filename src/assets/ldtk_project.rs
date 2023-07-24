@@ -103,7 +103,7 @@ impl AssetLoader for LdtkProjectLoader {
                     }
 
                     let ldtk_level = LdtkLevel {
-                        level: level.clone(),
+                        data: level.clone(),
                         background_image,
                     };
                     let level_handle =

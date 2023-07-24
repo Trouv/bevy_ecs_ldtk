@@ -217,7 +217,7 @@ pub fn spawn_level(
     ldtk_entity: Entity,
     ldtk_settings: &LdtkSettings,
 ) {
-    let level = &ldtk_level.level;
+    let level = &ldtk_level.data;
 
     if let Some(layer_instances) = &level.layer_instances {
         let mut layer_z = 0;

@@ -15,7 +15,7 @@ use bevy::{
 #[derive(TypeUuid, Reflect, FromReflect)]
 #[uuid = "5448469b-2134-44f5-a86c-a7b829f70a0c"]
 pub struct LdtkLevel {
-    pub level: ldtk::Level,
+    pub data: ldtk::Level,
     pub background_image: Option<Handle<Image>>,
 }
 
@@ -29,11 +29,11 @@ impl AssetLoader for LdtkLevelLoader {
         load_context: &'a mut LoadContext,
     ) -> BoxedFuture<'a, anyhow::Result<()>> {
         Box::pin(async move {
-            let level: ldtk::Level = serde_json::from_slice(bytes)?;
+            let data: ldtk::Level = serde_json::from_slice(bytes)?;
 
             let mut background_asset_path = None;
             let mut background_image = None;
-            if let Some(rel_path) = &level.bg_rel_path {
+            if let Some(rel_path) = &data.bg_rel_path {
                 let asset_path =
                     ldtk_path_to_asset_path(load_context.path().parent().unwrap(), rel_path);
                 background_asset_path = Some(asset_path.clone());
@@ -41,7 +41,7 @@ impl AssetLoader for LdtkLevelLoader {
             }
 
             let ldtk_level = LdtkLevel {
-                level,
+                data,
                 background_image,
             };
 

@@ -42,7 +42,7 @@ use crate::prelude::LdtkEntity;
 pub mod all_some_iter;
 mod color;
 mod field_instance;
-mod int_grid_image;
+mod impl_definitions;
 pub mod ldtk_fields;
 
 pub use field_instance::*;

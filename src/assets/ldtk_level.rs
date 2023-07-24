@@ -1,4 +1,4 @@
-use crate::{assets::ldtk_path_to_asset_path, ldtk};
+use crate::{assets::ldtk_path_to_asset_path, ldtk::Level};
 use bevy::{
     asset::{AssetLoader, LoadContext, LoadedAsset},
     prelude::*,
@@ -16,7 +16,7 @@ use bevy::{
 #[uuid = "5448469b-2134-44f5-a86c-a7b829f70a0c"]
 pub struct LdtkLevel {
     /// Raw ldtk level data.
-    pub data: ldtk::Level,
+    pub data: Level,
     /// Handle for the background image of this level.
     pub background_image: Option<Handle<Image>>,
 }
@@ -31,7 +31,7 @@ impl AssetLoader for LdtkLevelLoader {
         load_context: &'a mut LoadContext,
     ) -> BoxedFuture<'a, anyhow::Result<()>> {
         Box::pin(async move {
-            let data: ldtk::Level = serde_json::from_slice(bytes)?;
+            let data: Level = serde_json::from_slice(bytes)?;
 
             let mut background_asset_path = None;
             let mut background_image = None;

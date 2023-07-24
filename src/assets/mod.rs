@@ -16,15 +16,6 @@ fn ldtk_path_to_asset_path<'b>(ldtk_path: &Path, rel_path: &str) -> AssetPath<'b
     ldtk_path.parent().unwrap().join(Path::new(rel_path)).into()
 }
 
-impl ldtk::LdtkJson {
-    /// Used for [LdtkProject::iter_levels].
-    pub fn iter_levels(&self) -> impl Iterator<Item = &ldtk::Level> {
-        self.levels
-            .iter()
-            .chain(self.worlds.iter().flat_map(|w| &w.levels))
-    }
-}
-
 /// Secondary asset for loading ldtk files, specific to level data.
 ///
 /// Loaded as a labeled asset when loading a standalone ldtk file with [LdtkProject].

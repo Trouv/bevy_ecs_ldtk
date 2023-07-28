@@ -3,6 +3,7 @@ use crate::assets::{
 };
 use bevy::prelude::*;
 
+/// Plugin that registers LDtk-related assets.
 #[derive(Copy, Clone, Debug, Default)]
 pub struct LdtkAssetPlugin;
 

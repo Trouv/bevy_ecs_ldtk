@@ -282,7 +282,7 @@ pub fn process_ldtk_levels(
                             &ldtk_int_cell_map,
                             &entity_definition_map,
                             &layer_definition_map,
-                            &ldtk_asset.tileset_map(),
+                            ldtk_asset.tileset_map(),
                             &tileset_definition_map,
                             int_grid_image_handle,
                             worldly_set,

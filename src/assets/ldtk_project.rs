@@ -9,6 +9,7 @@ use bevy::{
     reflect::TypeUuid,
     utils::BoxedFuture,
 };
+use derive_getters::Getters;
 use std::collections::HashMap;
 
 #[allow(unused_imports)]
@@ -18,17 +19,17 @@ use crate::components::LdtkWorldBundle;
 ///
 /// Load your ldtk project with the asset server, then insert the handle into the
 /// [LdtkWorldBundle].
-#[derive(Clone, TypeUuid)]
+#[derive(Clone, TypeUuid, Getters)]
 #[uuid = "ecfb87b7-9cd9-4970-8482-f2f68b770d31"]
 pub struct LdtkProject {
     /// Raw ldtk project data.
-    pub data: LdtkJson,
+    data: LdtkJson,
     /// Map from tileset uids to image handles for the loaded tileset.
-    pub tileset_map: HashMap<i32, Handle<Image>>,
+    tileset_map: HashMap<i32, Handle<Image>>,
     /// Map from level iids to level handles.
-    pub level_map: HashMap<String, Handle<LdtkLevel>>,
+    level_map: HashMap<String, Handle<LdtkLevel>>,
     /// Image used for rendering int grid colors.
-    pub int_grid_image_handle: Option<Handle<Image>>,
+    int_grid_image_handle: Option<Handle<Image>>,
 }
 
 impl LdtkProject {

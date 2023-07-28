@@ -52,7 +52,7 @@ pub fn process_ldtk_assets(
     if ldtk_settings.set_clear_color == SetClearColor::FromEditorBackground {
         for handle in ldtk_handles_for_clear_color.iter() {
             if let Some(ldtk_asset) = ldtk_assets.get(handle) {
-                clear_color.0 = ldtk_asset.data.bg_color;
+                clear_color.0 = ldtk_asset.data().bg_color;
             }
         }
     }
@@ -179,7 +179,7 @@ fn pre_spawn_level(
     level_iid: &str,
     ldtk_settings: &LdtkSettings,
 ) {
-    if let Some(level_handle) = ldtk_asset.level_map.get(level_iid) {
+    if let Some(level_handle) = ldtk_asset.level_map().get(level_iid) {
         let mut translation = Vec3::ZERO;
 
         if let LevelSpawnBehavior::UseWorldTranslation { .. } = ldtk_settings.level_spawn_behavior {
@@ -254,7 +254,7 @@ pub fn process_ldtk_levels(
                 if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
                     // Commence the spawning
                     let tileset_definition_map: HashMap<i32, &TilesetDefinition> = ldtk_asset
-                        .data
+                        .data()
                         .defs
                         .tilesets
                         .iter()
@@ -262,12 +262,12 @@ pub fn process_ldtk_levels(
                         .collect();
 
                     let entity_definition_map =
-                        create_entity_definition_map(&ldtk_asset.data.defs.entities);
+                        create_entity_definition_map(&ldtk_asset.data().defs.entities);
 
                     let layer_definition_map =
-                        create_layer_definition_map(&ldtk_asset.data.defs.layers);
+                        create_layer_definition_map(&ldtk_asset.data().defs.layers);
 
-                    let int_grid_image_handle = &ldtk_asset.int_grid_image_handle;
+                    let int_grid_image_handle = &ldtk_asset.int_grid_image_handle();
 
                     let worldly_set = worldly_query.iter().cloned().collect();
 
@@ -282,7 +282,7 @@ pub fn process_ldtk_levels(
                             &ldtk_int_cell_map,
                             &entity_definition_map,
                             &layer_definition_map,
-                            &ldtk_asset.tileset_map,
+                            &ldtk_asset.tileset_map(),
                             &tileset_definition_map,
                             int_grid_image_handle,
                             worldly_set,

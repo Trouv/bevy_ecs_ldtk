@@ -133,7 +133,7 @@ pub fn apply_level_set(
                 for child in children.iter() {
                     if let Ok(level_handle) = ldtk_level_query.get(*child) {
                         if let Some(ldtk_level) = level_assets.get(level_handle) {
-                            previous_level_maps.insert(ldtk_level.data.iid.clone(), child);
+                            previous_level_maps.insert(ldtk_level.data().iid.clone(), child);
                         }
                     }
                 }
@@ -289,7 +289,7 @@ pub fn process_ldtk_levels(
                             ldtk_entity,
                             &ldtk_settings,
                         );
-                        level_events.send(LevelEvent::Spawned(level.data.iid.clone()));
+                        level_events.send(LevelEvent::Spawned(level.data().iid.clone()));
                     }
 
                     if respawn.is_some() {
@@ -339,7 +339,7 @@ pub fn clean_respawn_entities(world: &mut World) {
 
                 if let Ok(level_handle) = other_ldtk_levels.get(*child) {
                     if let Some(level_asset) = level_assets.get(level_handle) {
-                        level_events.send(LevelEvent::Despawned(level_asset.data.iid.clone()));
+                        level_events.send(LevelEvent::Despawned(level_asset.data().iid.clone()));
                     }
                 }
             }
@@ -349,7 +349,7 @@ pub fn clean_respawn_entities(world: &mut World) {
             entities_to_despawn_descendants.push(level_entity);
 
             if let Some(level_asset) = level_assets.get(level_handle) {
-                level_events.send(LevelEvent::Despawned(level_asset.data.iid.clone()));
+                level_events.send(LevelEvent::Despawned(level_asset.data().iid.clone()));
             }
         }
     }

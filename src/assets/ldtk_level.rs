@@ -5,6 +5,7 @@ use bevy::{
     reflect::TypeUuid,
     utils::BoxedFuture,
 };
+use derive_getters::Getters;
 
 /// Secondary asset for loading ldtk files, specific to level data.
 ///
@@ -12,13 +13,22 @@ use bevy::{
 /// The label is just the level's identifier.
 ///
 /// Loaded as a dependency to the [LdtkProject] when loading an ldtk file with external levels.
-#[derive(TypeUuid, Reflect, FromReflect)]
+#[derive(TypeUuid, Getters, Reflect, FromReflect)]
 #[uuid = "5448469b-2134-44f5-a86c-a7b829f70a0c"]
 pub struct LdtkLevel {
     /// Raw ldtk level data.
-    pub data: Level,
+    data: Level,
     /// Handle for the background image of this level.
-    pub background_image: Option<Handle<Image>>,
+    background_image: Option<Handle<Image>>,
+}
+
+impl LdtkLevel {
+    pub fn new(data: Level, background_image: Option<Handle<Image>>) -> LdtkLevel {
+        LdtkLevel {
+            data,
+            background_image,
+        }
+    }
 }
 
 #[derive(Copy, Clone, Debug, Default)]

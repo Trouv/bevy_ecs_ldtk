@@ -217,7 +217,7 @@ pub fn spawn_level(
     ldtk_entity: Entity,
     ldtk_settings: &LdtkSettings,
 ) {
-    let level = &ldtk_level.data;
+    let level = ldtk_level.data();
 
     if let Some(layer_instances) = &level.layer_instances {
         let mut layer_z = 0;
@@ -243,7 +243,7 @@ pub fn spawn_level(
 
             // Spawn background image
             if let (Some(background_image_handle), Some(background_position)) =
-                (&ldtk_level.background_image, &level.bg_pos)
+                (ldtk_level.background_image(), &level.bg_pos)
             {
                 match background_image_sprite_sheet_bundle(
                     images,

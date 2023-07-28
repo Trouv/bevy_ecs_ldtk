@@ -32,11 +32,6 @@ pub struct LdtkProject {
 }
 
 impl LdtkProject {
-    pub fn world_height(&self) -> i32 {
-        self.iter_levels()
-            .fold(0, |max, level| max.max(level.world_y + level.px_hei))
-    }
-
     /// Get an iterator of all the levels in the LDtk file.
     ///
     /// This abstraction avoids compatibility issues between pre-multi-world and post-multi-world

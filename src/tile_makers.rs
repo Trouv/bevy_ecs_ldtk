@@ -379,7 +379,7 @@ mod tests {
             tile_maker(TilePos { x: 0, y: 0 }).unwrap().texture_index.0,
             0
         );
-        assert_eq!(tile_maker(TilePos { x: 0, y: 0 }).unwrap().visible.0, false);
+        assert!(!tile_maker(TilePos { x: 0, y: 0 }).unwrap().visible.0);
 
         assert!(tile_maker(TilePos { x: 1, y: 0 }).is_none());
 
@@ -387,13 +387,13 @@ mod tests {
             tile_maker(TilePos { x: 0, y: 1 }).unwrap().texture_index.0,
             1
         );
-        assert_eq!(tile_maker(TilePos { x: 0, y: 1 }).unwrap().visible.0, true);
+        assert!(tile_maker(TilePos { x: 0, y: 1 }).unwrap().visible.0);
 
         assert_eq!(
             tile_maker(TilePos { x: 1, y: 1 }).unwrap().texture_index.0,
             2
         );
-        assert_eq!(tile_maker(TilePos { x: 1, y: 1 }).unwrap().visible.0, true);
+        assert!(tile_maker(TilePos { x: 1, y: 1 }).unwrap().visible.0);
     }
 
     #[test]

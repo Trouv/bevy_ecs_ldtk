@@ -12,13 +12,12 @@ use bevy::{
 use derive_getters::Getters;
 use std::collections::HashMap;
 
-#[allow(unused_imports)]
-use crate::components::LdtkWorldBundle;
-
 /// Main asset for loading ldtk files.
 ///
 /// Load your ldtk project with the asset server, then insert the handle into the
-/// [LdtkWorldBundle].
+/// [`LdtkWorldBundle`].
+///
+/// [`LdtkWorldBundle`]: crate::components::LdtkWorldBundle
 #[derive(Clone, TypeUuid, Getters)]
 #[uuid = "ecfb87b7-9cd9-4970-8482-f2f68b770d31"]
 pub struct LdtkProject {
@@ -38,16 +37,16 @@ impl LdtkProject {
     /// This abstraction avoids compatibility issues between pre-multi-world and post-multi-world
     /// LDtk projects.
     ///
-    /// Note: the returned levels are the ones existent in the [LdtkProject].
+    /// Note: the returned levels are the ones existent in the [`LdtkProject`].
     /// These levels will have "incomplete" data if you use LDtk's external levels feature.
     /// To always get full level data, you'll need to access `Assets<LdtkLevel>`.
     pub fn iter_levels(&self) -> impl Iterator<Item = &Level> {
         self.data.iter_levels()
     }
 
-    /// Find a particular level using a [LevelSelection].
+    /// Find a particular level using a [`LevelSelection`].
     ///
-    /// Note: the returned level is the one existent in the [LdtkProject].
+    /// Note: the returned level is the one existent in the [`LdtkProject`].
     /// This level will have "incomplete" data if you use LDtk's external levels feature.
     /// To always get full level data, you'll need to access `Assets<LdtkLevel>`.
     pub fn get_level(&self, level_selection: &LevelSelection) -> Option<&Level> {

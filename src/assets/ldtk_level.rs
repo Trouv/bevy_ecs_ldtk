@@ -9,10 +9,12 @@ use derive_getters::Getters;
 
 /// Secondary asset for loading ldtk files, specific to level data.
 ///
-/// Loaded as a labeled asset when loading a standalone ldtk file with [LdtkProject].
+/// Loaded as a labeled asset when loading a standalone ldtk file with [`LdtkProject`].
 /// The label is just the level's identifier.
 ///
-/// Loaded as a dependency to the [LdtkProject] when loading an ldtk file with external levels.
+/// Loaded as a dependency to the [`LdtkProject`] when loading an ldtk file with external levels.
+///
+/// [`LdtkProject`]: crate::assets::LdtkProject
 #[derive(TypeUuid, Getters, Reflect, FromReflect)]
 #[uuid = "5448469b-2134-44f5-a86c-a7b829f70a0c"]
 pub struct LdtkLevel {
@@ -23,7 +25,7 @@ pub struct LdtkLevel {
 }
 
 impl LdtkLevel {
-    /// Construct a new LdtkLevel.
+    /// Construct a new [`LdtkLevel`].
     pub fn new(data: Level, background_image: Option<Handle<Image>>) -> LdtkLevel {
         LdtkLevel {
             data,

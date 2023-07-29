@@ -23,6 +23,7 @@ pub struct LdtkLevel {
 }
 
 impl LdtkLevel {
+    /// Construct a new LdtkLevel.
     pub fn new(data: Level, background_image: Option<Handle<Image>>) -> LdtkLevel {
         LdtkLevel {
             data,

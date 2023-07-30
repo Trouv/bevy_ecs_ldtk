@@ -6,7 +6,7 @@ use bevy_ecs_ldtk::prelude::*;
 use thiserror::Error;
 
 /// This enum mirrors an equivalent enum in the LDtk project called "Equipment".
-#[derive(Debug, Reflect, )]
+#[derive(Debug, Reflect)]
 enum EquipmentType {
     Helmet,
     Armor,

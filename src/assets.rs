@@ -4,7 +4,7 @@ use crate::{ldtk, resources::LevelSelection};
 use bevy::{
     asset::{AssetLoader, AssetPath, LoadContext, LoadedAsset},
     prelude::*,
-    reflect::{TypeUuid, TypePath},
+    reflect::{TypePath, TypeUuid},
     render::render_resource::{Extent3d, TextureDimension, TextureFormat},
     utils::BoxedFuture,
 };

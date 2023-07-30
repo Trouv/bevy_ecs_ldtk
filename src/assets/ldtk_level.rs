@@ -20,17 +20,16 @@ use derive_getters::Getters;
 pub struct LdtkLevel {
     /// Raw ldtk level data.
     data: Level,
-    /// Handle for the background image of this level.
-    background_image: Option<Handle<Image>>,
 }
 
 impl LdtkLevel {
     /// Construct a new [`LdtkLevel`].
-    pub fn new(data: Level, background_image: Option<Handle<Image>>) -> LdtkLevel {
-        LdtkLevel {
-            data,
-            background_image,
-        }
+    pub fn new(data: Level) -> LdtkLevel {
+        LdtkLevel { data }
+    }
+
+    pub fn background_image(&self) -> &Option<Handle<Image>> {
+        &None
     }
 }
 
@@ -46,25 +45,9 @@ impl AssetLoader for LdtkLevelLoader {
         Box::pin(async move {
             let data: Level = serde_json::from_slice(bytes)?;
 
-            let mut background_asset_path = None;
-            let mut background_image = None;
-            if let Some(rel_path) = &data.bg_rel_path {
-                let asset_path =
-                    ldtk_path_to_asset_path(load_context.path().parent().unwrap(), rel_path);
-                background_asset_path = Some(asset_path.clone());
-                background_image = Some(load_context.get_handle(asset_path));
-            }
+            let ldtk_level = LdtkLevel { data };
 
-            let ldtk_level = LdtkLevel {
-                data,
-                background_image,
-            };
-
-            let mut loaded_asset = LoadedAsset::new(ldtk_level);
-
-            if let Some(asset_path) = background_asset_path {
-                loaded_asset = loaded_asset.with_dependency(asset_path);
-            }
+            let loaded_asset = LoadedAsset::new(ldtk_level);
 
             load_context.set_default_asset(loaded_asset);
             Ok(())

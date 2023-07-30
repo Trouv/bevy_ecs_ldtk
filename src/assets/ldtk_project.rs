@@ -86,14 +86,14 @@ impl AssetLoader for LdtkProjectLoader {
                 for level in data.iter_levels() {
                     let label = level.identifier.as_ref();
 
-                    let mut background_image = None;
+                    let mut background_image: Option<Handle<Image>> = None;
                     if let Some(rel_path) = &level.bg_rel_path {
                         let asset_path = ldtk_path_to_asset_path(load_context.path(), rel_path);
                         background_images.push(asset_path.clone());
                         background_image = Some(load_context.get_handle(asset_path));
                     }
 
-                    let ldtk_level = LdtkLevel::new(level.clone(), background_image);
+                    let ldtk_level = LdtkLevel::new(level.clone());
                     let level_handle =
                         load_context.set_labeled_asset(label, LoadedAsset::new(ldtk_level));
 

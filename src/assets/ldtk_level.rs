@@ -1,4 +1,4 @@
-use crate::{assets::ldtk_path_to_asset_path, ldtk::Level};
+use crate::ldtk::Level;
 use bevy::{
     asset::{AssetLoader, LoadContext, LoadedAsset},
     prelude::*,

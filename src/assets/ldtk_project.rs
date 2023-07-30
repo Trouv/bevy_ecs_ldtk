@@ -1,16 +1,21 @@
 use crate::{
-    assets::{ldtk_path_to_asset_path, LdtkLevel},
+    assets::LdtkLevel,
     ldtk::{LdtkJson, Level},
     resources::LevelSelection,
 };
 use bevy::{
-    asset::{AssetLoader, LoadContext, LoadedAsset},
+    asset::{AssetLoader, AssetPath, LoadContext, LoadedAsset},
     prelude::*,
     reflect::TypeUuid,
     utils::BoxedFuture,
 };
 use derive_getters::Getters;
 use std::collections::HashMap;
+use std::path::Path;
+
+fn ldtk_path_to_asset_path<'b>(ldtk_path: &Path, rel_path: &str) -> AssetPath<'b> {
+    ldtk_path.parent().unwrap().join(Path::new(rel_path)).into()
+}
 
 /// Main asset for loading ldtk files.
 ///

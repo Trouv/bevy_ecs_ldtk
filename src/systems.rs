@@ -186,7 +186,7 @@ fn pre_spawn_level(
             if let Some(level) = ldtk_asset.get_level(&LevelSelection::Iid(level_iid.to_string())) {
                 let level_coords = ldtk_pixel_coords_to_translation(
                     IVec2::new(level.world_x, level.world_y + level.px_hei),
-                    ldtk_asset.world_height(),
+                    0,
                 );
                 translation.x = level_coords.x;
                 translation.y = level_coords.y;

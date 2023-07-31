@@ -5,7 +5,7 @@ use std::borrow::Cow;
 /// [Component] added to all [LdtkEntity]s by default.
 ///
 /// The `iid` stored in this component can be used to uniquely identify LDtk entities within an [LdtkAsset].
-#[derive(Clone, Debug, Default, Deref, Hash, Eq, PartialEq, Component, FromReflect, Reflect)]
+#[derive(Clone, Debug, Default, Deref, Hash, Eq, PartialEq, Component, Reflect)]
 #[reflect(Component, Default, Debug)]
 pub struct EntityIid(Cow<'static, str>);
 

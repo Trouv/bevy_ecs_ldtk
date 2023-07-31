@@ -22,9 +22,14 @@ use bevy_ecs_tilemap::{
         TilemapGridSize, TilemapId, TilemapSize, TilemapSpacing, TilemapTexture, TilemapTileSize,
     },
     tiles::{TilePos, TileStorage},
-    TilemapBundle,
 };
 use std::collections::{HashMap, HashSet};
+
+#[cfg(feature = "render")]
+use bevy_ecs_tilemap::TilemapBundle;
+
+#[cfg(not(feature = "render"))]
+use bevy_ecs_tilemap::StandardTilemapBundle as TilemapBundle;
 
 use thiserror::Error;
 

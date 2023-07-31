@@ -124,7 +124,7 @@ pub enum LevelEvent {
     /// you want to listen for.
     /// If your systems are [GlobalTransform]-dependent, see [LevelEvent::Transformed].
     Spawned(String),
-    /// Occurs during the [CoreSet::PostUpdate] after the level has spawned, so all
+    /// Occurs during the [PostUpdate] after the level has spawned, so all
     /// [GlobalTransform]s of the level should be updated.
     Transformed(String),
     /// Indicates that a level has despawned.

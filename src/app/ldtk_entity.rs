@@ -83,7 +83,6 @@ use std::{collections::HashMap, marker::PhantomData};
 /// #[derive(Bundle, LdtkEntity)]
 /// pub struct Gem {
 ///     #[sprite_bundle("textures/gem.png")]
-///     #[bundle]
 ///     sprite_bundle: SpriteBundle,
 ///     sellable: Sellable,
 /// }
@@ -93,7 +92,6 @@ use std::{collections::HashMap, marker::PhantomData};
 ///     player: PlayerComponent,
 ///     health: Health,
 ///     #[sprite_bundle] // Uses the Editor Visual sprite in LDtk
-///     #[bundle]
 ///     sprite_bundle: SpriteBundle,
 /// }
 /// ```
@@ -120,7 +118,6 @@ use std::{collections::HashMap, marker::PhantomData};
 /// # struct BleedDamage;
 /// #[derive(Bundle, LdtkEntity)]
 /// pub struct Sword {
-///     #[bundle]
 ///     #[sprite_sheet_bundle("weapons.png", 32.0, 32.0, 4, 5, 5.0, 1.0, 17)]
 ///     sprite_sheet: SpriteSheetBundle,
 ///     damage: Damage,
@@ -130,7 +127,6 @@ use std::{collections::HashMap, marker::PhantomData};
 /// pub struct Dagger {
 ///     damage: Damage,
 ///     bleed_damage: BleedDamage,
-///     #[bundle]
 ///     #[sprite_sheet_bundle]
 ///     sprite_sheet: SpriteSheetBundle,
 /// }
@@ -153,7 +149,6 @@ use std::{collections::HashMap, marker::PhantomData};
 /// pub struct PlayerBundle {
 ///     player: Player,
 ///     #[sprite_sheet_bundle]
-///     #[bundle]
 ///     sprite_sheet_bundle: SpriteSheetBundle,
 ///     #[worldly]
 ///     worldly: Worldly,
@@ -177,7 +172,6 @@ use std::{collections::HashMap, marker::PhantomData};
 ///     block: Block,
 ///     movable: Movable,
 ///     #[sprite_sheet_bundle]
-///     #[bundle]
 ///     sprite_sheet_bundle: SpriteSheetBundle,
 ///     #[grid_coords]
 ///     grid_coords: GridCoords,
@@ -202,14 +196,12 @@ use std::{collections::HashMap, marker::PhantomData};
 /// pub struct Weapon {
 ///     damage: Damage,
 ///     #[sprite_bundle]
-///     #[bundle]
 ///     sprite: SpriteBundle,
 /// }
 ///
 /// #[derive(Bundle, LdtkEntity)]
 /// pub struct Dagger {
 ///     #[ldtk_entity]
-///     #[bundle]
 ///     weapon_bundle: Weapon,
 ///     bleed_damage: BleedDamage,
 /// }
@@ -245,7 +237,6 @@ use std::{collections::HashMap, marker::PhantomData};
 /// #[derive(Bundle, LdtkEntity)]
 /// pub struct NickelBundle {
 ///     #[sprite_bundle]
-///     #[bundle]
 ///     sprite: SpriteBundle,
 ///     #[from_entity_instance]
 ///     sellable: Sellable,
@@ -278,7 +269,6 @@ use std::{collections::HashMap, marker::PhantomData};
 /// pub struct PlayerBundle {
 ///     player: Player,
 ///     #[with(player_initial_inventory)]
-///     #[bundle]
 ///     collider: InventoryBundle,
 /// }
 ///

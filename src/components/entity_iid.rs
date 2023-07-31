@@ -8,7 +8,7 @@ use std::borrow::Cow;
 ///
 /// [`LdtkEntity`]: crate::app::LdtkEntity
 /// [`LdtkAsset`]: crate::prelude::LdtkAsset
-#[derive(Clone, Debug, Default, Deref, Hash, Eq, PartialEq, Component, FromReflect, Reflect)]
+#[derive(Clone, Debug, Default, Deref, Hash, Eq, PartialEq, Component, Reflect)]
 #[reflect(Component, Default, Debug)]
 pub struct EntityIid(Cow<'static, str>);
 

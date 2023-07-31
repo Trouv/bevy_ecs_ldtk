@@ -4,7 +4,7 @@ use crate::{ldtk, resources::LevelSelection};
 use bevy::{
     asset::{AssetLoader, AssetPath, LoadContext, LoadedAsset},
     prelude::*,
-    reflect::TypeUuid,
+    reflect::{TypePath, TypeUuid},
     render::render_resource::{Extent3d, TextureDimension, TextureFormat},
     utils::BoxedFuture,
 };
@@ -27,7 +27,7 @@ pub type LevelMap = HashMap<String, Handle<LdtkLevel>>;
 ///
 /// Load your ldtk project with the asset server, then insert the handle into the
 /// [LdtkWorldBundle].
-#[derive(Clone, TypeUuid)]
+#[derive(Clone, TypeUuid, TypePath)]
 #[uuid = "ecfb87b7-9cd9-4970-8482-f2f68b770d31"]
 pub struct LdtkAsset {
     pub project: ldtk::LdtkJson,
@@ -194,7 +194,7 @@ impl AssetLoader for LdtkLoader {
 /// The label is just the level's identifier.
 ///
 /// Loaded as a dependency to the [LdtkAsset] when loading an ldtk file with external levels.
-#[derive(TypeUuid, Reflect, FromReflect)]
+#[derive(TypeUuid, Reflect)]
 #[uuid = "5448469b-2134-44f5-a86c-a7b829f70a0c"]
 pub struct LdtkLevel {
     pub level: ldtk::Level,

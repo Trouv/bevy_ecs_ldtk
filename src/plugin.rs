@@ -1,28 +1,19 @@
 //! Provides [LdtkPlugin] and its scheduling-related dependencies.
 use crate::{app, assets, components, resources, systems};
-use bevy::prelude::*;
+use bevy::{app::MainScheduleOrder, ecs::schedule::ScheduleLabel, prelude::*};
 
-/// Base [SystemSet]s for systems added by the plugin.
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Hash, SystemSet)]
-#[system_set(base)]
-pub enum LdtkSystemSet {
-    /// Scheduled after [CoreSet::UpdateFlush].
-    ///
-    /// Used for systems that process components and resources provided by this plugin's API.
-    /// In particular, this set processes..
-    /// - [resources::LevelSelection]
-    /// - [components::LevelSet]
-    /// - [components::Worldly]
-    /// - [components::Respawn]
-    ///
-    /// As a result, you can expect minimal frame delay when updating these in
-    /// [CoreSet::Update].
-    ///
-    /// You might need to add additional scheduling constraints to prevent race conditions
-    /// between systems in this set and other external systems. As an example, `bevy_rapier`'s
-    /// `PhysicsSet::BackendSync` should be scheduled after `LdtkSystemSet::ProcessApi`.
-    ProcessApi,
-}
+/// Schedule for processing this plugin's ECS API, inserted after [Update].
+///
+/// In particular, this set processes..
+/// - [resources::LevelSelection]
+/// - [components::LevelSet]
+/// - [components::Worldly]
+/// - [components::Respawn]
+///
+/// As a result, you can expect minimal frame delay when updating these in
+/// [Update].
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Hash, ScheduleLabel)]
+pub struct ProcessLdtkApi;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash, SystemSet)]
 enum ProcessApiSet {
@@ -40,18 +31,17 @@ impl Plugin for LdtkPlugin {
     fn build(&self, mut app: &mut App) {
         // Check if we have added the TileMap plugin
         if !app.is_plugin_added::<bevy_ecs_tilemap::TilemapPlugin>() {
-            app = app.add_plugin(bevy_ecs_tilemap::TilemapPlugin);
+            app = app.add_plugins(bevy_ecs_tilemap::TilemapPlugin);
         }
 
-        app.configure_set(
-            LdtkSystemSet::ProcessApi
-                .after(CoreSet::UpdateFlush)
-                .before(CoreSet::PostUpdate),
-        )
-        .configure_sets(
-            (ProcessApiSet::PreClean, ProcessApiSet::Clean)
-                .chain()
-                .in_base_set(LdtkSystemSet::ProcessApi),
+        app.world
+            .get_resource_mut::<MainScheduleOrder>()
+            .expect("expected MainScheduleOrder to exist, try using DefaultPlugins")
+            .insert_after(Update, ProcessLdtkApi);
+
+        app.configure_sets(
+            ProcessLdtkApi,
+            (ProcessApiSet::PreClean, ProcessApiSet::Clean).chain(),
         )
         .init_non_send_resource::<app::LdtkEntityMap>()
         .init_non_send_resource::<app::LdtkIntCellMap>()
@@ -62,24 +52,28 @@ impl Plugin for LdtkPlugin {
         .init_asset_loader::<assets::LdtkLevelLoader>()
         .add_event::<resources::LevelEvent>()
         .add_systems(
-            (systems::process_ldtk_assets, systems::process_ldtk_levels)
-                .in_base_set(CoreSet::PreUpdate),
+            PreUpdate,
+            (systems::process_ldtk_assets, systems::process_ldtk_levels),
         )
-        .add_system(systems::worldly_adoption.in_set(ProcessApiSet::PreClean))
         .add_systems(
+            ProcessLdtkApi,
+            systems::worldly_adoption.in_set(ProcessApiSet::PreClean),
+        )
+        .add_systems(
+            ProcessLdtkApi,
             (systems::apply_level_selection, systems::apply_level_set)
                 .chain()
                 .in_set(ProcessApiSet::PreClean),
         )
         .add_systems(
-            (apply_system_buffers, systems::clean_respawn_entities)
+            ProcessLdtkApi,
+            (apply_deferred, systems::clean_respawn_entities)
                 .chain()
                 .in_set(ProcessApiSet::Clean),
         )
-        .add_system(
-            systems::detect_level_spawned_events
-                .pipe(systems::fire_level_transformed_events)
-                .in_base_set(CoreSet::PostUpdate),
+        .add_systems(
+            PostUpdate,
+            systems::detect_level_spawned_events.pipe(systems::fire_level_transformed_events),
         )
         .register_type::<components::EntityIid>()
         .register_type::<components::GridCoords>()

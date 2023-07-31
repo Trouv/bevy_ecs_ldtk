@@ -2,9 +2,8 @@
 use crate::{app, assets, components, resources, systems};
 use bevy::{app::MainScheduleOrder, ecs::schedule::ScheduleLabel, prelude::*};
 
-/// Schedule for various plugin systems, inserted after [Update].
+/// Schedule for processing this plugin's ECS API, inserted after [Update].
 ///
-/// Used for systems that process components and resources provided by this plugin's API.
 /// In particular, this set processes..
 /// - [resources::LevelSelection]
 /// - [components::LevelSet]
@@ -14,7 +13,7 @@ use bevy::{app::MainScheduleOrder, ecs::schedule::ScheduleLabel, prelude::*};
 /// As a result, you can expect minimal frame delay when updating these in
 /// [Update].
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash, ScheduleLabel)]
-pub struct ProcessApi;
+pub struct ProcessLdtkApi;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash, SystemSet)]
 enum ProcessApiSet {
@@ -38,10 +37,10 @@ impl Plugin for LdtkPlugin {
         app.world
             .get_resource_mut::<MainScheduleOrder>()
             .expect("expected MainScheduleOrder to exist, try using DefaultPlugins")
-            .insert_after(Update, ProcessApi);
+            .insert_after(Update, ProcessLdtkApi);
 
         app.configure_sets(
-            ProcessApi,
+            ProcessLdtkApi,
             (ProcessApiSet::PreClean, ProcessApiSet::Clean).chain(),
         )
         .init_non_send_resource::<app::LdtkEntityMap>()
@@ -57,17 +56,17 @@ impl Plugin for LdtkPlugin {
             (systems::process_ldtk_assets, systems::process_ldtk_levels),
         )
         .add_systems(
-            ProcessApi,
+            ProcessLdtkApi,
             systems::worldly_adoption.in_set(ProcessApiSet::PreClean),
         )
         .add_systems(
-            ProcessApi,
+            ProcessLdtkApi,
             (systems::apply_level_selection, systems::apply_level_set)
                 .chain()
                 .in_set(ProcessApiSet::PreClean),
         )
         .add_systems(
-            ProcessApi,
+            ProcessLdtkApi,
             (apply_deferred, systems::clean_respawn_entities)
                 .chain()
                 .in_set(ProcessApiSet::Clean),

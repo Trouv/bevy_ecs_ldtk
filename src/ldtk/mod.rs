@@ -9,8 +9,8 @@
 //! Any changes should be documented here for maintenance purposes:
 //! 1. [serde] has been imported with `use` instead of `extern`
 //! 2. All struct fields have been made public.
-//! 3. [Copy], [Clone], [Default], [Debug], [Eq], [PartialEq], [Reflect], and [] have
-//!    been derived wherever possible.
+//! 3. [Copy], [Clone], [Default], [Debug], [Eq], [PartialEq], and [Reflect] have been derived
+//!    wherever possible.
 //! 4. [i64] and [f64] have been changed to [i32] and [f32].
 //! 5. All enums have [Default] derived. The first variant is selected as default, exception for
 //!    [LimitBehavior], [LimitScope], [RenderMode], [TileRenderMode], and [Type].

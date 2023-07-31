@@ -145,7 +145,7 @@ pub mod prelude {
             LevelSet, Respawn, TileEnumTags, TileMetadata, Worldly,
         },
         ldtk::{self, ldtk_fields::LdtkFields, FieldValue, LayerInstance, TilesetDefinition},
-        plugin::{LdtkPlugin, LdtkSystemSet},
+        plugin::{LdtkPlugin, ProcessApi},
         resources::{
             IntGridRendering, LdtkSettings, LevelBackground, LevelEvent, LevelSelection,
             LevelSpawnBehavior, SetClearColor,

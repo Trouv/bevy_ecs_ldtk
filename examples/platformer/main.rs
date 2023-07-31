@@ -16,11 +16,6 @@ fn main() {
             LdtkPlugin,
             RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0),
         ))
-        // Required to prevent race conditions between bevy_ecs_ldtk's and bevy_rapier's systems
-        .configure_set(
-            PostUpdate,
-            LdtkSystemSet::ProcessApi.before(PhysicsSet::SyncBackend),
-        )
         .insert_resource(RapierConfiguration {
             gravity: Vec2::new(0.0, -2000.0),
             ..Default::default()

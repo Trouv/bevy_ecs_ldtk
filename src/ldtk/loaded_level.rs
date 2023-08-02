@@ -13,7 +13,7 @@ pub struct LoadedLevel<'a> {
 impl<'a> TryFrom<&'a Level> for LoadedLevel<'a> {
     type Error = LevelNotLoaded;
 
-    fn try_from(level: &Level) -> Result<Self, Self::Error> {
+    fn try_from(level: &'a Level) -> Result<Self, Self::Error> {
         if level.layer_instances.is_some() {
             Ok(LoadedLevel { level })
         } else {

@@ -75,7 +75,7 @@ pub fn apply_level_selection(
     if let Some(level_selection) = level_selection {
         for (ldtk_handle, mut level_set) in level_set_query.iter_mut() {
             if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
-                if let Some(level) = ldtk_asset.get_level(&level_selection) {
+                if let Some(level) = ldtk_asset.get_internal_level(&level_selection) {
                     let new_level_set = {
                         let mut iids = HashSet::new();
                         iids.insert(level.iid.clone());
@@ -179,35 +179,35 @@ fn pre_spawn_level(
     level_iid: &str,
     ldtk_settings: &LdtkSettings,
 ) {
-    if let Some(level_handle) = ldtk_asset.level_map().get(level_iid) {
-        let mut translation = Vec3::ZERO;
+    let mut translation = Vec3::ZERO;
 
-        if let LevelSpawnBehavior::UseWorldTranslation { .. } = ldtk_settings.level_spawn_behavior {
-            if let Some(level) = ldtk_asset.get_level(&LevelSelection::Iid(level_iid.to_string())) {
-                let level_coords = ldtk_pixel_coords_to_translation(
-                    IVec2::new(level.world_x, level.world_y + level.px_hei),
-                    0,
-                );
-                translation.x = level_coords.x;
-                translation.y = level_coords.y;
-            }
+    if let LevelSpawnBehavior::UseWorldTranslation { .. } = ldtk_settings.level_spawn_behavior {
+        if let Some(level) =
+            ldtk_asset.get_internal_level(&LevelSelection::Iid(level_iid.to_string()))
+        {
+            let level_coords = ldtk_pixel_coords_to_translation(
+                IVec2::new(level.world_x, level.world_y + level.px_hei),
+                0,
+            );
+            translation.x = level_coords.x;
+            translation.y = level_coords.y;
         }
-
-        child_builder
-            .spawn_empty()
-            .insert(level_handle.clone())
-            .insert(SpatialBundle {
-                transform: Transform::from_translation(translation),
-                ..default()
-            })
-            .insert(Name::new(
-                ldtk_asset
-                    .get_level(&LevelSelection::Iid(level_iid.to_string()))
-                    .unwrap()
-                    .identifier
-                    .to_owned(),
-            ));
     }
+
+    child_builder
+        .spawn_empty()
+        .insert(LevelIid::from(level_iid))
+        .insert(SpatialBundle {
+            transform: Transform::from_translation(translation),
+            ..default()
+        })
+        .insert(Name::new(
+            ldtk_asset
+                .get_internal_level(&LevelSelection::Iid(level_iid.to_string()))
+                .unwrap()
+                .identifier
+                .to_owned(),
+        ));
 }
 
 /// Performs all the spawning of levels, layers, chunks, bundles, entities, tiles, etc. when an

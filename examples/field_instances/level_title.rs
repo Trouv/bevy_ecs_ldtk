@@ -11,8 +11,8 @@ pub struct LevelTitle(String);
 
 pub fn set_level_title_to_current_level(
     mut level_events: EventReader<LevelEvent>,
-    level_handles: Query<&Handle<LdtkLevel>>,
-    level_assets: Res<Assets<LdtkLevel>>,
+    level_handles: Query<&Handle<LdtkExternalLevel>>,
+    level_assets: Res<Assets<LdtkExternalLevel>>,
     mut current_level_title: ResMut<LevelTitle>,
 ) {
     for level_event in level_events.iter() {

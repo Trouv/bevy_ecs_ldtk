@@ -13,7 +13,7 @@ use std::{
 
 #[allow(unused_imports)]
 use crate::{
-    assets::LdtkLevel,
+    assets::LdtkExternalLevel,
     prelude::{LdtkEntity, LdtkIntCell},
     resources::{LevelSelection, LevelSpawnBehavior},
     utils::ldtk_grid_coords_to_grid_coords,

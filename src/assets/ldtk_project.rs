@@ -1,5 +1,5 @@
 use crate::{
-    assets::LdtkLevel,
+    assets::LdtkExternalLevel,
     ldtk::{LdtkJson, Level},
     resources::LevelSelection,
 };
@@ -31,7 +31,7 @@ pub struct LdtkProject {
     /// Map from tileset uids to image handles for the loaded tileset.
     tileset_map: HashMap<i32, Handle<Image>>,
     /// Map from level iids to level handles.
-    level_map: HashMap<String, Handle<LdtkLevel>>,
+    level_map: HashMap<String, Handle<LdtkExternalLevel>>,
     /// Image used for rendering int grid colors.
     int_grid_image_handle: Option<Handle<Image>>,
 }
@@ -98,7 +98,7 @@ impl AssetLoader for LdtkProjectLoader {
                         background_image = Some(load_context.get_handle(asset_path));
                     }
 
-                    let ldtk_level = LdtkLevel::new(level.clone());
+                    let ldtk_level = LdtkExternalLevel::new(level.clone());
                     let level_handle =
                         load_context.set_labeled_asset(label, LoadedAsset::new(ldtk_level));
 

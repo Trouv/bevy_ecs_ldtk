@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use indexmap::IndexMap;
 
-use crate::assets::LdtkLevel;
+use crate::assets::LdtkExternalLevel;
 
 struct InternalLevel {
     bg_image: Handle<Image>,
@@ -10,7 +10,7 @@ struct InternalLevel {
 
 struct ExternalLevel {
     bg_image: Handle<Image>,
-    level_handle: Handle<LdtkLevel>,
+    level_handle: Handle<LdtkExternalLevel>,
 }
 
 enum LevelMap {

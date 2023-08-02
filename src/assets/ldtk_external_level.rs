@@ -17,15 +17,15 @@ use derive_getters::Getters;
 /// [`LdtkProject`]: crate::assets::LdtkProject
 #[derive(Clone, Debug, PartialEq, TypeUuid, Getters, Reflect)]
 #[uuid = "5448469b-2134-44f5-a86c-a7b829f70a0c"]
-pub struct LdtkLevel {
+pub struct LdtkExternalLevel {
     /// Raw ldtk level data.
     data: Level,
 }
 
-impl LdtkLevel {
+impl LdtkExternalLevel {
     /// Construct a new [`LdtkLevel`].
-    pub fn new(data: Level) -> LdtkLevel {
-        LdtkLevel { data }
+    pub fn new(data: Level) -> LdtkExternalLevel {
+        LdtkExternalLevel { data }
     }
 
     pub fn background_image(&self) -> &Option<Handle<Image>> {
@@ -34,9 +34,9 @@ impl LdtkLevel {
 }
 
 #[derive(Default)]
-pub struct LdtkLevelLoader;
+pub struct LdtkExternalLevelLoader;
 
-impl AssetLoader for LdtkLevelLoader {
+impl AssetLoader for LdtkExternalLevelLoader {
     fn load<'a>(
         &'a self,
         bytes: &'a [u8],
@@ -45,7 +45,7 @@ impl AssetLoader for LdtkLevelLoader {
         Box::pin(async move {
             let data: Level = serde_json::from_slice(bytes)?;
 
-            let ldtk_level = LdtkLevel { data };
+            let ldtk_level = LdtkExternalLevel { data };
 
             let loaded_asset = LoadedAsset::new(ldtk_level);
 

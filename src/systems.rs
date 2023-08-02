@@ -4,7 +4,7 @@
 use crate::resources::SetClearColor;
 use crate::{
     app::{LdtkEntityMap, LdtkIntCellMap},
-    assets::{LdtkLevel, LdtkProject},
+    assets::{LdtkExternalLevel, LdtkProject},
     components::*,
     ldtk::TilesetDefinition,
     level::spawn_level,
@@ -117,9 +117,9 @@ pub fn apply_level_set(
         &Handle<LdtkProject>,
         Option<&Respawn>,
     )>,
-    ldtk_level_query: Query<&Handle<LdtkLevel>>,
+    ldtk_level_query: Query<&Handle<LdtkExternalLevel>>,
     ldtk_assets: Res<Assets<LdtkProject>>,
-    level_assets: Res<Assets<LdtkLevel>>,
+    level_assets: Res<Assets<LdtkExternalLevel>>,
     ldtk_settings: Res<LdtkSettings>,
     mut level_events: EventWriter<LevelEvent>,
 ) {
@@ -219,19 +219,19 @@ pub fn process_ldtk_levels(
     mut images: ResMut<Assets<Image>>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     ldtk_assets: Res<Assets<LdtkProject>>,
-    level_assets: Res<Assets<LdtkLevel>>,
+    level_assets: Res<Assets<LdtkExternalLevel>>,
     ldtk_entity_map: NonSend<LdtkEntityMap>,
     ldtk_int_cell_map: NonSend<LdtkIntCellMap>,
     ldtk_query: Query<&Handle<LdtkProject>>,
     level_query: Query<
         (
             Entity,
-            &Handle<LdtkLevel>,
+            &Handle<LdtkExternalLevel>,
             &Parent,
             Option<&Respawn>,
             Option<&Children>,
         ),
-        Or<(Added<Handle<LdtkLevel>>, With<Respawn>)>,
+        Or<(Added<Handle<LdtkExternalLevel>>, With<Respawn>)>,
     >,
     worldly_query: Query<&Worldly>,
     mut level_events: EventWriter<LevelEvent>,
@@ -310,10 +310,10 @@ pub fn clean_respawn_entities(world: &mut World) {
     #[allow(clippy::type_complexity)]
     let mut system_state: SystemState<(
         Query<&Children, (With<Handle<LdtkProject>>, With<Respawn>)>,
-        Query<(Entity, &Handle<LdtkLevel>), With<Respawn>>,
-        Query<&Handle<LdtkLevel>, Without<Respawn>>,
+        Query<(Entity, &Handle<LdtkExternalLevel>), With<Respawn>>,
+        Query<&Handle<LdtkExternalLevel>, Without<Respawn>>,
         Query<Entity, With<Worldly>>,
-        Res<Assets<LdtkLevel>>,
+        Res<Assets<LdtkExternalLevel>>,
         EventWriter<LevelEvent>,
     )> = SystemState::new(world);
 

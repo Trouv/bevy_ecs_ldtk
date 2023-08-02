@@ -79,8 +79,8 @@ pub fn spawn_wall_collision(
     mut commands: Commands,
     wall_query: Query<(&GridCoords, &Parent), Added<Wall>>,
     parent_query: Query<&Parent, Without<Wall>>,
-    level_query: Query<(Entity, &Handle<LdtkLevel>)>,
-    levels: Res<Assets<LdtkLevel>>,
+    level_query: Query<(Entity, &Handle<LdtkExternalLevel>)>,
+    levels: Res<Assets<LdtkExternalLevel>>,
 ) {
     /// Represents a wide wall that is 1 tile tall
     /// Used to spawn wall collisions
@@ -320,11 +320,11 @@ pub fn camera_fit_inside_current_level(
     >,
     player_query: Query<&Transform, With<Player>>,
     level_query: Query<
-        (&Transform, &Handle<LdtkLevel>),
+        (&Transform, &Handle<LdtkExternalLevel>),
         (Without<OrthographicProjection>, Without<Player>),
     >,
     level_selection: Res<LevelSelection>,
-    ldtk_levels: Res<Assets<LdtkLevel>>,
+    ldtk_levels: Res<Assets<LdtkExternalLevel>>,
 ) {
     if let Ok(Transform {
         translation: player_translation,
@@ -372,10 +372,10 @@ pub fn camera_fit_inside_current_level(
 }
 
 pub fn update_level_selection(
-    level_query: Query<(&Handle<LdtkLevel>, &Transform), Without<Player>>,
+    level_query: Query<(&Handle<LdtkExternalLevel>, &Transform), Without<Player>>,
     player_query: Query<&Transform, With<Player>>,
     mut level_selection: ResMut<LevelSelection>,
-    ldtk_levels: Res<Assets<LdtkLevel>>,
+    ldtk_levels: Res<Assets<LdtkExternalLevel>>,
 ) {
     for (level_handle, level_transform) in &level_query {
         if let Some(ldtk_level) = ldtk_levels.get(level_handle) {
@@ -479,7 +479,7 @@ pub fn update_on_ground(
 
 pub fn restart_level(
     mut commands: Commands,
-    level_query: Query<Entity, With<Handle<LdtkLevel>>>,
+    level_query: Query<Entity, With<Handle<LdtkExternalLevel>>>,
     input: Res<Input<KeyCode>>,
 ) {
     if input.just_pressed(KeyCode::R) {

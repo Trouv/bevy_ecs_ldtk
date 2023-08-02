@@ -5,7 +5,7 @@ use crate::{
         LdtkEntity, LdtkEntityMap, LdtkIntCellMap, PhantomLdtkEntity, PhantomLdtkEntityTrait,
         PhantomLdtkIntCell, PhantomLdtkIntCellTrait,
     },
-    assets::LdtkLevel,
+    assets::LdtkExternalLevel,
     components::*,
     ldtk::{
         EntityDefinition, EnumTagValue, LayerDefinition, LayerInstance, LevelBackgroundPosition,
@@ -206,7 +206,7 @@ fn tile_in_layer_bounds(tile: &TileInstance, layer_instance: &LayerInstance) -> 
 
 #[allow(clippy::too_many_arguments)]
 pub fn spawn_level(
-    ldtk_level: &LdtkLevel,
+    ldtk_level: &LdtkExternalLevel,
     commands: &mut Commands,
     asset_server: &AssetServer,
     images: &mut Assets<Image>,

@@ -18,7 +18,7 @@ use std::collections::HashMap;
 /// [`LdtkWorldBundle`].
 ///
 /// [`LdtkWorldBundle`]: crate::components::LdtkWorldBundle
-#[derive(Clone, TypeUuid, TypePath, Getters)]
+#[derive(Clone, Debug, PartialEq, TypeUuid, TypePath, Getters)]
 #[uuid = "ecfb87b7-9cd9-4970-8482-f2f68b770d31"]
 pub struct LdtkProject {
     /// Raw ldtk project data.
@@ -57,7 +57,7 @@ impl LdtkProject {
     }
 }
 
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Default)]
 pub struct LdtkProjectLoader;
 
 impl AssetLoader for LdtkProjectLoader {

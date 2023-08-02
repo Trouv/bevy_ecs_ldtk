@@ -2,6 +2,9 @@
 mod entity_iid;
 pub use entity_iid::EntityIid;
 
+mod level_iid;
+pub use level_iid::LevelIid;
+
 pub use crate::ldtk::EntityInstance;
 use crate::ldtk::{LayerInstance, Type};
 use bevy::prelude::*;

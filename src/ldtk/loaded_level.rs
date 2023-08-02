@@ -3,10 +3,10 @@ use thiserror::Error;
 
 #[derive(Debug, Error)]
 #[error("loaded levels must have non-null layer instances")]
-struct LevelNotLoaded;
+pub struct LevelNotLoaded;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-struct LoadedLevel<'a> {
+pub struct LoadedLevel<'a> {
     level: &'a Level,
 }
 

@@ -1,6 +1,6 @@
 use crate::{
-    assets::LdtkExternalLevel,
-    ldtk::{LdtkJson, Level},
+    assets::{level_map::LevelMap, LdtkExternalLevel},
+    ldtk::{loaded_level::LoadedLevel, LdtkJson, Level},
     resources::LevelSelection,
 };
 use bevy::{
@@ -10,8 +10,11 @@ use bevy::{
     utils::BoxedFuture,
 };
 use derive_getters::Getters;
+use indexmap::IndexMap;
 use std::collections::HashMap;
 use std::path::Path;
+
+use super::level_map::{ExternalLevel, InternalLevel};
 
 fn ldtk_path_to_asset_path<'b>(ldtk_path: &Path, rel_path: &str) -> AssetPath<'b> {
     ldtk_path.parent().unwrap().join(Path::new(rel_path)).into()
@@ -31,7 +34,7 @@ pub struct LdtkProject {
     /// Map from tileset uids to image handles for the loaded tileset.
     tileset_map: HashMap<i32, Handle<Image>>,
     /// Map from level iids to level handles.
-    level_map: HashMap<String, Handle<LdtkExternalLevel>>,
+    level_map: LevelMap,
     /// Image used for rendering int grid colors.
     int_grid_image_handle: Option<Handle<Image>>,
 }
@@ -45,7 +48,7 @@ impl LdtkProject {
     /// Note: the returned levels are the ones existent in the [`LdtkProject`].
     /// These levels will have "incomplete" data if you use LDtk's external levels feature.
     /// To always get full level data, you'll need to access `Assets<LdtkLevel>`.
-    pub fn iter_levels(&self) -> impl Iterator<Item = &Level> {
+    pub fn iter_internal_levels(&self) -> impl Iterator<Item = &Level> {
         self.data.iter_levels()
     }
 
@@ -54,11 +57,33 @@ impl LdtkProject {
     /// Note: the returned level is the one existent in the [`LdtkProject`].
     /// This level will have "incomplete" data if you use LDtk's external levels feature.
     /// To always get full level data, you'll need to access `Assets<LdtkLevel>`.
-    pub fn get_level(&self, level_selection: &LevelSelection) -> Option<&Level> {
-        self.iter_levels()
+    pub fn get_internal_level(&self, level_selection: &LevelSelection) -> Option<&Level> {
+        self.iter_internal_levels()
             .enumerate()
             .find(|(i, l)| level_selection.is_match(i, l))
             .map(|(_, l)| l)
+    }
+
+    pub fn get_loaded_level<'a>(
+        &'a self,
+        external_level_assets: &'a Assets<LdtkExternalLevel>,
+        key: &String,
+    ) -> Option<LoadedLevel<'a>> {
+        match &self.level_map {
+            LevelMap::InternalLevels(internal_levels) => Some(
+                self.iter_internal_levels()
+                    .nth(*internal_levels.get(key)?.level_index())?
+                    .try_into()
+                    .expect("TODO"),
+            ),
+            LevelMap::ExternalLevels(external_levels) => Some(
+                external_level_assets
+                    .get(external_levels.get(key)?.level_handle())?
+                    .data()
+                    .try_into()
+                    .expect("TODO"),
+            ),
+        }
     }
 }
 
@@ -74,37 +99,51 @@ impl AssetLoader for LdtkProjectLoader {
         Box::pin(async move {
             let data: LdtkJson = serde_json::from_slice(bytes)?;
 
-            let mut external_level_paths = Vec::new();
-            let mut level_map = HashMap::new();
             let mut background_images = Vec::new();
-            if data.external_levels {
-                for level in data.iter_levels() {
-                    if let Some(external_rel_path) = &level.external_rel_path {
-                        let asset_path =
-                            ldtk_path_to_asset_path(load_context.path(), external_rel_path);
 
-                        external_level_paths.push(asset_path.clone());
-                        level_map.insert(level.iid.clone(), load_context.get_handle(asset_path));
+            let mut external_level_paths = Vec::new();
+            let level_map = if data.external_levels {
+                let mut level_map = IndexMap::new();
+                for level in data.iter_levels() {
+                    let mut bg_image = None;
+                    if let Some(rel_path) = &level.bg_rel_path {
+                        let asset_path = ldtk_path_to_asset_path(load_context.path(), rel_path);
+
+                        background_images.push(asset_path.clone());
+                        bg_image = Some(load_context.get_handle(asset_path));
                     }
-                }
-            } else {
-                for level in data.iter_levels() {
-                    let label = level.identifier.as_ref();
 
-                    let mut background_image: Option<Handle<Image>> = None;
+                    let asset_path = ldtk_path_to_asset_path(
+                        load_context.path(),
+                        &level.external_rel_path.as_ref().expect("TODO"),
+                    );
+
+                    external_level_paths.push(asset_path.clone());
+
+                    let level_handle = load_context.get_handle(asset_path);
+                    level_map.insert(
+                        level.iid.clone(),
+                        ExternalLevel::new(bg_image, level_handle),
+                    );
+                }
+
+                LevelMap::ExternalLevels(level_map)
+            } else {
+                let mut level_map = IndexMap::new();
+                for (level_index, level) in data.iter_levels().enumerate() {
+                    let mut bg_image: Option<Handle<Image>> = None;
+
                     if let Some(rel_path) = &level.bg_rel_path {
                         let asset_path = ldtk_path_to_asset_path(load_context.path(), rel_path);
                         background_images.push(asset_path.clone());
-                        background_image = Some(load_context.get_handle(asset_path));
+                        bg_image = Some(load_context.get_handle(asset_path));
                     }
 
-                    let ldtk_level = LdtkExternalLevel::new(level.clone());
-                    let level_handle =
-                        load_context.set_labeled_asset(label, LoadedAsset::new(ldtk_level));
-
-                    level_map.insert(level.iid.clone(), level_handle);
+                    level_map.insert(level.iid.clone(), InternalLevel::new(bg_image, level_index));
                 }
-            }
+
+                LevelMap::InternalLevels(level_map)
+            };
 
             let mut tileset_rel_paths = Vec::new();
             let mut tileset_map = HashMap::new();

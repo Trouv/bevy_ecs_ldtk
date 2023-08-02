@@ -104,10 +104,8 @@ pub struct Climber {
 #[derive(Clone, Default, Bundle, LdtkEntity)]
 pub struct PlayerBundle {
     #[sprite_bundle("player.png")]
-    #[bundle]
     pub sprite_bundle: SpriteBundle,
     #[from_entity_instance]
-    #[bundle]
     pub collider_bundle: ColliderBundle,
     pub player: Player,
     #[worldly]
@@ -138,7 +136,6 @@ pub struct Climbable;
 #[derive(Clone, Debug, Default, Bundle, LdtkIntCell)]
 pub struct LadderBundle {
     #[from_int_grid_cell]
-    #[bundle]
     pub sensor_bundle: SensorBundle,
     pub climbable: Climbable,
 }
@@ -202,10 +199,8 @@ impl LdtkEntity for Patrol {
 #[derive(Clone, Default, Bundle, LdtkEntity)]
 pub struct MobBundle {
     #[sprite_sheet_bundle]
-    #[bundle]
     pub sprite_sheet_bundle: SpriteSheetBundle,
     #[from_entity_instance]
-    #[bundle]
     pub collider_bundle: ColliderBundle,
     pub enemy: Enemy,
     #[ldtk_entity]
@@ -215,17 +210,14 @@ pub struct MobBundle {
 #[derive(Clone, Default, Bundle, LdtkEntity)]
 pub struct ChestBundle {
     #[sprite_sheet_bundle]
-    #[bundle]
     pub sprite_sheet_bundle: SpriteSheetBundle,
     #[from_entity_instance]
-    #[bundle]
     pub collider_bundle: ColliderBundle,
 }
 
 #[derive(Clone, Default, Bundle, LdtkEntity)]
 pub struct PumpkinsBundle {
     #[sprite_sheet_bundle(no_grid)]
-    #[bundle]
     pub sprite_sheet_bundle: SpriteSheetBundle,
 }
 

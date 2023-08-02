@@ -6,7 +6,7 @@ use crate::{
 use bevy::{
     asset::{AssetLoader, AssetPath, LoadContext, LoadedAsset},
     prelude::*,
-    reflect::TypeUuid,
+    reflect::{TypePath, TypeUuid},
     utils::BoxedFuture,
 };
 use derive_getters::Getters;
@@ -23,7 +23,7 @@ fn ldtk_path_to_asset_path<'b>(ldtk_path: &Path, rel_path: &str) -> AssetPath<'b
 /// [`LdtkWorldBundle`].
 ///
 /// [`LdtkWorldBundle`]: crate::components::LdtkWorldBundle
-#[derive(Clone, TypeUuid, Getters)]
+#[derive(Clone, Debug, PartialEq, TypeUuid, TypePath, Getters)]
 #[uuid = "ecfb87b7-9cd9-4970-8482-f2f68b770d31"]
 pub struct LdtkProject {
     /// Raw ldtk project data.
@@ -62,7 +62,7 @@ impl LdtkProject {
     }
 }
 
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Default)]
 pub struct LdtkProjectLoader;
 
 impl AssetLoader for LdtkProjectLoader {

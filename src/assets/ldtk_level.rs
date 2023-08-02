@@ -15,7 +15,7 @@ use derive_getters::Getters;
 /// Loaded as a dependency to the [`LdtkProject`] when loading an ldtk file with external levels.
 ///
 /// [`LdtkProject`]: crate::assets::LdtkProject
-#[derive(TypeUuid, Getters, Reflect, FromReflect)]
+#[derive(Clone, Debug, PartialEq, TypeUuid, Getters, Reflect)]
 #[uuid = "5448469b-2134-44f5-a86c-a7b829f70a0c"]
 pub struct LdtkLevel {
     /// Raw ldtk level data.
@@ -33,7 +33,7 @@ impl LdtkLevel {
     }
 }
 
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Default)]
 pub struct LdtkLevelLoader;
 
 impl AssetLoader for LdtkLevelLoader {

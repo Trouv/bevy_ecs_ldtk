@@ -44,8 +44,8 @@ use bevy_ecs_ldtk::prelude::*;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugin(LdtkPlugin)
-        .add_startup_system(setup)
+        .add_plugins(LdtkPlugin)
+        .add_system(Startup, setup)
         .insert_resource(LevelSelection::Index(0))
         .register_ldtk_entity::<MyBundle>("MyEntityIdentifier")
         .run();
@@ -65,7 +65,6 @@ pub struct MyBundle {
     a: ComponentA,
     b: ComponentB,
     #[sprite_sheet_bundle]
-    #[bundle]
     sprite_bundle: SpriteSheetBundle,
 }
 ```
@@ -86,7 +85,8 @@ for additional level-loading options.
 ### Compatibility
 | bevy | bevy_ecs_tilemap | LDtk | bevy_ecs_ldtk |
 | --- | --- | --- | --- |
-| 0.10 | 0.10 | 1.3.3 | main |
+| 0.11 | 0.11 | 1.3.3 | main |
+| 0.11 | 0.11 | 1.3.3 | 0.8 |
 | 0.10 | 0.10 | 1.1 | 0.7 |
 | 0.10 | 0.10 | 1.1 | 0.6 |
 | 0.9 | 0.9 | 1.1 | 0.5 |

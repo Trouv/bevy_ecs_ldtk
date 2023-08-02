@@ -7,7 +7,7 @@ use regex::Regex;
 
 use crate::ldtk::color;
 
-#[derive(PartialEq, Debug, Clone, Serialize, Reflect, FromReflect)]
+#[derive(PartialEq, Debug, Clone, Serialize, Reflect)]
 pub struct FieldInstance {
     /// Field definition identifier
     #[serde(rename = "__identifier")]
@@ -189,7 +189,8 @@ impl<'de> Deserialize<'de> for FieldInstance {
     }
 }
 
-#[derive(PartialEq, Debug, Clone, Serialize, Reflect, FromReflect)]
+#[derive(PartialEq, Debug, Clone, Serialize, Reflect)]
+#[reflect_value()]
 #[serde(untagged)]
 /// The actual value of a field instance on a [Level] or [EntityInstance].
 ///

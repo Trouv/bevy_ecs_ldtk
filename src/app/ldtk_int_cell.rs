@@ -82,7 +82,6 @@ use std::{collections::HashMap, marker::PhantomData};
 /// #[derive(Bundle, LdtkIntCell)]
 /// pub struct DestructibleWall {
 ///     #[ldtk_int_cell]
-///     #[bundle]
 ///     wall: Wall,
 ///     damage: Damage,
 /// }

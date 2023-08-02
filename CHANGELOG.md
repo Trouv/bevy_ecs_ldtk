@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.8.0](https://github.com/Trouv/bevy_ecs_ldtk/compare/v0.7.0...v0.8.0) (2023-07-31)
+
+
+### ⚠ BREAKING CHANGES
+
+* upgrade to bevy and bevy_ecs_tilemap 0.11 ([#204](https://github.com/Trouv/bevy_ecs_ldtk/issues/204))
+* `LdtkAsset::world_height` has been removed
+* upgrade LDtk types to 1.3.3 (dropping support for <1.3.3 LDtk projects) ([#203](https://github.com/Trouv/bevy_ecs_ldtk/issues/203))
+
+### Features
+
+* add `EntityIid` component which is added to all entities by default ([#194](https://github.com/Trouv/bevy_ecs_ldtk/issues/194)) ([d99f1ae](https://github.com/Trouv/bevy_ecs_ldtk/commit/d99f1ae7eec28114d9277e5c5063418234fcc261))
+* register and derive Reflect for LdtkLevel and dependent types ([#201](https://github.com/Trouv/bevy_ecs_ldtk/issues/201)) ([873ed17](https://github.com/Trouv/bevy_ecs_ldtk/commit/873ed179b8fe80b95100f1aabaf63754ad285f74))
+* upgrade LDtk types to 1.3.3 (dropping support for &lt;1.3.3 LDtk projects) ([#203](https://github.com/Trouv/bevy_ecs_ldtk/issues/203)) ([e347780](https://github.com/Trouv/bevy_ecs_ldtk/commit/e3477804906f3a8f1ff5afc209734fe4891fc439))
+* upgrade to bevy and bevy_ecs_tilemap 0.11 ([#204](https://github.com/Trouv/bevy_ecs_ldtk/issues/204)) ([ef1b075](https://github.com/Trouv/bevy_ecs_ldtk/commit/ef1b075a12b4793575a1f310421f5062a403494e))
+
+
+### Bug Fixes
+
+* remove `LdtkAsset::world_height` and correct `UseWorldTranslation` y-calculation ([#207](https://github.com/Trouv/bevy_ecs_ldtk/issues/207)) ([8923b4e](https://github.com/Trouv/bevy_ecs_ldtk/commit/8923b4e01b1d78c7516299fbf052a09bc37ea657))
+
+
+### Documentation Changes
+
+* fix code links in entity_iid module ([#210](https://github.com/Trouv/bevy_ecs_ldtk/issues/210)) ([53728b3](https://github.com/Trouv/bevy_ecs_ldtk/commit/53728b3dd0a969dfad08cfccecc1e5f4e1fee03d))
+
 ## [0.7.0](https://github.com/Trouv/bevy_ecs_ldtk/compare/v0.6.0...v0.7.0) (2023-04-29)
 
 

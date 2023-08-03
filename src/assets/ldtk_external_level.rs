@@ -1,11 +1,10 @@
-use crate::ldtk::Level;
+use crate::ldtk::{loaded_level::LoadedLevel, Level};
 use bevy::{
     asset::{AssetLoader, LoadContext, LoadedAsset},
     prelude::*,
     reflect::TypeUuid,
     utils::BoxedFuture,
 };
-use derive_getters::Getters;
 
 /// Secondary asset for loading ldtk files, specific to level data.
 ///
@@ -15,7 +14,7 @@ use derive_getters::Getters;
 /// Loaded as a dependency to the [`LdtkProject`] when loading an ldtk file with external levels.
 ///
 /// [`LdtkProject`]: crate::assets::LdtkProject
-#[derive(Clone, Debug, PartialEq, TypeUuid, Getters, Reflect)]
+#[derive(Clone, Debug, PartialEq, TypeUuid, Reflect)]
 #[uuid = "5448469b-2134-44f5-a86c-a7b829f70a0c"]
 pub struct LdtkExternalLevel {
     /// Raw ldtk level data.
@@ -26,6 +25,11 @@ impl LdtkExternalLevel {
     /// Construct a new [`LdtkLevel`].
     pub fn new(data: Level) -> LdtkExternalLevel {
         LdtkExternalLevel { data }
+    }
+
+    pub fn data(&self) -> LoadedLevel {
+        LoadedLevel::try_from(&self.data)
+            .expect("external levels must have non-null layer instances")
     }
 
     pub fn background_image(&self) -> &Option<Handle<Image>> {

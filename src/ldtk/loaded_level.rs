@@ -108,6 +108,7 @@ impl<'a> LoadedLevel<'a> {
         &self
             .level
             .layer_instances
+            .as_ref()
             .expect("LoadedLevel construction should guarantee the existence of layer instances")
     }
 

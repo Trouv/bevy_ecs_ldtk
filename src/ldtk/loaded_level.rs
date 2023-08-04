@@ -1,4 +1,4 @@
-use crate::ldtk::Level;
+use crate::ldtk::{ldtk_fields::LdtkFields, Level};
 use bevy::prelude::Color;
 use thiserror::Error;
 
@@ -153,5 +153,11 @@ impl<'a> LoadedLevel<'a> {
     /// value is always -1 here.
     pub fn world_y(&self) -> &i32 {
         &self.level.world_y
+    }
+}
+
+impl<'a> LdtkFields for LoadedLevel<'a> {
+    fn field_instances(&self) -> &[FieldInstance] {
+        self.level.field_instances()
     }
 }

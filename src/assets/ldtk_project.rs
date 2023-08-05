@@ -2,6 +2,7 @@ use crate::{
     assets::{level_map::LevelMap, LdtkExternalLevel},
     ldtk::{loaded_level::LoadedLevel, LdtkJson, Level},
     resources::LevelSelection,
+    LevelIid,
 };
 use bevy::{
     asset::{AssetLoader, AssetPath, LoadContext, LoadedAsset},
@@ -10,11 +11,15 @@ use bevy::{
     utils::BoxedFuture,
 };
 use derive_getters::Getters;
-use indexmap::IndexMap;
 use std::collections::HashMap;
 use std::path::Path;
+use thiserror::Error;
 
-use super::level_map::{ExternalLevel, InternalLevel};
+#[cfg(not(feature = "external_levels"))]
+use crate::assets::level_map::InternalLevel;
+
+#[cfg(feature = "external_levels")]
+use crate::assets::level_map::ExternalLevel;
 
 fn ldtk_path_to_asset_path<'b>(ldtk_path: &Path, rel_path: &str) -> AssetPath<'b> {
     ldtk_path.parent().unwrap().join(Path::new(rel_path)).into()
@@ -48,7 +53,7 @@ impl LdtkProject {
     /// Note: the returned levels are the ones existent in the [`LdtkProject`].
     /// These levels will have "incomplete" data if you use LDtk's external levels feature.
     /// To always get full level data, you'll need to access `Assets<LdtkLevel>`.
-    pub fn iter_internal_levels(&self) -> impl Iterator<Item = &Level> {
+    pub fn iter_raw_levels(&self) -> impl Iterator<Item = &Level> {
         self.data.iter_raw_levels()
     }
 
@@ -58,7 +63,7 @@ impl LdtkProject {
     /// This level will have "incomplete" data if you use LDtk's external levels feature.
     /// To always get full level data, you'll need to access `Assets<LdtkLevel>`.
     pub fn get_internal_level(&self, level_selection: &LevelSelection) -> Option<&Level> {
-        self.iter_internal_levels()
+        self.iter_raw_levels()
             .enumerate()
             .find(|(i, l)| level_selection.is_match(i, l))
             .map(|(_, l)| l)
@@ -87,6 +92,17 @@ impl LdtkProject {
     }
 }
 
+#[allow(dead_code)]
+#[derive(Debug, Error)]
+pub enum LdtkProjectLoaderError {
+    #[error("external_levels feature enabled, but LDtk project uses internal levels")]
+    InternalLevelProject,
+    #[error("LDtk project uses external levels, but external_levels feature not enabled")]
+    ExternalLevelProject,
+    #[error("LDtk project uses internal levels, but the level's layers is null")]
+    InternalLevelWithNullLayers,
+}
+
 #[derive(Default)]
 pub struct LdtkProjectLoader;
 
@@ -102,17 +118,27 @@ impl AssetLoader for LdtkProjectLoader {
             let mut background_images = Vec::new();
 
             let mut external_level_paths = Vec::new();
-            let level_map = if data.external_levels {
-                let mut level_map = IndexMap::new();
-                for level in data.iter_raw_levels() {
-                    let mut bg_image = None;
-                    if let Some(rel_path) = &level.bg_rel_path {
-                        let asset_path = ldtk_path_to_asset_path(load_context.path(), rel_path);
 
-                        background_images.push(asset_path.clone());
-                        bg_image = Some(load_context.get_handle(asset_path));
-                    }
+            if data.external_levels && !cfg!(feature = "external_levels") {
+                Err(LdtkProjectLoaderError::ExternalLevelProject)?;
+            } else if !data.external_levels && cfg!(feature = "external_levels") {
+                Err(LdtkProjectLoaderError::InternalLevelProject)?;
+            }
 
+            let mut level_map = LevelMap::new();
+
+            #[allow(unused_variables)]
+            for (level_index, level) in data.iter_raw_levels().enumerate() {
+                let mut bg_image = None;
+                if let Some(rel_path) = &level.bg_rel_path {
+                    let asset_path = ldtk_path_to_asset_path(load_context.path(), rel_path);
+
+                    background_images.push(asset_path.clone());
+                    bg_image = Some(load_context.get_handle(asset_path));
+                }
+
+                #[cfg(feature = "external_levels")]
+                {
                     let asset_path = ldtk_path_to_asset_path(
                         load_context.path(),
                         &level.external_rel_path.as_ref().expect("TODO"),
@@ -122,28 +148,23 @@ impl AssetLoader for LdtkProjectLoader {
 
                     let level_handle = load_context.get_handle(asset_path);
                     level_map.insert(
-                        level.iid.clone(),
+                        LevelIid::new(level.iid.clone()),
                         ExternalLevel::new(bg_image, level_handle),
                     );
                 }
 
-                LevelMap::ExternalLevels(level_map)
-            } else {
-                let mut level_map = IndexMap::new();
-                for (level_index, level) in data.iter_raw_levels().enumerate() {
-                    let mut bg_image: Option<Handle<Image>> = None;
-
-                    if let Some(rel_path) = &level.bg_rel_path {
-                        let asset_path = ldtk_path_to_asset_path(load_context.path(), rel_path);
-                        background_images.push(asset_path.clone());
-                        bg_image = Some(load_context.get_handle(asset_path));
+                #[cfg(not(feature = "external_levels"))]
+                {
+                    if level.layer_instances.is_none() {
+                        Err(LdtkProjectLoaderError::InternalLevelWithNullLayers)?;
                     }
 
-                    level_map.insert(level.iid.clone(), InternalLevel::new(bg_image, level_index));
+                    level_map.insert(
+                        LevelIid::new(level.iid.clone()),
+                        InternalLevel::new(bg_image, level_index),
+                    );
                 }
-
-                LevelMap::InternalLevels(level_map)
-            };
+            }
 
             let mut tileset_rel_paths = Vec::new();
             let mut tileset_map = HashMap::new();

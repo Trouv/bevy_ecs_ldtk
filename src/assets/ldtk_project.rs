@@ -117,8 +117,6 @@ impl AssetLoader for LdtkProjectLoader {
 
             let mut background_images = Vec::new();
 
-            let mut external_level_paths = Vec::new();
-
             if data.external_levels && !cfg!(feature = "external_levels") {
                 Err(LdtkProjectLoaderError::ExternalLevelProject)?;
             } else if !data.external_levels && cfg!(feature = "external_levels") {
@@ -126,6 +124,9 @@ impl AssetLoader for LdtkProjectLoader {
             }
 
             let mut level_map = LevelMap::new();
+
+            #[allow(unused_mut)]
+            let mut external_level_paths = Vec::new();
 
             #[allow(unused_variables)]
             for (level_index, level) in data.iter_raw_levels().enumerate() {
@@ -192,6 +193,7 @@ impl AssetLoader for LdtkProjectLoader {
                 level_map,
                 int_grid_image_handle,
             };
+
             load_context.set_default_asset(
                 LoadedAsset::new(ldtk_asset)
                     .with_dependencies(tileset_rel_paths)

@@ -73,7 +73,7 @@ impl LdtkProject {
     pub fn iter_loaded_levels(&self) -> impl Iterator<Item = LoadedLevel> {
         self.iter_raw_levels().map(|level| {
             LoadedLevel::try_from(level).expect(
-                "construction of LDtkProject should guarantee that internal levels are loaded.",
+                "construction of LDtkProject should guarantee that internal levels are loaded",
             )
         })
     }

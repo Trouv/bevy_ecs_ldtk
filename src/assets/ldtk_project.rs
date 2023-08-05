@@ -172,7 +172,7 @@ impl AssetLoader for LdtkProjectLoader {
                 {
                     let asset_path = ldtk_path_to_asset_path(
                         load_context.path(),
-                        &level.external_rel_path.as_ref().expect("TODO"),
+                        level.external_rel_path.as_ref().expect("TODO"),
                     );
 
                     external_level_paths.push(asset_path.clone());

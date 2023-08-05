@@ -38,6 +38,7 @@ default = ["derive", "render"]
 derive = ["bevy_ecs_ldtk_macros"]
 atlas = ["bevy_ecs_tilemap/atlas"]
 render = ["bevy_ecs_tilemap/render"]
+external_levels = []
 
 [[example]]
 name = "platformer"

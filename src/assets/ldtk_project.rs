@@ -49,7 +49,7 @@ impl LdtkProject {
     /// These levels will have "incomplete" data if you use LDtk's external levels feature.
     /// To always get full level data, you'll need to access `Assets<LdtkLevel>`.
     pub fn iter_internal_levels(&self) -> impl Iterator<Item = &Level> {
-        self.data.iter_levels()
+        self.data.iter_raw_levels()
     }
 
     /// Find a particular level using a [`LevelSelection`].
@@ -104,7 +104,7 @@ impl AssetLoader for LdtkProjectLoader {
             let mut external_level_paths = Vec::new();
             let level_map = if data.external_levels {
                 let mut level_map = IndexMap::new();
-                for level in data.iter_levels() {
+                for level in data.iter_raw_levels() {
                     let mut bg_image = None;
                     if let Some(rel_path) = &level.bg_rel_path {
                         let asset_path = ldtk_path_to_asset_path(load_context.path(), rel_path);
@@ -130,7 +130,7 @@ impl AssetLoader for LdtkProjectLoader {
                 LevelMap::ExternalLevels(level_map)
             } else {
                 let mut level_map = IndexMap::new();
-                for (level_index, level) in data.iter_levels().enumerate() {
+                for (level_index, level) in data.iter_raw_levels().enumerate() {
                     let mut bg_image: Option<Handle<Image>> = None;
 
                     if let Some(rel_path) = &level.bg_rel_path {

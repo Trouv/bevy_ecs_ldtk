@@ -25,12 +25,18 @@ pub struct LdtkExternalLevel {
 impl LdtkExternalLevel {
     pub fn data(&self) -> LoadedLevel {
         LoadedLevel::try_from(&self.data)
-            .expect("external levels must have non-null layer instances")
+            .expect("construction of LdtkExternalLevel should guarantee that the level is loaded.")
     }
 
     pub fn background_image(&self) -> &Option<Handle<Image>> {
         &None
     }
+}
+
+#[derive(Debug, Error)]
+pub enum LdtkExternalLevelLoaderError {
+    #[error("external LDtk level should contain all level data, but the level's layers is null")]
+    NullLayers,
 }
 
 #[derive(Default)]
@@ -44,6 +50,10 @@ impl AssetLoader for LdtkExternalLevelLoader {
     ) -> BoxedFuture<'a, anyhow::Result<()>> {
         Box::pin(async move {
             let data: Level = serde_json::from_slice(bytes)?;
+
+            if data.layer_instances.is_none() {
+                Err(LdtkExternalLevelLoaderError::NullLayers)?;
+            }
 
             let ldtk_level = LdtkExternalLevel { data };
 

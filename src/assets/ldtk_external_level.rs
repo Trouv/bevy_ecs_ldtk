@@ -5,6 +5,7 @@ use bevy::{
     reflect::TypeUuid,
     utils::BoxedFuture,
 };
+use thiserror::Error;
 
 /// Secondary asset for loading ldtk files, specific to level data.
 ///
@@ -22,11 +23,6 @@ pub struct LdtkExternalLevel {
 }
 
 impl LdtkExternalLevel {
-    /// Construct a new [`LdtkLevel`].
-    pub fn new(data: Level) -> LdtkExternalLevel {
-        LdtkExternalLevel { data }
-    }
-
     pub fn data(&self) -> LoadedLevel {
         LoadedLevel::try_from(&self.data)
             .expect("external levels must have non-null layer instances")

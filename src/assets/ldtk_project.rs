@@ -90,6 +90,36 @@ impl LdtkProject {
                 .expect("TODO")
         })
     }
+
+    #[cfg(not(feature = "external_levels"))]
+    pub fn get_loaded_level(&self, iid: &LevelIid) -> Option<LoadedLevel> {
+        self.level_map
+            .get(iid)
+            .map(|internal_level| {
+                self.iter_raw_levels()
+                    .nth(*internal_level.level_index())
+                    .expect("internal level index should be valid")
+            })
+            .map(|raw| {
+                LoadedLevel::try_from(raw).expect(
+                    "construction of LDtkProject should guarantee that internal levels are loaded",
+                )
+            })
+    }
+
+    #[cfg(feature = "external_levels")]
+    pub fn get_loaded_level<'a>(
+        &'a self,
+        iid: &LevelIid,
+        external_level_assets: &'a Assets<LdtkExternalLevel>,
+    ) -> Option<LoadedLevel<'a>> {
+        self.level_map.get(iid).map(|external_level| {
+            external_level_assets
+                .get(external_level.level_handle())
+                .map(|level_asset| level_asset.data())
+                .expect("TODO")
+        })
+    }
 }
 
 #[allow(dead_code)]

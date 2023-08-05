@@ -1,5 +1,5 @@
 use crate::{
-    assets::{level_map::LevelMap, LdtkExternalLevel},
+    assets::level_map::LevelMap,
     ldtk::{loaded_level::LoadedLevel, LdtkJson, Level},
     resources::LevelSelection,
     LevelIid,
@@ -19,7 +19,7 @@ use thiserror::Error;
 use crate::assets::level_map::InternalLevel;
 
 #[cfg(feature = "external_levels")]
-use crate::assets::level_map::ExternalLevel;
+use crate::assets::{level_map::ExternalLevel, LdtkExternalLevel};
 
 fn ldtk_path_to_asset_path<'b>(ldtk_path: &Path, rel_path: &str) -> AssetPath<'b> {
     ldtk_path.parent().unwrap().join(Path::new(rel_path)).into()
@@ -69,26 +69,26 @@ impl LdtkProject {
             .map(|(_, l)| l)
     }
 
-    pub fn get_loaded_level<'a>(
+    #[cfg(not(feature = "external_levels"))]
+    pub fn iter_loaded_levels(&self) -> impl Iterator<Item = LoadedLevel> {
+        self.iter_raw_levels().map(|level| {
+            LoadedLevel::try_from(level).expect(
+                "construction of LDtkProject should guarantee that internal levels are loaded.",
+            )
+        })
+    }
+
+    #[cfg(feature = "external_levels")]
+    pub fn iter_loaded_levels<'a>(
         &'a self,
         external_level_assets: &'a Assets<LdtkExternalLevel>,
-        key: &String,
-    ) -> Option<LoadedLevel<'a>> {
-        match &self.level_map {
-            LevelMap::InternalLevels(internal_levels) => Some(
-                self.iter_internal_levels()
-                    .nth(*internal_levels.get(key)?.level_index())?
-                    .try_into()
-                    .expect("TODO"),
-            ),
-            LevelMap::ExternalLevels(external_levels) => Some(
-                external_level_assets
-                    .get(external_levels.get(key)?.level_handle())?
-                    .data()
-                    .try_into()
-                    .expect("TODO"),
-            ),
-        }
+    ) -> impl Iterator<Item = LoadedLevel<'a>> {
+        self.level_map.values().map(|external_level| {
+            external_level_assets
+                .get(external_level.level_handle())
+                .map(|level_asset| level_asset.data())
+                .expect("TODO")
+        })
     }
 }
 

@@ -105,8 +105,7 @@ impl<'a> LoadedLevel<'a> {
 
     /// An array containing all Layer instances.
     pub fn layer_instances(&self) -> &Vec<LayerInstance> {
-        &self
-            .level
+        self.level
             .layer_instances
             .as_ref()
             .expect("LoadedLevel construction should guarantee the existence of layer instances")

@@ -1,47 +1,43 @@
 use bevy::prelude::*;
 use derive_getters::Getters;
-use indexmap::IndexMap;
 
 #[cfg(feature = "external_levels")]
 use crate::assets::LdtkExternalLevel;
-use crate::LevelIid;
 
-#[cfg(not(feature = "external_levels"))]
-#[derive(Clone, Default, Debug, PartialEq, Eq, Getters)]
-pub struct InternalLevel {
-    bg_image: Option<Handle<Image>>,
+#[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Getters)]
+pub struct LevelIndices {
+    world_index: Option<usize>,
     level_index: usize,
 }
 
-#[cfg(not(feature = "external_levels"))]
-impl InternalLevel {
-    pub fn new(bg_image: Option<Handle<Image>>, level_index: usize) -> Self {
-        InternalLevel {
-            bg_image,
+impl LevelIndices {
+    pub fn new(world_index: Option<usize>, level_index: usize) -> Self {
+        LevelIndices {
+            world_index,
             level_index,
         }
     }
 }
 
-#[cfg(feature = "external_levels")]
-#[derive(Clone, Default, Debug, PartialEq, Eq, Getters)]
-pub struct ExternalLevel {
+#[derive(Clone, Debug, Default, Eq, PartialEq, Getters)]
+pub struct LevelMetadata {
     bg_image: Option<Handle<Image>>,
-    level_handle: Handle<LdtkExternalLevel>,
+    indices: LevelIndices,
+    #[cfg(feature = "external_levels")]
+    external_handle: Handle<LdtkExternalLevel>,
 }
 
-#[cfg(feature = "external_levels")]
-impl ExternalLevel {
-    pub fn new(bg_image: Option<Handle<Image>>, level_handle: Handle<LdtkExternalLevel>) -> Self {
-        ExternalLevel {
+impl LevelMetadata {
+    pub fn new(
+        bg_image: Option<Handle<Image>>,
+        indices: LevelIndices,
+        #[cfg(feature = "external_levels")] external_handle: Handle<LdtkExternalLevel>,
+    ) -> Self {
+        LevelMetadata {
             bg_image,
-            level_handle,
+            indices,
+            #[cfg(feature = "external_levels")]
+            external_handle,
         }
     }
 }
-
-#[cfg(not(feature = "external_levels"))]
-pub type LevelMap = IndexMap<LevelIid, InternalLevel>;
-
-#[cfg(feature = "external_levels")]
-pub type LevelMap = IndexMap<LevelIid, ExternalLevel>;

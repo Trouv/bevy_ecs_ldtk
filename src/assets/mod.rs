@@ -10,3 +10,4 @@ mod ldtk_project;
 pub use ldtk_project::LdtkProject;
 
 mod level_map;
+pub use level_map::{LevelIndices, LevelMetadata};

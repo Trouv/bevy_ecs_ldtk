@@ -61,14 +61,7 @@ impl LdtkProject {
     }
 
     pub fn get_raw_level_by_indices(&self, indices: &LevelIndices) -> Option<&Level> {
-        match indices.world_index() {
-            Some(world_index) => self
-                .data
-                .worlds
-                .get(*world_index)
-                .and_then(|world| world.levels.get(*indices.level_index())),
-            None => self.data.levels.get(*indices.level_index()),
-        }
+        self.data.get_raw_level_by_indices(indices)
     }
 
     pub fn get_raw_level_by_iid(&self, iid: &String) -> Option<&Level> {

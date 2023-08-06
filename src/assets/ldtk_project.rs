@@ -1,6 +1,6 @@
 use crate::{
     assets::level_map::LevelMetadata,
-    ldtk::{LdtkJson, Level},
+    ldtk::{loaded_level::LoadedLevel, LdtkJson, Level},
     resources::LevelSelection,
 };
 use bevy::{
@@ -19,6 +19,12 @@ use super::level_map::LevelIndices;
 
 fn ldtk_path_to_asset_path<'b>(ldtk_path: &Path, rel_path: &str) -> AssetPath<'b> {
     ldtk_path.parent().unwrap().join(Path::new(rel_path)).into()
+}
+
+#[cfg(not(feature = "external_levels"))]
+fn expect_level_loaded(level: &Level) -> LoadedLevel {
+    LoadedLevel::try_from(level)
+        .expect("LdtkProject construction should guarantee that internal levels are loaded")
 }
 
 /// Main asset for loading ldtk files.
@@ -94,6 +100,34 @@ impl LdtkProject {
                 .find(|(i, l)| level_selection.is_match(i, l))
                 .map(|(_, l)| l),
         }
+    }
+}
+
+#[cfg(not(feature = "external_levels"))]
+impl LdtkProject {
+    pub fn iter_loaded_levels(&self) -> impl Iterator<Item = LoadedLevel> {
+        self.iter_raw_levels().map(expect_level_loaded)
+    }
+
+    pub fn get_loaded_level_by_indices(&self, indices: &LevelIndices) -> Option<LoadedLevel> {
+        self.get_raw_level_by_indices(indices)
+            .map(expect_level_loaded)
+    }
+
+    pub fn get_loaded_level_by_iid(&self, iid: &String) -> Option<LoadedLevel> {
+        self.get_raw_level_by_iid(iid).map(expect_level_loaded)
+    }
+
+    pub fn get_loaded_level_by_index(&self, index: usize) -> Option<LoadedLevel> {
+        self.get_raw_level_by_index(index).map(expect_level_loaded)
+    }
+
+    pub fn find_loaded_level_by_level_selection(
+        &self,
+        level_selection: &LevelSelection,
+    ) -> Option<LoadedLevel> {
+        self.find_raw_level_by_level_selection(level_selection)
+            .map(expect_level_loaded)
     }
 }
 

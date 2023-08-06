@@ -53,16 +53,47 @@ impl LdtkProject {
         self.data.iter_raw_levels()
     }
 
+    pub fn get_raw_level_by_indices(&self, indices: &LevelIndices) -> Option<&Level> {
+        match indices.world_index() {
+            Some(world_index) => self
+                .data
+                .worlds
+                .get(*world_index)
+                .and_then(|world| world.levels.get(*indices.level_index())),
+            None => self.data.levels.get(*indices.level_index()),
+        }
+    }
+
+    pub fn get_raw_level_by_iid(&self, iid: &String) -> Option<&Level> {
+        self.level_map
+            .get(iid)
+            .and_then(|level_metadata| self.get_raw_level_by_indices(level_metadata.indices()))
+    }
+
+    pub fn get_raw_level_by_index(&self, index: usize) -> Option<&Level> {
+        self.level_map
+            .get_index(index)
+            .and_then(|(_, level_metadata)| self.get_raw_level_by_indices(level_metadata.indices()))
+    }
+
     /// Find a particular level using a [`LevelSelection`].
     ///
     /// Note: the returned level is the one existent in the [`LdtkProject`].
     /// This level will have "incomplete" data if you use LDtk's external levels feature.
     /// To always get full level data, you'll need to access `Assets<LdtkLevel>`.
-    pub fn find_raw_level(&self, level_selection: &LevelSelection) -> Option<&Level> {
-        self.iter_raw_levels()
-            .enumerate()
-            .find(|(i, l)| level_selection.is_match(i, l))
-            .map(|(_, l)| l)
+    pub fn find_raw_level_by_level_selection(
+        &self,
+        level_selection: &LevelSelection,
+    ) -> Option<&Level> {
+        match level_selection {
+            LevelSelection::Iid(iid) => self.get_raw_level_by_iid(iid),
+            LevelSelection::Index(index) => self.get_raw_level_by_index(*index),
+            _ => self
+                .iter_raw_levels()
+                .enumerate()
+                .find(|(i, l)| level_selection.is_match(i, l))
+                .map(|(_, l)| l),
+        }
     }
 }
 

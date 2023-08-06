@@ -332,13 +332,12 @@ impl AssetLoader for LdtkProjectLoader {
                 }
             }
 
-            let mut tileset_rel_paths = Vec::new();
             let mut tileset_map = HashMap::new();
             for tileset in &data.defs.tilesets {
                 if let Some(tileset_path) = &tileset.rel_path {
                     let asset_path = ldtk_path_to_asset_path(load_context.path(), tileset_path);
 
-                    tileset_rel_paths.push(asset_path.clone());
+                    dependent_asset_paths.push(asset_path.clone());
                     tileset_map.insert(tileset.uid, load_context.get_handle(asset_path));
                 } else if tileset.embed_atlas.is_some() {
                     warn!("Ignoring LDtk's Internal_Icons. They cannot be displayed due to their license.");
@@ -360,9 +359,7 @@ impl AssetLoader for LdtkProjectLoader {
             };
 
             load_context.set_default_asset(
-                LoadedAsset::new(ldtk_asset)
-                    .with_dependencies(tileset_rel_paths)
-                    .with_dependencies(dependent_asset_paths),
+                LoadedAsset::new(ldtk_asset).with_dependencies(dependent_asset_paths),
             );
             Ok(())
         })

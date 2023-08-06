@@ -75,7 +75,8 @@ pub fn apply_level_selection(
     if let Some(level_selection) = level_selection {
         for (ldtk_handle, mut level_set) in level_set_query.iter_mut() {
             if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
-                if let Some(level) = ldtk_asset.find_raw_level(&level_selection) {
+                if let Some(level) = ldtk_asset.find_raw_level_by_level_selection(&level_selection)
+                {
                     let new_level_set = {
                         let mut iids = HashSet::new();
                         iids.insert(level.iid.clone());
@@ -182,7 +183,8 @@ fn pre_spawn_level(
     let mut translation = Vec3::ZERO;
 
     if let LevelSpawnBehavior::UseWorldTranslation { .. } = ldtk_settings.level_spawn_behavior {
-        if let Some(level) = ldtk_asset.find_raw_level(&LevelSelection::Iid(level_iid.to_string()))
+        if let Some(level) = ldtk_asset
+            .find_raw_level_by_level_selection(&LevelSelection::Iid(level_iid.to_string()))
         {
             let level_coords = ldtk_pixel_coords_to_translation(
                 IVec2::new(level.world_x, level.world_y + level.px_hei),
@@ -202,7 +204,7 @@ fn pre_spawn_level(
         })
         .insert(Name::new(
             ldtk_asset
-                .find_raw_level(&LevelSelection::Iid(level_iid.to_string()))
+                .find_raw_level_by_level_selection(&LevelSelection::Iid(level_iid.to_string()))
                 .unwrap()
                 .identifier
                 .to_owned(),

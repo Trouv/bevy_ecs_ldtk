@@ -267,6 +267,30 @@ fn load_level_metadata<'a>(
     }
 }
 
+fn load_level_metadata_into_buffers<'a>(
+    load_context: &LoadContext,
+    level_indices: LevelIndices,
+    level: &Level,
+    level_map: &mut IndexMap<String, LevelMetadata>,
+    dependent_asset_paths: &mut Vec<AssetPath<'a>>,
+) -> Result<(), LdtkProjectLoaderError> {
+    let LoadLevelMetadataResult {
+        bg_image_path,
+        external_level_path,
+        level_metadata,
+    } = load_level_metadata(load_context, level_indices, level)?;
+
+    if let Some(bg_image_path) = bg_image_path {
+        dependent_asset_paths.push(bg_image_path);
+    }
+    if let Some(external_level_path) = external_level_path {
+        dependent_asset_paths.push(external_level_path);
+    }
+    level_map.insert(level.iid.clone(), level_metadata);
+
+    Ok(())
+}
+
 impl AssetLoader for LdtkProjectLoader {
     fn load<'a>(
         &'a self,
@@ -284,25 +308,28 @@ impl AssetLoader for LdtkProjectLoader {
 
             let mut level_map = IndexMap::new();
 
-            let mut background_images = Vec::new();
-            #[allow(unused_mut)]
-            let mut external_level_paths = Vec::new();
+            let mut dependent_asset_paths = Vec::new();
 
-            #[allow(unused_variables)]
             for (level_index, level) in data.levels.iter().enumerate() {
-                let LoadLevelMetadataResult {
-                    bg_image_path,
-                    external_level_path,
-                    level_metadata,
-                } = load_level_metadata(load_context, LevelIndices::new(None, level_index), level)?;
+                load_level_metadata_into_buffers(
+                    load_context,
+                    LevelIndices::new(None, level_index),
+                    level,
+                    &mut level_map,
+                    &mut dependent_asset_paths,
+                )?;
+            }
 
-                if let Some(bg_image_path) = bg_image_path {
-                    background_images.push(bg_image_path);
+            for (world_index, world) in data.worlds.iter().enumerate() {
+                for (level_index, level) in world.levels.iter().enumerate() {
+                    load_level_metadata_into_buffers(
+                        load_context,
+                        LevelIndices::new(Some(world_index), level_index),
+                        level,
+                        &mut level_map,
+                        &mut dependent_asset_paths,
+                    )?;
                 }
-                if let Some(external_level_path) = external_level_path {
-                    external_level_paths.push(external_level_path);
-                }
-                level_map.insert(level.iid.clone(), level_metadata);
             }
 
             let mut tileset_rel_paths = Vec::new();
@@ -335,8 +362,7 @@ impl AssetLoader for LdtkProjectLoader {
             load_context.set_default_asset(
                 LoadedAsset::new(ldtk_asset)
                     .with_dependencies(tileset_rel_paths)
-                    .with_dependencies(external_level_paths)
-                    .with_dependencies(background_images),
+                    .with_dependencies(dependent_asset_paths),
             );
             Ok(())
         })

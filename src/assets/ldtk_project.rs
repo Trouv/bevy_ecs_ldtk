@@ -1,5 +1,5 @@
 use crate::{
-    assets::level_map::LevelMetadata,
+    assets::level_map::{LevelIndices, LevelMetadata},
     ldtk::{loaded_level::LoadedLevel, LdtkJson, Level},
     resources::LevelSelection,
 };
@@ -15,7 +15,8 @@ use std::collections::HashMap;
 use std::path::Path;
 use thiserror::Error;
 
-use super::level_map::LevelIndices;
+#[cfg(feature = "external_levels")]
+use crate::assets::LdtkExternalLevel;
 
 fn ldtk_path_to_asset_path<'b>(ldtk_path: &Path, rel_path: &str) -> AssetPath<'b> {
     ldtk_path.parent().unwrap().join(Path::new(rel_path)).into()
@@ -128,6 +129,69 @@ impl LdtkProject {
     ) -> Option<LoadedLevel> {
         self.find_raw_level_by_level_selection(level_selection)
             .map(expect_level_loaded)
+    }
+}
+
+#[cfg(feature = "external_levels")]
+impl LdtkProject {
+    pub fn iter_loaded_levels<'a>(
+        &'a self,
+        external_level_assets: &'a Assets<LdtkExternalLevel>,
+    ) -> impl Iterator<Item = LoadedLevel<'a>> {
+        self.level_map
+            .values()
+            .filter_map(|metadata| external_level_assets.get(metadata.external_handle()))
+            .map(LdtkExternalLevel::data)
+    }
+
+    pub fn get_loaded_level_by_indices<'a>(
+        &'a self,
+        external_level_assets: &'a Assets<LdtkExternalLevel>,
+        indices: &LevelIndices,
+    ) -> Option<LoadedLevel<'a>> {
+        self.get_loaded_level_by_iid(
+            external_level_assets,
+            &self.get_raw_level_by_indices(indices)?.iid,
+        )
+    }
+
+    pub fn get_loaded_level_by_iid<'a>(
+        &'a self,
+        external_level_assets: &'a Assets<LdtkExternalLevel>,
+        iid: &String,
+    ) -> Option<LoadedLevel<'a>> {
+        self.level_map
+            .get(iid)
+            .and_then(|metadata| external_level_assets.get(metadata.external_handle()))
+            .map(LdtkExternalLevel::data)
+    }
+
+    pub fn get_loaded_level_by_index<'a>(
+        &'a self,
+        external_level_assets: &'a Assets<LdtkExternalLevel>,
+        index: usize,
+    ) -> Option<LoadedLevel<'a>> {
+        self.level_map
+            .get_index(index)
+            .and_then(|(_, metadata)| external_level_assets.get(metadata.external_handle()))
+            .map(LdtkExternalLevel::data)
+    }
+
+    pub fn find_loaded_level_by_level_selection<'a>(
+        &'a self,
+        external_level_assets: &'a Assets<LdtkExternalLevel>,
+        level_selection: &LevelSelection,
+    ) -> Option<LoadedLevel<'a>> {
+        match level_selection {
+            LevelSelection::Iid(iid) => self.get_loaded_level_by_iid(external_level_assets, iid),
+            LevelSelection::Index(index) => {
+                self.get_loaded_level_by_index(external_level_assets, *index)
+            }
+            _ => self.get_loaded_level_by_iid(
+                external_level_assets,
+                &self.find_raw_level_by_level_selection(level_selection)?.iid,
+            ),
+        }
     }
 }
 

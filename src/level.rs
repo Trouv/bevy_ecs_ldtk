@@ -5,11 +5,10 @@ use crate::{
         LdtkEntity, LdtkEntityMap, LdtkIntCellMap, PhantomLdtkEntity, PhantomLdtkEntityTrait,
         PhantomLdtkIntCell, PhantomLdtkIntCellTrait,
     },
-    assets::LdtkExternalLevel,
     components::*,
     ldtk::{
-        EntityDefinition, EnumTagValue, LayerDefinition, LayerInstance, LevelBackgroundPosition,
-        TileCustomMetadata, TileInstance, TilesetDefinition, Type,
+        loaded_level::LoadedLevel, EntityDefinition, EnumTagValue, LayerDefinition, LayerInstance,
+        LevelBackgroundPosition, TileCustomMetadata, TileInstance, TilesetDefinition, Type,
     },
     resources::{IntGridRendering, LdtkSettings, LevelBackground},
     tile_makers::*,
@@ -206,7 +205,8 @@ fn tile_in_layer_bounds(tile: &TileInstance, layer_instance: &LayerInstance) -> 
 
 #[allow(clippy::too_many_arguments)]
 pub fn spawn_level(
-    ldtk_level: &LdtkExternalLevel,
+    level: LoadedLevel,
+    background_image: &Option<Handle<Image>>,
     commands: &mut Commands,
     asset_server: &AssetServer,
     images: &mut Assets<Image>,
@@ -222,8 +222,6 @@ pub fn spawn_level(
     ldtk_entity: Entity,
     ldtk_settings: &LdtkSettings,
 ) {
-    let level = ldtk_level.data();
-
     let layer_instances = level.layer_instances();
 
     let mut layer_z = 0;
@@ -249,7 +247,7 @@ pub fn spawn_level(
 
         // Spawn background image
         if let (Some(background_image_handle), Some(background_position)) =
-            (ldtk_level.background_image(), level.bg_pos())
+            (background_image, level.bg_pos())
         {
             match background_image_sprite_sheet_bundle(
                 images,

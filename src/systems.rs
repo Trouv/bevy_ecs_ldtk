@@ -4,13 +4,16 @@
 use crate::resources::SetClearColor;
 use crate::{
     app::{LdtkEntityMap, LdtkIntCellMap},
-    assets::{LdtkExternalLevel, LdtkProject},
+    assets::LdtkProject,
     components::*,
     ldtk::TilesetDefinition,
     level::spawn_level,
     resources::{LdtkSettings, LevelEvent, LevelSelection, LevelSpawnBehavior},
     utils::*,
 };
+
+#[cfg(feature = "external_levels")]
+use crate::assets::LdtkExternalLevel;
 
 use bevy::{ecs::system::SystemState, prelude::*};
 use std::collections::{HashMap, HashSet};
@@ -118,9 +121,8 @@ pub fn apply_level_set(
         &Handle<LdtkProject>,
         Option<&Respawn>,
     )>,
-    ldtk_level_query: Query<&Handle<LdtkExternalLevel>>,
+    level_iid_query: Query<&LevelIid>,
     ldtk_assets: Res<Assets<LdtkProject>>,
-    level_assets: Res<Assets<LdtkExternalLevel>>,
     ldtk_settings: Res<LdtkSettings>,
     mut level_events: EventWriter<LevelEvent>,
 ) {
@@ -132,10 +134,8 @@ pub fn apply_level_set(
 
             if let Some(children) = children {
                 for child in children.iter() {
-                    if let Ok(level_handle) = ldtk_level_query.get(*child) {
-                        if let Some(ldtk_level) = level_assets.get(level_handle) {
-                            previous_level_maps.insert(ldtk_level.data().iid().clone(), child);
-                        }
+                    if let Ok(level_iid) = level_iid_query.get(*child) {
+                        previous_level_maps.insert(level_iid.to_string(), child);
                     }
                 }
             }
@@ -220,25 +220,25 @@ pub fn process_ldtk_levels(
     mut images: ResMut<Assets<Image>>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     ldtk_assets: Res<Assets<LdtkProject>>,
-    level_assets: Res<Assets<LdtkExternalLevel>>,
+    #[cfg(feature = "external_levels")] level_assets: Res<Assets<LdtkExternalLevel>>,
     ldtk_entity_map: NonSend<LdtkEntityMap>,
     ldtk_int_cell_map: NonSend<LdtkIntCellMap>,
     ldtk_query: Query<&Handle<LdtkProject>>,
     level_query: Query<
         (
             Entity,
-            &Handle<LdtkExternalLevel>,
+            &LevelIid,
             &Parent,
             Option<&Respawn>,
             Option<&Children>,
         ),
-        Or<(Added<Handle<LdtkExternalLevel>>, With<Respawn>)>,
+        Or<(Added<LevelIid>, With<Respawn>)>,
     >,
     worldly_query: Query<&Worldly>,
     mut level_events: EventWriter<LevelEvent>,
     ldtk_settings: Res<LdtkSettings>,
 ) {
-    for (ldtk_entity, level_handle, parent, respawn, children) in level_query.iter() {
+    for (ldtk_entity, level_iid, parent, respawn, children) in level_query.iter() {
         // Checking if the level has any children is an okay method of checking whether it has
         // already been processed.
         // Users will most likely not be adding children to the level entity betwen its creation
@@ -272,25 +272,37 @@ pub fn process_ldtk_levels(
 
                     let worldly_set = worldly_query.iter().cloned().collect();
 
-                    if let Some(level) = level_assets.get(level_handle) {
-                        spawn_level(
-                            level,
-                            &mut commands,
-                            &asset_server,
-                            &mut images,
-                            &mut texture_atlases,
-                            &ldtk_entity_map,
-                            &ldtk_int_cell_map,
-                            &entity_definition_map,
-                            &layer_definition_map,
-                            ldtk_asset.tileset_map(),
-                            &tileset_definition_map,
-                            int_grid_image_handle,
-                            worldly_set,
-                            ldtk_entity,
-                            &ldtk_settings,
-                        );
-                        level_events.send(LevelEvent::Spawned(level.data().iid().clone()));
+                    if let Some(level_metadata) = ldtk_asset.level_map().get(&level_iid.to_string())
+                    {
+                        #[cfg(not(feature = "external_levels"))]
+                        let loaded_level =
+                            ldtk_asset.get_loaded_level_by_indices(level_metadata.indices());
+
+                        #[cfg(feature = "external_levels")]
+                        let loaded_level = ldtk_asset
+                            .get_loaded_level_by_indices(&level_assets, level_metadata.indices());
+
+                        if let Some(loaded_level) = loaded_level {
+                            spawn_level(
+                                loaded_level,
+                                level_metadata.bg_image(),
+                                &mut commands,
+                                &asset_server,
+                                &mut images,
+                                &mut texture_atlases,
+                                &ldtk_entity_map,
+                                &ldtk_int_cell_map,
+                                &entity_definition_map,
+                                &layer_definition_map,
+                                ldtk_asset.tileset_map(),
+                                &tileset_definition_map,
+                                int_grid_image_handle,
+                                worldly_set,
+                                ldtk_entity,
+                                &ldtk_settings,
+                            );
+                            level_events.send(LevelEvent::Spawned(loaded_level.iid().clone()));
+                        }
                     }
 
                     if respawn.is_some() {
@@ -311,10 +323,9 @@ pub fn clean_respawn_entities(world: &mut World) {
     #[allow(clippy::type_complexity)]
     let mut system_state: SystemState<(
         Query<&Children, (With<Handle<LdtkProject>>, With<Respawn>)>,
-        Query<(Entity, &Handle<LdtkExternalLevel>), With<Respawn>>,
-        Query<&Handle<LdtkExternalLevel>, Without<Respawn>>,
+        Query<(Entity, &LevelIid), With<Respawn>>,
+        Query<&LevelIid, Without<Respawn>>,
         Query<Entity, With<Worldly>>,
-        Res<Assets<LdtkExternalLevel>>,
         EventWriter<LevelEvent>,
     )> = SystemState::new(world);
 
@@ -327,7 +338,6 @@ pub fn clean_respawn_entities(world: &mut World) {
             ldtk_levels_to_clean,
             other_ldtk_levels,
             worldly_entities,
-            level_assets,
             mut level_events,
         ) = system_state.get_mut(world);
 
@@ -338,20 +348,16 @@ pub fn clean_respawn_entities(world: &mut World) {
             {
                 entities_to_despawn_recursively.push(*child);
 
-                if let Ok(level_handle) = other_ldtk_levels.get(*child) {
-                    if let Some(level_asset) = level_assets.get(level_handle) {
-                        level_events.send(LevelEvent::Despawned(level_asset.data().iid().clone()));
-                    }
+                if let Ok(level_iid) = other_ldtk_levels.get(*child) {
+                    level_events.send(LevelEvent::Despawned(level_iid.to_string()));
                 }
             }
         }
 
-        for (level_entity, level_handle) in ldtk_levels_to_clean.iter() {
+        for (level_entity, level_iid) in ldtk_levels_to_clean.iter() {
             entities_to_despawn_descendants.push(level_entity);
 
-            if let Some(level_asset) = level_assets.get(level_handle) {
-                level_events.send(LevelEvent::Despawned(level_asset.data().iid().clone()));
-            }
+            level_events.send(LevelEvent::Despawned(level_iid.to_string()));
         }
     }
 

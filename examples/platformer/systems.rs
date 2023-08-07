@@ -79,8 +79,9 @@ pub fn spawn_wall_collision(
     mut commands: Commands,
     wall_query: Query<(&GridCoords, &Parent), Added<Wall>>,
     parent_query: Query<&Parent, Without<Wall>>,
-    level_query: Query<(Entity, &Handle<LdtkExternalLevel>)>,
-    levels: Res<Assets<LdtkExternalLevel>>,
+    level_query: Query<(Entity, &LevelIid)>,
+    ldtk_projects: Query<&Handle<LdtkProject>>,
+    ldtk_project_assets: Res<Assets<LdtkProject>>,
 ) {
     /// Represents a wide wall that is 1 tile tall
     /// Used to spawn wall collisions
@@ -120,22 +121,22 @@ pub fn spawn_wall_collision(
     });
 
     if !wall_query.is_empty() {
-        level_query.for_each(|(level_entity, level_handle)| {
+        level_query.for_each(|(level_entity, level_iid)| {
             if let Some(level_walls) = level_to_wall_locations.get(&level_entity) {
-                let level = levels
-                    .get(level_handle)
-                    .expect("Level should be loaded by this point");
+                let ldtk_project = ldtk_project_assets
+                    .get(ldtk_projects.single())
+                    .expect("Project should be loaded if level has spawned");
+
+                let level = ldtk_project
+                    .get_loaded_level_by_iid(&level_iid.to_string())
+                    .expect("Spawned level should exist in LDtk project");
 
                 let LayerInstance {
                     c_wid: width,
                     c_hei: height,
                     grid_size,
                     ..
-                } = level
-                    .data()
-                    .layer_instances
-                    .clone()
-                    .expect("Level asset should have layers")[0];
+                } = level.layer_instances()[0];
 
                 // combine wall tiles into flat "plates" in each individual row
                 let mut plate_stack: Vec<Vec<Plate>> = Vec::new();
@@ -319,12 +320,10 @@ pub fn camera_fit_inside_current_level(
         Without<Player>,
     >,
     player_query: Query<&Transform, With<Player>>,
-    level_query: Query<
-        (&Transform, &Handle<LdtkExternalLevel>),
-        (Without<OrthographicProjection>, Without<Player>),
-    >,
+    level_query: Query<(&Transform, &LevelIid), (Without<OrthographicProjection>, Without<Player>)>,
+    ldtk_projects: Query<&Handle<LdtkProject>>,
     level_selection: Res<LevelSelection>,
-    ldtk_levels: Res<Assets<LdtkExternalLevel>>,
+    ldtk_project_assets: Res<Assets<LdtkProject>>,
 ) {
     if let Ok(Transform {
         translation: player_translation,
@@ -335,67 +334,79 @@ pub fn camera_fit_inside_current_level(
 
         let (mut orthographic_projection, mut camera_transform) = camera_query.single_mut();
 
-        for (level_transform, level_handle) in &level_query {
-            if let Some(ldtk_level) = ldtk_levels.get(level_handle) {
-                let level = &ldtk_level.data();
-                if level_selection.is_match(&0, level) {
-                    let level_ratio = level.px_wid as f32 / ldtk_level.data().px_hei as f32;
-                    orthographic_projection.viewport_origin = Vec2::ZERO;
-                    if level_ratio > ASPECT_RATIO {
-                        // level is wider than the screen
-                        let height = (level.px_hei as f32 / 9.).round() * 9.;
-                        let width = height * ASPECT_RATIO;
-                        orthographic_projection.scaling_mode =
-                            bevy::render::camera::ScalingMode::Fixed { width, height };
-                        camera_transform.translation.x =
-                            (player_translation.x - level_transform.translation.x - width / 2.)
-                                .clamp(0., level.px_wid as f32 - width);
-                        camera_transform.translation.y = 0.;
-                    } else {
-                        // level is taller than the screen
-                        let width = (level.px_wid as f32 / 16.).round() * 16.;
-                        let height = width / ASPECT_RATIO;
-                        orthographic_projection.scaling_mode =
-                            bevy::render::camera::ScalingMode::Fixed { width, height };
-                        camera_transform.translation.y =
-                            (player_translation.y - level_transform.translation.y - height / 2.)
-                                .clamp(0., level.px_hei as f32 - height);
-                        camera_transform.translation.x = 0.;
-                    }
+        for (level_transform, level_iid) in &level_query {
+            let ldtk_project = ldtk_project_assets
+                .get(ldtk_projects.single())
+                .expect("Project should be loaded if level has spawned");
 
-                    camera_transform.translation.x += level_transform.translation.x;
-                    camera_transform.translation.y += level_transform.translation.y;
+            let level = ldtk_project
+                .get_raw_level_by_iid(&level_iid.to_string())
+                .expect("Spawned level should exist in LDtk project");
+
+            if level_selection.is_match(&0, level) {
+                let level_ratio = level.px_wid as f32 / level.px_hei as f32;
+                orthographic_projection.viewport_origin = Vec2::ZERO;
+                if level_ratio > ASPECT_RATIO {
+                    // level is wider than the screen
+                    let height = (level.px_hei as f32 / 9.).round() * 9.;
+                    let width = height * ASPECT_RATIO;
+                    orthographic_projection.scaling_mode =
+                        bevy::render::camera::ScalingMode::Fixed { width, height };
+                    camera_transform.translation.x =
+                        (player_translation.x - level_transform.translation.x - width / 2.)
+                            .clamp(0., level.px_wid as f32 - width);
+                    camera_transform.translation.y = 0.;
+                } else {
+                    // level is taller than the screen
+                    let width = (level.px_wid as f32 / 16.).round() * 16.;
+                    let height = width / ASPECT_RATIO;
+                    orthographic_projection.scaling_mode =
+                        bevy::render::camera::ScalingMode::Fixed { width, height };
+                    camera_transform.translation.y =
+                        (player_translation.y - level_transform.translation.y - height / 2.)
+                            .clamp(0., level.px_hei as f32 - height);
+                    camera_transform.translation.x = 0.;
                 }
+
+                camera_transform.translation.x += level_transform.translation.x;
+                camera_transform.translation.y += level_transform.translation.y;
             }
         }
     }
 }
 
 pub fn update_level_selection(
-    level_query: Query<(&Handle<LdtkExternalLevel>, &Transform), Without<Player>>,
+    level_query: Query<(&LevelIid, &Transform), Without<Player>>,
     player_query: Query<&Transform, With<Player>>,
     mut level_selection: ResMut<LevelSelection>,
-    ldtk_levels: Res<Assets<LdtkExternalLevel>>,
+    ldtk_projects: Query<&Handle<LdtkProject>>,
+    ldtk_project_assets: Res<Assets<LdtkProject>>,
 ) {
-    for (level_handle, level_transform) in &level_query {
-        if let Some(ldtk_level) = ldtk_levels.get(level_handle) {
-            let level_bounds = Rect {
-                min: Vec2::new(level_transform.translation.x, level_transform.translation.y),
-                max: Vec2::new(
-                    level_transform.translation.x + ldtk_level.data().px_wid as f32,
-                    level_transform.translation.y + ldtk_level.data().px_hei as f32,
-                ),
-            };
+    for (level_iid, level_transform) in &level_query {
+        let ldtk_project = ldtk_project_assets
+            .get(ldtk_projects.single())
+            .expect("Project should be loaded if level has spawned");
 
-            for player_transform in &player_query {
-                if player_transform.translation.x < level_bounds.max.x
-                    && player_transform.translation.x > level_bounds.min.x
-                    && player_transform.translation.y < level_bounds.max.y
-                    && player_transform.translation.y > level_bounds.min.y
-                    && !level_selection.is_match(&0, ldtk_level.data())
-                {
-                    *level_selection = LevelSelection::Iid(ldtk_level.data().iid.clone());
-                }
+        let level = ldtk_project
+            .get_raw_level_by_iid(&level_iid.to_string())
+            .expect("Spawned level should exist in LDtk project");
+
+        let level_bounds = Rect {
+            min: Vec2::new(level_transform.translation.x, level_transform.translation.y),
+            max: Vec2::new(
+                level_transform.translation.x + level.px_wid as f32,
+                level_transform.translation.y + level.px_hei as f32,
+            ),
+        };
+
+        for player_transform in &player_query {
+            if player_transform.translation.x < level_bounds.max.x
+                && player_transform.translation.x > level_bounds.min.x
+                && player_transform.translation.y < level_bounds.max.y
+                && player_transform.translation.y > level_bounds.min.y
+                && !level_selection.is_match(&0, level)
+            {
+                *level_selection = LevelSelection::Iid(level.iid.clone());
             }
         }
     }

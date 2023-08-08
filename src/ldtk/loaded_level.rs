@@ -1,9 +1,10 @@
 //! Contains [`LoadedLevel`] and related types/implementaions.
-use crate::ldtk::{ldtk_fields::LdtkFields, Level};
+use crate::ldtk::{
+    ldtk_fields::LdtkFields, BgPos, FieldInstance, LayerInstance, Level, LevelBackgroundPosition,
+    NeighbourLevel,
+};
 use bevy::prelude::Color;
 use thiserror::Error;
-
-use super::{BgPos, FieldInstance, LayerInstance, LevelBackgroundPosition, NeighbourLevel};
 
 /// Error that can occur when trying to coerce a [`Level`] into a [`LoadedLevel`].
 #[derive(Debug, Error)]

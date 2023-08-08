@@ -325,7 +325,7 @@ impl From<&LayerInstance> for LayerMetadata {
 
 /// [Component] that indicates that an LDtk level or world should respawn.
 ///
-/// Inserting this component on an entity with either `Handle<LdtkAsset>` or `Handle<LdtkLevel>`
+/// Inserting this component on an entity with either `Handle<LdtkProject>` or `Handle<LdtkLevel>`
 /// components will cause it to respawn.
 /// This can be used to implement a simple level-restart feature.
 /// Internally, this is used to support the entire level spawning process
@@ -365,7 +365,7 @@ pub(crate) struct EntityInstanceBundle {
 /// unless marked by a [Worldly] component.
 #[derive(Clone, Default, Bundle)]
 pub struct LdtkWorldBundle {
-    pub ldtk_handle: Handle<crate::assets::LdtkAsset>,
+    pub ldtk_handle: Handle<crate::assets::LdtkProject>,
     pub level_set: LevelSet,
     pub transform: Transform,
     pub global_transform: GlobalTransform,

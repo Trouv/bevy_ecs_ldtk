@@ -4,7 +4,7 @@
 use crate::resources::SetClearColor;
 use crate::{
     app::{LdtkEntityMap, LdtkIntCellMap},
-    assets::{LdtkAsset, LdtkLevel},
+    assets::{LdtkLevel, LdtkProject},
     components::*,
     ldtk::TilesetDefinition,
     level::spawn_level,
@@ -15,15 +15,15 @@ use crate::{
 use bevy::{ecs::system::SystemState, prelude::*};
 use std::collections::{HashMap, HashSet};
 
-/// Detects [LdtkAsset] events and spawns levels as children of the [LdtkWorldBundle].
+/// Detects [LdtkProject] events and spawns levels as children of the [LdtkWorldBundle].
 #[allow(clippy::too_many_arguments)]
 pub fn process_ldtk_assets(
     mut commands: Commands,
-    mut ldtk_events: EventReader<AssetEvent<LdtkAsset>>,
-    ldtk_world_query: Query<(Entity, &Handle<LdtkAsset>)>,
+    mut ldtk_events: EventReader<AssetEvent<LdtkProject>>,
+    ldtk_world_query: Query<(Entity, &Handle<LdtkProject>)>,
     #[cfg(feature = "render")] ldtk_settings: Res<LdtkSettings>,
     #[cfg(feature = "render")] mut clear_color: ResMut<ClearColor>,
-    #[cfg(feature = "render")] ldtk_assets: Res<Assets<LdtkAsset>>,
+    #[cfg(feature = "render")] ldtk_assets: Res<Assets<LdtkProject>>,
 ) {
     let mut ldtk_handles_to_respawn = HashSet::new();
     let mut ldtk_handles_for_clear_color = HashSet::new();
@@ -52,7 +52,7 @@ pub fn process_ldtk_assets(
     if ldtk_settings.set_clear_color == SetClearColor::FromEditorBackground {
         for handle in ldtk_handles_for_clear_color.iter() {
             if let Some(ldtk_asset) = ldtk_assets.get(handle) {
-                clear_color.0 = ldtk_asset.project.bg_color;
+                clear_color.0 = ldtk_asset.data().bg_color;
             }
         }
     }
@@ -68,8 +68,8 @@ pub fn process_ldtk_assets(
 pub fn apply_level_selection(
     level_selection: Option<Res<LevelSelection>>,
     ldtk_settings: Res<LdtkSettings>,
-    ldtk_assets: Res<Assets<LdtkAsset>>,
-    mut level_set_query: Query<(&Handle<LdtkAsset>, &mut LevelSet)>,
+    ldtk_assets: Res<Assets<LdtkProject>>,
+    mut level_set_query: Query<(&Handle<LdtkProject>, &mut LevelSet)>,
     #[cfg(feature = "render")] mut clear_color: ResMut<ClearColor>,
 ) {
     if let Some(level_selection) = level_selection {
@@ -114,11 +114,11 @@ pub fn apply_level_set(
         Entity,
         &LevelSet,
         Option<&Children>,
-        &Handle<LdtkAsset>,
+        &Handle<LdtkProject>,
         Option<&Respawn>,
     )>,
     ldtk_level_query: Query<&Handle<LdtkLevel>>,
-    ldtk_assets: Res<Assets<LdtkAsset>>,
+    ldtk_assets: Res<Assets<LdtkProject>>,
     level_assets: Res<Assets<LdtkLevel>>,
     ldtk_settings: Res<LdtkSettings>,
     mut level_events: EventWriter<LevelEvent>,
@@ -133,7 +133,7 @@ pub fn apply_level_set(
                 for child in children.iter() {
                     if let Ok(level_handle) = ldtk_level_query.get(*child) {
                         if let Some(ldtk_level) = level_assets.get(level_handle) {
-                            previous_level_maps.insert(ldtk_level.level.iid.clone(), child);
+                            previous_level_maps.insert(ldtk_level.data().iid.clone(), child);
                         }
                     }
                 }
@@ -175,11 +175,11 @@ pub fn apply_level_set(
 
 fn pre_spawn_level(
     child_builder: &mut ChildBuilder,
-    ldtk_asset: &LdtkAsset,
+    ldtk_asset: &LdtkProject,
     level_iid: &str,
     ldtk_settings: &LdtkSettings,
 ) {
-    if let Some(level_handle) = ldtk_asset.level_map.get(level_iid) {
+    if let Some(level_handle) = ldtk_asset.level_map().get(level_iid) {
         let mut translation = Vec3::ZERO;
 
         if let LevelSpawnBehavior::UseWorldTranslation { .. } = ldtk_settings.level_spawn_behavior {
@@ -218,11 +218,11 @@ pub fn process_ldtk_levels(
     asset_server: Res<AssetServer>,
     mut images: ResMut<Assets<Image>>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
-    ldtk_assets: Res<Assets<LdtkAsset>>,
+    ldtk_assets: Res<Assets<LdtkProject>>,
     level_assets: Res<Assets<LdtkLevel>>,
     ldtk_entity_map: NonSend<LdtkEntityMap>,
     ldtk_int_cell_map: NonSend<LdtkIntCellMap>,
-    ldtk_query: Query<&Handle<LdtkAsset>>,
+    ldtk_query: Query<&Handle<LdtkProject>>,
     level_query: Query<
         (
             Entity,
@@ -254,7 +254,7 @@ pub fn process_ldtk_levels(
                 if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
                     // Commence the spawning
                     let tileset_definition_map: HashMap<i32, &TilesetDefinition> = ldtk_asset
-                        .project
+                        .data()
                         .defs
                         .tilesets
                         .iter()
@@ -262,12 +262,12 @@ pub fn process_ldtk_levels(
                         .collect();
 
                     let entity_definition_map =
-                        create_entity_definition_map(&ldtk_asset.project.defs.entities);
+                        create_entity_definition_map(&ldtk_asset.data().defs.entities);
 
                     let layer_definition_map =
-                        create_layer_definition_map(&ldtk_asset.project.defs.layers);
+                        create_layer_definition_map(&ldtk_asset.data().defs.layers);
 
-                    let int_grid_image_handle = &ldtk_asset.int_grid_image_handle;
+                    let int_grid_image_handle = &ldtk_asset.int_grid_image_handle();
 
                     let worldly_set = worldly_query.iter().cloned().collect();
 
@@ -282,14 +282,14 @@ pub fn process_ldtk_levels(
                             &ldtk_int_cell_map,
                             &entity_definition_map,
                             &layer_definition_map,
-                            &ldtk_asset.tileset_map,
+                            ldtk_asset.tileset_map(),
                             &tileset_definition_map,
                             int_grid_image_handle,
                             worldly_set,
                             ldtk_entity,
                             &ldtk_settings,
                         );
-                        level_events.send(LevelEvent::Spawned(level.level.iid.clone()));
+                        level_events.send(LevelEvent::Spawned(level.data().iid.clone()));
                     }
 
                     if respawn.is_some() {
@@ -309,7 +309,7 @@ pub fn process_ldtk_levels(
 pub fn clean_respawn_entities(world: &mut World) {
     #[allow(clippy::type_complexity)]
     let mut system_state: SystemState<(
-        Query<&Children, (With<Handle<LdtkAsset>>, With<Respawn>)>,
+        Query<&Children, (With<Handle<LdtkProject>>, With<Respawn>)>,
         Query<(Entity, &Handle<LdtkLevel>), With<Respawn>>,
         Query<&Handle<LdtkLevel>, Without<Respawn>>,
         Query<Entity, With<Worldly>>,
@@ -339,7 +339,7 @@ pub fn clean_respawn_entities(world: &mut World) {
 
                 if let Ok(level_handle) = other_ldtk_levels.get(*child) {
                     if let Some(level_asset) = level_assets.get(level_handle) {
-                        level_events.send(LevelEvent::Despawned(level_asset.level.iid.clone()));
+                        level_events.send(LevelEvent::Despawned(level_asset.data().iid.clone()));
                     }
                 }
             }
@@ -349,7 +349,7 @@ pub fn clean_respawn_entities(world: &mut World) {
             entities_to_despawn_descendants.push(level_entity);
 
             if let Some(level_asset) = level_assets.get(level_handle) {
-                level_events.send(LevelEvent::Despawned(level_asset.level.iid.clone()));
+                level_events.send(LevelEvent::Despawned(level_asset.data().iid.clone()));
             }
         }
     }

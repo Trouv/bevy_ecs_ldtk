@@ -26,7 +26,7 @@ pub fn set_level_title_to_current_level(
                 .expect("level asset should be loaded before LevelEvent::Transformed");
 
             let title = level_asset
-                .level
+                .data()
                 .get_string_field("title")
                 .expect("level should have non-nullable title string field");
 

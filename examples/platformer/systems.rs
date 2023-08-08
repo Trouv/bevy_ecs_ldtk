@@ -132,7 +132,7 @@ pub fn spawn_wall_collision(
                     grid_size,
                     ..
                 } = level
-                    .level
+                    .data()
                     .layer_instances
                     .clone()
                     .expect("Level asset should have layers")[0];
@@ -337,9 +337,9 @@ pub fn camera_fit_inside_current_level(
 
         for (level_transform, level_handle) in &level_query {
             if let Some(ldtk_level) = ldtk_levels.get(level_handle) {
-                let level = &ldtk_level.level;
+                let level = &ldtk_level.data();
                 if level_selection.is_match(&0, level) {
-                    let level_ratio = level.px_wid as f32 / ldtk_level.level.px_hei as f32;
+                    let level_ratio = level.px_wid as f32 / ldtk_level.data().px_hei as f32;
                     orthographic_projection.viewport_origin = Vec2::ZERO;
                     if level_ratio > ASPECT_RATIO {
                         // level is wider than the screen
@@ -382,8 +382,8 @@ pub fn update_level_selection(
             let level_bounds = Rect {
                 min: Vec2::new(level_transform.translation.x, level_transform.translation.y),
                 max: Vec2::new(
-                    level_transform.translation.x + ldtk_level.level.px_wid as f32,
-                    level_transform.translation.y + ldtk_level.level.px_hei as f32,
+                    level_transform.translation.x + ldtk_level.data().px_wid as f32,
+                    level_transform.translation.y + ldtk_level.data().px_hei as f32,
                 ),
             };
 
@@ -392,9 +392,9 @@ pub fn update_level_selection(
                     && player_transform.translation.x > level_bounds.min.x
                     && player_transform.translation.y < level_bounds.max.y
                     && player_transform.translation.y > level_bounds.min.y
-                    && !level_selection.is_match(&0, &ldtk_level.level)
+                    && !level_selection.is_match(&0, ldtk_level.data())
                 {
-                    *level_selection = LevelSelection::Iid(ldtk_level.level.iid.clone());
+                    *level_selection = LevelSelection::Iid(ldtk_level.data().iid.clone());
                 }
             }
         }

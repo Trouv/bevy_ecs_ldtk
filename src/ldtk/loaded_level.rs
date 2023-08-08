@@ -1,13 +1,24 @@
+//! Contains [`LoadedLevel`] and related types/implementaions.
 use crate::ldtk::{ldtk_fields::LdtkFields, Level};
 use bevy::prelude::Color;
 use thiserror::Error;
 
 use super::{BgPos, FieldInstance, LayerInstance, LevelBackgroundPosition, NeighbourLevel};
 
+/// Error that can occur when trying to coerce a [`Level`] into a [`LoadedLevel`].
 #[derive(Debug, Error)]
 #[error("loaded levels must have non-null layer instances")]
 pub struct LevelNotLoaded;
 
+/// Wrapper around a borrowed [`Level`] that guarantees the level has complete data.
+///
+/// In the LDtk json format, a level might not have complete data if external levels are enabled.
+/// In particular, the main project file will have levels whose `layer_instances` field is null.
+/// The complete data for these levels will exist in a separate file.
+///
+/// Can be constructed via [`LoadedLevel::try_from`].
+/// This construction verifies that the `layer_instances` are not null.
+/// As a result, the [`LoadedLevel::layer_instances`] accessor expects the `Option` away.
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct LoadedLevel<'a> {
     level: &'a Level,
@@ -26,6 +37,7 @@ impl<'a> TryFrom<&'a Level> for LoadedLevel<'a> {
 }
 
 impl<'a> LoadedLevel<'a> {
+    /// The raw level data borrowed by this instance.
     pub fn raw(&self) -> &Level {
         self.level
     }

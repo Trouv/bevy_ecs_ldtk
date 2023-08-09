@@ -236,7 +236,7 @@ mod tests {
         assert_eq!(*loaded.px_hei(), 2);
         assert_eq!(*loaded.px_wid(), 3);
         assert_eq!(*loaded.uid(), 4);
-        assert_eq!(*loaded.use_auto_identifier(), true);
+        assert!(*loaded.use_auto_identifier());
         assert_eq!(*loaded.world_depth(), 5);
         assert_eq!(*loaded.world_x(), 6);
         assert_eq!(*loaded.world_y(), 7);

@@ -72,6 +72,7 @@ impl Plugin for LdtkPlugin {
                 PostUpdate,
                 systems::detect_level_spawned_events.pipe(systems::fire_level_transformed_events),
             )
+            .register_type::<components::LevelIid>()
             .register_type::<components::EntityIid>()
             .register_type::<components::GridCoords>()
             .register_type::<components::TileMetadata>()

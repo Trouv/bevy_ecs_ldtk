@@ -43,3 +43,24 @@ impl Display for LevelIid {
         f.write_str(self.as_str())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn string_converts_to_and_from_level_iid() {
+        let original_string = "level-iid".to_string();
+        let level_iid = LevelIid::new(original_string.clone());
+
+        assert_eq!(level_iid, LevelIid(original_string.clone()));
+        assert_eq!(level_iid.as_str(), original_string.as_str());
+        assert_eq!(LevelIid::from(original_string.clone()), level_iid);
+        assert_eq!(String::from(level_iid.clone()), original_string);
+        assert_eq!(level_iid.as_ref(), original_string.as_str());
+        assert_eq!(
+            format!("display: {level_iid}"),
+            format!("display: {original_string}")
+        );
+    }
+}

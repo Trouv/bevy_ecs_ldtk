@@ -1,56 +1,37 @@
 use bevy::prelude::*;
 
-use std::borrow::Cow;
-
-#[derive(Clone, Debug, Default, Deref, Hash, Eq, PartialEq, Component, Reflect)]
+/// `Component` that stores a level's instance identifier.
+#[derive(Clone, Debug, Default, Hash, Eq, PartialEq, Component, Reflect)]
 #[reflect(Component, Default, Debug)]
-pub struct LevelIid(Cow<'static, str>);
+pub struct LevelIid(String);
 
 impl LevelIid {
     /// Creates a new [`LevelIid`] from any string-like type.
-    pub fn new(iid: impl Into<Cow<'static, str>>) -> Self {
+    pub fn new(iid: impl Into<String>) -> Self {
         let iid = iid.into();
         LevelIid(iid)
     }
 
-    /// Gets the Iid of the entity as a &str.
-    #[inline(always)]
+    /// Immutable access to the IID as a `&str`.
     pub fn as_str(&self) -> &str {
         &self.0
     }
 }
 
-impl From<&str> for LevelIid {
-    #[inline(always)]
-    fn from(value: &str) -> Self {
-        LevelIid::new(value.to_owned())
-    }
-}
-
 impl From<String> for LevelIid {
-    #[inline(always)]
     fn from(value: String) -> Self {
         LevelIid::new(value)
     }
 }
 
+impl From<LevelIid> for String {
+    fn from(value: LevelIid) -> String {
+        value.0
+    }
+}
+
 impl AsRef<str> for LevelIid {
-    #[inline(always)]
     fn as_ref(&self) -> &str {
         &self.0
-    }
-}
-
-impl From<&LevelIid> for String {
-    #[inline(always)]
-    fn from(value: &LevelIid) -> String {
-        value.as_str().to_owned()
-    }
-}
-
-impl From<LevelIid> for String {
-    #[inline(always)]
-    fn from(value: LevelIid) -> String {
-        value.0.into_owned()
     }
 }

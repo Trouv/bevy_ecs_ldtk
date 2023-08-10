@@ -142,7 +142,7 @@ pub mod prelude {
         assets::{LdtkAsset, LdtkLevel},
         components::{
             EntityIid, EntityInstance, GridCoords, IntGridCell, LayerMetadata, LdtkWorldBundle,
-            LevelSet, Respawn, TileEnumTags, TileMetadata, Worldly,
+            LevelIid, LevelSet, Respawn, TileEnumTags, TileMetadata, Worldly,
         },
         ldtk::{self, ldtk_fields::LdtkFields, FieldValue, LayerInstance, TilesetDefinition},
         plugin::{LdtkPlugin, ProcessLdtkApi},

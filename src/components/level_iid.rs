@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use bevy::prelude::*;
 
 /// `Component` that stores a level's instance identifier.
@@ -33,5 +35,11 @@ impl From<LevelIid> for String {
 impl AsRef<str> for LevelIid {
     fn as_ref(&self) -> &str {
         &self.0
+    }
+}
+
+impl Display for LevelIid {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.as_str())
     }
 }

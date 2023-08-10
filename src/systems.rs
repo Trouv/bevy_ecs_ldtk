@@ -197,7 +197,7 @@ fn pre_spawn_level(
 
     child_builder
         .spawn_empty()
-        .insert(LevelIid::from(level_iid))
+        .insert(LevelIid::new(level_iid))
         .insert(SpatialBundle {
             transform: Transform::from_translation(translation),
             ..default()

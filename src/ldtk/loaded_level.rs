@@ -1,13 +1,25 @@
-use crate::ldtk::{ldtk_fields::LdtkFields, Level};
+//! Contains [`LoadedLevel`] and related types/implementaions.
+use crate::ldtk::{
+    ldtk_fields::LdtkFields, BgPos, FieldInstance, LayerInstance, Level, LevelBackgroundPosition,
+    NeighbourLevel,
+};
 use bevy::prelude::Color;
 use thiserror::Error;
 
-use super::{BgPos, FieldInstance, LayerInstance, LevelBackgroundPosition, NeighbourLevel};
-
+/// Error that can occur when trying to coerce a [`Level`] into a [`LoadedLevel`].
 #[derive(Debug, Error)]
 #[error("loaded levels must have non-null layer instances")]
 pub struct LevelNotLoaded;
 
+/// Wrapper around a borrowed [`Level`] that guarantees the level has complete data.
+///
+/// In the LDtk json format, a level might not have complete data if external levels are enabled.
+/// In particular, the main project file will have levels whose `layer_instances` field is null.
+/// The complete data for these levels will exist in a separate file.
+///
+/// Can be constructed via [`LoadedLevel::try_from`].
+/// This construction verifies that the `layer_instances` are not null.
+/// As a result, the [`LoadedLevel::layer_instances`] accessor expects the `Option` away.
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct LoadedLevel<'a> {
     level: &'a Level,
@@ -26,6 +38,7 @@ impl<'a> TryFrom<&'a Level> for LoadedLevel<'a> {
 }
 
 impl<'a> LoadedLevel<'a> {
+    /// The raw level data borrowed by this instance.
     pub fn raw(&self) -> &Level {
         self.level
     }
@@ -158,5 +171,83 @@ impl<'a> LoadedLevel<'a> {
 impl<'a> LdtkFields for LoadedLevel<'a> {
     fn field_instances(&self) -> &[FieldInstance] {
         self.level.field_instances()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use bevy::prelude::*;
+
+    use super::*;
+
+    fn valid_level() -> Level {
+        Level {
+            bg_color: Color::AZURE,
+            bg_pos: Some(LevelBackgroundPosition::default()),
+            neighbours: vec![NeighbourLevel::default()],
+            smart_color: Color::BEIGE,
+            level_bg_color: Some(Color::CYAN),
+            bg_pivot_x: 0.,
+            bg_pivot_y: 1.,
+            level_bg_pos: Some(BgPos::Cover),
+            bg_rel_path: Some("path/to/bg.png".to_string()),
+            external_rel_path: Some("path/to/external.ldtkl".to_string()),
+            field_instances: vec![],
+            identifier: "level_identifier".to_string(),
+            iid: "level_iid".to_string(),
+            layer_instances: Some(vec![LayerInstance::default()]),
+            px_hei: 2,
+            px_wid: 3,
+            uid: 4,
+            use_auto_identifier: true,
+            world_depth: 5,
+            world_x: 6,
+            world_y: 7,
+        }
+    }
+
+    #[test]
+    fn getter_methods_return_correct_values() {
+        // This test mostly exists to easily warn us if the `Level` type has changed.
+        let raw = valid_level();
+
+        let loaded = LoadedLevel::try_from(&raw).unwrap();
+
+        // layer instances isn't optional
+        assert_eq!(*loaded.layer_instances(), vec![LayerInstance::default()]);
+
+        // all other getters
+        assert_eq!(*loaded.bg_color(), Color::AZURE);
+        assert_eq!(*loaded.bg_pos(), Some(LevelBackgroundPosition::default()));
+        assert_eq!(*loaded.neighbours(), vec![NeighbourLevel::default()]);
+        assert_eq!(*loaded.smart_color(), Color::BEIGE);
+        assert_eq!(*loaded.level_bg_color(), Some(Color::CYAN));
+        assert_eq!(*loaded.bg_pivot_x(), 0.);
+        assert_eq!(*loaded.bg_pivot_y(), 1.);
+        assert_eq!(*loaded.level_bg_pos(), Some(BgPos::Cover));
+        assert_eq!(*loaded.bg_rel_path(), Some("path/to/bg.png".to_string()));
+        assert_eq!(
+            *loaded.external_rel_path(),
+            Some("path/to/external.ldtkl".to_string())
+        );
+        assert_eq!(*loaded.field_instances(), vec![]);
+        assert_eq!(*loaded.identifier(), "level_identifier".to_string());
+        assert_eq!(*loaded.iid(), "level_iid".to_string());
+        assert_eq!(*loaded.px_hei(), 2);
+        assert_eq!(*loaded.px_wid(), 3);
+        assert_eq!(*loaded.uid(), 4);
+        assert!(*loaded.use_auto_identifier());
+        assert_eq!(*loaded.world_depth(), 5);
+        assert_eq!(*loaded.world_x(), 6);
+        assert_eq!(*loaded.world_y(), 7);
+    }
+
+    #[test]
+    fn cannot_create_from_unloaded_level() {
+        let mut raw = valid_level();
+
+        raw.layer_instances = None;
+
+        assert!(matches!(LoadedLevel::try_from(&raw), Err(LevelNotLoaded)));
     }
 }

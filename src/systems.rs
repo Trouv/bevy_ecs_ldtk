@@ -183,7 +183,7 @@ fn pre_spawn_level(
         let mut translation = Vec3::ZERO;
 
         if let LevelSpawnBehavior::UseWorldTranslation { .. } = ldtk_settings.level_spawn_behavior {
-            if let Some(level) = ldtk_asset.get_level(&LevelSelection::Iid(level_iid.to_string())) {
+            if let Some(level) = ldtk_asset.get_level(&LevelSelection::iid(level_iid)) {
                 let level_coords = ldtk_pixel_coords_to_translation(
                     IVec2::new(level.world_x, level.world_y + level.px_hei),
                     0,
@@ -203,7 +203,7 @@ fn pre_spawn_level(
             })
             .insert(Name::new(
                 ldtk_asset
-                    .get_level(&LevelSelection::Iid(level_iid.to_string()))
+                    .get_level(&LevelSelection::iid(level_iid))
                     .unwrap()
                     .identifier
                     .to_owned(),

@@ -1,4 +1,4 @@
-use crate::ldtk::Level;
+use crate::{ldtk::Level, LevelIid};
 use bevy::prelude::*;
 
 /// Resource for choosing which level(s) to spawn.
@@ -16,7 +16,7 @@ pub enum LevelSelection {
     /// Spawn level from its index in the LDtk file's list of levels.
     Index(usize),
     /// Spawn level with the given level `iid`.
-    Iid(String),
+    Iid(LevelIid),
     /// Spawn level with the given level `uid`.
     Uid(i32),
 }
@@ -28,11 +28,15 @@ impl Default for LevelSelection {
 }
 
 impl LevelSelection {
+    pub fn iid(iid: impl Into<String>) -> Self {
+        LevelSelection::Iid(LevelIid::new(iid))
+    }
+
     pub fn is_match(&self, index: &usize, level: &Level) -> bool {
         match self {
             LevelSelection::Identifier(s) => *s == level.identifier,
             LevelSelection::Index(i) => *i == *index,
-            LevelSelection::Iid(i) => *i == level.iid,
+            LevelSelection::Iid(i) => *i.get() == level.iid,
             LevelSelection::Uid(u) => *u == level.uid,
         }
     }

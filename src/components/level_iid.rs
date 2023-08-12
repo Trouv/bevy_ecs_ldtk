@@ -14,6 +14,11 @@ impl LevelIid {
         LevelIid(iid)
     }
 
+    /// Immutable access to the IID as a `String`.
+    pub fn get(&self) -> &String {
+        &self.0
+    }
+
     /// Immutable access to the IID as a `&str`.
     pub fn as_str(&self) -> &str {
         &self.0

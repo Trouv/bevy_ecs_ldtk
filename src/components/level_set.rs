@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use std::collections::HashSet;
 
+use crate::LevelIid;
+
 /// [Component] that determines the desired levels to be loaded for an [LdtkWorldBundle].
 ///
 /// There is an abstraction for this in the form of the [LevelSelection] resource.
@@ -13,13 +15,13 @@ use std::collections::HashSet;
 /// Changes to this component are idempotent, so levels won't be respawned greedily.
 #[derive(Clone, Eq, PartialEq, Debug, Default, Component)]
 pub struct LevelSet {
-    pub iids: HashSet<String>,
+    pub iids: HashSet<LevelIid>,
 }
 
 impl LevelSet {
     pub fn from_iid<T: Into<String>>(iid: T) -> Self {
         let mut iids = HashSet::default();
-        iids.insert(iid.into());
+        iids.insert(LevelIid::new(iid));
         Self { iids }
     }
 }

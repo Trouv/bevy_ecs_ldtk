@@ -78,14 +78,19 @@ pub fn apply_level_selection(
                 if let Some(level) = ldtk_asset.get_level(&level_selection) {
                     let new_level_set = {
                         let mut iids = HashSet::new();
-                        iids.insert(level.iid.clone());
+                        iids.insert(LevelIid::new(level.iid.clone()));
 
                         if let LevelSpawnBehavior::UseWorldTranslation {
                             load_level_neighbors,
                         } = ldtk_settings.level_spawn_behavior
                         {
                             if load_level_neighbors {
-                                iids.extend(level.neighbours.iter().map(|n| n.level_iid.clone()));
+                                iids.extend(
+                                    level
+                                        .neighbours
+                                        .iter()
+                                        .map(|n| LevelIid::new(n.level_iid.clone())),
+                                );
                             }
                         }
 
@@ -117,9 +122,8 @@ pub fn apply_level_set(
         &Handle<LdtkProject>,
         Option<&Respawn>,
     )>,
-    ldtk_level_query: Query<&Handle<LdtkLevel>>,
+    ldtk_level_query: Query<(&LevelIid, Entity)>,
     ldtk_assets: Res<Assets<LdtkProject>>,
-    level_assets: Res<Assets<LdtkLevel>>,
     ldtk_settings: Res<LdtkSettings>,
     mut level_events: EventWriter<LevelEvent>,
 ) {
@@ -127,27 +131,22 @@ pub fn apply_level_set(
         // Only apply level set if the asset has finished loading
         if let Some(ldtk_asset) = ldtk_assets.get(ldtk_asset_handle) {
             // Determine what levels are currently spawned
-            let mut previous_level_maps = HashMap::new();
+            let previous_level_maps = children
+                .into_iter()
+                .flat_map(|iterator| iterator.iter())
+                .filter_map(|child_entity| ldtk_level_query.get(*child_entity).ok())
+                .collect::<HashMap<_, _>>();
 
-            if let Some(children) = children {
-                for child in children.iter() {
-                    if let Ok(level_handle) = ldtk_level_query.get(*child) {
-                        if let Some(ldtk_level) = level_assets.get(level_handle) {
-                            previous_level_maps.insert(ldtk_level.data().iid.clone(), child);
-                        }
-                    }
-                }
-            }
-
-            let previous_iids: HashSet<String> = previous_level_maps.keys().cloned().collect();
+            let previous_iids: HashSet<LevelIid> =
+                previous_level_maps.keys().cloned().cloned().collect();
 
             // Spawn levels that should be spawned but aren't
             let iids_to_spawn = level_set.iids.difference(&previous_iids);
             if iids_to_spawn.clone().count() > 0 {
                 commands.entity(world_entity).with_children(|c| {
                     for iid in iids_to_spawn.clone() {
-                        level_events.send(LevelEvent::SpawnTriggered(iid.clone()));
-                        pre_spawn_level(c, ldtk_asset, iid, &ldtk_settings);
+                        level_events.send(LevelEvent::SpawnTriggered(iid.get().clone()));
+                        pre_spawn_level(c, ldtk_asset, iid.as_str(), &ldtk_settings);
                     }
                 });
             }
@@ -157,8 +156,8 @@ pub fn apply_level_set(
                 let map_entity = previous_level_maps.get(iid).expect(
                 "The set of previous_iids and the keys in previous_level_maps should be the same.",
             );
-                commands.entity(**map_entity).despawn_recursive();
-                level_events.send(LevelEvent::Despawned(iid.clone()));
+                commands.entity(*map_entity).despawn_recursive();
+                level_events.send(LevelEvent::Despawned(iid.get().clone()));
             }
 
             // If the world was empty before but has now been populated, and this world was

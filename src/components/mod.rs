@@ -9,7 +9,10 @@ mod level_set;
 pub use level_set::LevelSet;
 
 pub use crate::ldtk::EntityInstance;
-use crate::ldtk::{LayerInstance, Type};
+use crate::{
+    ldtk::{LayerInstance, Type},
+    utils::ldtk_grid_coords_to_grid_coords,
+};
 use bevy::prelude::*;
 
 use std::ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign};
@@ -18,8 +21,7 @@ use std::ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign};
 use crate::{
     assets::LdtkLevel,
     prelude::{LdtkEntity, LdtkIntCell},
-    resources::{LevelSelection, LevelSpawnBehavior},
-    utils::ldtk_grid_coords_to_grid_coords,
+    resources::LevelSelection,
 };
 
 use bevy_ecs_tilemap::tiles::{TileBundle, TilePos};

@@ -24,10 +24,29 @@ pub struct LevelSet {
 }
 
 impl LevelSet {
-    pub fn from_iid<T: Into<String>>(iid: T) -> Self {
-        let mut iids = HashSet::default();
-        iids.insert(LevelIid::new(iid));
-        Self { iids }
+    /// Construct a new [`LevelSet`] from a collection of iids.
+    ///
+    /// These iids simply need to implement `Into<String>`.
+    ///
+    /// # Example
+    /// ```
+    /// use bevy_ecs_ldtk::prelude::*;
+    ///
+    /// let iids = [
+    ///     "fa26aa50-fd0f-4dac-a076-3edfb0afd358",
+    ///     "9ae9ecf0-ef64-4d96-bc68-cead527efe90",
+    ///     "57b26336-8f4e-41ee-8a1b-7af708e4a338",
+    /// ];
+    ///
+    /// let level_set = LevelSet::from_iids(iids);
+    /// # let mut iids_as_set = std::collections::HashSet::new();
+    /// # iids_as_set.insert(LevelIid::new("fa26aa50-fd0f-4dac-a076-3edfb0afd358"));
+    /// # iids_as_set.insert(LevelIid::new("9ae9ecf0-ef64-4d96-bc68-cead527efe90"));
+    /// # iids_as_set.insert(LevelIid::new("57b26336-8f4e-41ee-8a1b-7af708e4a338"));
+    /// # assert_eq!(level_set, LevelSet { iids: iids_as_set });
+    /// ```
+    pub fn from_iids<I: Into<String>>(iids: impl IntoIterator<Item = I>) -> Self {
+        iids.into_iter().map(LevelIid::new).collect()
     }
 }
 

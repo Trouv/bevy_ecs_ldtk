@@ -2,7 +2,7 @@
 use bevy::prelude::*;
 
 #[allow(unused_imports)]
-use crate::components::{LdtkWorldBundle, LevelSet};
+use crate::components::LdtkWorldBundle;
 
 mod level_selection;
 pub use level_selection::LevelSelection;

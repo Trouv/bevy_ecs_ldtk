@@ -4,7 +4,6 @@
 
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
-use std::collections::HashSet;
 
 use rand::prelude::*;
 
@@ -40,11 +39,11 @@ const LEVEL_IIDS: [&str; 8] = [
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(Camera2dBundle::default());
 
-    let iids: HashSet<String> = LEVEL_IIDS.into_iter().map(|s| s.to_string()).collect();
+    let level_set: LevelSet = LEVEL_IIDS.into_iter().map(LevelIid::new).collect();
 
     commands.spawn(LdtkWorldBundle {
         ldtk_handle: asset_server.load("WorldMap_Free_layout.ldtk"),
-        level_set: LevelSet { iids },
+        level_set,
         transform: Transform::from_xyz(-256., -144., 0.),
         ..Default::default()
     });
@@ -55,7 +54,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 fn toggle_levels(input: Res<Input<KeyCode>>, mut level_sets: Query<&mut LevelSet>) {
     if input.just_pressed(KeyCode::Space) {
         let mut rng = rand::thread_rng();
-        let level_to_toggle = LEVEL_IIDS.choose(&mut rng).unwrap().to_string();
+        let level_to_toggle = LevelIid::new(*LEVEL_IIDS.choose(&mut rng).unwrap());
 
         let mut level_set = level_sets.single_mut();
         if level_set.iids.contains(&level_to_toggle) {

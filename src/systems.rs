@@ -141,15 +141,16 @@ pub fn apply_level_set(
                 previous_level_maps.keys().cloned().cloned().collect();
 
             // Spawn levels that should be spawned but aren't
-            let iids_to_spawn = level_set.iids.difference(&previous_iids);
-            if iids_to_spawn.clone().count() > 0 {
-                commands.entity(world_entity).with_children(|c| {
-                    for iid in iids_to_spawn.clone() {
-                        level_events.send(LevelEvent::SpawnTriggered(iid.get().clone()));
-                        pre_spawn_level(c, ldtk_asset, iid.as_str(), &ldtk_settings);
-                    }
-                });
-            }
+            let spawned_levels = level_set
+                .iids
+                .difference(&previous_iids)
+                .filter_map(|iid| {
+                    level_events.send(LevelEvent::SpawnTriggered(iid.get().clone()));
+                    pre_spawn_level(&mut commands, ldtk_asset, iid.clone(), &ldtk_settings)
+                })
+                .collect::<Vec<_>>();
+
+            commands.entity(world_entity).push_children(&spawned_levels);
 
             // Despawn levels that shouldn't be spawned but are
             for iid in previous_iids.difference(&level_set.iids) {
@@ -165,7 +166,7 @@ pub fn apply_level_set(
             // portion of said respawn.
             // In that case, the respawn component needs to be removed so that the cleanup system
             // doesn't start the process over again.
-            if previous_iids.is_empty() && iids_to_spawn.count() > 0 && respawn.is_some() {
+            if previous_iids.is_empty() && !spawned_levels.is_empty() && respawn.is_some() {
                 commands.entity(world_entity).remove::<Respawn>();
             }
         }
@@ -173,41 +174,46 @@ pub fn apply_level_set(
 }
 
 fn pre_spawn_level(
-    child_builder: &mut ChildBuilder,
+    commands: &mut Commands,
     ldtk_asset: &LdtkProject,
-    level_iid: &str,
+    level_iid: LevelIid,
     ldtk_settings: &LdtkSettings,
-) {
-    if let Some(level_handle) = ldtk_asset.level_map().get(level_iid) {
-        let mut translation = Vec3::ZERO;
+) -> Option<Entity> {
+    ldtk_asset
+        .level_map()
+        .get(level_iid.get())
+        .map(|level_handle| {
+            let mut translation = Vec3::ZERO;
 
-        if let LevelSpawnBehavior::UseWorldTranslation { .. } = ldtk_settings.level_spawn_behavior {
-            if let Some(level) = ldtk_asset.get_level(&LevelSelection::iid(level_iid)) {
-                let level_coords = ldtk_pixel_coords_to_translation(
-                    IVec2::new(level.world_x, level.world_y + level.px_hei),
-                    0,
-                );
-                translation.x = level_coords.x;
-                translation.y = level_coords.y;
+            if let LevelSpawnBehavior::UseWorldTranslation { .. } =
+                ldtk_settings.level_spawn_behavior
+            {
+                if let Some(level) = ldtk_asset.get_level(&LevelSelection::iid(level_iid.get())) {
+                    let level_coords = ldtk_pixel_coords_to_translation(
+                        IVec2::new(level.world_x, level.world_y + level.px_hei),
+                        0,
+                    );
+                    translation.x = level_coords.x;
+                    translation.y = level_coords.y;
+                }
             }
-        }
 
-        child_builder
-            .spawn_empty()
-            .insert(LevelIid::new(level_iid))
-            .insert(level_handle.clone())
-            .insert(SpatialBundle {
-                transform: Transform::from_translation(translation),
-                ..default()
-            })
-            .insert(Name::new(
-                ldtk_asset
-                    .get_level(&LevelSelection::iid(level_iid))
-                    .unwrap()
-                    .identifier
-                    .to_owned(),
-            ));
-    }
+            commands
+                .spawn(level_iid.clone())
+                .insert(level_handle.clone())
+                .insert(SpatialBundle {
+                    transform: Transform::from_translation(translation),
+                    ..default()
+                })
+                .insert(Name::new(
+                    ldtk_asset
+                        .get_level(&LevelSelection::Iid(level_iid))
+                        .unwrap()
+                        .identifier
+                        .to_owned(),
+                ))
+                .id()
+        })
 }
 
 /// Performs all the spawning of levels, layers, chunks, bundles, entities, tiles, etc. when an

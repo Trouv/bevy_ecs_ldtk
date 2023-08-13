@@ -51,7 +51,7 @@ impl LevelSelection {
         LevelSelection::Iid(LevelIid::new(iid))
     }
 
-    /// Return true if the given level matches this [`LevelSelection`].
+    /// Returns true if the given level matches this [`LevelSelection`].
     ///
     /// Since levels don't inherently store their index, it needs to be provided separately.
     pub fn is_match(&self, index: &usize, level: &Level) -> bool {

@@ -65,3 +65,24 @@ impl FromIterator<LevelIid> for LevelSet {
         LevelSet { iids }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn level_set_converts_to_and_from_iterator() {
+        let iids = [
+            "fa26aa50-fd0f-4dac-a076-3edfb0afd358",
+            "9ae9ecf0-ef64-4d96-bc68-cead527efe90",
+            "57b26336-8f4e-41ee-8a1b-7af708e4a338",
+        ]
+        .into_iter()
+        .map(LevelIid::new)
+        .collect::<HashSet<_>>();
+
+        let level_set = LevelSet::from_iter(iids.clone());
+
+        assert_eq!(level_set.into_iter().collect::<HashSet<_>>(), iids);
+    }
+}

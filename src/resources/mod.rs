@@ -7,6 +7,9 @@ use crate::components::{LdtkWorldBundle, LevelSet};
 mod level_selection;
 pub use level_selection::LevelSelection;
 
+mod level_event;
+pub use level_event::LevelEvent;
+
 /// Option in [LdtkSettings] that determines clear color behavior.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum SetClearColor {
@@ -72,24 +75,4 @@ pub struct LdtkSettings {
     pub set_clear_color: SetClearColor,
     pub int_grid_rendering: IntGridRendering,
     pub level_background: LevelBackground,
-}
-
-/// Events fired by the plugin related to level spawning/despawning.
-///
-/// Each variant stores the level's `iid` in LDtk.
-#[derive(Clone, Eq, PartialEq, Debug, Hash, Event)]
-pub enum LevelEvent {
-    /// Indicates that a level has been triggered to spawn, but hasn't been spawned yet.
-    SpawnTriggered(String),
-    /// The level, with all of its layers, entities, etc., has spawned.
-    ///
-    /// Note: due to the frame-delay of [GlobalTransform] being updated, this may not be the event
-    /// you want to listen for.
-    /// If your systems are [GlobalTransform]-dependent, see [LevelEvent::Transformed].
-    Spawned(String),
-    /// Occurs during the [PostUpdate] after the level has spawned, so all
-    /// [GlobalTransform]s of the level should be updated.
-    Transformed(String),
-    /// Indicates that a level has despawned.
-    Despawned(String),
 }

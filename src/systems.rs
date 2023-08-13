@@ -135,16 +135,17 @@ pub fn apply_level_set(
                 .into_iter()
                 .flat_map(|iterator| iterator.iter())
                 .filter_map(|child_entity| ldtk_level_query.get(*child_entity).ok())
+                .map(|(level_iid, entity)| (level_iid.clone(), entity))
                 .collect::<HashMap<_, _>>();
 
-            let previous_iids: HashSet<LevelIid> =
-                previous_level_maps.keys().cloned().cloned().collect();
+            let previous_iids: HashSet<&LevelIid> = previous_level_maps.keys().collect();
+
+            let level_set_as_ref = level_set.iids.iter().collect::<HashSet<_>>();
 
             // Spawn levels that should be spawned but aren't
-            let spawned_levels = level_set
-                .iids
+            let spawned_levels = level_set_as_ref
                 .difference(&previous_iids)
-                .filter_map(|iid| {
+                .filter_map(|&iid| {
                     level_events.send(LevelEvent::SpawnTriggered(iid.get().clone()));
                     pre_spawn_level(&mut commands, ldtk_asset, iid.clone(), &ldtk_settings)
                 })
@@ -153,7 +154,7 @@ pub fn apply_level_set(
             commands.entity(world_entity).push_children(&spawned_levels);
 
             // Despawn levels that shouldn't be spawned but are
-            for iid in previous_iids.difference(&level_set.iids) {
+            for iid in previous_iids.difference(&level_set_as_ref) {
                 let map_entity = previous_level_maps.get(iid).expect(
                 "The set of previous_iids and the keys in previous_level_maps should be the same.",
             );

@@ -2,7 +2,9 @@ use std::fmt::Display;
 
 use bevy::prelude::*;
 
-/// `Component` that stores a level's instance identifier.
+/// [`Component`] that stores a level's instance identifier.
+///
+/// [`Component`]: https://docs.rs/bevy/latest/bevy/ecs/component/trait.Component.html
 #[derive(Clone, Debug, Default, Hash, Eq, PartialEq, Component, Reflect)]
 #[reflect(Component, Default, Debug)]
 pub struct LevelIid(String);

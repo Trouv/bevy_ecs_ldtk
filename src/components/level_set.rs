@@ -25,3 +25,19 @@ impl LevelSet {
         Self { iids }
     }
 }
+
+impl IntoIterator for LevelSet {
+    type Item = LevelIid;
+    type IntoIter = <HashSet<LevelIid> as IntoIterator>::IntoIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iids.into_iter()
+    }
+}
+
+impl FromIterator<LevelIid> for LevelSet {
+    fn from_iter<T: IntoIterator<Item = LevelIid>>(iter: T) -> Self {
+        let iids = iter.into_iter().collect();
+        LevelSet { iids }
+    }
+}

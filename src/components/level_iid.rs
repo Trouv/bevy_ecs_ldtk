@@ -59,6 +59,7 @@ mod tests {
         let level_iid = LevelIid::new(original_string.clone());
 
         assert_eq!(level_iid, LevelIid(original_string.clone()));
+        assert_eq!(level_iid.get(), &original_string);
         assert_eq!(level_iid.as_str(), original_string.as_str());
         assert_eq!(LevelIid::from(original_string.clone()), level_iid);
         assert_eq!(String::from(level_iid.clone()), original_string);

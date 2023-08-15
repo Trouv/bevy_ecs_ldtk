@@ -3,6 +3,9 @@
 /// This type supports multi-world projects by storing an optional `world` index.
 /// If this is present, the level index is used within that world.
 /// If not, the level index is used in the project root's level collection.
+///
+/// [`LdtkProject`]: crate::assets::LdtkProject
+/// [`LdtkJson`]: crate::ldtk::LdtkJson
 pub struct LevelIndices {
     /// The index of the world the level belongs to, if the project is multi-world.
     pub world: Option<usize>,

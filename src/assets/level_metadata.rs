@@ -13,3 +13,39 @@ pub struct LevelIndices {
     /// The index of the level, either within a world or in the root of the project.
     pub level: usize,
 }
+
+impl LevelIndices {
+    /// Construct a new [`LevelIndices`] pointing to a level in a world.
+    ///
+    /// # Example
+    /// ```
+    /// use bevy_ecs_ldtk::prelude::*;
+    ///
+    /// let level_indices = LevelIndices::in_world(1, 2);
+    ///
+    /// assert_eq!(level_indices, LevelIndices { world: Some(1), level: 2 });
+    /// ```
+    pub fn in_world(world_index: usize, level_index: usize) -> LevelIndices {
+        LevelIndices {
+            world: Some(world_index),
+            level: level_index,
+        }
+    }
+
+    /// Construct a new [`LevelIndices`] pointing to a level in the project root.
+    ///
+    /// # Example
+    /// ```
+    /// use bevy_ecs_ldtk::prelude::*;
+    ///
+    /// let level_indices = LevelIndices::in_root(3);
+    ///
+    /// assert_eq!(level_indices, LevelIndices { world: None, level: 3 });
+    /// ```
+    pub fn in_root(index: usize) -> LevelIndices {
+        LevelIndices {
+            world: None,
+            level: index,
+        }
+    }
+}

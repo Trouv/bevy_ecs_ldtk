@@ -6,6 +6,7 @@
 ///
 /// [`LdtkProject`]: crate::assets::LdtkProject
 /// [`LdtkJson`]: crate::ldtk::LdtkJson
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct LevelIndices {
     /// The index of the world the level belongs to, if the project is multi-world.
     pub world: Option<usize>,

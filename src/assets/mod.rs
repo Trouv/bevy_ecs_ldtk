@@ -12,8 +12,8 @@ pub use ldtk_level::LdtkLevel;
 mod ldtk_project;
 pub use ldtk_project::LdtkProject;
 
-mod level_metadata;
-pub use level_metadata::LevelIndices;
+mod level_indices;
+pub use level_indices::LevelIndices;
 
 fn ldtk_path_to_asset_path<'b>(ldtk_path: &Path, rel_path: &str) -> AssetPath<'b> {
     ldtk_path.parent().unwrap().join(Path::new(rel_path)).into()

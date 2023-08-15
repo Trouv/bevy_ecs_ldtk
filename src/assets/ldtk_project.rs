@@ -44,6 +44,14 @@ impl LdtkProject {
         self.data.iter_levels()
     }
 
+    /// Iterate through all levels in the project paired with their [`LevelIndices`].
+    ///
+    /// This works for multi-world and single-world projects agnostically.
+    /// It iterates through levels in the root first, then levels in the worlds.
+    pub fn iter_levels_with_indices(&self) -> impl Iterator<Item = (LevelIndices, &Level)> {
+        self.data.iter_levels_with_indices()
+    }
+
     /// Immutable access to a level at the given [`LevelIndices`].
     pub fn get_level_at_indices(&self, indices: &LevelIndices) -> Option<&Level> {
         self.data.get_level_at_indices(indices)

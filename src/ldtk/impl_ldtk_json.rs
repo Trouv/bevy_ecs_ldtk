@@ -54,10 +54,7 @@ mod tests {
 
     use super::*;
 
-    #[test]
-    fn iter_levels_in_root_with_indices() {
-        let mut project = LdtkJson::default();
-
+    fn sample_levels() -> [Level; 4] {
         let mut level_a = Level::default();
         level_a.identifier = "Tutorial".to_string();
 
@@ -69,6 +66,15 @@ mod tests {
 
         let mut level_d = Level::default();
         level_d.identifier = "Final_Boss".to_string();
+
+        [level_a, level_b, level_c, level_d]
+    }
+
+    #[test]
+    fn iter_levels_in_root_with_indices() {
+        let mut project = LdtkJson::default();
+
+        let [level_a, level_b, level_c, level_d] = sample_levels();
 
         project.levels = vec![
             level_a.clone(),
@@ -102,17 +108,7 @@ mod tests {
     fn iter_levels_in_worlds_with_indices() {
         let mut project = LdtkJson::default();
 
-        let mut level_a = Level::default();
-        level_a.identifier = "Tutorial".to_string();
-
-        let mut level_b = Level::default();
-        level_b.identifier = "New_Beginnings".to_string();
-
-        let mut level_c = Level::default();
-        level_c.identifier = "Turning_Point".to_string();
-
-        let mut level_d = Level::default();
-        level_d.identifier = "Final_Boss".to_string();
+        let [level_a, level_b, level_c, level_d] = sample_levels();
 
         let mut world_a = World::default();
         world_a.levels = vec![level_a.clone(), level_b.clone()];
@@ -147,17 +143,7 @@ mod tests {
     fn iter_levels_with_indices_iterates_through_root_levels_first() {
         let mut project = LdtkJson::default();
 
-        let mut level_a = Level::default();
-        level_a.identifier = "Tutorial".to_string();
-
-        let mut level_b = Level::default();
-        level_b.identifier = "New_Beginnings".to_string();
-
-        let mut level_c = Level::default();
-        level_c.identifier = "Turning_Point".to_string();
-
-        let mut level_d = Level::default();
-        level_d.identifier = "Final_Boss".to_string();
+        let [level_a, level_b, level_c, level_d] = sample_levels();
 
         project.levels = vec![level_a.clone(), level_b.clone()];
 

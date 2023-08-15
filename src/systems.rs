@@ -78,14 +78,19 @@ pub fn apply_level_selection(
                 if let Some(level) = ldtk_asset.get_level(&level_selection) {
                     let new_level_set = {
                         let mut iids = HashSet::new();
-                        iids.insert(level.iid.clone());
+                        iids.insert(LevelIid::new(level.iid.clone()));
 
                         if let LevelSpawnBehavior::UseWorldTranslation {
                             load_level_neighbors,
                         } = ldtk_settings.level_spawn_behavior
                         {
                             if load_level_neighbors {
-                                iids.extend(level.neighbours.iter().map(|n| n.level_iid.clone()));
+                                iids.extend(
+                                    level
+                                        .neighbours
+                                        .iter()
+                                        .map(|n| LevelIid::new(n.level_iid.clone())),
+                                );
                             }
                         }
 
@@ -117,9 +122,8 @@ pub fn apply_level_set(
         &Handle<LdtkProject>,
         Option<&Respawn>,
     )>,
-    ldtk_level_query: Query<&Handle<LdtkLevel>>,
+    ldtk_level_query: Query<(&LevelIid, Entity)>,
     ldtk_assets: Res<Assets<LdtkProject>>,
-    level_assets: Res<Assets<LdtkLevel>>,
     ldtk_settings: Res<LdtkSettings>,
     mut level_events: EventWriter<LevelEvent>,
 ) {
@@ -127,37 +131,34 @@ pub fn apply_level_set(
         // Only apply level set if the asset has finished loading
         if let Some(ldtk_asset) = ldtk_assets.get(ldtk_asset_handle) {
             // Determine what levels are currently spawned
-            let mut previous_level_maps = HashMap::new();
+            let previous_level_maps = children
+                .into_iter()
+                .flat_map(|iterator| iterator.iter())
+                .filter_map(|child_entity| ldtk_level_query.get(*child_entity).ok())
+                .map(|(level_iid, entity)| (level_iid.clone(), entity))
+                .collect::<HashMap<_, _>>();
 
-            if let Some(children) = children {
-                for child in children.iter() {
-                    if let Ok(level_handle) = ldtk_level_query.get(*child) {
-                        if let Some(ldtk_level) = level_assets.get(level_handle) {
-                            previous_level_maps.insert(ldtk_level.data().iid.clone(), child);
-                        }
-                    }
-                }
-            }
+            let previous_iids: HashSet<&LevelIid> = previous_level_maps.keys().collect();
 
-            let previous_iids: HashSet<String> = previous_level_maps.keys().cloned().collect();
+            let level_set_as_ref = level_set.iids.iter().collect::<HashSet<_>>();
 
             // Spawn levels that should be spawned but aren't
-            let iids_to_spawn = level_set.iids.difference(&previous_iids);
-            if iids_to_spawn.clone().count() > 0 {
-                commands.entity(world_entity).with_children(|c| {
-                    for iid in iids_to_spawn.clone() {
-                        level_events.send(LevelEvent::SpawnTriggered(iid.clone()));
-                        pre_spawn_level(c, ldtk_asset, iid, &ldtk_settings);
-                    }
-                });
-            }
+            let spawned_levels = level_set_as_ref
+                .difference(&previous_iids)
+                .filter_map(|&iid| {
+                    level_events.send(LevelEvent::SpawnTriggered(iid.clone()));
+                    pre_spawn_level(&mut commands, ldtk_asset, iid.clone(), &ldtk_settings)
+                })
+                .collect::<Vec<_>>();
+
+            commands.entity(world_entity).push_children(&spawned_levels);
 
             // Despawn levels that shouldn't be spawned but are
-            for iid in previous_iids.difference(&level_set.iids) {
+            for &iid in previous_iids.difference(&level_set_as_ref) {
                 let map_entity = previous_level_maps.get(iid).expect(
                 "The set of previous_iids and the keys in previous_level_maps should be the same.",
             );
-                commands.entity(**map_entity).despawn_recursive();
+                commands.entity(*map_entity).despawn_recursive();
                 level_events.send(LevelEvent::Despawned(iid.clone()));
             }
 
@@ -166,7 +167,7 @@ pub fn apply_level_set(
             // portion of said respawn.
             // In that case, the respawn component needs to be removed so that the cleanup system
             // doesn't start the process over again.
-            if previous_iids.is_empty() && iids_to_spawn.count() > 0 && respawn.is_some() {
+            if previous_iids.is_empty() && !spawned_levels.is_empty() && respawn.is_some() {
                 commands.entity(world_entity).remove::<Respawn>();
             }
         }
@@ -174,41 +175,46 @@ pub fn apply_level_set(
 }
 
 fn pre_spawn_level(
-    child_builder: &mut ChildBuilder,
+    commands: &mut Commands,
     ldtk_asset: &LdtkProject,
-    level_iid: &str,
+    level_iid: LevelIid,
     ldtk_settings: &LdtkSettings,
-) {
-    if let Some(level_handle) = ldtk_asset.level_map().get(level_iid) {
-        let mut translation = Vec3::ZERO;
+) -> Option<Entity> {
+    ldtk_asset
+        .level_map()
+        .get(level_iid.get())
+        .map(|level_handle| {
+            let mut translation = Vec3::ZERO;
 
-        if let LevelSpawnBehavior::UseWorldTranslation { .. } = ldtk_settings.level_spawn_behavior {
-            if let Some(level) = ldtk_asset.get_level(&LevelSelection::Iid(level_iid.to_string())) {
-                let level_coords = ldtk_pixel_coords_to_translation(
-                    IVec2::new(level.world_x, level.world_y + level.px_hei),
-                    0,
-                );
-                translation.x = level_coords.x;
-                translation.y = level_coords.y;
+            if let LevelSpawnBehavior::UseWorldTranslation { .. } =
+                ldtk_settings.level_spawn_behavior
+            {
+                if let Some(level) = ldtk_asset.get_level(&LevelSelection::iid(level_iid.get())) {
+                    let level_coords = ldtk_pixel_coords_to_translation(
+                        IVec2::new(level.world_x, level.world_y + level.px_hei),
+                        0,
+                    );
+                    translation.x = level_coords.x;
+                    translation.y = level_coords.y;
+                }
             }
-        }
 
-        child_builder
-            .spawn_empty()
-            .insert(LevelIid::new(level_iid))
-            .insert(level_handle.clone())
-            .insert(SpatialBundle {
-                transform: Transform::from_translation(translation),
-                ..default()
-            })
-            .insert(Name::new(
-                ldtk_asset
-                    .get_level(&LevelSelection::Iid(level_iid.to_string()))
-                    .unwrap()
-                    .identifier
-                    .to_owned(),
-            ));
-    }
+            commands
+                .spawn(level_iid.clone())
+                .insert(level_handle.clone())
+                .insert(SpatialBundle {
+                    transform: Transform::from_translation(translation),
+                    ..default()
+                })
+                .insert(Name::new(
+                    ldtk_asset
+                        .get_level(&LevelSelection::Iid(level_iid))
+                        .unwrap()
+                        .identifier
+                        .to_owned(),
+                ))
+                .id()
+        })
 }
 
 /// Performs all the spawning of levels, layers, chunks, bundles, entities, tiles, etc. when an
@@ -290,7 +296,8 @@ pub fn process_ldtk_levels(
                             ldtk_entity,
                             &ldtk_settings,
                         );
-                        level_events.send(LevelEvent::Spawned(level.data().iid.clone()));
+                        level_events
+                            .send(LevelEvent::Spawned(LevelIid::new(level.data().iid.clone())));
                     }
 
                     if respawn.is_some() {
@@ -340,7 +347,9 @@ pub fn clean_respawn_entities(world: &mut World) {
 
                 if let Ok(level_handle) = other_ldtk_levels.get(*child) {
                     if let Some(level_asset) = level_assets.get(level_handle) {
-                        level_events.send(LevelEvent::Despawned(level_asset.data().iid.clone()));
+                        level_events.send(LevelEvent::Despawned(LevelIid::new(
+                            level_asset.data().iid.clone(),
+                        )));
                     }
                 }
             }
@@ -350,7 +359,9 @@ pub fn clean_respawn_entities(world: &mut World) {
             entities_to_despawn_descendants.push(level_entity);
 
             if let Some(level_asset) = level_assets.get(level_handle) {
-                level_events.send(LevelEvent::Despawned(level_asset.data().iid.clone()));
+                level_events.send(LevelEvent::Despawned(LevelIid::new(
+                    level_asset.data().iid.clone(),
+                )));
             }
         }
     }
@@ -383,7 +394,7 @@ pub fn worldly_adoption(
 /// Returns the `iid`s of levels that have spawned in this update.
 ///
 /// Mean to be used in a chain with [fire_level_transformed_events].
-pub fn detect_level_spawned_events(mut reader: EventReader<LevelEvent>) -> Vec<String> {
+pub fn detect_level_spawned_events(mut reader: EventReader<LevelEvent>) -> Vec<LevelIid> {
     let mut spawned_ids = Vec::new();
     for event in reader.iter() {
         if let LevelEvent::Spawned(id) = event {
@@ -398,7 +409,7 @@ pub fn detect_level_spawned_events(mut reader: EventReader<LevelEvent>) -> Vec<S
 ///
 /// Meant to be used in a chain with [detect_level_spawned_events].
 pub fn fire_level_transformed_events(
-    In(spawned_ids): In<Vec<String>>,
+    In(spawned_ids): In<Vec<LevelIid>>,
     mut writer: EventWriter<LevelEvent>,
 ) {
     for id in spawned_ids {

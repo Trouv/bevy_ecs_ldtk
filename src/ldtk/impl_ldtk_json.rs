@@ -175,4 +175,103 @@ mod tests {
         );
         assert_eq!(iter_levels_with_indices.next(), None);
     }
+
+    #[test]
+    fn iter_levels_with_indices_empty_if_there_are_no_levels() {
+        let project = LdtkJson::default();
+        assert_eq!(project.iter_levels_with_indices().count(), 0);
+    }
+
+    #[test]
+    fn get_root_levels_by_indices() {
+        let mut project = LdtkJson::default();
+
+        let [level_a, level_b, level_c, level_d] = sample_levels();
+
+        project.levels = vec![
+            level_a.clone(),
+            level_b.clone(),
+            level_c.clone(),
+            level_d.clone(),
+        ];
+
+        // positive cases
+        assert_eq!(
+            project.get_level_at_indices(&LevelIndices::in_root(0)),
+            Some(&level_a)
+        );
+        assert_eq!(
+            project.get_level_at_indices(&LevelIndices::in_root(1)),
+            Some(&level_b)
+        );
+        assert_eq!(
+            project.get_level_at_indices(&LevelIndices::in_root(2)),
+            Some(&level_c)
+        );
+        assert_eq!(
+            project.get_level_at_indices(&LevelIndices::in_root(3)),
+            Some(&level_d)
+        );
+
+        // negative cases
+        assert_eq!(
+            project.get_level_at_indices(&LevelIndices::in_root(4)),
+            None
+        );
+        assert_eq!(
+            project.get_level_at_indices(&LevelIndices::in_world(0, 0)),
+            None
+        );
+    }
+
+    #[test]
+    fn get_world_levels_by_indices() {
+        let mut project = LdtkJson::default();
+
+        let [level_a, level_b, level_c, level_d] = sample_levels();
+
+        let mut world_a = World::default();
+        world_a.levels = vec![level_a.clone(), level_b.clone()];
+
+        let mut world_b = World::default();
+        world_b.levels = vec![level_c.clone(), level_d.clone()];
+
+        project.worlds = vec![world_a, world_b];
+
+        // positive cases
+        assert_eq!(
+            project.get_level_at_indices(&LevelIndices::in_world(0, 0)),
+            Some(&level_a)
+        );
+        assert_eq!(
+            project.get_level_at_indices(&LevelIndices::in_world(0, 1)),
+            Some(&level_b)
+        );
+        assert_eq!(
+            project.get_level_at_indices(&LevelIndices::in_world(1, 0)),
+            Some(&level_c)
+        );
+        assert_eq!(
+            project.get_level_at_indices(&LevelIndices::in_world(1, 1)),
+            Some(&level_d)
+        );
+
+        // negative cases
+        assert_eq!(
+            project.get_level_at_indices(&LevelIndices::in_world(0, 2)),
+            None
+        );
+        assert_eq!(
+            project.get_level_at_indices(&LevelIndices::in_world(1, 2)),
+            None
+        );
+        assert_eq!(
+            project.get_level_at_indices(&LevelIndices::in_world(2, 0)),
+            None
+        );
+        assert_eq!(
+            project.get_level_at_indices(&LevelIndices::in_root(0)),
+            None
+        );
+    }
 }

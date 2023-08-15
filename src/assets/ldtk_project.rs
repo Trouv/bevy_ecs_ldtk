@@ -1,5 +1,5 @@
 use crate::{
-    assets::{ldtk_path_to_asset_path, LdtkLevel},
+    assets::{ldtk_path_to_asset_path, LdtkLevel, LevelIndices},
     ldtk::{LdtkJson, Level},
     resources::LevelSelection,
 };
@@ -42,6 +42,10 @@ impl LdtkProject {
     /// To always get full level data, you'll need to access `Assets<LdtkLevel>`.
     pub fn iter_levels(&self) -> impl Iterator<Item = &Level> {
         self.data.iter_levels()
+    }
+
+    pub fn get_level_at_indices(&self, indices: &LevelIndices) -> Option<&Level> {
+        self.data.get_level_at_indices(indices)
     }
 
     /// Find a particular level using a [`LevelSelection`].

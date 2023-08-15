@@ -14,6 +14,7 @@ impl LdtkJson {
             .chain(self.worlds.iter().flat_map(|w| &w.levels))
     }
 
+    /// Immutable access to a level at the given [`LevelIndices`].
     pub fn get_level_at_indices(&self, indices: &LevelIndices) -> Option<&Level> {
         match indices.world {
             Some(world_index) => self.worlds.get(world_index)?.levels.get(indices.level),

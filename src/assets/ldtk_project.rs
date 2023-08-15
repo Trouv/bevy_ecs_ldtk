@@ -44,6 +44,7 @@ impl LdtkProject {
         self.data.iter_levels()
     }
 
+    /// Immutable access to a level at the given [`LevelIndices`].
     pub fn get_level_at_indices(&self, indices: &LevelIndices) -> Option<&Level> {
         self.data.get_level_at_indices(indices)
     }

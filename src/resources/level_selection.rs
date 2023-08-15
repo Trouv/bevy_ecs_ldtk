@@ -51,10 +51,36 @@ impl LevelSelection {
         LevelSelection::Iid(LevelIid::new(iid))
     }
 
+    /// Construct a [`LevelSelection::Indices`] using the given level index.
+    ///
+    /// This will point to the level with the given index in the project root.
+    /// If you have a multi-worlds project, you should use [`LevelSelection::indices`] instead.
+    ///
+    /// # Example
+    /// ```
+    /// use bevy_ecs_ldtk::prelude::*;
+    ///
+    /// let level_selection = LevelSelection::index(3);
+    ///
+    /// assert_eq!(level_selection, LevelSelection::Indices(LevelIndices::in_root(3)));
+    /// ```
     pub fn index(level_index: usize) -> Self {
         LevelSelection::Indices(LevelIndices::in_root(level_index))
     }
 
+    /// Construct a [`LevelSelection::Indices`] using the given world and level indices.
+    ///
+    /// This will point to the level with the given world+level indices in the project worlds.
+    /// If your project isn't multi-worlds, you should use [`LevelSelection::index`] instead.
+    ///
+    /// # Example
+    /// ```
+    /// use bevy_ecs_ldtk::prelude::*;
+    ///
+    /// let level_selection = LevelSelection::indices(1, 2);
+    ///
+    /// assert_eq!(level_selection, LevelSelection::Indices(LevelIndices::in_world(1, 2)));
+    /// ```
     pub fn indices(world_index: usize, level_index: usize) -> Self {
         LevelSelection::Indices(LevelIndices::in_world(world_index, level_index))
     }

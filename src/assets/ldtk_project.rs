@@ -63,9 +63,8 @@ impl LdtkProject {
     /// This level will have "incomplete" data if you use LDtk's external levels feature.
     /// To always get full level data, you'll need to access `Assets<LdtkLevel>`.
     pub fn get_level(&self, level_selection: &LevelSelection) -> Option<&Level> {
-        self.iter_levels()
-            .enumerate()
-            .find(|(i, l)| level_selection.is_match(i, l))
+        self.iter_levels_with_indices()
+            .find(|(i, l)| level_selection.is_match(&i, l))
             .map(|(_, l)| l)
     }
 }

@@ -1,4 +1,4 @@
-use crate::{ldtk::Level, LevelIid};
+use crate::{assets::LevelIndices, ldtk::Level, LevelIid};
 use bevy::prelude::*;
 
 /// [`Resource`] for choosing which level(s) to spawn.
@@ -18,8 +18,8 @@ use bevy::prelude::*;
 pub enum LevelSelection {
     /// Spawn level with the given identifier.
     Identifier(String),
-    /// Spawn level from its index in the LDtk file's list of levels.
-    Index(usize),
+    /// Spawn level from its indices in the LDtk file's worlds/levels.
+    Indices(LevelIndices),
     /// Spawn level with the given level `iid`.
     Iid(LevelIid),
     /// Spawn level with the given level `uid`.
@@ -28,7 +28,7 @@ pub enum LevelSelection {
 
 impl Default for LevelSelection {
     fn default() -> Self {
-        LevelSelection::Index(0)
+        LevelSelection::index(0)
     }
 }
 
@@ -51,13 +51,21 @@ impl LevelSelection {
         LevelSelection::Iid(LevelIid::new(iid))
     }
 
+    pub fn index(level_index: usize) -> Self {
+        LevelSelection::Indices(LevelIndices::in_root(level_index))
+    }
+
+    pub fn indices(world_index: usize, level_index: usize) -> Self {
+        LevelSelection::Indices(LevelIndices::in_world(world_index, level_index))
+    }
+
     /// Returns true if the given level matches this [`LevelSelection`].
     ///
     /// Since levels don't inherently store their index, it needs to be provided separately.
-    pub fn is_match(&self, index: &usize, level: &Level) -> bool {
+    pub fn is_match(&self, indices: &LevelIndices, level: &Level) -> bool {
         match self {
             LevelSelection::Identifier(s) => *s == level.identifier,
-            LevelSelection::Index(i) => *i == *index,
+            LevelSelection::Indices(i) => *i == *indices,
             LevelSelection::Iid(i) => *i.get() == level.iid,
             LevelSelection::Uid(u) => *u == level.uid,
         }

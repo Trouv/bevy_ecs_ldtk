@@ -2,7 +2,9 @@ use std::fmt::Display;
 
 use bevy::prelude::*;
 
-/// `Component` that stores a level's instance identifier.
+/// [`Component`] that stores a level's instance identifier.
+///
+/// [`Component`]: https://docs.rs/bevy/latest/bevy/ecs/component/trait.Component.html
 #[derive(Clone, Debug, Default, Hash, Eq, PartialEq, Component, Reflect)]
 #[reflect(Component, Default, Debug)]
 pub struct LevelIid(String);
@@ -12,6 +14,11 @@ impl LevelIid {
     pub fn new(iid: impl Into<String>) -> Self {
         let iid = iid.into();
         LevelIid(iid)
+    }
+
+    /// Immutable access to the IID as a `String`.
+    pub fn get(&self) -> &String {
+        &self.0
     }
 
     /// Immutable access to the IID as a `&str`.
@@ -54,6 +61,7 @@ mod tests {
         let level_iid = LevelIid::new(original_string.clone());
 
         assert_eq!(level_iid, LevelIid(original_string.clone()));
+        assert_eq!(level_iid.get(), &original_string);
         assert_eq!(level_iid.as_str(), original_string.as_str());
         assert_eq!(LevelIid::from(original_string.clone()), level_iid);
         assert_eq!(String::from(level_iid.clone()), original_string);

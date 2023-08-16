@@ -1,5 +1,5 @@
 use crate::{
-    assets::level_map::{LevelIndices, LevelMetadata},
+    assets::{LevelIndices, LevelMetadata},
     ldtk::{loaded_level::LoadedLevel, LdtkJson, Level},
     resources::LevelSelection,
 };
@@ -60,20 +60,29 @@ impl LdtkProject {
         self.data.iter_raw_levels()
     }
 
-    pub fn get_raw_level_by_indices(&self, indices: &LevelIndices) -> Option<&Level> {
-        self.data.get_raw_level_by_indices(indices)
-    }
-
     pub fn get_raw_level_by_iid(&self, iid: &String) -> Option<&Level> {
         self.level_map
             .get(iid)
-            .and_then(|level_metadata| self.get_raw_level_by_indices(level_metadata.indices()))
+            .and_then(|level_metadata| self.get_level_at_indices(level_metadata.indices()))
     }
 
     pub fn get_raw_level_by_index(&self, index: usize) -> Option<&Level> {
         self.level_map
             .get_index(index)
-            .and_then(|(_, level_metadata)| self.get_raw_level_by_indices(level_metadata.indices()))
+            .and_then(|(_, level_metadata)| self.get_level_at_indices(level_metadata.indices()))
+    }
+
+    /// Iterate through all levels in the project paired with their [`LevelIndices`].
+    ///
+    /// This works for multi-world and single-world projects agnostically.
+    /// It iterates through levels in the root first, then levels in the worlds.
+    pub fn iter_levels_with_indices(&self) -> impl Iterator<Item = (LevelIndices, &Level)> {
+        self.data.iter_levels_with_indices()
+    }
+
+    /// Immutable access to a level at the given [`LevelIndices`].
+    pub fn get_level_at_indices(&self, indices: &LevelIndices) -> Option<&Level> {
+        self.data.get_level_at_indices(indices)
     }
 
     /// Find a particular level using a [`LevelSelection`].
@@ -86,13 +95,11 @@ impl LdtkProject {
         level_selection: &LevelSelection,
     ) -> Option<&Level> {
         match level_selection {
-            LevelSelection::Iid(iid) => self.get_raw_level_by_iid(iid),
-            LevelSelection::Index(index) => self.get_raw_level_by_index(*index),
+            LevelSelection::Iid(iid) => self.get_raw_level_by_iid(iid.get()),
+            LevelSelection::Indices(indices) => self.get_level_at_indices(indices),
             _ => self
                 .iter_raw_levels()
-                .enumerate()
-                .find(|(i, l)| level_selection.is_match(i, l))
-                .map(|(_, l)| l),
+                .find(|l| level_selection.is_match(&LevelIndices::default(), l)),
         }
     }
 }
@@ -104,8 +111,7 @@ impl LdtkProject {
     }
 
     pub fn get_loaded_level_by_indices(&self, indices: &LevelIndices) -> Option<LoadedLevel> {
-        self.get_raw_level_by_indices(indices)
-            .map(expect_level_loaded)
+        self.get_level_at_indices(indices).map(expect_level_loaded)
     }
 
     pub fn get_loaded_level_by_iid(&self, iid: &String) -> Option<LoadedLevel> {
@@ -144,7 +150,7 @@ impl LdtkProject {
     ) -> Option<LoadedLevel<'a>> {
         self.get_loaded_level_by_iid(
             external_level_assets,
-            &self.get_raw_level_by_indices(indices)?.iid,
+            &self.get_level_at_indices(indices)?.iid,
         )
     }
 
@@ -176,9 +182,11 @@ impl LdtkProject {
         level_selection: &LevelSelection,
     ) -> Option<LoadedLevel<'a>> {
         match level_selection {
-            LevelSelection::Iid(iid) => self.get_loaded_level_by_iid(external_level_assets, iid),
-            LevelSelection::Index(index) => {
-                self.get_loaded_level_by_index(external_level_assets, *index)
+            LevelSelection::Iid(iid) => {
+                self.get_loaded_level_by_iid(external_level_assets, iid.get())
+            }
+            LevelSelection::Indices(indices) => {
+                self.get_loaded_level_by_indices(external_level_assets, indices)
             }
             _ => self.get_loaded_level_by_iid(
                 external_level_assets,
@@ -306,7 +314,7 @@ impl AssetLoader for LdtkProjectLoader {
             for (level_index, level) in data.levels.iter().enumerate() {
                 load_level_metadata_into_buffers(
                     load_context,
-                    LevelIndices::new(None, level_index),
+                    LevelIndices::in_root(level_index),
                     level,
                     &mut level_map,
                     &mut dependent_asset_paths,
@@ -317,7 +325,7 @@ impl AssetLoader for LdtkProjectLoader {
                 for (level_index, level) in world.levels.iter().enumerate() {
                     load_level_metadata_into_buffers(
                         load_context,
-                        LevelIndices::new(Some(world_index), level_index),
+                        LevelIndices::in_world(world_index, level_index),
                         level,
                         &mut level_map,
                         &mut dependent_asset_paths,

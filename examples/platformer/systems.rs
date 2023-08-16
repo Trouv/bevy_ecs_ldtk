@@ -343,7 +343,7 @@ pub fn camera_fit_inside_current_level(
                 .get_raw_level_by_iid(&level_iid.to_string())
                 .expect("Spawned level should exist in LDtk project");
 
-            if level_selection.is_match(&0, level) {
+            if level_selection.is_match(&LevelIndices::default(), level) {
                 let level_ratio = level.px_wid as f32 / level.px_hei as f32;
                 orthographic_projection.viewport_origin = Vec2::ZERO;
                 if level_ratio > ASPECT_RATIO {
@@ -404,9 +404,9 @@ pub fn update_level_selection(
                 && player_transform.translation.x > level_bounds.min.x
                 && player_transform.translation.y < level_bounds.max.y
                 && player_transform.translation.y > level_bounds.min.y
-                && !level_selection.is_match(&0, level)
+                && !level_selection.is_match(&LevelIndices::default(), level)
             {
-                *level_selection = LevelSelection::Iid(level.iid.clone());
+                *level_selection = LevelSelection::iid(level.iid.clone());
             }
         }
     }

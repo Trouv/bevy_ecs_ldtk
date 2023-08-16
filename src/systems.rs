@@ -82,14 +82,19 @@ pub fn apply_level_selection(
                 {
                     let new_level_set = {
                         let mut iids = HashSet::new();
-                        iids.insert(level.iid.clone());
+                        iids.insert(LevelIid::new(level.iid.clone()));
 
                         if let LevelSpawnBehavior::UseWorldTranslation {
                             load_level_neighbors,
                         } = ldtk_settings.level_spawn_behavior
                         {
                             if load_level_neighbors {
-                                iids.extend(level.neighbours.iter().map(|n| n.level_iid.clone()));
+                                iids.extend(
+                                    level
+                                        .neighbours
+                                        .iter()
+                                        .map(|n| LevelIid::new(n.level_iid.clone())),
+                                );
                             }
                         }
 
@@ -121,7 +126,7 @@ pub fn apply_level_set(
         &Handle<LdtkProject>,
         Option<&Respawn>,
     )>,
-    level_iid_query: Query<&LevelIid>,
+    ldtk_level_query: Query<(&LevelIid, Entity)>,
     ldtk_assets: Res<Assets<LdtkProject>>,
     ldtk_settings: Res<LdtkSettings>,
     mut level_events: EventWriter<LevelEvent>,
@@ -130,35 +135,34 @@ pub fn apply_level_set(
         // Only apply level set if the asset has finished loading
         if let Some(ldtk_asset) = ldtk_assets.get(ldtk_asset_handle) {
             // Determine what levels are currently spawned
-            let mut previous_level_maps = HashMap::new();
+            let previous_level_maps = children
+                .into_iter()
+                .flat_map(|iterator| iterator.iter())
+                .filter_map(|child_entity| ldtk_level_query.get(*child_entity).ok())
+                .map(|(level_iid, entity)| (level_iid.clone(), entity))
+                .collect::<HashMap<_, _>>();
 
-            if let Some(children) = children {
-                for child in children.iter() {
-                    if let Ok(level_iid) = level_iid_query.get(*child) {
-                        previous_level_maps.insert(level_iid.to_string(), child);
-                    }
-                }
-            }
+            let previous_iids: HashSet<&LevelIid> = previous_level_maps.keys().collect();
 
-            let previous_iids: HashSet<String> = previous_level_maps.keys().cloned().collect();
+            let level_set_as_ref = level_set.iids.iter().collect::<HashSet<_>>();
 
             // Spawn levels that should be spawned but aren't
-            let iids_to_spawn = level_set.iids.difference(&previous_iids);
-            if iids_to_spawn.clone().count() > 0 {
-                commands.entity(world_entity).with_children(|c| {
-                    for iid in iids_to_spawn.clone() {
-                        level_events.send(LevelEvent::SpawnTriggered(iid.clone()));
-                        pre_spawn_level(c, ldtk_asset, iid, &ldtk_settings);
-                    }
-                });
-            }
+            let spawned_levels = level_set_as_ref
+                .difference(&previous_iids)
+                .map(|&iid| {
+                    level_events.send(LevelEvent::SpawnTriggered(iid.clone()));
+                    pre_spawn_level(&mut commands, ldtk_asset, iid.clone(), &ldtk_settings)
+                })
+                .collect::<Vec<_>>();
+
+            commands.entity(world_entity).push_children(&spawned_levels);
 
             // Despawn levels that shouldn't be spawned but are
-            for iid in previous_iids.difference(&level_set.iids) {
+            for &iid in previous_iids.difference(&level_set_as_ref) {
                 let map_entity = previous_level_maps.get(iid).expect(
                 "The set of previous_iids and the keys in previous_level_maps should be the same.",
             );
-                commands.entity(**map_entity).despawn_recursive();
+                commands.entity(*map_entity).despawn_recursive();
                 level_events.send(LevelEvent::Despawned(iid.clone()));
             }
 
@@ -167,7 +171,7 @@ pub fn apply_level_set(
             // portion of said respawn.
             // In that case, the respawn component needs to be removed so that the cleanup system
             // doesn't start the process over again.
-            if previous_iids.is_empty() && iids_to_spawn.count() > 0 && respawn.is_some() {
+            if previous_iids.is_empty() && !spawned_levels.is_empty() && respawn.is_some() {
                 commands.entity(world_entity).remove::<Respawn>();
             }
         }
@@ -175,17 +179,15 @@ pub fn apply_level_set(
 }
 
 fn pre_spawn_level(
-    child_builder: &mut ChildBuilder,
+    commands: &mut Commands,
     ldtk_asset: &LdtkProject,
-    level_iid: &str,
+    level_iid: LevelIid,
     ldtk_settings: &LdtkSettings,
-) {
+) -> Entity {
     let mut translation = Vec3::ZERO;
 
     if let LevelSpawnBehavior::UseWorldTranslation { .. } = ldtk_settings.level_spawn_behavior {
-        if let Some(level) = ldtk_asset
-            .find_raw_level_by_level_selection(&LevelSelection::Iid(level_iid.to_string()))
-        {
+        if let Some(level) = ldtk_asset.get_raw_level_by_iid(level_iid.get()) {
             let level_coords = ldtk_pixel_coords_to_translation(
                 IVec2::new(level.world_x, level.world_y + level.px_hei),
                 0,
@@ -195,20 +197,20 @@ fn pre_spawn_level(
         }
     }
 
-    child_builder
-        .spawn_empty()
-        .insert(LevelIid::new(level_iid))
+    commands
+        .spawn(level_iid.clone())
         .insert(SpatialBundle {
             transform: Transform::from_translation(translation),
             ..default()
         })
         .insert(Name::new(
             ldtk_asset
-                .find_raw_level_by_level_selection(&LevelSelection::Iid(level_iid.to_string()))
+                .get_raw_level_by_iid(level_iid.get())
                 .unwrap()
                 .identifier
                 .to_owned(),
-        ));
+        ))
+        .id()
 }
 
 /// Performs all the spawning of levels, layers, chunks, bundles, entities, tiles, etc. when an
@@ -301,7 +303,9 @@ pub fn process_ldtk_levels(
                                 ldtk_entity,
                                 &ldtk_settings,
                             );
-                            level_events.send(LevelEvent::Spawned(loaded_level.iid().clone()));
+                            level_events.send(LevelEvent::Spawned(LevelIid::new(
+                                loaded_level.iid().clone(),
+                            )));
                         }
                     }
 
@@ -349,7 +353,7 @@ pub fn clean_respawn_entities(world: &mut World) {
                 entities_to_despawn_recursively.push(*child);
 
                 if let Ok(level_iid) = other_ldtk_levels.get(*child) {
-                    level_events.send(LevelEvent::Despawned(level_iid.to_string()));
+                    level_events.send(LevelEvent::Despawned(level_iid.clone()));
                 }
             }
         }
@@ -357,7 +361,7 @@ pub fn clean_respawn_entities(world: &mut World) {
         for (level_entity, level_iid) in ldtk_levels_to_clean.iter() {
             entities_to_despawn_descendants.push(level_entity);
 
-            level_events.send(LevelEvent::Despawned(level_iid.to_string()));
+            level_events.send(LevelEvent::Despawned(level_iid.clone()));
         }
     }
 
@@ -389,7 +393,7 @@ pub fn worldly_adoption(
 /// Returns the `iid`s of levels that have spawned in this update.
 ///
 /// Mean to be used in a chain with [fire_level_transformed_events].
-pub fn detect_level_spawned_events(mut reader: EventReader<LevelEvent>) -> Vec<String> {
+pub fn detect_level_spawned_events(mut reader: EventReader<LevelEvent>) -> Vec<LevelIid> {
     let mut spawned_ids = Vec::new();
     for event in reader.iter() {
         if let LevelEvent::Spawned(id) = event {
@@ -404,7 +408,7 @@ pub fn detect_level_spawned_events(mut reader: EventReader<LevelEvent>) -> Vec<S
 ///
 /// Meant to be used in a chain with [detect_level_spawned_events].
 pub fn fire_level_transformed_events(
-    In(spawned_ids): In<Vec<String>>,
+    In(spawned_ids): In<Vec<LevelIid>>,
     mut writer: EventWriter<LevelEvent>,
 ) {
     for id in spawned_ids {

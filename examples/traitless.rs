@@ -10,7 +10,7 @@ fn main() {
         .add_plugins(LdtkPlugin)
         .add_systems(Startup, setup)
         .add_systems(Update, process_my_entity)
-        .insert_resource(LevelSelection::Index(0))
+        .insert_resource(LevelSelection::index(0))
         .run();
 }
 

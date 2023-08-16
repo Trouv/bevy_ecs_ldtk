@@ -1,5 +1,5 @@
 use crate::{
-    assets::{ldtk_path_to_asset_path, LdtkLevel},
+    assets::{ldtk_path_to_asset_path, LdtkLevel, LevelIndices},
     ldtk::{LdtkJson, Level},
     resources::LevelSelection,
 };
@@ -44,14 +44,26 @@ impl LdtkProject {
         self.data.iter_levels()
     }
 
+    /// Iterate through all levels in the project paired with their [`LevelIndices`].
+    ///
+    /// This works for multi-world and single-world projects agnostically.
+    /// It iterates through levels in the root first, then levels in the worlds.
+    pub fn iter_levels_with_indices(&self) -> impl Iterator<Item = (LevelIndices, &Level)> {
+        self.data.iter_levels_with_indices()
+    }
+
+    /// Immutable access to a level at the given [`LevelIndices`].
+    pub fn get_level_at_indices(&self, indices: &LevelIndices) -> Option<&Level> {
+        self.data.get_level_at_indices(indices)
+    }
+
     /// Find a particular level using a [`LevelSelection`].
     ///
     /// Note: the returned level is the one existent in the [`LdtkProject`].
     /// This level will have "incomplete" data if you use LDtk's external levels feature.
     /// To always get full level data, you'll need to access `Assets<LdtkLevel>`.
     pub fn get_level(&self, level_selection: &LevelSelection) -> Option<&Level> {
-        self.iter_levels()
-            .enumerate()
+        self.iter_levels_with_indices()
             .find(|(i, l)| level_selection.is_match(i, l))
             .map(|(_, l)| l)
     }

@@ -338,7 +338,7 @@ pub fn camera_fit_inside_current_level(
         for (level_transform, level_handle) in &level_query {
             if let Some(ldtk_level) = ldtk_levels.get(level_handle) {
                 let level = &ldtk_level.data();
-                if level_selection.is_match(&0, level) {
+                if level_selection.is_match(&LevelIndices::default(), level) {
                     let level_ratio = level.px_wid as f32 / ldtk_level.data().px_hei as f32;
                     orthographic_projection.viewport_origin = Vec2::ZERO;
                     if level_ratio > ASPECT_RATIO {
@@ -392,7 +392,7 @@ pub fn update_level_selection(
                     && player_transform.translation.x > level_bounds.min.x
                     && player_transform.translation.y < level_bounds.max.y
                     && player_transform.translation.y > level_bounds.min.y
-                    && !level_selection.is_match(&0, ldtk_level.data())
+                    && !level_selection.is_match(&LevelIndices::default(), ldtk_level.data())
                 {
                     *level_selection = LevelSelection::iid(ldtk_level.data().iid.clone());
                 }

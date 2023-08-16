@@ -22,7 +22,7 @@
 //!         .add_plugins(DefaultPlugins)
 //!         .add_plugins(LdtkPlugin)
 //!         .add_systems(Startup, setup)
-//!         .insert_resource(LevelSelection::Index(0))
+//!         .insert_resource(LevelSelection::index(0))
 //!         .register_ldtk_entity::<MyBundle>("MyEntityIdentifier")
 //!         .run();
 //! }
@@ -138,7 +138,7 @@ pub mod prelude {
 
     pub use crate::{
         app::{LdtkEntity, LdtkEntityAppExt, LdtkIntCell, LdtkIntCellAppExt},
-        assets::{LdtkLevel, LdtkProject},
+        assets::{LdtkLevel, LdtkProject, LevelIndices},
         components::{
             EntityIid, EntityInstance, GridCoords, IntGridCell, LayerMetadata, LdtkWorldBundle,
             LevelIid, LevelSet, Respawn, TileEnumTags, TileMetadata, Worldly,

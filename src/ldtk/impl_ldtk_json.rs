@@ -55,33 +55,42 @@ mod tests {
     use super::*;
 
     fn sample_levels() -> [Level; 4] {
-        let mut level_a = Level::default();
-        level_a.identifier = "Tutorial".to_string();
+        let level_a = Level {
+            identifier: "Tutorial".to_string(),
+            ..Default::default()
+        };
 
-        let mut level_b = Level::default();
-        level_b.identifier = "New_Beginnings".to_string();
+        let level_b = Level {
+            identifier: "New_Beginnings".to_string(),
+            ..Default::default()
+        };
 
-        let mut level_c = Level::default();
-        level_c.identifier = "Turning_Point".to_string();
+        let level_c = Level {
+            identifier: "Turning_Point".to_string(),
+            ..Default::default()
+        };
 
-        let mut level_d = Level::default();
-        level_d.identifier = "Final_Boss".to_string();
+        let level_d = Level {
+            identifier: "Final_Boss".to_string(),
+            ..Default::default()
+        };
 
         [level_a, level_b, level_c, level_d]
     }
 
     #[test]
     fn iter_levels_in_root_with_indices() {
-        let mut project = LdtkJson::default();
-
         let [level_a, level_b, level_c, level_d] = sample_levels();
 
-        project.levels = vec![
-            level_a.clone(),
-            level_b.clone(),
-            level_c.clone(),
-            level_d.clone(),
-        ];
+        let project = LdtkJson {
+            levels: vec![
+                level_a.clone(),
+                level_b.clone(),
+                level_c.clone(),
+                level_d.clone(),
+            ],
+            ..Default::default()
+        };
 
         let mut iter_levels_with_indices = project.iter_levels_with_indices();
 
@@ -106,17 +115,22 @@ mod tests {
 
     #[test]
     fn iter_levels_in_worlds_with_indices() {
-        let mut project = LdtkJson::default();
-
         let [level_a, level_b, level_c, level_d] = sample_levels();
 
-        let mut world_a = World::default();
-        world_a.levels = vec![level_a.clone(), level_b.clone()];
+        let world_a = World {
+            levels: vec![level_a.clone(), level_b.clone()],
+            ..Default::default()
+        };
 
-        let mut world_b = World::default();
-        world_b.levels = vec![level_c.clone(), level_d.clone()];
+        let world_b = World {
+            levels: vec![level_c.clone(), level_d.clone()],
+            ..Default::default()
+        };
 
-        project.worlds = vec![world_a, world_b];
+        let project = LdtkJson {
+            worlds: vec![world_a, world_b],
+            ..Default::default()
+        };
 
         let mut iter_levels_with_indices = project.iter_levels_with_indices();
 
@@ -141,19 +155,23 @@ mod tests {
 
     #[test]
     fn iter_levels_with_indices_iterates_through_root_levels_first() {
-        let mut project = LdtkJson::default();
-
         let [level_a, level_b, level_c, level_d] = sample_levels();
 
-        project.levels = vec![level_a.clone(), level_b.clone()];
+        let world_a = World {
+            levels: vec![level_c.clone()],
+            ..Default::default()
+        };
 
-        let mut world_a = World::default();
-        world_a.levels = vec![level_c.clone()];
+        let world_b = World {
+            levels: vec![level_d.clone()],
+            ..Default::default()
+        };
 
-        let mut world_b = World::default();
-        world_b.levels = vec![level_d.clone()];
-
-        project.worlds = vec![world_a, world_b];
+        let project = LdtkJson {
+            worlds: vec![world_a, world_b],
+            levels: vec![level_a.clone(), level_b.clone()],
+            ..Default::default()
+        };
 
         let mut iter_levels_with_indices = project.iter_levels_with_indices();
 
@@ -184,16 +202,17 @@ mod tests {
 
     #[test]
     fn get_root_levels_by_indices() {
-        let mut project = LdtkJson::default();
-
         let [level_a, level_b, level_c, level_d] = sample_levels();
 
-        project.levels = vec![
-            level_a.clone(),
-            level_b.clone(),
-            level_c.clone(),
-            level_d.clone(),
-        ];
+        let project = LdtkJson {
+            levels: vec![
+                level_a.clone(),
+                level_b.clone(),
+                level_c.clone(),
+                level_d.clone(),
+            ],
+            ..Default::default()
+        };
 
         // positive cases
         assert_eq!(
@@ -226,17 +245,22 @@ mod tests {
 
     #[test]
     fn get_world_levels_by_indices() {
-        let mut project = LdtkJson::default();
-
         let [level_a, level_b, level_c, level_d] = sample_levels();
 
-        let mut world_a = World::default();
-        world_a.levels = vec![level_a.clone(), level_b.clone()];
+        let world_a = World {
+            levels: vec![level_a.clone(), level_b.clone()],
+            ..Default::default()
+        };
 
-        let mut world_b = World::default();
-        world_b.levels = vec![level_c.clone(), level_d.clone()];
+        let world_b = World {
+            levels: vec![level_c.clone(), level_d.clone()],
+            ..Default::default()
+        };
 
-        project.worlds = vec![world_a, world_b];
+        let project = LdtkJson {
+            worlds: vec![world_a, world_b],
+            ..Default::default()
+        };
 
         // positive cases
         assert_eq!(

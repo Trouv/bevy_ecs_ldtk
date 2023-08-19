@@ -10,7 +10,6 @@ use bevy::{
     utils::BoxedFuture,
 };
 use derive_getters::Getters;
-use indexmap::IndexMap;
 use std::collections::HashMap;
 use std::path::Path;
 use thiserror::Error;
@@ -42,7 +41,7 @@ pub struct LdtkProject {
     /// Map from tileset uids to image handles for the loaded tileset.
     tileset_map: HashMap<i32, Handle<Image>>,
     /// Map from level iids to level metadata.
-    level_map: IndexMap<String, LevelMetadata>,
+    level_map: HashMap<String, LevelMetadata>,
     /// Image used for rendering int grid colors.
     int_grid_image_handle: Option<Handle<Image>>,
 }
@@ -64,12 +63,6 @@ impl LdtkProject {
         self.level_map
             .get(iid)
             .and_then(|level_metadata| self.get_level_at_indices(level_metadata.indices()))
-    }
-
-    pub fn get_raw_level_by_index(&self, index: usize) -> Option<&Level> {
-        self.level_map
-            .get_index(index)
-            .and_then(|(_, level_metadata)| self.get_level_at_indices(level_metadata.indices()))
     }
 
     /// Iterate through all levels in the project paired with their [`LevelIndices`].
@@ -118,10 +111,6 @@ impl LdtkProject {
         self.get_raw_level_by_iid(iid).map(expect_level_loaded)
     }
 
-    pub fn get_loaded_level_by_index(&self, index: usize) -> Option<LoadedLevel> {
-        self.get_raw_level_by_index(index).map(expect_level_loaded)
-    }
-
     pub fn find_loaded_level_by_level_selection(
         &self,
         level_selection: &LevelSelection,
@@ -162,17 +151,6 @@ impl LdtkProject {
         self.level_map
             .get(iid)
             .and_then(|metadata| external_level_assets.get(metadata.external_handle()))
-            .map(LdtkExternalLevel::data)
-    }
-
-    pub fn get_loaded_level_by_index<'a>(
-        &'a self,
-        external_level_assets: &'a Assets<LdtkExternalLevel>,
-        index: usize,
-    ) -> Option<LoadedLevel<'a>> {
-        self.level_map
-            .get_index(index)
-            .and_then(|(_, metadata)| external_level_assets.get(metadata.external_handle()))
             .map(LdtkExternalLevel::data)
     }
 
@@ -272,7 +250,7 @@ fn load_level_metadata_into_buffers<'a>(
     load_context: &LoadContext,
     level_indices: LevelIndices,
     level: &Level,
-    level_map: &mut IndexMap<String, LevelMetadata>,
+    level_map: &mut HashMap<String, LevelMetadata>,
     dependent_asset_paths: &mut Vec<AssetPath<'a>>,
 ) -> Result<(), LdtkProjectLoaderError> {
     let LoadLevelMetadataResult {
@@ -307,7 +285,7 @@ impl AssetLoader for LdtkProjectLoader {
                 Err(LdtkProjectLoaderError::InternalLevelProject)?;
             }
 
-            let mut level_map = IndexMap::new();
+            let mut level_map = HashMap::new();
 
             let mut dependent_asset_paths = Vec::new();
 

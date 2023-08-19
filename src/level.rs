@@ -209,7 +209,7 @@ pub fn spawn_level(
     ldtk_level: &LdtkLevel,
     commands: &mut Commands,
     asset_server: &AssetServer,
-    images: &mut Assets<Image>,
+    images: &Assets<Image>,
     texture_atlases: &mut Assets<TextureAtlas>,
     ldtk_entity_map: &LdtkEntityMap,
     ldtk_int_cell_map: &LdtkIntCellMap,

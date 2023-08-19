@@ -51,7 +51,7 @@ impl Default for WallBundle {
         Self {
             rigid_body: RigidBody::Fixed,
             collider: Collider::cuboid(8., 8.),
-            wall: default()
+            wall: default(),
         }
     }
 }
@@ -61,10 +61,7 @@ impl Default for WallBundle {
 /* Systems */
 
 pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn((
-        Camera2dBundle::default(),
-        GameCamera
-    ));
+    commands.spawn((Camera2dBundle::default(), GameCamera));
 
     commands.spawn(LdtkWorldBundle {
         ldtk_handle: asset_server.load("use_default_impl.ldtk"),
@@ -76,18 +73,23 @@ pub fn follow_player(
     player_query: Query<&Transform, With<Player>>,
     mut camera_query: Query<&mut Transform, (With<GameCamera>, Without<Player>)>,
 ) {
-    let Ok(player_transform) = player_query.get_single() else { return; };
+    let Ok(player_transform) = player_query.get_single() else {
+        return;
+    };
     let mut camera_transform = camera_query.single_mut();
 
     camera_transform.translation.x = player_transform.translation.x;
-    camera_transform.translation.y = player_transform.translation.y - ((player_transform.translation.y / 5.) * 4.);
+    camera_transform.translation.y =
+        player_transform.translation.y - ((player_transform.translation.y / 5.) * 4.);
 }
 
 pub fn movement(
     keycode: Res<Input<KeyCode>>,
-    mut player_query: Query<&mut KinematicCharacterController, With<Player>>
+    mut player_query: Query<&mut KinematicCharacterController, With<Player>>,
 ) {
-    let Ok(mut player_controller) = player_query.get_single_mut() else { return; };
+    let Ok(mut player_controller) = player_query.get_single_mut() else {
+        return;
+    };
     let mut translation = Vec2::default();
 
     if keycode.pressed(KeyCode::D) || keycode.pressed(KeyCode::Right) {

@@ -278,15 +278,15 @@ use std::{collections::HashMap, marker::PhantomData};
 ///     }
 /// }
 /// ```
-/// 
+///
 /// ### `#[bevy_ecs_ldtk(use_default_impl)]`
-/// 
+///
 /// Struct-level attribute that indicates that all fields that were not marked with
 /// any other attributes should be consumed from the `Default` impl of that corresponding
 /// struct.
-/// 
+///
 /// *See also the example: [use_default_impl.rs](https://github.com/Trouv/bevy_ecs_ldtk/blob/main/examples/use_default_impl.rs).*
-/// 
+///
 /// ```
 /// # use bevy::prelude::*;
 /// # use bevy_ecs_ldtk::prelude::*;
@@ -295,7 +295,7 @@ use std::{collections::HashMap, marker::PhantomData};
 /// # pub struct Player;
 /// #[derive(Component, Clone)]
 /// pub struct Money(pub f32);
-/// 
+///
 /// #[derive(Bundle, LdtkEntity)]
 /// #[bevy_ecs_ldtk(use_default_impl)]
 /// pub struct PlayerBundle {
@@ -305,7 +305,7 @@ use std::{collections::HashMap, marker::PhantomData};
 ///     pub collider: Collider,
 ///     pub controller: KinematicCharacterController,
 /// }
-/// 
+///
 /// impl Default for PlayerBundle {
 ///     fn default() -> Self {
 ///         Self {

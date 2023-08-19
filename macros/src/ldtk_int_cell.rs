@@ -18,10 +18,14 @@ pub fn expand_ldtk_int_cell_derive(ast: syn::DeriveInput) -> proc_macro::TokenSt
 
     let mut use_default_impl = false;
 
-    let attr = ast.attrs.into_iter().find(|a| a.path.get_ident().unwrap() == BEVY_ECS_LDTK_ATTRIBUTE_NAME);
-    
+    let attr = ast
+        .attrs
+        .into_iter()
+        .find(|a| a.path.get_ident().unwrap() == BEVY_ECS_LDTK_ATTRIBUTE_NAME);
+
     if let Some(attr) = attr {
-        let token = attr.tokens
+        let token = attr
+            .tokens
             .into_iter()
             .find(|t| t.to_string().contains("use_default_impl"))
             .map(|t| t.to_string().replace(' ', ""));
@@ -30,7 +34,9 @@ pub fn expand_ldtk_int_cell_derive(ast: syn::DeriveInput) -> proc_macro::TokenSt
             if token == "(use_default_impl)" {
                 use_default_impl = true;
             } else {
-                panic!("The only valid form of this attribute is `#[bevy_ecs_ldtk(use_default_impl)]`");
+                panic!(
+                    "The only valid form of this attribute is `#[bevy_ecs_ldtk(use_default_impl)]`"
+                );
             }
         } else {
             panic!("The only valid form of this attribute is `#[bevy_ecs_ldtk(use_default_impl)]`");
@@ -41,7 +47,7 @@ pub fn expand_ldtk_int_cell_derive(ast: syn::DeriveInput) -> proc_macro::TokenSt
     for field in fields {
         let field_name = field.ident.as_ref().unwrap();
         let field_type = &field.ty;
-        
+
         let ldtk_int_cell = field
             .attrs
             .iter()

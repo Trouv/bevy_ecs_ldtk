@@ -153,22 +153,22 @@ use std::{collections::HashMap, marker::PhantomData};
 ///     damage: Damage,
 /// }
 /// ```
-/// 
+///
 /// ### `#[bevy_ecs_ldtk(use_default_impl)]`
-/// 
+///
 /// Struct-level attribute that indicates that all fields that were not marked with
 /// any other attributes should be consumed from the `Default` impl of that corresponding
 /// struct.
-/// 
+///
 /// *See also the example: [use_default_impl.rs](https://github.com/Trouv/bevy_ecs_ldtk/blob/main/examples/use_default_impl.rs).*
-/// 
+///
 /// ```
 /// # use bevy::prelude::*;
 /// # use bevy_ecs_ldtk::prelude::*;
 /// # use bevy_rapier2d::prelude::*;
 /// # #[derive(Component, Default)]
 /// # pub struct Wall;
-/// 
+///
 /// #[derive(Bundle, LdtkIntCell)]
 /// #[bevy_ecs_ldtk(use_default_impl)]
 /// pub struct WallBundle {
@@ -176,7 +176,7 @@ use std::{collections::HashMap, marker::PhantomData};
 ///     pub rigid_body: RigidBody,
 ///     pub collider: Collider,
 /// }
-/// 
+///
 /// impl Default for WallBundle {
 ///     fn default() -> Self {
 ///         Self {

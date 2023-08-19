@@ -22,10 +22,14 @@ pub fn expand_ldtk_entity_derive(ast: syn::DeriveInput) -> proc_macro::TokenStre
 
     let mut use_default_impl = false;
 
-    let attr = ast.attrs.into_iter().find(|a| a.path.get_ident().unwrap() == BEVY_ECS_LDTK_ATTRIBUTE_NAME);
-    
+    let attr = ast
+        .attrs
+        .into_iter()
+        .find(|a| a.path.get_ident().unwrap() == BEVY_ECS_LDTK_ATTRIBUTE_NAME);
+
     if let Some(attr) = attr {
-        let token = attr.tokens
+        let token = attr
+            .tokens
             .into_iter()
             .find(|t| t.to_string().contains("use_default_impl"))
             .map(|t| t.to_string().replace(' ', ""));
@@ -34,7 +38,9 @@ pub fn expand_ldtk_entity_derive(ast: syn::DeriveInput) -> proc_macro::TokenStre
             if token == "(use_default_impl)" {
                 use_default_impl = true;
             } else {
-                panic!("The only valid form of this attribute is `#[bevy_ecs_ldtk(use_default_impl)]`");
+                panic!(
+                    "The only valid form of this attribute is `#[bevy_ecs_ldtk(use_default_impl)]`"
+                );
             }
         } else {
             panic!("The only valid form of this attribute is `#[bevy_ecs_ldtk(use_default_impl)]`");

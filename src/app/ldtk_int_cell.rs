@@ -46,7 +46,7 @@ use std::{collections::HashMap, marker::PhantomData};
 /// # struct ComponentB;
 /// # #[derive(Component, Default)]
 /// # struct ComponentC;
-/// #[derive(Bundle, LdtkIntCell)]
+/// #[derive(Bundle, LdtkIntCell, Default)]
 /// pub struct MyBundle {
 ///     a: ComponentA,
 ///     b: ComponentB,
@@ -74,12 +74,12 @@ use std::{collections::HashMap, marker::PhantomData};
 /// # struct RigidBody;
 /// # #[derive(Component, Default)]
 /// # struct Damage;
-/// #[derive(Bundle, LdtkIntCell)]
+/// #[derive(Bundle, LdtkIntCell, Default)]
 /// pub struct Wall {
 ///     rigid_body: RigidBody,
 /// }
 ///
-/// #[derive(Bundle, LdtkIntCell)]
+/// #[derive(Bundle, LdtkIntCell, Default)]
 /// pub struct DestructibleWall {
 ///     #[ldtk_int_cell]
 ///     wall: Wall,
@@ -115,7 +115,7 @@ use std::{collections::HashMap, marker::PhantomData};
 ///     }
 /// }
 ///
-/// #[derive(Bundle, LdtkIntCell)]
+/// #[derive(Bundle, LdtkIntCell, Default)]
 /// pub struct Lava {
 ///     #[from_int_grid_cell]
 ///     fluid: Fluid,
@@ -146,45 +146,11 @@ use std::{collections::HashMap, marker::PhantomData};
 ///     }
 /// }
 ///
-/// #[derive(Bundle, LdtkIntCell)]
+/// #[derive(Bundle, LdtkIntCell, Default)]
 /// pub struct Lava {
 ///     #[with(initial_fluid)]
 ///     fluid: Fluid,
 ///     damage: Damage,
-/// }
-/// ```
-///
-/// ### `#[bevy_ecs_ldtk(use_default_impl)]`
-///
-/// Struct-level attribute that indicates that all fields that were not marked with
-/// any other attributes should be consumed from the `Default` impl of that corresponding
-/// struct.
-///
-/// *See also the example: [use_default_impl.rs](https://github.com/Trouv/bevy_ecs_ldtk/blob/main/examples/use_default_impl.rs).*
-///
-/// ```
-/// # use bevy::prelude::*;
-/// # use bevy_ecs_ldtk::prelude::*;
-/// # use bevy_rapier2d::prelude::*;
-/// # #[derive(Component, Default)]
-/// # pub struct Wall;
-///
-/// #[derive(Bundle, LdtkIntCell)]
-/// #[bevy_ecs_ldtk(use_default_impl)]
-/// pub struct WallBundle {
-///     pub wall: Wall,
-///     pub rigid_body: RigidBody,
-///     pub collider: Collider,
-/// }
-///
-/// impl Default for WallBundle {
-///     fn default() -> Self {
-///         Self {
-///             wall: default(),
-///             rigid_body: RigidBody::Fixed,
-///             collider: Collider::cuboid(8., 8.),
-///         }
-///     }
 /// }
 /// ```
 pub trait LdtkIntCell {

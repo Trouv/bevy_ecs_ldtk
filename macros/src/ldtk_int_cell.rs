@@ -3,7 +3,6 @@ use quote::quote;
 static LDTK_INT_CELL_ATTRIBUTE_NAME: &str = "ldtk_int_cell";
 static FROM_INT_GRID_CELL_ATTRIBUTE_NAME: &str = "from_int_grid_cell";
 static WITH_ATTRIBUTE_NAME: &str = "with";
-static BEVY_ECS_LDTK_ATTRIBUTE_NAME: &str = "bevy_ecs_ldtk";
 
 pub fn expand_ldtk_int_cell_derive(ast: syn::DeriveInput) -> proc_macro::TokenStream {
     let struct_name = &ast.ident;
@@ -15,33 +14,6 @@ pub fn expand_ldtk_int_cell_derive(ast: syn::DeriveInput) -> proc_macro::TokenSt
         }) => &fields.named,
         _ => panic!("Expected a struct with named fields."),
     };
-
-    let mut use_default_impl = false;
-
-    let attr = ast
-        .attrs
-        .into_iter()
-        .find(|a| a.path.get_ident().unwrap() == BEVY_ECS_LDTK_ATTRIBUTE_NAME);
-
-    if let Some(attr) = attr {
-        let token = attr
-            .tokens
-            .into_iter()
-            .find(|t| t.to_string().contains("use_default_impl"))
-            .map(|t| t.to_string().replace(' ', ""));
-
-        if let Some(token) = token {
-            if token == "(use_default_impl)" {
-                use_default_impl = true;
-            } else {
-                panic!(
-                    "The only valid form of this attribute is `#[bevy_ecs_ldtk(use_default_impl)]`"
-                );
-            }
-        } else {
-            panic!("The only valid form of this attribute is `#[bevy_ecs_ldtk(use_default_impl)]`");
-        }
-    }
 
     let mut field_constructions = Vec::new();
     for field in fields {
@@ -78,41 +50,20 @@ pub fn expand_ldtk_int_cell_derive(ast: syn::DeriveInput) -> proc_macro::TokenSt
             field_constructions.push(expand_with_attribute(attribute, field_name, field_type));
             continue;
         }
-
-        if !use_default_impl {
-            field_constructions.push(quote! {
-                #field_name: <#field_type as std::default::Default>::default(),
-            });
-        }
     }
 
     let generics = &ast.generics;
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
-    let gen = if use_default_impl {
-        quote! {
-            impl #impl_generics bevy_ecs_ldtk::prelude::LdtkIntCell for #struct_name #ty_generics #where_clause {
-                fn bundle_int_cell(
-                    int_grid_cell: bevy_ecs_ldtk::prelude::IntGridCell,
-                    layer_instance: &bevy_ecs_ldtk::prelude::LayerInstance,
-                ) -> Self {
-                    Self {
-                        #(#field_constructions)*
-                        ..<Self as std::default::Default>::default()
-                    }
-                }
-            }
-        }
-    } else {
-        quote! {
-            impl #impl_generics bevy_ecs_ldtk::prelude::LdtkIntCell for #struct_name #ty_generics #where_clause {
-                fn bundle_int_cell(
-                    int_grid_cell: bevy_ecs_ldtk::prelude::IntGridCell,
-                    layer_instance: &bevy_ecs_ldtk::prelude::LayerInstance,
-                ) -> Self {
-                    Self {
-                        #(#field_constructions)*
-                    }
+    let gen = quote! {
+        impl #impl_generics bevy_ecs_ldtk::prelude::LdtkIntCell for #struct_name #ty_generics #where_clause {
+            fn bundle_int_cell(
+                int_grid_cell: bevy_ecs_ldtk::prelude::IntGridCell,
+                layer_instance: &bevy_ecs_ldtk::prelude::LayerInstance,
+            ) -> Self {
+                Self {
+                    #(#field_constructions)*
+                    ..<Self as std::default::Default>::default()
                 }
             }
         }

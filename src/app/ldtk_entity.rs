@@ -278,6 +278,46 @@ use std::{collections::HashMap, marker::PhantomData};
 ///     }
 /// }
 /// ```
+/// 
+/// ### `#[bevy_ecs_ldtk(use_default_impl)]`
+/// 
+/// Struct-level attribute that indicates that all fields that were not marked with
+/// any other attributes should be consumed from the `Default` impl of that corresponding
+/// struct.
+/// 
+/// *See also the example: [use_default_impl.rs](https://github.com/Trouv/bevy_ecs_ldtk/blob/main/examples/use_default_impl.rs).*
+/// 
+/// ```
+/// # use bevy::prelude::*;
+/// # use bevy_ecs_ldtk::prelude::*;
+/// # use bevy_rapier2d::prelude::*;
+/// # #[derive(Component, Default)]
+/// # pub struct Player;
+/// #[derive(Component, Clone)]
+/// pub struct Money(pub f32);
+/// 
+/// #[derive(Bundle, LdtkEntity)]
+/// #[bevy_ecs_ldtk(use_default_impl)]
+/// pub struct PlayerBundle {
+///     pub player: Player,
+///     pub cash: Money,
+///     pub rigid_body: RigidBody,
+///     pub collider: Collider,
+///     pub controller: KinematicCharacterController,
+/// }
+/// 
+/// impl Default for PlayerBundle {
+///     fn default() -> Self {
+///         Self {
+///             player: default(),
+///             cash: Money(4.0),
+///             rigid_body: RigidBody::KinematicPositionBased,
+///             collider: Collider::cuboid(6., 14.),
+///             controller: default(),
+///         }
+///     }
+/// }
+/// ```
 pub trait LdtkEntity {
     /// The constructor used by the plugin when spawning entities from an LDtk file.
     /// Has access to resources/assets most commonly used for spawning 2d objects.

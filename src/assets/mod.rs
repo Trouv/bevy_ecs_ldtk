@@ -10,7 +10,7 @@ mod ldtk_project;
 pub use ldtk_project::LdtkProject;
 
 mod level_metadata;
-pub use level_metadata::LevelMetadata;
+pub use level_metadata::{ExternalLevelMetadata, LevelMetadata};
 
 mod level_indices;
 pub use level_indices::LevelIndices;

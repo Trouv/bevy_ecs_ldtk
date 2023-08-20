@@ -75,7 +75,7 @@ impl LdtkParentProject {
     ) -> Option<LoadedLevel<'a>> {
         self.get_loaded_level_by_iid(
             external_level_assets,
-            &self.get_level_at_indices(indices)?.iid,
+            &self.get_raw_level_at_indices(indices)?.iid,
         )
     }
 

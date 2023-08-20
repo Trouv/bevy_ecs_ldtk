@@ -48,7 +48,7 @@ pub trait RawLevelAccessor {
         self.worlds().iter().flat_map(|world| world.levels.iter())
     }
 
-    fn iter_levels(&self) -> IterLevels {
+    fn iter_raw_levels(&self) -> IterLevels {
         self.iter_root_levels().chain(self.iter_world_levels())
     }
 
@@ -76,13 +76,13 @@ pub trait RawLevelAccessor {
             })
     }
 
-    fn iter_levels_with_indices(&self) -> IterLevelsWithIndices {
+    fn iter_raw_levels_with_indices(&self) -> IterLevelsWithIndices {
         self.iter_root_levels_with_indices()
             .chain(self.iter_world_levels_with_indices())
     }
 
     /// Immutable access to a level at the given [`LevelIndices`].
-    fn get_level_at_indices(&self, indices: &LevelIndices) -> Option<&Level> {
+    fn get_raw_level_at_indices(&self, indices: &LevelIndices) -> Option<&Level> {
         match indices.world {
             Some(world_index) => self.worlds().get(world_index)?.levels.get(indices.level),
             None => self.root_levels().get(indices.level),
@@ -144,7 +144,7 @@ mod tests {
             ..Default::default()
         };
 
-        let mut iter_levels_with_indices = project.iter_levels_with_indices();
+        let mut iter_levels_with_indices = project.iter_raw_levels_with_indices();
 
         assert_eq!(
             iter_levels_with_indices.next(),
@@ -184,7 +184,7 @@ mod tests {
             ..Default::default()
         };
 
-        let mut iter_levels_with_indices = project.iter_levels_with_indices();
+        let mut iter_levels_with_indices = project.iter_raw_levels_with_indices();
 
         assert_eq!(
             iter_levels_with_indices.next(),
@@ -225,7 +225,7 @@ mod tests {
             ..Default::default()
         };
 
-        let mut iter_levels_with_indices = project.iter_levels_with_indices();
+        let mut iter_levels_with_indices = project.iter_raw_levels_with_indices();
 
         assert_eq!(
             iter_levels_with_indices.next(),
@@ -249,7 +249,7 @@ mod tests {
     #[test]
     fn iter_levels_with_indices_empty_if_there_are_no_levels() {
         let project = LdtkJson::default();
-        assert_eq!(project.iter_levels_with_indices().count(), 0);
+        assert_eq!(project.iter_raw_levels_with_indices().count(), 0);
     }
 
     #[test]
@@ -268,29 +268,29 @@ mod tests {
 
         // positive cases
         assert_eq!(
-            project.get_level_at_indices(&LevelIndices::in_root(0)),
+            project.get_raw_level_at_indices(&LevelIndices::in_root(0)),
             Some(&level_a)
         );
         assert_eq!(
-            project.get_level_at_indices(&LevelIndices::in_root(1)),
+            project.get_raw_level_at_indices(&LevelIndices::in_root(1)),
             Some(&level_b)
         );
         assert_eq!(
-            project.get_level_at_indices(&LevelIndices::in_root(2)),
+            project.get_raw_level_at_indices(&LevelIndices::in_root(2)),
             Some(&level_c)
         );
         assert_eq!(
-            project.get_level_at_indices(&LevelIndices::in_root(3)),
+            project.get_raw_level_at_indices(&LevelIndices::in_root(3)),
             Some(&level_d)
         );
 
         // negative cases
         assert_eq!(
-            project.get_level_at_indices(&LevelIndices::in_root(4)),
+            project.get_raw_level_at_indices(&LevelIndices::in_root(4)),
             None
         );
         assert_eq!(
-            project.get_level_at_indices(&LevelIndices::in_world(0, 0)),
+            project.get_raw_level_at_indices(&LevelIndices::in_world(0, 0)),
             None
         );
     }
@@ -316,37 +316,37 @@ mod tests {
 
         // positive cases
         assert_eq!(
-            project.get_level_at_indices(&LevelIndices::in_world(0, 0)),
+            project.get_raw_level_at_indices(&LevelIndices::in_world(0, 0)),
             Some(&level_a)
         );
         assert_eq!(
-            project.get_level_at_indices(&LevelIndices::in_world(0, 1)),
+            project.get_raw_level_at_indices(&LevelIndices::in_world(0, 1)),
             Some(&level_b)
         );
         assert_eq!(
-            project.get_level_at_indices(&LevelIndices::in_world(1, 0)),
+            project.get_raw_level_at_indices(&LevelIndices::in_world(1, 0)),
             Some(&level_c)
         );
         assert_eq!(
-            project.get_level_at_indices(&LevelIndices::in_world(1, 1)),
+            project.get_raw_level_at_indices(&LevelIndices::in_world(1, 1)),
             Some(&level_d)
         );
 
         // negative cases
         assert_eq!(
-            project.get_level_at_indices(&LevelIndices::in_world(0, 2)),
+            project.get_raw_level_at_indices(&LevelIndices::in_world(0, 2)),
             None
         );
         assert_eq!(
-            project.get_level_at_indices(&LevelIndices::in_world(1, 2)),
+            project.get_raw_level_at_indices(&LevelIndices::in_world(1, 2)),
             None
         );
         assert_eq!(
-            project.get_level_at_indices(&LevelIndices::in_world(2, 0)),
+            project.get_raw_level_at_indices(&LevelIndices::in_world(2, 0)),
             None
         );
         assert_eq!(
-            project.get_level_at_indices(&LevelIndices::in_root(0)),
+            project.get_raw_level_at_indices(&LevelIndices::in_root(0)),
             None
         );
     }

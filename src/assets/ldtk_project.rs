@@ -62,11 +62,12 @@ impl LevelSelectionAccessor for LdtkProject {
 
 impl LdtkProject {
     pub fn iter_loaded_levels(&self) -> impl Iterator<Item = LoadedLevel> {
-        self.iter_levels().map(expect_level_loaded)
+        self.iter_raw_levels().map(expect_level_loaded)
     }
 
     pub fn get_loaded_level_by_indices(&self, indices: &LevelIndices) -> Option<LoadedLevel> {
-        self.get_level_at_indices(indices).map(expect_level_loaded)
+        self.get_raw_level_at_indices(indices)
+            .map(expect_level_loaded)
     }
 
     pub fn get_loaded_level_by_iid(&self, iid: &String) -> Option<LoadedLevel> {

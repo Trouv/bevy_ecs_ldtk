@@ -43,7 +43,6 @@ pub mod all_some_iter;
 mod color;
 mod field_instance;
 mod impl_definitions;
-mod impl_ldtk_json;
 pub mod ldtk_fields;
 pub mod loaded_level;
 pub mod raw_level_accessor;

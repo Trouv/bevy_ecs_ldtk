@@ -46,6 +46,7 @@ mod impl_definitions;
 mod impl_ldtk_json;
 pub mod ldtk_fields;
 pub mod loaded_level;
+pub mod raw_level_accessor;
 
 pub use field_instance::*;
 

@@ -16,14 +16,10 @@ use std::collections::HashMap;
 use std::path::Path;
 use thiserror::Error;
 
-#[cfg(feature = "external_levels")]
-use crate::assets::LdtkExternalLevel;
-
 fn ldtk_path_to_asset_path<'b>(ldtk_path: &Path, rel_path: &str) -> AssetPath<'b> {
     ldtk_path.parent().unwrap().join(Path::new(rel_path)).into()
 }
 
-#[cfg(not(feature = "external_levels"))]
 fn expect_level_loaded(level: &Level) -> LoadedLevel {
     LoadedLevel::try_from(level)
         .expect("LdtkProject construction should guarantee that internal levels are loaded")
@@ -64,7 +60,6 @@ impl LevelSelectionAccessor for LdtkProject {
     }
 }
 
-#[cfg(not(feature = "external_levels"))]
 impl LdtkProject {
     pub fn iter_loaded_levels(&self) -> impl Iterator<Item = LoadedLevel> {
         self.iter_levels().map(expect_level_loaded)
@@ -87,68 +82,12 @@ impl LdtkProject {
     }
 }
 
-#[cfg(feature = "external_levels")]
-impl LdtkProject {
-    pub fn iter_loaded_levels<'a>(
-        &'a self,
-        external_level_assets: &'a Assets<LdtkExternalLevel>,
-    ) -> impl Iterator<Item = LoadedLevel<'a>> {
-        self.level_map
-            .values()
-            .filter_map(|metadata| external_level_assets.get(metadata.external_handle()))
-            .map(LdtkExternalLevel::data)
-    }
-
-    pub fn get_loaded_level_by_indices<'a>(
-        &'a self,
-        external_level_assets: &'a Assets<LdtkExternalLevel>,
-        indices: &LevelIndices,
-    ) -> Option<LoadedLevel<'a>> {
-        self.get_loaded_level_by_iid(
-            external_level_assets,
-            &self.get_level_at_indices(indices)?.iid,
-        )
-    }
-
-    pub fn get_loaded_level_by_iid<'a>(
-        &'a self,
-        external_level_assets: &'a Assets<LdtkExternalLevel>,
-        iid: &String,
-    ) -> Option<LoadedLevel<'a>> {
-        self.level_map
-            .get(iid)
-            .and_then(|metadata| external_level_assets.get(metadata.external_handle()))
-            .map(LdtkExternalLevel::data)
-    }
-
-    pub fn find_loaded_level_by_level_selection<'a>(
-        &'a self,
-        external_level_assets: &'a Assets<LdtkExternalLevel>,
-        level_selection: &LevelSelection,
-    ) -> Option<LoadedLevel<'a>> {
-        match level_selection {
-            LevelSelection::Iid(iid) => {
-                self.get_loaded_level_by_iid(external_level_assets, iid.get())
-            }
-            LevelSelection::Indices(indices) => {
-                self.get_loaded_level_by_indices(external_level_assets, indices)
-            }
-            _ => self.get_loaded_level_by_iid(
-                external_level_assets,
-                &self.find_raw_level_by_level_selection(level_selection)?.iid,
-            ),
-        }
-    }
-}
-
 #[allow(dead_code)]
 #[derive(Debug, Error)]
 pub enum LdtkProjectLoaderError {
-    #[error("external_levels feature enabled, but LDtk project uses internal levels")]
-    InternalLevelProject,
-    #[error("LDtk project uses external levels, but external_levels feature not enabled")]
+    #[error("LDtk project uses external levels, use LdtkProjectParent asset instead")]
     ExternalLevelProject,
-    #[error("LDtk project uses internal levels, but the level's layers is null")]
+    #[error("LDtk project uses internal levels, but some level's layer_instances is null")]
     InternalLevelWithNullLayers,
 }
 
@@ -179,38 +118,17 @@ fn load_level_metadata<'a>(
         })
         .unwrap_or((None, None));
 
-    #[cfg(feature = "external_levels")]
-    {
-        let external_level_path = ldtk_path_to_asset_path(
-            load_context.path(),
-            level.external_rel_path.as_ref().expect("TODO"),
-        );
-
-        let external_handle = load_context.get_handle(external_level_path.clone());
-
-        let level_metadata = LevelMetadata::new(bg_image, level_indices, external_handle);
-
-        Ok(LoadLevelMetadataResult {
-            bg_image_path,
-            level_metadata,
-            external_level_path: Some(external_level_path),
-        })
+    if level.layer_instances.is_none() {
+        Err(LdtkProjectLoaderError::InternalLevelWithNullLayers)?;
     }
 
-    #[cfg(not(feature = "external_levels"))]
-    {
-        if level.layer_instances.is_none() {
-            Err(LdtkProjectLoaderError::InternalLevelWithNullLayers)?;
-        }
+    let level_metadata = LevelMetadata::new(bg_image, level_indices);
 
-        let level_metadata = LevelMetadata::new(bg_image, level_indices);
-
-        Ok(LoadLevelMetadataResult {
-            bg_image_path,
-            level_metadata,
-            external_level_path: None,
-        })
-    }
+    Ok(LoadLevelMetadataResult {
+        bg_image_path,
+        level_metadata,
+        external_level_path: None,
+    })
 }
 
 fn load_level_metadata_into_buffers<'a>(
@@ -246,12 +164,9 @@ impl AssetLoader for LdtkProjectLoader {
         Box::pin(async move {
             let data: LdtkJson = serde_json::from_slice(bytes)?;
 
-            if data.external_levels && !cfg!(feature = "external_levels") {
+            if data.external_levels {
                 Err(LdtkProjectLoaderError::ExternalLevelProject)?;
-            } else if !data.external_levels && cfg!(feature = "external_levels") {
-                Err(LdtkProjectLoaderError::InternalLevelProject)?;
             }
-
             let mut level_map = HashMap::new();
 
             let mut dependent_asset_paths = Vec::new();

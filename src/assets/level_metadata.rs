@@ -18,6 +18,15 @@ impl LevelMetadata {
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Getters)]
 pub struct ExternalLevelMetadata {
-    level_metadata: LevelMetadata,
+    metadata: LevelMetadata,
     external_handle: Handle<LdtkExternalLevel>,
+}
+
+impl ExternalLevelMetadata {
+    pub fn new(metadata: LevelMetadata, external_handle: Handle<LdtkExternalLevel>) -> Self {
+        ExternalLevelMetadata {
+            metadata,
+            external_handle,
+        }
+    }
 }

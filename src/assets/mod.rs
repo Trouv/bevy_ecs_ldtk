@@ -12,5 +12,8 @@ pub use ldtk_project::LdtkProject;
 mod level_metadata;
 pub use level_metadata::{ExternalLevelMetadata, LevelMetadata};
 
+mod level_selection_accessor;
+pub use level_selection_accessor::LevelSelectionAccessor;
+
 mod level_indices;
 pub use level_indices::LevelIndices;

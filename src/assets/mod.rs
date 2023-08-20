@@ -9,8 +9,8 @@ pub use ldtk_external_level::LdtkExternalLevel;
 mod ldtk_project;
 pub use ldtk_project::LdtkProject;
 
-mod level_map;
-pub use level_map::LevelMetadata;
+mod level_metadata;
+pub use level_metadata::LevelMetadata;
 
 mod level_indices;
 pub use level_indices::LevelIndices;

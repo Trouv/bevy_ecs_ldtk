@@ -350,7 +350,7 @@ pub(crate) struct EntityInstanceBundle {
 /// unless marked by a [Worldly] component.
 #[derive(Clone, Default, Bundle)]
 pub struct LdtkWorldBundle {
-    pub ldtk_handle: Handle<crate::assets::LdtkProject>,
+    pub ldtk_project_handle: LdtkProjectHandle,
     pub level_set: LevelSet,
     pub transform: Transform,
     pub global_transform: GlobalTransform,

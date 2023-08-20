@@ -113,12 +113,10 @@ impl LdtkParentProject {
 #[allow(dead_code)]
 #[derive(Debug, Error)]
 pub enum LdtkParentProjectLoaderError {
-    #[error("external_levels feature enabled, but LDtk project uses internal levels")]
+    #[error("LDtk project uses internal levels, use LdtkProject asset instead")]
     InternalLevelProject,
-    #[error("LDtk project uses external levels, but external_levels feature not enabled")]
-    ExternalLevelProject,
-    #[error("LDtk project uses internal levels, but the level's layers is null")]
-    InternalLevelWithNullLayers,
+    #[error("LDtk project uses external levels, but some level's external_rel_path is null")]
+    ExternalLevelWithNullPath,
 }
 
 #[derive(Default)]
@@ -150,7 +148,10 @@ fn load_level_metadata<'a>(
 
     let external_level_path = ldtk_path_to_asset_path(
         load_context.path(),
-        level.external_rel_path.as_ref().expect("TODO"),
+        level
+            .external_rel_path
+            .as_ref()
+            .ok_or(LdtkParentProjectLoaderError::ExternalLevelWithNullPath)?,
     );
 
     let external_handle = load_context.get_handle(external_level_path.clone());
@@ -197,9 +198,7 @@ impl AssetLoader for LdtkParentProjectLoader {
         Box::pin(async move {
             let data: LdtkJson = serde_json::from_slice(bytes)?;
 
-            if data.external_levels && !cfg!(feature = "external_levels") {
-                Err(LdtkParentProjectLoaderError::ExternalLevelProject)?;
-            } else if !data.external_levels && cfg!(feature = "external_levels") {
+            if !data.external_levels {
                 Err(LdtkParentProjectLoaderError::InternalLevelProject)?;
             }
 

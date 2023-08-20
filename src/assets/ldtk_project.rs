@@ -1,5 +1,5 @@
 use crate::{
-    assets::{LevelIndices, LevelMetadata},
+    assets::{LevelIndices, LevelMetadata, LevelSelectionAccessor},
     ldtk::{
         loaded_level::LoadedLevel, raw_level_accessor::RawLevelAccessor, LdtkJson, Level, World,
     },
@@ -48,32 +48,6 @@ pub struct LdtkProject {
     int_grid_image_handle: Option<Handle<Image>>,
 }
 
-impl LdtkProject {
-    pub fn get_raw_level_by_iid(&self, iid: &String) -> Option<&Level> {
-        self.level_map
-            .get(iid)
-            .and_then(|level_metadata| self.get_level_at_indices(level_metadata.indices()))
-    }
-
-    /// Find a particular level using a [`LevelSelection`].
-    ///
-    /// Note: the returned level is the one existent in the [`LdtkProject`].
-    /// This level will have "incomplete" data if you use LDtk's external levels feature.
-    /// To always get full level data, you'll need to access `Assets<LdtkLevel>`.
-    pub fn find_raw_level_by_level_selection(
-        &self,
-        level_selection: &LevelSelection,
-    ) -> Option<&Level> {
-        match level_selection {
-            LevelSelection::Iid(iid) => self.get_raw_level_by_iid(iid.get()),
-            LevelSelection::Indices(indices) => self.get_level_at_indices(indices),
-            _ => self
-                .iter_levels()
-                .find(|l| level_selection.is_match(&LevelIndices::default(), l)),
-        }
-    }
-}
-
 impl RawLevelAccessor for LdtkProject {
     fn root_levels(&self) -> &[Level] {
         self.data.root_levels()
@@ -81,6 +55,12 @@ impl RawLevelAccessor for LdtkProject {
 
     fn worlds(&self) -> &[World] {
         self.data.worlds()
+    }
+}
+
+impl LevelSelectionAccessor for LdtkProject {
+    fn get_indices_for_iid(&self, iid: &String) -> Option<&LevelIndices> {
+        Some(self.level_map.get(iid)?.indices())
     }
 }
 

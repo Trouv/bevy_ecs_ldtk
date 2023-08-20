@@ -49,35 +49,10 @@ pub struct LdtkProject {
 }
 
 impl LdtkProject {
-    /// Get an iterator of all the levels in the LDtk file.
-    ///
-    /// This abstraction avoids compatibility issues between pre-multi-world and post-multi-world
-    /// LDtk projects.
-    ///
-    /// Note: the returned levels are the ones existent in the [`LdtkProject`].
-    /// These levels will have "incomplete" data if you use LDtk's external levels feature.
-    /// To always get full level data, you'll need to access `Assets<LdtkLevel>`.
-    pub fn iter_raw_levels(&self) -> impl Iterator<Item = &Level> {
-        self.data.iter_raw_levels()
-    }
-
     pub fn get_raw_level_by_iid(&self, iid: &String) -> Option<&Level> {
         self.level_map
             .get(iid)
             .and_then(|level_metadata| self.get_level_at_indices(level_metadata.indices()))
-    }
-
-    /// Iterate through all levels in the project paired with their [`LevelIndices`].
-    ///
-    /// This works for multi-world and single-world projects agnostically.
-    /// It iterates through levels in the root first, then levels in the worlds.
-    pub fn iter_levels_with_indices(&self) -> impl Iterator<Item = (LevelIndices, &Level)> {
-        self.data.iter_levels_with_indices()
-    }
-
-    /// Immutable access to a level at the given [`LevelIndices`].
-    pub fn get_level_at_indices(&self, indices: &LevelIndices) -> Option<&Level> {
-        self.data.get_level_at_indices(indices)
     }
 
     /// Find a particular level using a [`LevelSelection`].
@@ -93,16 +68,26 @@ impl LdtkProject {
             LevelSelection::Iid(iid) => self.get_raw_level_by_iid(iid.get()),
             LevelSelection::Indices(indices) => self.get_level_at_indices(indices),
             _ => self
-                .iter_raw_levels()
+                .iter_levels()
                 .find(|l| level_selection.is_match(&LevelIndices::default(), l)),
         }
+    }
+}
+
+impl RawLevelAccessor for LdtkProject {
+    fn root_levels(&self) -> &[Level] {
+        self.data.root_levels()
+    }
+
+    fn worlds(&self) -> &[World] {
+        self.data.worlds()
     }
 }
 
 #[cfg(not(feature = "external_levels"))]
 impl LdtkProject {
     pub fn iter_loaded_levels(&self) -> impl Iterator<Item = LoadedLevel> {
-        self.iter_raw_levels().map(expect_level_loaded)
+        self.iter_levels().map(expect_level_loaded)
     }
 
     pub fn get_loaded_level_by_indices(&self, indices: &LevelIndices) -> Option<LoadedLevel> {

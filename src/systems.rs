@@ -4,7 +4,7 @@
 use crate::resources::SetClearColor;
 use crate::{
     app::{LdtkEntityMap, LdtkIntCellMap},
-    assets::LdtkProject,
+    assets::{LdtkProject, LevelSelectionAccessor},
     components::*,
     ldtk::TilesetDefinition,
     level::spawn_level,
@@ -12,7 +12,6 @@ use crate::{
     utils::*,
 };
 
-#[cfg(feature = "external_levels")]
 use crate::assets::LdtkExternalLevel;
 
 use bevy::{ecs::system::SystemState, prelude::*};
@@ -222,7 +221,7 @@ pub fn process_ldtk_levels(
     mut images: ResMut<Assets<Image>>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     ldtk_assets: Res<Assets<LdtkProject>>,
-    #[cfg(feature = "external_levels")] level_assets: Res<Assets<LdtkExternalLevel>>,
+    level_assets: Res<Assets<LdtkExternalLevel>>,
     ldtk_entity_map: NonSend<LdtkEntityMap>,
     ldtk_int_cell_map: NonSend<LdtkIntCellMap>,
     ldtk_query: Query<&Handle<LdtkProject>>,

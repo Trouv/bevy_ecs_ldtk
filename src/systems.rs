@@ -4,7 +4,7 @@
 use crate::resources::SetClearColor;
 use crate::{
     app::{LdtkEntityMap, LdtkIntCellMap},
-    assets::{LdtkProject, LevelSelectionAccessor},
+    assets::{LdtkParentProject, LdtkProject, LevelSelectionAccessor},
     components::*,
     ldtk::TilesetDefinition,
     level::spawn_level,
@@ -21,31 +21,69 @@ use std::collections::{HashMap, HashSet};
 #[allow(clippy::too_many_arguments)]
 pub fn process_ldtk_assets(
     mut commands: Commands,
-    mut ldtk_events: EventReader<AssetEvent<LdtkProject>>,
-    ldtk_world_query: Query<(Entity, &Handle<LdtkProject>)>,
+    mut ldtk_project_events: EventReader<AssetEvent<LdtkProject>>,
+    mut ldtk_parent_project_events: EventReader<AssetEvent<LdtkParentProject>>,
+    ldtk_world_query: Query<(Entity, &LdtkProjectHandle)>,
     #[cfg(feature = "render")] ldtk_settings: Res<LdtkSettings>,
     #[cfg(feature = "render")] mut clear_color: ResMut<ClearColor>,
-    #[cfg(feature = "render")] ldtk_assets: Res<Assets<LdtkProject>>,
+    #[cfg(feature = "render")] ldtk_project_assets: Res<Assets<LdtkProject>>,
+    #[cfg(feature = "render")] ldtk_parent_project_assets: Res<Assets<LdtkParentProject>>,
 ) {
     let mut ldtk_handles_to_respawn = HashSet::new();
     let mut ldtk_handles_for_clear_color = HashSet::new();
 
-    for event in ldtk_events.iter() {
+    for event in ldtk_project_events.iter() {
         match event {
             AssetEvent::Created { handle } => {
                 debug!("LDtk asset creation detected.");
-                ldtk_handles_for_clear_color.insert(handle);
+                ldtk_handles_for_clear_color
+                    .insert(LdtkProjectHandle::InternalLevels(handle.clone()));
             }
             AssetEvent::Modified { handle } => {
                 info!("LDtk asset modification detected.");
-                ldtk_handles_to_respawn.insert(handle);
-                ldtk_handles_for_clear_color.insert(handle);
+                ldtk_handles_to_respawn.insert(LdtkProjectHandle::InternalLevels(handle.clone()));
+                ldtk_handles_for_clear_color
+                    .insert(LdtkProjectHandle::InternalLevels(handle.clone()));
             }
             AssetEvent::Removed { handle } => {
                 info!("LDtk asset removal detected.");
                 // if mesh was modified and removed in the same update, ignore the modification
                 // events are ordered so future modification events are ok
-                ldtk_handles_to_respawn.retain(|changed_handle| *changed_handle != handle);
+                ldtk_handles_to_respawn.retain(|changed_handle| {
+                    if let LdtkProjectHandle::InternalLevels(changed_handle) = changed_handle {
+                        changed_handle != handle
+                    } else {
+                        true
+                    }
+                });
+            }
+        }
+    }
+
+    for event in ldtk_parent_project_events.iter() {
+        match event {
+            AssetEvent::Created { handle } => {
+                debug!("LDtk asset creation detected.");
+                ldtk_handles_for_clear_color
+                    .insert(LdtkProjectHandle::ExternalLevels(handle.clone()));
+            }
+            AssetEvent::Modified { handle } => {
+                info!("LDtk asset modification detected.");
+                ldtk_handles_to_respawn.insert(LdtkProjectHandle::ExternalLevels(handle.clone()));
+                ldtk_handles_for_clear_color
+                    .insert(LdtkProjectHandle::ExternalLevels(handle.clone()));
+            }
+            AssetEvent::Removed { handle } => {
+                info!("LDtk asset removal detected.");
+                // if mesh was modified and removed in the same update, ignore the modification
+                // events are ordered so future modification events are ok
+                ldtk_handles_to_respawn.retain(|changed_handle| {
+                    if let LdtkProjectHandle::ExternalLevels(changed_handle) = changed_handle {
+                        changed_handle != handle
+                    } else {
+                        true
+                    }
+                });
             }
         }
     }
@@ -53,8 +91,17 @@ pub fn process_ldtk_assets(
     #[cfg(feature = "render")]
     if ldtk_settings.set_clear_color == SetClearColor::FromEditorBackground {
         for handle in ldtk_handles_for_clear_color.iter() {
-            if let Some(ldtk_asset) = ldtk_assets.get(handle) {
-                clear_color.0 = ldtk_asset.data().bg_color;
+            let ldtk_json = match handle {
+                LdtkProjectHandle::InternalLevels(handle) => {
+                    ldtk_project_assets.get(handle).map(|asset| asset.data())
+                }
+                LdtkProjectHandle::ExternalLevels(handle) => ldtk_parent_project_assets
+                    .get(handle)
+                    .map(|asset| asset.data()),
+            };
+
+            if let Some(ldtk_json) = ldtk_json {
+                clear_color.0 = ldtk_json.bg_color;
             }
         }
     }
@@ -70,43 +117,50 @@ pub fn process_ldtk_assets(
 pub fn apply_level_selection(
     level_selection: Option<Res<LevelSelection>>,
     ldtk_settings: Res<LdtkSettings>,
-    ldtk_assets: Res<Assets<LdtkProject>>,
-    mut level_set_query: Query<(&Handle<LdtkProject>, &mut LevelSet)>,
+    ldtk_project_assets: Res<Assets<LdtkProject>>,
+    ldtk_parent_project_assets: Res<Assets<LdtkParentProject>>,
+    mut level_set_query: Query<(&LdtkProjectHandle, &mut LevelSet)>,
     #[cfg(feature = "render")] mut clear_color: ResMut<ClearColor>,
 ) {
     if let Some(level_selection) = level_selection {
         for (ldtk_handle, mut level_set) in level_set_query.iter_mut() {
-            if let Some(ldtk_asset) = ldtk_assets.get(ldtk_handle) {
-                if let Some(level) = ldtk_asset.find_raw_level_by_level_selection(&level_selection)
-                {
-                    let new_level_set = {
-                        let mut iids = HashSet::new();
-                        iids.insert(LevelIid::new(level.iid.clone()));
+            let level = match ldtk_handle {
+                LdtkProjectHandle::InternalLevels(handle) => ldtk_project_assets
+                    .get(handle)
+                    .and_then(|asset| asset.find_raw_level_by_level_selection(&level_selection)),
+                LdtkProjectHandle::ExternalLevels(handle) => ldtk_parent_project_assets
+                    .get(handle)
+                    .and_then(|asset| asset.find_raw_level_by_level_selection(&level_selection)),
+            };
 
-                        if let LevelSpawnBehavior::UseWorldTranslation {
-                            load_level_neighbors,
-                        } = ldtk_settings.level_spawn_behavior
-                        {
-                            if load_level_neighbors {
-                                iids.extend(
-                                    level
-                                        .neighbours
-                                        .iter()
-                                        .map(|n| LevelIid::new(n.level_iid.clone())),
-                                );
-                            }
+            if let Some(level) = level {
+                let new_level_set = {
+                    let mut iids = HashSet::new();
+                    iids.insert(LevelIid::new(level.iid.clone()));
+
+                    if let LevelSpawnBehavior::UseWorldTranslation {
+                        load_level_neighbors,
+                    } = ldtk_settings.level_spawn_behavior
+                    {
+                        if load_level_neighbors {
+                            iids.extend(
+                                level
+                                    .neighbours
+                                    .iter()
+                                    .map(|n| LevelIid::new(n.level_iid.clone())),
+                            );
                         }
+                    }
 
-                        LevelSet { iids }
-                    };
+                    LevelSet { iids }
+                };
 
-                    if *level_set != new_level_set {
-                        *level_set = new_level_set;
+                if *level_set != new_level_set {
+                    *level_set = new_level_set;
 
-                        #[cfg(feature = "render")]
-                        if ldtk_settings.set_clear_color == SetClearColor::FromLevelBackground {
-                            clear_color.0 = level.bg_color;
-                        }
+                    #[cfg(feature = "render")]
+                    if ldtk_settings.set_clear_color == SetClearColor::FromLevelBackground {
+                        clear_color.0 = level.bg_color;
                     }
                 }
             }

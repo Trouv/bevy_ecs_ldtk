@@ -6,7 +6,7 @@ use crate::{
     app::{LdtkEntityMap, LdtkIntCellMap},
     assets::{LdtkParentProject, LdtkProject, LevelSelectionAccessor},
     components::*,
-    ldtk::TilesetDefinition,
+    ldtk::{Level, TilesetDefinition},
     level::spawn_level,
     resources::{LdtkSettings, LevelEvent, LevelSelection, LevelSpawnBehavior},
     utils::*,
@@ -176,17 +176,25 @@ pub fn apply_level_set(
         Entity,
         &LevelSet,
         Option<&Children>,
-        &Handle<LdtkProject>,
+        &LdtkProjectHandle,
         Option<&Respawn>,
     )>,
     ldtk_level_query: Query<(&LevelIid, Entity)>,
-    ldtk_assets: Res<Assets<LdtkProject>>,
+    ldtk_project_assets: Res<Assets<LdtkProject>>,
+    ldtk_parent_project_assets: Res<Assets<LdtkParentProject>>,
     ldtk_settings: Res<LdtkSettings>,
     mut level_events: EventWriter<LevelEvent>,
 ) {
     for (world_entity, level_set, children, ldtk_asset_handle, respawn) in ldtk_world_query.iter() {
         // Only apply level set if the asset has finished loading
-        if let Some(ldtk_asset) = ldtk_assets.get(ldtk_asset_handle) {
+        let asset_loaded = match ldtk_asset_handle {
+            LdtkProjectHandle::InternalLevels(handle) => ldtk_project_assets.contains(handle),
+            LdtkProjectHandle::ExternalLevels(handle) => {
+                ldtk_parent_project_assets.contains(handle)
+            }
+        };
+
+        if asset_loaded {
             // Determine what levels are currently spawned
             let previous_level_maps = children
                 .into_iter()
@@ -202,9 +210,19 @@ pub fn apply_level_set(
             // Spawn levels that should be spawned but aren't
             let spawned_levels = level_set_as_ref
                 .difference(&previous_iids)
-                .map(|&iid| {
-                    level_events.send(LevelEvent::SpawnTriggered(iid.clone()));
-                    pre_spawn_level(&mut commands, ldtk_asset, iid.clone(), &ldtk_settings)
+                .filter_map(|&iid| match ldtk_asset_handle {
+                    LdtkProjectHandle::InternalLevels(handle) => ldtk_project_assets
+                        .get(handle)
+                        .expect("We've already verified that the asset is loaded")
+                        .get_raw_level_by_iid(iid.get()),
+                    LdtkProjectHandle::ExternalLevels(handle) => ldtk_parent_project_assets
+                        .get(handle)
+                        .expect("We've already verified that the asset is loaded")
+                        .get_raw_level_by_iid(iid.get()),
+                })
+                .map(|level| {
+                    level_events.send(LevelEvent::SpawnTriggered(LevelIid::new(level.iid.clone())));
+                    pre_spawn_level(&mut commands, &level, &ldtk_settings)
                 })
                 .collect::<Vec<_>>();
 
@@ -231,38 +249,25 @@ pub fn apply_level_set(
     }
 }
 
-fn pre_spawn_level(
-    commands: &mut Commands,
-    ldtk_asset: &LdtkProject,
-    level_iid: LevelIid,
-    ldtk_settings: &LdtkSettings,
-) -> Entity {
+fn pre_spawn_level(commands: &mut Commands, level: &Level, ldtk_settings: &LdtkSettings) -> Entity {
     let mut translation = Vec3::ZERO;
 
     if let LevelSpawnBehavior::UseWorldTranslation { .. } = ldtk_settings.level_spawn_behavior {
-        if let Some(level) = ldtk_asset.get_raw_level_by_iid(level_iid.get()) {
-            let level_coords = ldtk_pixel_coords_to_translation(
-                IVec2::new(level.world_x, level.world_y + level.px_hei),
-                0,
-            );
-            translation.x = level_coords.x;
-            translation.y = level_coords.y;
-        }
+        let level_coords = ldtk_pixel_coords_to_translation(
+            IVec2::new(level.world_x, level.world_y + level.px_hei),
+            0,
+        );
+        translation.x = level_coords.x;
+        translation.y = level_coords.y;
     }
 
     commands
-        .spawn(level_iid.clone())
+        .spawn(LevelIid::new(level.iid.clone()))
         .insert(SpatialBundle {
             transform: Transform::from_translation(translation),
             ..default()
         })
-        .insert(Name::new(
-            ldtk_asset
-                .get_raw_level_by_iid(level_iid.get())
-                .unwrap()
-                .identifier
-                .to_owned(),
-        ))
+        .insert(Name::new(level.identifier.clone()))
         .id()
 }
 

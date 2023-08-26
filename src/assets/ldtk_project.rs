@@ -6,10 +6,23 @@ use crate::{
     ldtk::{raw_level_accessor::RawLevelAccessor, World},
 };
 use bevy::prelude::*;
+use derive_more::{From, TryInto};
 
+#[derive(Clone, Debug, PartialEq, From, TryInto)]
+#[try_into(owned, ref)]
 pub enum LdtkProject {
     Standalone(LdtkProjectWithMetadata<LevelMetadata>),
     Parent(LdtkProjectWithMetadata<ExternalLevelMetadata>),
+}
+
+impl LdtkProject {
+    pub fn standalone(&self) -> &LdtkProjectWithMetadata<LevelMetadata> {
+        self.try_into().unwrap()
+    }
+
+    pub fn parent(&self) -> &LdtkProjectWithMetadata<ExternalLevelMetadata> {
+        self.try_into().unwrap()
+    }
 }
 
 impl LdtkProjectGetters for LdtkProject {

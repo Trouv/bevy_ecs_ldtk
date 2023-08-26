@@ -11,12 +11,11 @@ use bevy::{
     reflect::{TypePath, TypeUuid},
     utils::BoxedFuture,
 };
-use derive_getters::Getters;
 use std::collections::HashMap;
 use std::path::Path;
 use thiserror::Error;
 
-use super::{ExternalLevelMetadata, LdtkExternalLevel};
+use super::{ExternalLevelMetadata, LdtkExternalLevel, LdtkProjectGetters};
 
 fn ldtk_path_to_asset_path<'b>(ldtk_path: &Path, rel_path: &str) -> AssetPath<'b> {
     ldtk_path.parent().unwrap().join(Path::new(rel_path)).into()
@@ -33,22 +32,38 @@ fn expect_level_loaded(level: &Level) -> LoadedLevel {
 /// [`LdtkWorldBundle`].
 ///
 /// [`LdtkWorldBundle`]: crate::components::LdtkWorldBundle
-#[derive(Clone, Debug, PartialEq, TypeUuid, TypePath, Getters)]
+#[derive(Clone, Debug, PartialEq, TypeUuid, TypePath)]
 #[uuid = "ecfb87b7-9cd9-4970-8482-f2f68b770d31"]
 pub struct LdtkProject<L> {
     /// Raw ldtk project data.
     data: LdtkJson,
     /// Map from tileset uids to image handles for the loaded tileset.
     tileset_map: HashMap<i32, Handle<Image>>,
-    /// Map from level iids to level metadata.
-    level_map: HashMap<String, L>,
     /// Image used for rendering int grid colors.
     int_grid_image_handle: Option<Handle<Image>>,
+    /// Map from level iids to level metadata.
+    level_map: HashMap<String, L>,
 }
 
-//impl TypeUuid for LdtkProject<LevelMetadata> {
-//const TYPE_UUID = Uuid::parse_st
-//}
+impl<L> LdtkProjectGetters for LdtkProject<L> {
+    type LevelMetadata = L;
+
+    fn data(&self) -> &LdtkJson {
+        &self.data
+    }
+
+    fn tileset_map(&self) -> &HashMap<i32, Handle<Image>> {
+        &self.tileset_map
+    }
+
+    fn int_grid_image_handle(&self) -> &Option<Handle<Image>> {
+        &self.int_grid_image_handle
+    }
+
+    fn level_map(&self) -> &HashMap<String, Self::LevelMetadata> {
+        &self.level_map
+    }
+}
 
 impl<L> RawLevelAccessor for LdtkProject<L> {
     fn root_levels(&self) -> &[Level] {

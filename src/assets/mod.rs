@@ -19,3 +19,6 @@ pub use level_selection_accessor::LevelSelectionAccessor;
 
 mod level_indices;
 pub use level_indices::LevelIndices;
+
+mod ldtk_project_getters;
+pub use ldtk_project_getters::LdtkProjectGetters;

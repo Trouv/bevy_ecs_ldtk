@@ -261,25 +261,6 @@ impl AssetLoader for LdtkProjectLoader {
                 let mut level_map = HashMap::new();
 
                 for (level_indices, level) in data.iter_raw_levels_with_indices() {
-                    load_level_metadata_into_buffers(
-                        load_context,
-                        level_indices,
-                        level,
-                        &mut level_map,
-                        &mut dependent_asset_paths,
-                    )?;
-                }
-
-                LdtkProject::Standalone(LdtkProjectWithMetadata::new(
-                    data,
-                    tileset_map,
-                    int_grid_image_handle,
-                    level_map,
-                ))
-            } else {
-                let mut level_map = HashMap::new();
-
-                for (level_indices, level) in data.iter_raw_levels_with_indices() {
                     load_external_level_metadata_into_buffers(
                         load_context,
                         level_indices,
@@ -290,6 +271,25 @@ impl AssetLoader for LdtkProjectLoader {
                 }
 
                 LdtkProject::Parent(LdtkProjectWithMetadata::new(
+                    data,
+                    tileset_map,
+                    int_grid_image_handle,
+                    level_map,
+                ))
+            } else {
+                let mut level_map = HashMap::new();
+
+                for (level_indices, level) in data.iter_raw_levels_with_indices() {
+                    load_level_metadata_into_buffers(
+                        load_context,
+                        level_indices,
+                        level,
+                        &mut level_map,
+                        &mut dependent_asset_paths,
+                    )?;
+                }
+
+                LdtkProject::Standalone(LdtkProjectWithMetadata::new(
                     data,
                     tileset_map,
                     int_grid_image_handle,

@@ -56,10 +56,10 @@ fn main() {
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(Camera2dBundle::default());
 
-    let ldtk_handle = asset_server.load("field_instances.ldtk");
+    let ldtk_handle: Handle<LdtkProject> = asset_server.load("field_instances.ldtk");
 
     commands.spawn(LdtkWorldBundle {
-        ldtk_handle,
+        ldtk_project_handle: ldtk_handle.into(),
         transform: Transform::from_scale(Vec3::splat(2.)),
         ..Default::default()
     });

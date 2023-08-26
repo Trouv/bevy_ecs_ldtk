@@ -91,17 +91,10 @@ pub fn process_ldtk_assets(
     #[cfg(feature = "render")]
     if ldtk_settings.set_clear_color == SetClearColor::FromEditorBackground {
         for handle in ldtk_handles_for_clear_color.iter() {
-            let ldtk_json = match handle {
-                LdtkProjectHandle::InternalLevels(handle) => {
-                    ldtk_project_assets.get(handle).map(|asset| asset.data())
-                }
-                LdtkProjectHandle::ExternalLevels(handle) => ldtk_parent_project_assets
-                    .get(handle)
-                    .map(|asset| asset.data()),
-            };
-
-            if let Some(ldtk_json) = ldtk_json {
-                clear_color.0 = ldtk_json.bg_color;
+            if let Ok(project) =
+                handle.try_retrieve(&ldtk_project_assets, &ldtk_parent_project_assets)
+            {
+                clear_color.0 = project.data().bg_color;
             }
         }
     }
@@ -124,43 +117,38 @@ pub fn apply_level_selection(
 ) {
     if let Some(level_selection) = level_selection {
         for (ldtk_handle, mut level_set) in level_set_query.iter_mut() {
-            let level = match ldtk_handle {
-                LdtkProjectHandle::InternalLevels(handle) => ldtk_project_assets
-                    .get(handle)
-                    .and_then(|asset| asset.find_raw_level_by_level_selection(&level_selection)),
-                LdtkProjectHandle::ExternalLevels(handle) => ldtk_parent_project_assets
-                    .get(handle)
-                    .and_then(|asset| asset.find_raw_level_by_level_selection(&level_selection)),
-            };
+            if let Ok(project) =
+                ldtk_handle.try_retrieve(&ldtk_project_assets, &ldtk_parent_project_assets)
+            {
+                if let Some(level) = project.find_raw_level_by_level_selection(&level_selection) {
+                    let new_level_set = {
+                        let mut iids = HashSet::new();
+                        iids.insert(LevelIid::new(level.iid.clone()));
 
-            if let Some(level) = level {
-                let new_level_set = {
-                    let mut iids = HashSet::new();
-                    iids.insert(LevelIid::new(level.iid.clone()));
-
-                    if let LevelSpawnBehavior::UseWorldTranslation {
-                        load_level_neighbors,
-                    } = ldtk_settings.level_spawn_behavior
-                    {
-                        if load_level_neighbors {
-                            iids.extend(
-                                level
-                                    .neighbours
-                                    .iter()
-                                    .map(|n| LevelIid::new(n.level_iid.clone())),
-                            );
+                        if let LevelSpawnBehavior::UseWorldTranslation {
+                            load_level_neighbors,
+                        } = ldtk_settings.level_spawn_behavior
+                        {
+                            if load_level_neighbors {
+                                iids.extend(
+                                    level
+                                        .neighbours
+                                        .iter()
+                                        .map(|n| LevelIid::new(n.level_iid.clone())),
+                                );
+                            }
                         }
-                    }
 
-                    LevelSet { iids }
-                };
+                        LevelSet { iids }
+                    };
 
-                if *level_set != new_level_set {
-                    *level_set = new_level_set;
+                    if *level_set != new_level_set {
+                        *level_set = new_level_set;
 
-                    #[cfg(feature = "render")]
-                    if ldtk_settings.set_clear_color == SetClearColor::FromLevelBackground {
-                        clear_color.0 = level.bg_color;
+                        #[cfg(feature = "render")]
+                        if ldtk_settings.set_clear_color == SetClearColor::FromLevelBackground {
+                            clear_color.0 = level.bg_color;
+                        }
                     }
                 }
             }
@@ -187,14 +175,9 @@ pub fn apply_level_set(
 ) {
     for (world_entity, level_set, children, ldtk_asset_handle, respawn) in ldtk_world_query.iter() {
         // Only apply level set if the asset has finished loading
-        let asset_loaded = match ldtk_asset_handle {
-            LdtkProjectHandle::InternalLevels(handle) => ldtk_project_assets.contains(handle),
-            LdtkProjectHandle::ExternalLevels(handle) => {
-                ldtk_parent_project_assets.contains(handle)
-            }
-        };
-
-        if asset_loaded {
+        if let Ok(project) =
+            ldtk_asset_handle.try_retrieve(&ldtk_project_assets, &ldtk_parent_project_assets)
+        {
             // Determine what levels are currently spawned
             let previous_level_maps = children
                 .into_iter()
@@ -210,16 +193,7 @@ pub fn apply_level_set(
             // Spawn levels that should be spawned but aren't
             let spawned_levels = level_set_as_ref
                 .difference(&previous_iids)
-                .filter_map(|&iid| match ldtk_asset_handle {
-                    LdtkProjectHandle::InternalLevels(handle) => ldtk_project_assets
-                        .get(handle)
-                        .expect("We've already verified that the asset is loaded")
-                        .get_raw_level_by_iid(iid.get()),
-                    LdtkProjectHandle::ExternalLevels(handle) => ldtk_parent_project_assets
-                        .get(handle)
-                        .expect("We've already verified that the asset is loaded")
-                        .get_raw_level_by_iid(iid.get()),
-                })
+                .filter_map(|&iid| project.get_raw_level_by_iid(iid.get()))
                 .map(|level| {
                     level_events.send(LevelEvent::SpawnTriggered(LevelIid::new(level.iid.clone())));
                     pre_spawn_level(&mut commands, &level, &ldtk_settings)

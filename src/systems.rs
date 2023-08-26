@@ -400,7 +400,7 @@ pub fn process_ldtk_levels(
 pub fn clean_respawn_entities(world: &mut World) {
     #[allow(clippy::type_complexity)]
     let mut system_state: SystemState<(
-        Query<&Children, (With<Handle<LdtkProject>>, With<Respawn>)>,
+        Query<&Children, (With<LdtkProjectHandle>, With<Respawn>)>,
         Query<(Entity, &LevelIid), With<Respawn>>,
         Query<&LevelIid, Without<Respawn>>,
         Query<Entity, With<Worldly>>,

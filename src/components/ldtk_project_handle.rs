@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
-use crate::assets::{LdtkParentProject, LdtkProject, LdtkProjectGetters};
+use crate::{
+    assets::{LdtkParentProject, LdtkProject, LdtkProjectGetters, LevelSelectionAccessor},
+    ldtk::{raw_level_accessor::RawLevelAccessor, World},
+};
 use thiserror::Error;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Component)]
@@ -64,6 +67,31 @@ impl<'a> LdtkProjectGetters for RetrievedLdtkProject<'a> {
         match self {
             RetrievedLdtkProject::InternalLevels(project) => project.int_grid_image_handle(),
             RetrievedLdtkProject::ExternalLevels(project) => project.int_grid_image_handle(),
+        }
+    }
+}
+
+impl<'a> RawLevelAccessor for RetrievedLdtkProject<'a> {
+    fn worlds(&self) -> &[World] {
+        self.data().worlds()
+    }
+
+    fn root_levels(&self) -> &[crate::ldtk::Level] {
+        self.data().root_levels()
+    }
+}
+
+impl<'a> LevelSelectionAccessor for RetrievedLdtkProject<'a> {
+    fn get_indices_for_iid(&self, iid: &String) -> Option<&crate::prelude::LevelIndices> {
+        match self {
+            RetrievedLdtkProject::InternalLevels(project) => project
+                .level_map()
+                .get(iid)
+                .map(|level_metadata| level_metadata.indices()),
+            RetrievedLdtkProject::ExternalLevels(project) => project
+                .level_map()
+                .get(iid)
+                .map(|external_level_metadata| external_level_metadata.metadata().indices()),
         }
     }
 }

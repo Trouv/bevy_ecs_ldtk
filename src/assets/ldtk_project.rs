@@ -46,8 +46,6 @@ pub struct LdtkProject<L> {
 }
 
 impl<L> LdtkProjectGetters for LdtkProject<L> {
-    type LevelMetadata = L;
-
     fn data(&self) -> &LdtkJson {
         &self.data
     }
@@ -59,8 +57,10 @@ impl<L> LdtkProjectGetters for LdtkProject<L> {
     fn int_grid_image_handle(&self) -> &Option<Handle<Image>> {
         &self.int_grid_image_handle
     }
+}
 
-    fn level_map(&self) -> &HashMap<String, Self::LevelMetadata> {
+impl<L> LdtkProject<L> {
+    pub fn level_map(&self) -> &HashMap<String, L> {
         &self.level_map
     }
 }

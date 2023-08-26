@@ -6,10 +6,15 @@ pub use ldtk_asset_plugin::LdtkAssetPlugin;
 mod ldtk_external_level;
 pub use ldtk_external_level::LdtkExternalLevel;
 
-mod ldtk_project;
-pub type LdtkProject = ldtk_project::LdtkProject<LevelMetadata>;
+mod ldtk_project_with_metadata;
+pub use ldtk_project_with_metadata::LdtkProjectWithMetadata;
 
-pub type LdtkParentProject = ldtk_project::LdtkProject<ExternalLevelMetadata>;
+pub type LdtkProject = ldtk_project_with_metadata::LdtkProjectWithMetadata<LevelMetadata>;
+
+pub type LdtkParentProject =
+    ldtk_project_with_metadata::LdtkProjectWithMetadata<ExternalLevelMetadata>;
+
+mod ldtk_project;
 
 mod level_metadata;
 pub use level_metadata::{ExternalLevelMetadata, LevelMetadata};

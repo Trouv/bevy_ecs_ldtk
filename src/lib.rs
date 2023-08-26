@@ -138,12 +138,15 @@ pub mod prelude {
 
     pub use crate::{
         app::{LdtkEntity, LdtkEntityAppExt, LdtkIntCell, LdtkIntCellAppExt},
-        assets::{LdtkExternalLevel, LdtkProject, LevelIndices},
+        assets::{LdtkExternalLevel, LdtkProject, LevelIndices, LevelSelectionAccessor},
         components::{
-            EntityIid, EntityInstance, GridCoords, IntGridCell, LayerMetadata, LdtkWorldBundle,
-            LevelIid, LevelSet, Respawn, TileEnumTags, TileMetadata, Worldly,
+            EntityIid, EntityInstance, GridCoords, IntGridCell, LayerMetadata, LdtkProjectHandle,
+            LdtkWorldBundle, LevelIid, LevelSet, Respawn, TileEnumTags, TileMetadata, Worldly,
         },
-        ldtk::{self, ldtk_fields::LdtkFields, FieldValue, LayerInstance, TilesetDefinition},
+        ldtk::{
+            self, ldtk_fields::LdtkFields, raw_level_accessor::RawLevelAccessor, FieldValue,
+            LayerInstance, TilesetDefinition,
+        },
         plugin::{LdtkPlugin, ProcessLdtkApi},
         resources::{
             IntGridRendering, LdtkSettings, LevelBackground, LevelEvent, LevelSelection,

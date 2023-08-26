@@ -39,6 +39,14 @@ impl LdtkProjectHandle {
             )),
         }
     }
+
+    pub fn internal(&self) -> &Handle<LdtkProject> {
+        self.try_into().unwrap()
+    }
+
+    pub fn external(&self) -> &Handle<LdtkParentProject> {
+        self.try_into().unwrap()
+    }
 }
 
 #[derive(Error, Debug)]
@@ -50,6 +58,16 @@ pub struct FailedToRetrieveLdtkProject;
 pub enum RetrievedLdtkProject<'a> {
     InternalLevels(&'a LdtkProject),
     ExternalLevels(&'a LdtkParentProject),
+}
+
+impl<'a> RetrievedLdtkProject<'a> {
+    pub fn internal(self) -> &'a LdtkProject {
+        self.try_into().unwrap()
+    }
+
+    pub fn external(self) -> &'a LdtkParentProject {
+        self.try_into().unwrap()
+    }
 }
 
 impl<'a> LdtkProjectGetters for RetrievedLdtkProject<'a> {

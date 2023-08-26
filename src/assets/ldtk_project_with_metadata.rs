@@ -60,6 +60,20 @@ impl<L> LdtkProjectGetters for LdtkProjectWithMetadata<L> {
 }
 
 impl<L> LdtkProjectWithMetadata<L> {
+    pub(crate) fn new(
+        data: LdtkJson,
+        tileset_map: HashMap<i32, Handle<Image>>,
+        int_grid_image_handle: Option<Handle<Image>>,
+        level_map: HashMap<String, L>,
+    ) -> Self {
+        Self {
+            data,
+            tileset_map,
+            int_grid_image_handle,
+            level_map,
+        }
+    }
+
     pub fn level_map(&self) -> &HashMap<String, L> {
         &self.level_map
     }

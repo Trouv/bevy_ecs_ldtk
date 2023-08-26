@@ -18,9 +18,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(Camera2dBundle::default());
 
     commands.spawn(LdtkWorldBundle {
-        ldtk_project_handle: LdtkProjectHandle::InternalLevels(
-            asset_server.load("my_project.ldtk"),
-        ),
+        ldtk_handle: asset_server.load("my_project.ldtk"),
         ..Default::default()
     });
 }

@@ -10,9 +10,9 @@ pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     let camera = Camera2dBundle::default();
     commands.spawn(camera);
 
-    let ldtk_handle: Handle<LdtkProject> = asset_server.load("Typical_2D_platformer_example.ldtk");
+    let ldtk_handle = asset_server.load("Typical_2D_platformer_example.ldtk");
     commands.spawn(LdtkWorldBundle {
-        ldtk_project_handle: ldtk_handle.into(),
+        ldtk_handle,
         ..Default::default()
     });
 }
@@ -80,7 +80,7 @@ pub fn spawn_wall_collision(
     wall_query: Query<(&GridCoords, &Parent), Added<Wall>>,
     parent_query: Query<&Parent, Without<Wall>>,
     level_query: Query<(Entity, &LevelIid)>,
-    ldtk_projects: Query<&LdtkProjectHandle>,
+    ldtk_projects: Query<&Handle<LdtkProject>>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
 ) {
     /// Represents a wide wall that is 1 tile tall
@@ -124,10 +124,11 @@ pub fn spawn_wall_collision(
         level_query.for_each(|(level_entity, level_iid)| {
             if let Some(level_walls) = level_to_wall_locations.get(&level_entity) {
                 let ldtk_project = ldtk_project_assets
-                    .get(ldtk_projects.single().internal())
+                    .get(ldtk_projects.single())
                     .expect("Project should be loaded if level has spawned");
 
                 let level = ldtk_project
+                    .standalone()
                     .get_loaded_level_by_iid(&level_iid.to_string())
                     .expect("Spawned level should exist in LDtk project");
 
@@ -321,7 +322,7 @@ pub fn camera_fit_inside_current_level(
     >,
     player_query: Query<&Transform, With<Player>>,
     level_query: Query<(&Transform, &LevelIid), (Without<OrthographicProjection>, Without<Player>)>,
-    ldtk_projects: Query<&LdtkProjectHandle>,
+    ldtk_projects: Query<&Handle<LdtkProject>>,
     level_selection: Res<LevelSelection>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
 ) {
@@ -336,7 +337,7 @@ pub fn camera_fit_inside_current_level(
 
         for (level_transform, level_iid) in &level_query {
             let ldtk_project = ldtk_project_assets
-                .get(ldtk_projects.single().internal())
+                .get(ldtk_projects.single())
                 .expect("Project should be loaded if level has spawned");
 
             let level = ldtk_project
@@ -379,12 +380,12 @@ pub fn update_level_selection(
     level_query: Query<(&LevelIid, &Transform), Without<Player>>,
     player_query: Query<&Transform, With<Player>>,
     mut level_selection: ResMut<LevelSelection>,
-    ldtk_projects: Query<&LdtkProjectHandle>,
+    ldtk_projects: Query<&Handle<LdtkProject>>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
 ) {
     for (level_iid, level_transform) in &level_query {
         let ldtk_project = ldtk_project_assets
-            .get(ldtk_projects.single().internal())
+            .get(ldtk_projects.single())
             .expect("Project should be loaded if level has spawned");
 
         let level = ldtk_project

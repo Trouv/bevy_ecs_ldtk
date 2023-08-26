@@ -42,9 +42,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     let level_set = LevelSet::from_iids(LEVEL_IIDS);
 
     commands.spawn(LdtkWorldBundle {
-        ldtk_project_handle: LdtkProjectHandle::InternalLevels(
-            asset_server.load("WorldMap_Free_layout.ldtk"),
-        ),
+        ldtk_handle: asset_server.load("WorldMap_Free_layout.ldtk"),
         level_set,
         transform: Transform::from_xyz(-256., -144., 0.),
         ..Default::default()

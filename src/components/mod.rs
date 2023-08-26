@@ -9,7 +9,7 @@ mod level_set;
 pub use level_set::LevelSet;
 
 mod ldtk_project_handle;
-pub use ldtk_project_handle::LdtkProjectHandle;
+pub use ldtk_project_handle::{LdtkProjectHandle, RetrievedLdtkProject};
 
 pub use crate::ldtk::EntityInstance;
 use crate::{

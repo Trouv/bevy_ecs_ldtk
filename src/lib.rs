@@ -140,8 +140,8 @@ pub mod prelude {
         app::{LdtkEntity, LdtkEntityAppExt, LdtkIntCell, LdtkIntCellAppExt},
         assets::{LdtkExternalLevel, LdtkProject, LevelIndices, LevelSelectionAccessor},
         components::{
-            EntityIid, EntityInstance, GridCoords, IntGridCell, LayerMetadata, LdtkProjectHandle,
-            LdtkWorldBundle, LevelIid, LevelSet, Respawn, TileEnumTags, TileMetadata, Worldly,
+            EntityIid, EntityInstance, GridCoords, IntGridCell, LayerMetadata, LdtkWorldBundle,
+            LevelIid, LevelSet, Respawn, TileEnumTags, TileMetadata, Worldly,
         },
         ldtk::{
             self, ldtk_fields::LdtkFields, raw_level_accessor::RawLevelAccessor, FieldValue,

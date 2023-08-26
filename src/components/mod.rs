@@ -8,12 +8,10 @@ pub use level_iid::LevelIid;
 mod level_set;
 pub use level_set::LevelSet;
 
-mod ldtk_project_handle;
-pub use ldtk_project_handle::{LdtkProjectHandle, RetrievedLdtkProject};
-
 pub use crate::ldtk::EntityInstance;
 use crate::{
     ldtk::{LayerInstance, Type},
+    prelude::LdtkProject,
     utils::ldtk_grid_coords_to_grid_coords,
 };
 use bevy::prelude::*;
@@ -350,7 +348,7 @@ pub(crate) struct EntityInstanceBundle {
 /// unless marked by a [Worldly] component.
 #[derive(Clone, Default, Bundle)]
 pub struct LdtkWorldBundle {
-    pub ldtk_project_handle: LdtkProjectHandle,
+    pub ldtk_handle: Handle<LdtkProject>,
     pub level_set: LevelSet,
     pub transform: Transform,
     pub global_transform: GlobalTransform,

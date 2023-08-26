@@ -4,7 +4,7 @@
 use crate::resources::SetClearColor;
 use crate::{
     app::{LdtkEntityMap, LdtkIntCellMap},
-    assets::{LdtkParentProject, LdtkProject, LdtkProjectGetters, LevelSelectionAccessor},
+    assets::{LdtkProject, LdtkProjectGetters, LevelSelectionAccessor},
     components::*,
     ldtk::{Level, TilesetDefinition},
     level::spawn_level,
@@ -22,12 +22,10 @@ use std::collections::{HashMap, HashSet};
 pub fn process_ldtk_assets(
     mut commands: Commands,
     mut ldtk_project_events: EventReader<AssetEvent<LdtkProject>>,
-    mut ldtk_parent_project_events: EventReader<AssetEvent<LdtkParentProject>>,
-    ldtk_world_query: Query<(Entity, &LdtkProjectHandle)>,
+    ldtk_world_query: Query<(Entity, &Handle<LdtkProject>)>,
     #[cfg(feature = "render")] ldtk_settings: Res<LdtkSettings>,
     #[cfg(feature = "render")] mut clear_color: ResMut<ClearColor>,
     #[cfg(feature = "render")] ldtk_project_assets: Res<Assets<LdtkProject>>,
-    #[cfg(feature = "render")] ldtk_parent_project_assets: Res<Assets<LdtkParentProject>>,
 ) {
     let mut ldtk_handles_to_respawn = HashSet::new();
     let mut ldtk_handles_for_clear_color = HashSet::new();
@@ -36,54 +34,18 @@ pub fn process_ldtk_assets(
         match event {
             AssetEvent::Created { handle } => {
                 debug!("LDtk asset creation detected.");
-                ldtk_handles_for_clear_color
-                    .insert(LdtkProjectHandle::InternalLevels(handle.clone()));
+                ldtk_handles_for_clear_color.insert(handle.clone());
             }
             AssetEvent::Modified { handle } => {
                 info!("LDtk asset modification detected.");
-                ldtk_handles_to_respawn.insert(LdtkProjectHandle::InternalLevels(handle.clone()));
-                ldtk_handles_for_clear_color
-                    .insert(LdtkProjectHandle::InternalLevels(handle.clone()));
+                ldtk_handles_to_respawn.insert(handle.clone());
+                ldtk_handles_for_clear_color.insert(handle.clone());
             }
             AssetEvent::Removed { handle } => {
                 info!("LDtk asset removal detected.");
                 // if mesh was modified and removed in the same update, ignore the modification
                 // events are ordered so future modification events are ok
-                ldtk_handles_to_respawn.retain(|changed_handle| {
-                    if let LdtkProjectHandle::InternalLevels(changed_handle) = changed_handle {
-                        changed_handle != handle
-                    } else {
-                        true
-                    }
-                });
-            }
-        }
-    }
-
-    for event in ldtk_parent_project_events.iter() {
-        match event {
-            AssetEvent::Created { handle } => {
-                debug!("LDtk asset creation detected.");
-                ldtk_handles_for_clear_color
-                    .insert(LdtkProjectHandle::ExternalLevels(handle.clone()));
-            }
-            AssetEvent::Modified { handle } => {
-                info!("LDtk asset modification detected.");
-                ldtk_handles_to_respawn.insert(LdtkProjectHandle::ExternalLevels(handle.clone()));
-                ldtk_handles_for_clear_color
-                    .insert(LdtkProjectHandle::ExternalLevels(handle.clone()));
-            }
-            AssetEvent::Removed { handle } => {
-                info!("LDtk asset removal detected.");
-                // if mesh was modified and removed in the same update, ignore the modification
-                // events are ordered so future modification events are ok
-                ldtk_handles_to_respawn.retain(|changed_handle| {
-                    if let LdtkProjectHandle::ExternalLevels(changed_handle) = changed_handle {
-                        changed_handle != handle
-                    } else {
-                        true
-                    }
-                });
+                ldtk_handles_to_respawn.retain(|changed_handle| changed_handle != handle);
             }
         }
     }
@@ -91,9 +53,7 @@ pub fn process_ldtk_assets(
     #[cfg(feature = "render")]
     if ldtk_settings.set_clear_color == SetClearColor::FromEditorBackground {
         for handle in ldtk_handles_for_clear_color.iter() {
-            if let Ok(project) =
-                handle.try_retrieve(&ldtk_project_assets, &ldtk_parent_project_assets)
-            {
+            if let Some(project) = &ldtk_project_assets.get(handle) {
                 clear_color.0 = project.data().bg_color;
             }
         }
@@ -111,15 +71,12 @@ pub fn apply_level_selection(
     level_selection: Option<Res<LevelSelection>>,
     ldtk_settings: Res<LdtkSettings>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
-    ldtk_parent_project_assets: Res<Assets<LdtkParentProject>>,
-    mut level_set_query: Query<(&LdtkProjectHandle, &mut LevelSet)>,
+    mut level_set_query: Query<(&Handle<LdtkProject>, &mut LevelSet)>,
     #[cfg(feature = "render")] mut clear_color: ResMut<ClearColor>,
 ) {
     if let Some(level_selection) = level_selection {
         for (ldtk_handle, mut level_set) in level_set_query.iter_mut() {
-            if let Ok(project) =
-                ldtk_handle.try_retrieve(&ldtk_project_assets, &ldtk_parent_project_assets)
-            {
+            if let Some(project) = &ldtk_project_assets.get(ldtk_handle) {
                 if let Some(level) = project.find_raw_level_by_level_selection(&level_selection) {
                     let new_level_set = {
                         let mut iids = HashSet::new();
@@ -164,20 +121,17 @@ pub fn apply_level_set(
         Entity,
         &LevelSet,
         Option<&Children>,
-        &LdtkProjectHandle,
+        &Handle<LdtkProject>,
         Option<&Respawn>,
     )>,
     ldtk_level_query: Query<(&LevelIid, Entity)>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
-    ldtk_parent_project_assets: Res<Assets<LdtkParentProject>>,
     ldtk_settings: Res<LdtkSettings>,
     mut level_events: EventWriter<LevelEvent>,
 ) {
     for (world_entity, level_set, children, ldtk_asset_handle, respawn) in ldtk_world_query.iter() {
         // Only apply level set if the asset has finished loading
-        if let Ok(project) =
-            ldtk_asset_handle.try_retrieve(&ldtk_project_assets, &ldtk_parent_project_assets)
-        {
+        if let Some(project) = ldtk_project_assets.get(ldtk_asset_handle) {
             // Determine what levels are currently spawned
             let previous_level_maps = children
                 .into_iter()
@@ -254,11 +208,10 @@ pub fn process_ldtk_levels(
     mut images: ResMut<Assets<Image>>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
-    ldtk_parent_project_assets: Res<Assets<LdtkParentProject>>,
     level_assets: Res<Assets<LdtkExternalLevel>>,
     ldtk_entity_map: NonSend<LdtkEntityMap>,
     ldtk_int_cell_map: NonSend<LdtkIntCellMap>,
-    ldtk_query: Query<&LdtkProjectHandle>,
+    ldtk_query: Query<&Handle<LdtkProject>>,
     level_query: Query<
         (
             Entity,
@@ -287,31 +240,28 @@ pub fn process_ldtk_levels(
 
         if !already_processed {
             if let Ok(ldtk_handle) = ldtk_query.get(parent.get()) {
-                if let Ok(retrieved_ldtk_project) =
-                    ldtk_handle.try_retrieve(&ldtk_project_assets, &ldtk_parent_project_assets)
-                {
+                if let Some(ldtk_project) = ldtk_project_assets.get(ldtk_handle) {
                     // Commence the spawning
-                    let tileset_definition_map: HashMap<i32, &TilesetDefinition> =
-                        retrieved_ldtk_project
-                            .data()
-                            .defs
-                            .tilesets
-                            .iter()
-                            .map(|t| (t.uid, t))
-                            .collect();
+                    let tileset_definition_map: HashMap<i32, &TilesetDefinition> = ldtk_project
+                        .data()
+                        .defs
+                        .tilesets
+                        .iter()
+                        .map(|t| (t.uid, t))
+                        .collect();
 
                     let entity_definition_map =
-                        create_entity_definition_map(&retrieved_ldtk_project.data().defs.entities);
+                        create_entity_definition_map(&ldtk_project.data().defs.entities);
 
                     let layer_definition_map =
-                        create_layer_definition_map(&retrieved_ldtk_project.data().defs.layers);
+                        create_layer_definition_map(&ldtk_project.data().defs.layers);
 
-                    let int_grid_image_handle = &retrieved_ldtk_project.int_grid_image_handle();
+                    let int_grid_image_handle = &ldtk_project.int_grid_image_handle();
 
                     let worldly_set = worldly_query.iter().cloned().collect();
 
-                    let maybe_level_data = match retrieved_ldtk_project {
-                        RetrievedLdtkProject::InternalLevels(project) => project
+                    let maybe_level_data = match ldtk_project {
+                        LdtkProject::Standalone(project) => project
                             .level_map()
                             .get(level_iid.get())
                             .and_then(|level_metadata| {
@@ -320,7 +270,7 @@ pub fn process_ldtk_levels(
 
                                 Some((level_metadata, loaded_level))
                             }),
-                        RetrievedLdtkProject::ExternalLevels(project) => project
+                        LdtkProject::Parent(project) => project
                             .level_map()
                             .get(level_iid.get())
                             .and_then(|level_metadata| {
@@ -345,7 +295,7 @@ pub fn process_ldtk_levels(
                             &ldtk_int_cell_map,
                             &entity_definition_map,
                             &layer_definition_map,
-                            retrieved_ldtk_project.tileset_map(),
+                            ldtk_project.tileset_map(),
                             &tileset_definition_map,
                             int_grid_image_handle,
                             worldly_set,
@@ -374,7 +324,7 @@ pub fn process_ldtk_levels(
 pub fn clean_respawn_entities(world: &mut World) {
     #[allow(clippy::type_complexity)]
     let mut system_state: SystemState<(
-        Query<&Children, (With<LdtkProjectHandle>, With<Respawn>)>,
+        Query<&Children, (With<Handle<LdtkProject>>, With<Respawn>)>,
         Query<(Entity, &LevelIid), With<Respawn>>,
         Query<&LevelIid, Without<Respawn>>,
         Query<Entity, With<Worldly>>,

@@ -9,12 +9,8 @@ pub use ldtk_external_level::LdtkExternalLevel;
 mod ldtk_project_with_metadata;
 pub use ldtk_project_with_metadata::LdtkProjectWithMetadata;
 
-pub type LdtkProject = ldtk_project_with_metadata::LdtkProjectWithMetadata<LevelMetadata>;
-
-pub type LdtkParentProject =
-    ldtk_project_with_metadata::LdtkProjectWithMetadata<ExternalLevelMetadata>;
-
 mod ldtk_project;
+pub use ldtk_project::LdtkProject;
 
 mod level_metadata;
 pub use level_metadata::{ExternalLevelMetadata, LevelMetadata};

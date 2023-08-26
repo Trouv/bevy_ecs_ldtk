@@ -80,7 +80,7 @@ pub fn spawn_wall_collision(
     wall_query: Query<(&GridCoords, &Parent), Added<Wall>>,
     parent_query: Query<&Parent, Without<Wall>>,
     level_query: Query<(Entity, &LevelIid)>,
-    ldtk_projects: Query<&Handle<LdtkProject>>,
+    ldtk_projects: Query<&LdtkProjectHandle>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
 ) {
     /// Represents a wide wall that is 1 tile tall
@@ -124,7 +124,7 @@ pub fn spawn_wall_collision(
         level_query.for_each(|(level_entity, level_iid)| {
             if let Some(level_walls) = level_to_wall_locations.get(&level_entity) {
                 let ldtk_project = ldtk_project_assets
-                    .get(ldtk_projects.single())
+                    .get(ldtk_projects.single().internal())
                     .expect("Project should be loaded if level has spawned");
 
                 let level = ldtk_project
@@ -321,7 +321,7 @@ pub fn camera_fit_inside_current_level(
     >,
     player_query: Query<&Transform, With<Player>>,
     level_query: Query<(&Transform, &LevelIid), (Without<OrthographicProjection>, Without<Player>)>,
-    ldtk_projects: Query<&Handle<LdtkProject>>,
+    ldtk_projects: Query<&LdtkProjectHandle>,
     level_selection: Res<LevelSelection>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
 ) {
@@ -336,7 +336,7 @@ pub fn camera_fit_inside_current_level(
 
         for (level_transform, level_iid) in &level_query {
             let ldtk_project = ldtk_project_assets
-                .get(ldtk_projects.single())
+                .get(ldtk_projects.single().internal())
                 .expect("Project should be loaded if level has spawned");
 
             let level = ldtk_project
@@ -379,12 +379,12 @@ pub fn update_level_selection(
     level_query: Query<(&LevelIid, &Transform), Without<Player>>,
     player_query: Query<&Transform, With<Player>>,
     mut level_selection: ResMut<LevelSelection>,
-    ldtk_projects: Query<&Handle<LdtkProject>>,
+    ldtk_projects: Query<&LdtkProjectHandle>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
 ) {
     for (level_iid, level_transform) in &level_query {
         let ldtk_project = ldtk_project_assets
-            .get(ldtk_projects.single())
+            .get(ldtk_projects.single().internal())
             .expect("Project should be loaded if level has spawned");
 
         let level = ldtk_project
@@ -490,7 +490,7 @@ pub fn update_on_ground(
 
 pub fn restart_level(
     mut commands: Commands,
-    level_query: Query<Entity, With<Handle<LdtkExternalLevel>>>,
+    level_query: Query<Entity, With<LevelIid>>,
     input: Res<Input<KeyCode>>,
 ) {
     if input.just_pressed(KeyCode::R) {

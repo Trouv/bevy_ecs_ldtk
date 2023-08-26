@@ -4,9 +4,11 @@ use crate::{
     assets::{LdtkParentProject, LdtkProject, LdtkProjectGetters, LevelSelectionAccessor},
     ldtk::{raw_level_accessor::RawLevelAccessor, World},
 };
+use derive_more::{From, TryInto};
 use thiserror::Error;
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash, Component)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, From, TryInto, Component)]
+#[try_into(owned, ref)]
 pub enum LdtkProjectHandle {
     InternalLevels(Handle<LdtkProject>),
     ExternalLevels(Handle<LdtkParentProject>),
@@ -43,6 +45,8 @@ impl LdtkProjectHandle {
 #[error("failed to retrieve ldtk project asset")]
 pub struct FailedToRetrieveLdtkProject;
 
+#[derive(Clone, Debug, PartialEq, From, TryInto)]
+#[try_into(owned, ref)]
 pub enum RetrievedLdtkProject<'a> {
     InternalLevels(&'a LdtkProject),
     ExternalLevels(&'a LdtkParentProject),

@@ -44,7 +44,19 @@ pub type IterLevelsWithIndices<'a> =
 
 /// Convenience methods for accessing raw level data by reference.
 ///
-/// Intended for types that store [`LdtkJson`] data.
+/// # Root vs world levels
+/// This trait is intended for types that store [`LdtkJson`] data.
+/// This sort of data stores levels both in the "root" of the project, and in each [`World`].
+/// The former is referred to in trait methods as `root_levels`, and the latter as `world_levels`.
+/// Root levels may be removed in the future after LDtk's multi-worlds update.
+///
+/// # Raw levels
+/// All levels that these methods can retrieve are considered "raw".
+/// Raw levels do not have any type guarantee that the level data is complete.
+/// Level data may be incomplete and contain no layer instances if external levels are enabled.
+/// Other methods to retrieve a [`LoadedLevel`] can be used to guarantee level data completion.
+///
+/// [`LoadedLevel`]: crate::ldtk::loaded_level::LoadedLevel
 pub trait RawLevelAccessor {
     fn root_levels(&self) -> &[Level];
 

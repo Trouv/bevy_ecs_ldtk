@@ -3,21 +3,26 @@ use crate::{
     prelude::LevelIndices,
 };
 
+/// Iterator returned by [`RawLevelAccessor::iter_root_levels`].
 pub type IterRootLevels<'a> = std::slice::Iter<'a, Level>;
 
+/// Iterator returned by [`RawLevelAccessor::iter_world_levels`].
 pub type IterWorldLevels<'a> = std::iter::FlatMap<
     std::slice::Iter<'a, World>,
     std::slice::Iter<'a, Level>,
     fn(&World) -> std::slice::Iter<'_, Level>,
 >;
 
+/// Iterator returned by [`RawLevelAccessor::iter_raw_levels`].
 pub type IterLevels<'a> = std::iter::Chain<IterRootLevels<'a>, IterWorldLevels<'a>>;
 
+/// Iterator returned by [`RawLevelAccessor::iter_root_levels_with_indices`].
 pub type IterRootLevelsWithIndices<'a> = std::iter::Map<
     std::iter::Enumerate<IterRootLevels<'a>>,
     fn((usize, &Level)) -> (LevelIndices, &Level),
 >;
 
+/// Iterator returned by [`RawLevelAccessor::iter_world_levels_with_indices`].
 pub type IterWorldLevelsWithIndices<'a> = std::iter::FlatMap<
     std::iter::Enumerate<std::slice::Iter<'a, World>>,
     std::iter::Map<
@@ -32,6 +37,7 @@ pub type IterWorldLevelsWithIndices<'a> = std::iter::FlatMap<
     >,
 >;
 
+/// Iterator returned by [`RawLevelAccessor::iter_raw_levels_with_indices`].
 pub type IterLevelsWithIndices<'a> =
     std::iter::Chain<IterRootLevelsWithIndices<'a>, IterWorldLevelsWithIndices<'a>>;
 

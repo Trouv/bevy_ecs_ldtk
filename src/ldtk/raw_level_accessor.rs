@@ -1,3 +1,4 @@
+//! Contains [`RawLevelAccessor`]: convenience methods for accessing raw level data by reference.
 use crate::{
     ldtk::{LdtkJson, Level, World},
     prelude::LevelIndices,
@@ -41,6 +42,9 @@ pub type IterWorldLevelsWithIndices<'a> = std::iter::FlatMap<
 pub type IterLevelsWithIndices<'a> =
     std::iter::Chain<IterRootLevelsWithIndices<'a>, IterWorldLevelsWithIndices<'a>>;
 
+/// Convenience methods for accessing raw level data by reference.
+///
+/// Intended for types that store [`LdtkJson`] data.
 pub trait RawLevelAccessor {
     fn root_levels(&self) -> &[Level];
 

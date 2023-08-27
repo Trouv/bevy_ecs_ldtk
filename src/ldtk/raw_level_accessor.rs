@@ -65,6 +65,8 @@ pub trait RawLevelAccessor {
     fn worlds(&self) -> &[World];
 
     /// Iterate through this project's [root levels](RawLevelAccessor#root-vs-world-levels).
+    ///
+    /// Note: all levels are considered [raw](RawLevelAccessor#raw-levels).
     fn iter_root_levels(&self) -> IterRootLevels {
         self.root_levels().iter()
     }

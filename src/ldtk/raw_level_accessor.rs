@@ -58,22 +58,37 @@ pub type IterLevelsWithIndices<'a> =
 ///
 /// [`LoadedLevel`]: crate::ldtk::loaded_level::LoadedLevel
 pub trait RawLevelAccessor {
+    /// Slice to this project's collection of [root levels](RawLevelAccessor#root-vs-world-levels).
     fn root_levels(&self) -> &[Level];
 
+    /// Slice to this project's collection of [`World`]s.
     fn worlds(&self) -> &[World];
 
+    /// Iterate through this project's [root levels](RawLevelAccessor#root-vs-world-levels).
     fn iter_root_levels(&self) -> IterRootLevels {
         self.root_levels().iter()
     }
 
+    /// Iterate through this project's [world levels](RawLevelAccessor#root-vs-world-levels).
+    ///
+    /// Note: all levels are considered [raw](RawLevelAccessor#raw-levels).
     fn iter_world_levels(&self) -> IterWorldLevels {
         self.worlds().iter().flat_map(|world| world.levels.iter())
     }
 
+    /// Iterate through this project's levels.
+    ///
+    /// This first iterates through [root levels, then world levels](RawLevelAccessor#root-vs-world-levels).
+    ///
+    /// Note: all levels are considered [raw](RawLevelAccessor#raw-levels).
     fn iter_raw_levels(&self) -> IterLevels {
         self.iter_root_levels().chain(self.iter_world_levels())
     }
 
+    /// Iterate through this project's [root levels](RawLevelAccessor#root-vs-world-levels)
+    /// enumerated with their [`LevelIndices`].
+    ///
+    /// Note: all levels are considered [raw](RawLevelAccessor#raw-levels).
     fn iter_root_levels_with_indices(&self) -> IterRootLevelsWithIndices {
         self.root_levels()
             .iter()
@@ -81,10 +96,10 @@ pub trait RawLevelAccessor {
             .map(|(index, level)| (LevelIndices::in_root(index), level))
     }
 
-    /// Iterate through all levels in the project paired with their [`LevelIndices`].
+    /// Iterate through this project's [world levels](RawLevelAccessor#root-vs-world-levels)
+    /// enumerated with their [`LevelIndices`].
     ///
-    /// This works for multi-world and single-world projects agnostically.
-    /// It iterates through levels in the root first, then levels in the worlds.
+    /// Note: all levels are considered [raw](RawLevelAccessor#raw-levels).
     fn iter_world_levels_with_indices(&self) -> IterWorldLevelsWithIndices {
         self.worlds()
             .iter()
@@ -98,12 +113,19 @@ pub trait RawLevelAccessor {
             })
     }
 
+    /// Iterate through this project's levels enumerated with their [`LevelIndices`].
+    ///
+    /// This first iterates through [root levels, then world levels](RawLevelAccessor#root-vs-world-levels).
+    ///
+    /// Note: all levels are considered [raw](RawLevelAccessor#raw-levels).
     fn iter_raw_levels_with_indices(&self) -> IterLevelsWithIndices {
         self.iter_root_levels_with_indices()
             .chain(self.iter_world_levels_with_indices())
     }
 
     /// Immutable access to a level at the given [`LevelIndices`].
+    ///
+    /// Note: all levels are considered [raw](RawLevelAccessor#raw-levels).
     fn get_raw_level_at_indices(&self, indices: &LevelIndices) -> Option<&Level> {
         match indices.world {
             Some(world_index) => self.worlds().get(world_index)?.levels.get(indices.level),

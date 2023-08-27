@@ -1,6 +1,6 @@
 use crate::{
     assets::{ldtk_path_to_asset_path, LdtkLevel, LevelIndices},
-    ldtk::{LdtkJson, Level},
+    ldtk::{raw_level_accessor::RawLevelAccessor, LdtkJson, Level},
     resources::LevelSelection,
 };
 use bevy::{
@@ -41,7 +41,7 @@ impl LdtkProject {
     /// These levels will have "incomplete" data if you use LDtk's external levels feature.
     /// To always get full level data, you'll need to access `Assets<LdtkLevel>`.
     pub fn iter_levels(&self) -> impl Iterator<Item = &Level> {
-        self.data.iter_levels()
+        self.data.iter_raw_levels()
     }
 
     /// Iterate through all levels in the project paired with their [`LevelIndices`].
@@ -49,12 +49,12 @@ impl LdtkProject {
     /// This works for multi-world and single-world projects agnostically.
     /// It iterates through levels in the root first, then levels in the worlds.
     pub fn iter_levels_with_indices(&self) -> impl Iterator<Item = (LevelIndices, &Level)> {
-        self.data.iter_levels_with_indices()
+        self.data.iter_raw_levels_with_indices()
     }
 
     /// Immutable access to a level at the given [`LevelIndices`].
     pub fn get_level_at_indices(&self, indices: &LevelIndices) -> Option<&Level> {
-        self.data.get_level_at_indices(indices)
+        self.data.get_raw_level_at_indices(indices)
     }
 
     /// Find a particular level using a [`LevelSelection`].
@@ -85,7 +85,7 @@ impl AssetLoader for LdtkProjectLoader {
             let mut level_map = HashMap::new();
             let mut background_images = Vec::new();
             if data.external_levels {
-                for level in data.iter_levels() {
+                for level in data.iter_raw_levels() {
                     if let Some(external_rel_path) = &level.external_rel_path {
                         let asset_path =
                             ldtk_path_to_asset_path(load_context.path(), external_rel_path);
@@ -95,7 +95,7 @@ impl AssetLoader for LdtkProjectLoader {
                     }
                 }
             } else {
-                for level in data.iter_levels() {
+                for level in data.iter_raw_levels() {
                     let label = level.identifier.as_ref();
 
                     let mut background_image = None;

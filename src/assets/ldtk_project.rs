@@ -138,3 +138,41 @@ impl AssetLoader for LdtkProjectLoader {
         &["ldtk"]
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::ldtk::{raw_level_accessor::tests::sample_levels, World};
+
+    use super::*;
+
+    #[test]
+    fn raw_level_accessor_implementation_is_transparent() {
+        let [level_a, level_b, level_c, level_d] = sample_levels();
+
+        let world_a = World {
+            levels: vec![level_c.clone()],
+            ..Default::default()
+        };
+
+        let world_b = World {
+            levels: vec![level_d.clone()],
+            ..Default::default()
+        };
+
+        let data = LdtkJson {
+            worlds: vec![world_a, world_b],
+            levels: vec![level_a.clone(), level_b.clone()],
+            ..Default::default()
+        };
+
+        let project = LdtkProject {
+            data: data.clone(),
+            tileset_map: HashMap::default(),
+            level_map: HashMap::default(),
+            int_grid_image_handle: None,
+        };
+
+        assert_eq!(project.root_levels(), data.root_levels());
+        assert_eq!(project.worlds(), data.worlds());
+    }
+}

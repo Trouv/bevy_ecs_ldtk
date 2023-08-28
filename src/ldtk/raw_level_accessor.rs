@@ -147,12 +147,12 @@ impl RawLevelAccessor for LdtkJson {
 }
 
 #[cfg(test)]
-mod tests {
+pub mod tests {
     use crate::ldtk::World;
 
     use super::*;
 
-    fn sample_levels() -> [Level; 4] {
+    pub fn sample_levels() -> [Level; 4] {
         let level_a = Level {
             identifier: "Tutorial".to_string(),
             ..Default::default()

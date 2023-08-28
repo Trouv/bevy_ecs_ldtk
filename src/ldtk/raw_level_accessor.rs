@@ -177,7 +177,7 @@ mod tests {
     }
 
     #[test]
-    fn iter_levels_in_root_with_indices() {
+    fn iter_levels_in_root() {
         let [level_a, level_b, level_c, level_d] = sample_levels();
 
         let project = LdtkJson {
@@ -190,29 +190,46 @@ mod tests {
             ..Default::default()
         };
 
-        let mut iter_levels_with_indices = project.iter_raw_levels_with_indices();
+        let iter_raw_levels_with_indices =
+            project.iter_raw_levels_with_indices().collect::<Vec<_>>();
 
         assert_eq!(
-            iter_levels_with_indices.next(),
-            Some((LevelIndices::in_root(0), &level_a))
+            iter_raw_levels_with_indices,
+            vec![
+                (LevelIndices::in_root(0), &level_a),
+                (LevelIndices::in_root(1), &level_b),
+                (LevelIndices::in_root(2), &level_c),
+                (LevelIndices::in_root(3), &level_d)
+            ]
+        );
+
+        // same results from root_levels iterator
+        assert_eq!(
+            iter_raw_levels_with_indices,
+            project.iter_root_levels_with_indices().collect::<Vec<_>>(),
+        );
+
+        // same results as without-indices iterators
+        let iter_raw_levels_without_indices = project
+            .iter_raw_levels_with_indices()
+            .map(|(_, level)| level)
+            .collect::<Vec<_>>();
+        assert_eq!(
+            project.iter_raw_levels().collect::<Vec<_>>(),
+            iter_raw_levels_without_indices,
         );
         assert_eq!(
-            iter_levels_with_indices.next(),
-            Some((LevelIndices::in_root(1), &level_b))
+            project.iter_root_levels().collect::<Vec<_>>(),
+            iter_raw_levels_without_indices,
         );
-        assert_eq!(
-            iter_levels_with_indices.next(),
-            Some((LevelIndices::in_root(2), &level_c))
-        );
-        assert_eq!(
-            iter_levels_with_indices.next(),
-            Some((LevelIndices::in_root(3), &level_d))
-        );
-        assert_eq!(iter_levels_with_indices.next(), None);
+
+        // world_levels iterators are empty
+        assert_eq!(project.iter_world_levels_with_indices().count(), 0);
+        assert_eq!(project.iter_world_levels().count(), 0);
     }
 
     #[test]
-    fn iter_levels_in_worlds_with_indices() {
+    fn iter_levels_in_worlds() {
         let [level_a, level_b, level_c, level_d] = sample_levels();
 
         let world_a = World {
@@ -230,29 +247,46 @@ mod tests {
             ..Default::default()
         };
 
-        let mut iter_levels_with_indices = project.iter_raw_levels_with_indices();
+        let iter_raw_levels_with_indices =
+            project.iter_raw_levels_with_indices().collect::<Vec<_>>();
 
         assert_eq!(
-            iter_levels_with_indices.next(),
-            Some((LevelIndices::in_world(0, 0), &level_a))
+            iter_raw_levels_with_indices,
+            vec![
+                (LevelIndices::in_world(0, 0), &level_a),
+                (LevelIndices::in_world(0, 1), &level_b),
+                (LevelIndices::in_world(1, 0), &level_c),
+                (LevelIndices::in_world(1, 1), &level_d)
+            ]
+        );
+
+        // same results from world_levels iterator
+        assert_eq!(
+            iter_raw_levels_with_indices,
+            project.iter_world_levels_with_indices().collect::<Vec<_>>(),
+        );
+
+        // same results as without-indices iterators
+        let iter_raw_levels_without_indices = project
+            .iter_raw_levels_with_indices()
+            .map(|(_, level)| level)
+            .collect::<Vec<_>>();
+        assert_eq!(
+            project.iter_raw_levels().collect::<Vec<_>>(),
+            iter_raw_levels_without_indices,
         );
         assert_eq!(
-            iter_levels_with_indices.next(),
-            Some((LevelIndices::in_world(0, 1), &level_b))
+            project.iter_world_levels().collect::<Vec<_>>(),
+            iter_raw_levels_without_indices,
         );
-        assert_eq!(
-            iter_levels_with_indices.next(),
-            Some((LevelIndices::in_world(1, 0), &level_c))
-        );
-        assert_eq!(
-            iter_levels_with_indices.next(),
-            Some((LevelIndices::in_world(1, 1), &level_d))
-        );
-        assert_eq!(iter_levels_with_indices.next(), None);
+
+        // root_levels iterators are empty
+        assert_eq!(project.iter_root_levels_with_indices().count(), 0);
+        assert_eq!(project.iter_root_levels().count(), 0);
     }
 
     #[test]
-    fn iter_levels_with_indices_iterates_through_root_levels_first() {
+    fn iter_raw_levels_iterates_through_root_levels_first() {
         let [level_a, level_b, level_c, level_d] = sample_levels();
 
         let world_a = World {
@@ -271,31 +305,57 @@ mod tests {
             ..Default::default()
         };
 
-        let mut iter_levels_with_indices = project.iter_raw_levels_with_indices();
+        let iter_raw_levels_with_indices =
+            project.iter_raw_levels_with_indices().collect::<Vec<_>>();
 
         assert_eq!(
-            iter_levels_with_indices.next(),
-            Some((LevelIndices::in_root(0), &level_a))
+            iter_raw_levels_with_indices,
+            vec![
+                (LevelIndices::in_root(0), &level_a),
+                (LevelIndices::in_root(1), &level_b),
+                (LevelIndices::in_world(0, 0), &level_c),
+                (LevelIndices::in_world(1, 0), &level_d)
+            ]
+        );
+
+        // same results from root_levels and world_levelsiterator
+        assert_eq!(
+            iter_raw_levels_with_indices[0..2],
+            project.iter_root_levels_with_indices().collect::<Vec<_>>(),
         );
         assert_eq!(
-            iter_levels_with_indices.next(),
-            Some((LevelIndices::in_root(1), &level_b))
+            iter_raw_levels_with_indices[2..4],
+            project.iter_world_levels_with_indices().collect::<Vec<_>>(),
+        );
+
+        // same results as without-indices iterators
+        let iter_raw_levels_without_indices = project
+            .iter_raw_levels_with_indices()
+            .map(|(_, level)| level)
+            .collect::<Vec<_>>();
+        assert_eq!(
+            project.iter_raw_levels().collect::<Vec<_>>(),
+            iter_raw_levels_without_indices,
         );
         assert_eq!(
-            iter_levels_with_indices.next(),
-            Some((LevelIndices::in_world(0, 0), &level_c))
+            project.iter_root_levels().collect::<Vec<_>>(),
+            iter_raw_levels_without_indices[0..2],
         );
         assert_eq!(
-            iter_levels_with_indices.next(),
-            Some((LevelIndices::in_world(1, 0), &level_d))
+            project.iter_world_levels().collect::<Vec<_>>(),
+            iter_raw_levels_without_indices[2..4],
         );
-        assert_eq!(iter_levels_with_indices.next(), None);
     }
 
     #[test]
-    fn iter_levels_with_indices_empty_if_there_are_no_levels() {
+    fn level_iterators_empty_if_there_are_no_levels() {
         let project = LdtkJson::default();
         assert_eq!(project.iter_raw_levels_with_indices().count(), 0);
+        assert_eq!(project.iter_root_levels_with_indices().count(), 0);
+        assert_eq!(project.iter_world_levels_with_indices().count(), 0);
+        assert_eq!(project.iter_raw_levels().count(), 0);
+        assert_eq!(project.iter_root_levels().count(), 0);
+        assert_eq!(project.iter_world_levels().count(), 0);
     }
 
     #[test]

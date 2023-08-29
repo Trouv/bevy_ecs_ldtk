@@ -205,7 +205,7 @@ fn pre_spawn_level(commands: &mut Commands, level: &Level, ldtk_settings: &LdtkS
 pub fn process_ldtk_levels(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    mut images: ResMut<Assets<Image>>,
+    images: ResMut<Assets<Image>>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
     level_assets: Res<Assets<LdtkExternalLevel>>,
@@ -289,7 +289,7 @@ pub fn process_ldtk_levels(
                             level_metadata.bg_image(),
                             &mut commands,
                             &asset_server,
-                            &mut images,
+                            &images,
                             &mut texture_atlases,
                             &ldtk_entity_map,
                             &ldtk_int_cell_map,

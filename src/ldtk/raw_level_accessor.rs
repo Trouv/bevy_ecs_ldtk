@@ -1,23 +1,29 @@
+//! Contains [`RawLevelAccessor`]: convenience methods for accessing raw level data by reference.
 use crate::{
     ldtk::{LdtkJson, Level, World},
     prelude::LevelIndices,
 };
 
+/// Iterator returned by [`RawLevelAccessor::iter_root_levels`].
 pub type IterRootLevels<'a> = std::slice::Iter<'a, Level>;
 
+/// Iterator returned by [`RawLevelAccessor::iter_world_levels`].
 pub type IterWorldLevels<'a> = std::iter::FlatMap<
     std::slice::Iter<'a, World>,
     std::slice::Iter<'a, Level>,
     fn(&World) -> std::slice::Iter<'_, Level>,
 >;
 
+/// Iterator returned by [`RawLevelAccessor::iter_raw_levels`].
 pub type IterLevels<'a> = std::iter::Chain<IterRootLevels<'a>, IterWorldLevels<'a>>;
 
+/// Iterator returned by [`RawLevelAccessor::iter_root_levels_with_indices`].
 pub type IterRootLevelsWithIndices<'a> = std::iter::Map<
     std::iter::Enumerate<IterRootLevels<'a>>,
     fn((usize, &Level)) -> (LevelIndices, &Level),
 >;
 
+/// Iterator returned by [`RawLevelAccessor::iter_world_levels_with_indices`].
 pub type IterWorldLevelsWithIndices<'a> = std::iter::FlatMap<
     std::iter::Enumerate<std::slice::Iter<'a, World>>,
     std::iter::Map<
@@ -32,26 +38,59 @@ pub type IterWorldLevelsWithIndices<'a> = std::iter::FlatMap<
     >,
 >;
 
+/// Iterator returned by [`RawLevelAccessor::iter_raw_levels_with_indices`].
 pub type IterLevelsWithIndices<'a> =
     std::iter::Chain<IterRootLevelsWithIndices<'a>, IterWorldLevelsWithIndices<'a>>;
 
+/// Convenience methods for accessing raw level data by reference.
+///
+/// # Root vs world levels
+/// This trait is intended for types that store [`LdtkJson`] data.
+/// This sort of data stores levels both in the "root" of the project, and in each [`World`].
+/// The former is referred to in trait methods as `root_levels`, and the latter as `world_levels`.
+/// Root levels may be removed in the future after LDtk's multi-worlds update.
+///
+/// # Raw levels
+/// All levels that these methods can retrieve are considered "raw".
+/// Raw levels do not have any type guarantee that the level data is complete.
+/// Level data may be incomplete and contain no layer instances if external levels are enabled.
+/// Other methods to retrieve a [`LoadedLevel`] can be used to guarantee level data completion.
+///
+/// [`LoadedLevel`]: crate::ldtk::loaded_level::LoadedLevel
 pub trait RawLevelAccessor {
+    /// Slice to this project's collection of [root levels](RawLevelAccessor#root-vs-world-levels).
     fn root_levels(&self) -> &[Level];
 
+    /// Slice to this project's collection of [`World`]s.
     fn worlds(&self) -> &[World];
 
+    /// Iterate through this project's [root levels](RawLevelAccessor#root-vs-world-levels).
+    ///
+    /// Note: all levels are considered [raw](RawLevelAccessor#raw-levels).
     fn iter_root_levels(&self) -> IterRootLevels {
         self.root_levels().iter()
     }
 
+    /// Iterate through this project's [world levels](RawLevelAccessor#root-vs-world-levels).
+    ///
+    /// Note: all levels are considered [raw](RawLevelAccessor#raw-levels).
     fn iter_world_levels(&self) -> IterWorldLevels {
         self.worlds().iter().flat_map(|world| world.levels.iter())
     }
 
+    /// Iterate through this project's levels.
+    ///
+    /// This first iterates through [root levels, then world levels](RawLevelAccessor#root-vs-world-levels).
+    ///
+    /// Note: all levels are considered [raw](RawLevelAccessor#raw-levels).
     fn iter_raw_levels(&self) -> IterLevels {
         self.iter_root_levels().chain(self.iter_world_levels())
     }
 
+    /// Iterate through this project's [root levels](RawLevelAccessor#root-vs-world-levels)
+    /// enumerated with their [`LevelIndices`].
+    ///
+    /// Note: all levels are considered [raw](RawLevelAccessor#raw-levels).
     fn iter_root_levels_with_indices(&self) -> IterRootLevelsWithIndices {
         self.root_levels()
             .iter()
@@ -59,10 +98,10 @@ pub trait RawLevelAccessor {
             .map(|(index, level)| (LevelIndices::in_root(index), level))
     }
 
-    /// Iterate through all levels in the project paired with their [`LevelIndices`].
+    /// Iterate through this project's [world levels](RawLevelAccessor#root-vs-world-levels)
+    /// enumerated with their [`LevelIndices`].
     ///
-    /// This works for multi-world and single-world projects agnostically.
-    /// It iterates through levels in the root first, then levels in the worlds.
+    /// Note: all levels are considered [raw](RawLevelAccessor#raw-levels).
     fn iter_world_levels_with_indices(&self) -> IterWorldLevelsWithIndices {
         self.worlds()
             .iter()
@@ -76,12 +115,19 @@ pub trait RawLevelAccessor {
             })
     }
 
+    /// Iterate through this project's levels enumerated with their [`LevelIndices`].
+    ///
+    /// This first iterates through [root levels, then world levels](RawLevelAccessor#root-vs-world-levels).
+    ///
+    /// Note: all levels are considered [raw](RawLevelAccessor#raw-levels).
     fn iter_raw_levels_with_indices(&self) -> IterLevelsWithIndices {
         self.iter_root_levels_with_indices()
             .chain(self.iter_world_levels_with_indices())
     }
 
     /// Immutable access to a level at the given [`LevelIndices`].
+    ///
+    /// Note: all levels are considered [raw](RawLevelAccessor#raw-levels).
     fn get_raw_level_at_indices(&self, indices: &LevelIndices) -> Option<&Level> {
         match indices.world {
             Some(world_index) => self.worlds().get(world_index)?.levels.get(indices.level),
@@ -101,12 +147,12 @@ impl RawLevelAccessor for LdtkJson {
 }
 
 #[cfg(test)]
-mod tests {
+pub mod tests {
     use crate::ldtk::World;
 
     use super::*;
 
-    fn sample_levels() -> [Level; 4] {
+    pub fn sample_levels() -> [Level; 4] {
         let level_a = Level {
             identifier: "Tutorial".to_string(),
             ..Default::default()
@@ -131,7 +177,7 @@ mod tests {
     }
 
     #[test]
-    fn iter_levels_in_root_with_indices() {
+    fn iter_levels_in_root() {
         let [level_a, level_b, level_c, level_d] = sample_levels();
 
         let project = LdtkJson {
@@ -144,29 +190,46 @@ mod tests {
             ..Default::default()
         };
 
-        let mut iter_levels_with_indices = project.iter_raw_levels_with_indices();
+        let iter_raw_levels_with_indices =
+            project.iter_raw_levels_with_indices().collect::<Vec<_>>();
 
         assert_eq!(
-            iter_levels_with_indices.next(),
-            Some((LevelIndices::in_root(0), &level_a))
+            iter_raw_levels_with_indices,
+            vec![
+                (LevelIndices::in_root(0), &level_a),
+                (LevelIndices::in_root(1), &level_b),
+                (LevelIndices::in_root(2), &level_c),
+                (LevelIndices::in_root(3), &level_d)
+            ]
+        );
+
+        // same results from root_levels iterator
+        assert_eq!(
+            iter_raw_levels_with_indices,
+            project.iter_root_levels_with_indices().collect::<Vec<_>>(),
+        );
+
+        // same results as without-indices iterators
+        let iter_raw_levels_without_indices = project
+            .iter_raw_levels_with_indices()
+            .map(|(_, level)| level)
+            .collect::<Vec<_>>();
+        assert_eq!(
+            project.iter_raw_levels().collect::<Vec<_>>(),
+            iter_raw_levels_without_indices,
         );
         assert_eq!(
-            iter_levels_with_indices.next(),
-            Some((LevelIndices::in_root(1), &level_b))
+            project.iter_root_levels().collect::<Vec<_>>(),
+            iter_raw_levels_without_indices,
         );
-        assert_eq!(
-            iter_levels_with_indices.next(),
-            Some((LevelIndices::in_root(2), &level_c))
-        );
-        assert_eq!(
-            iter_levels_with_indices.next(),
-            Some((LevelIndices::in_root(3), &level_d))
-        );
-        assert_eq!(iter_levels_with_indices.next(), None);
+
+        // world_levels iterators are empty
+        assert_eq!(project.iter_world_levels_with_indices().count(), 0);
+        assert_eq!(project.iter_world_levels().count(), 0);
     }
 
     #[test]
-    fn iter_levels_in_worlds_with_indices() {
+    fn iter_levels_in_worlds() {
         let [level_a, level_b, level_c, level_d] = sample_levels();
 
         let world_a = World {
@@ -184,29 +247,46 @@ mod tests {
             ..Default::default()
         };
 
-        let mut iter_levels_with_indices = project.iter_raw_levels_with_indices();
+        let iter_raw_levels_with_indices =
+            project.iter_raw_levels_with_indices().collect::<Vec<_>>();
 
         assert_eq!(
-            iter_levels_with_indices.next(),
-            Some((LevelIndices::in_world(0, 0), &level_a))
+            iter_raw_levels_with_indices,
+            vec![
+                (LevelIndices::in_world(0, 0), &level_a),
+                (LevelIndices::in_world(0, 1), &level_b),
+                (LevelIndices::in_world(1, 0), &level_c),
+                (LevelIndices::in_world(1, 1), &level_d)
+            ]
+        );
+
+        // same results from world_levels iterator
+        assert_eq!(
+            iter_raw_levels_with_indices,
+            project.iter_world_levels_with_indices().collect::<Vec<_>>(),
+        );
+
+        // same results as without-indices iterators
+        let iter_raw_levels_without_indices = project
+            .iter_raw_levels_with_indices()
+            .map(|(_, level)| level)
+            .collect::<Vec<_>>();
+        assert_eq!(
+            project.iter_raw_levels().collect::<Vec<_>>(),
+            iter_raw_levels_without_indices,
         );
         assert_eq!(
-            iter_levels_with_indices.next(),
-            Some((LevelIndices::in_world(0, 1), &level_b))
+            project.iter_world_levels().collect::<Vec<_>>(),
+            iter_raw_levels_without_indices,
         );
-        assert_eq!(
-            iter_levels_with_indices.next(),
-            Some((LevelIndices::in_world(1, 0), &level_c))
-        );
-        assert_eq!(
-            iter_levels_with_indices.next(),
-            Some((LevelIndices::in_world(1, 1), &level_d))
-        );
-        assert_eq!(iter_levels_with_indices.next(), None);
+
+        // root_levels iterators are empty
+        assert_eq!(project.iter_root_levels_with_indices().count(), 0);
+        assert_eq!(project.iter_root_levels().count(), 0);
     }
 
     #[test]
-    fn iter_levels_with_indices_iterates_through_root_levels_first() {
+    fn iter_raw_levels_iterates_through_root_levels_first() {
         let [level_a, level_b, level_c, level_d] = sample_levels();
 
         let world_a = World {
@@ -225,31 +305,57 @@ mod tests {
             ..Default::default()
         };
 
-        let mut iter_levels_with_indices = project.iter_raw_levels_with_indices();
+        let iter_raw_levels_with_indices =
+            project.iter_raw_levels_with_indices().collect::<Vec<_>>();
 
         assert_eq!(
-            iter_levels_with_indices.next(),
-            Some((LevelIndices::in_root(0), &level_a))
+            iter_raw_levels_with_indices,
+            vec![
+                (LevelIndices::in_root(0), &level_a),
+                (LevelIndices::in_root(1), &level_b),
+                (LevelIndices::in_world(0, 0), &level_c),
+                (LevelIndices::in_world(1, 0), &level_d)
+            ]
+        );
+
+        // same results from root_levels and world_levelsiterator
+        assert_eq!(
+            iter_raw_levels_with_indices[0..2],
+            project.iter_root_levels_with_indices().collect::<Vec<_>>(),
         );
         assert_eq!(
-            iter_levels_with_indices.next(),
-            Some((LevelIndices::in_root(1), &level_b))
+            iter_raw_levels_with_indices[2..4],
+            project.iter_world_levels_with_indices().collect::<Vec<_>>(),
+        );
+
+        // same results as without-indices iterators
+        let iter_raw_levels_without_indices = project
+            .iter_raw_levels_with_indices()
+            .map(|(_, level)| level)
+            .collect::<Vec<_>>();
+        assert_eq!(
+            project.iter_raw_levels().collect::<Vec<_>>(),
+            iter_raw_levels_without_indices,
         );
         assert_eq!(
-            iter_levels_with_indices.next(),
-            Some((LevelIndices::in_world(0, 0), &level_c))
+            project.iter_root_levels().collect::<Vec<_>>(),
+            iter_raw_levels_without_indices[0..2],
         );
         assert_eq!(
-            iter_levels_with_indices.next(),
-            Some((LevelIndices::in_world(1, 0), &level_d))
+            project.iter_world_levels().collect::<Vec<_>>(),
+            iter_raw_levels_without_indices[2..4],
         );
-        assert_eq!(iter_levels_with_indices.next(), None);
     }
 
     #[test]
-    fn iter_levels_with_indices_empty_if_there_are_no_levels() {
+    fn level_iterators_empty_if_there_are_no_levels() {
         let project = LdtkJson::default();
         assert_eq!(project.iter_raw_levels_with_indices().count(), 0);
+        assert_eq!(project.iter_root_levels_with_indices().count(), 0);
+        assert_eq!(project.iter_world_levels_with_indices().count(), 0);
+        assert_eq!(project.iter_raw_levels().count(), 0);
+        assert_eq!(project.iter_root_levels().count(), 0);
+        assert_eq!(project.iter_world_levels().count(), 0);
     }
 
     #[test]

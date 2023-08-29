@@ -5,7 +5,7 @@ use crate::{
         ExternalLevelMetadata, LdtkProjectGetters, LdtkProjectWithMetadata, LevelIndices,
         LevelMetadata, LevelSelectionAccessor,
     },
-    ldtk::{raw_level_accessor::RawLevelAccessor, LdtkJson, Level, World},
+    ldtk::{raw_level_accessor::RawLevelAccessor, LdtkJson, Level},
 };
 use bevy::{
     asset::{AssetLoader, AssetPath, LoadContext, LoadedAsset},
@@ -63,11 +63,11 @@ impl LdtkProjectGetters for LdtkProject {
 }
 
 impl RawLevelAccessor for LdtkProject {
-    fn worlds(&self) -> &[World] {
+    fn worlds(&self) -> &[crate::ldtk::World] {
         self.data().worlds()
     }
 
-    fn root_levels(&self) -> &[crate::ldtk::Level] {
+    fn root_levels(&self) -> &[Level] {
         self.data().root_levels()
     }
 }

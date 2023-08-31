@@ -99,17 +99,17 @@ pub enum LdtkProjectLoaderError {
 #[derive(Default)]
 pub struct LdtkProjectLoader;
 
-struct LoadLevelMetadataResult<'a> {
-    bg_image_path: Option<AssetPath<'a>>,
-    external_level_path: Option<AssetPath<'a>>,
-    level_metadata: LevelMetadata,
+struct LoadLevelMetadataResult<'a, L> {
+    dependent_asset_paths: Vec<AssetPath<'a>>,
+    level_metadata: L,
 }
 
 fn load_level_metadata<'a>(
     load_context: &LoadContext,
     level_indices: LevelIndices,
     level: &Level,
-) -> Result<LoadLevelMetadataResult<'a>, LdtkProjectLoaderError> {
+    expect_level_loaded: bool,
+) -> Result<LoadLevelMetadataResult<'a, LevelMetadata>, LdtkProjectLoaderError> {
     let (bg_image_path, bg_image) = level
         .bg_rel_path
         .as_ref()
@@ -123,66 +123,27 @@ fn load_level_metadata<'a>(
         })
         .unwrap_or((None, None));
 
-    if level.layer_instances.is_none() {
+    if expect_level_loaded && level.layer_instances.is_none() {
         Err(LdtkProjectLoaderError::InternalLevelWithNullLayers)?;
     }
 
     let level_metadata = LevelMetadata::new(bg_image, level_indices);
 
     Ok(LoadLevelMetadataResult {
-        bg_image_path,
+        dependent_asset_paths: bg_image_path.into_iter().collect(),
         level_metadata,
-        external_level_path: None,
     })
-}
-
-fn load_level_metadata_into_buffers<'a>(
-    load_context: &LoadContext,
-    level_indices: LevelIndices,
-    level: &Level,
-    level_map: &mut HashMap<String, LevelMetadata>,
-    dependent_asset_paths: &mut Vec<AssetPath<'a>>,
-) -> Result<(), LdtkProjectLoaderError> {
-    let LoadLevelMetadataResult {
-        bg_image_path,
-        external_level_path,
-        level_metadata,
-    } = load_level_metadata(load_context, level_indices, level)?;
-
-    if let Some(bg_image_path) = bg_image_path {
-        dependent_asset_paths.push(bg_image_path);
-    }
-    if let Some(external_level_path) = external_level_path {
-        dependent_asset_paths.push(external_level_path);
-    }
-    level_map.insert(level.iid.clone(), level_metadata);
-
-    Ok(())
-}
-
-struct LoadExternalLevelMetadataResult<'a> {
-    bg_image_path: Option<AssetPath<'a>>,
-    external_level_path: AssetPath<'a>,
-    metadata: ExternalLevelMetadata,
 }
 
 fn load_external_level_metadata<'a>(
     load_context: &LoadContext,
     level_indices: LevelIndices,
     level: &Level,
-) -> Result<LoadExternalLevelMetadataResult<'a>, LdtkProjectLoaderError> {
-    let (bg_image_path, bg_image) = level
-        .bg_rel_path
-        .as_ref()
-        .map(|rel_path| {
-            let asset_path = ldtk_path_to_asset_path(load_context.path(), &rel_path);
-
-            (
-                Some(asset_path.clone()),
-                Some(load_context.get_handle(asset_path)),
-            )
-        })
-        .unwrap_or((None, None));
+) -> Result<LoadLevelMetadataResult<'a, ExternalLevelMetadata>, LdtkProjectLoaderError> {
+    let LoadLevelMetadataResult {
+        level_metadata,
+        mut dependent_asset_paths,
+    } = load_level_metadata(load_context, level_indices, level, false)?;
 
     let external_level_path = ldtk_path_to_asset_path(
         load_context.path(),
@@ -193,38 +154,12 @@ fn load_external_level_metadata<'a>(
     );
 
     let external_handle = load_context.get_handle(external_level_path.clone());
-
-    let metadata =
-        ExternalLevelMetadata::new(LevelMetadata::new(bg_image, level_indices), external_handle);
-
-    Ok(LoadExternalLevelMetadataResult {
-        bg_image_path,
-        metadata,
-        external_level_path,
-    })
-}
-
-fn load_external_level_metadata_into_buffers<'a>(
-    load_context: &LoadContext,
-    level_indices: LevelIndices,
-    level: &Level,
-    level_map: &mut HashMap<String, ExternalLevelMetadata>,
-    dependent_asset_paths: &mut Vec<AssetPath<'a>>,
-) -> Result<(), LdtkProjectLoaderError> {
-    let LoadExternalLevelMetadataResult {
-        bg_image_path,
-        external_level_path,
-        metadata,
-    } = load_external_level_metadata(load_context, level_indices, level)?;
-
-    if let Some(bg_image_path) = bg_image_path {
-        dependent_asset_paths.push(bg_image_path);
-    }
-
     dependent_asset_paths.push(external_level_path);
-    level_map.insert(level.iid.clone(), metadata);
 
-    Ok(())
+    Ok(LoadLevelMetadataResult {
+        level_metadata: ExternalLevelMetadata::new(level_metadata, external_handle),
+        dependent_asset_paths,
+    })
 }
 
 impl AssetLoader for LdtkProjectLoader {
@@ -261,13 +196,13 @@ impl AssetLoader for LdtkProjectLoader {
                 let mut level_map = HashMap::new();
 
                 for (level_indices, level) in data.iter_raw_levels_with_indices() {
-                    load_external_level_metadata_into_buffers(
-                        load_context,
-                        level_indices,
-                        level,
-                        &mut level_map,
-                        &mut dependent_asset_paths,
-                    )?;
+                    let LoadLevelMetadataResult {
+                        level_metadata,
+                        dependent_asset_paths: new_asset_paths,
+                    } = load_external_level_metadata(load_context, level_indices, level)?;
+
+                    level_map.insert(level.iid.clone(), level_metadata);
+                    dependent_asset_paths.extend(new_asset_paths);
                 }
 
                 LdtkProject::Parent(LdtkProjectWithMetadata::new(
@@ -280,13 +215,13 @@ impl AssetLoader for LdtkProjectLoader {
                 let mut level_map = HashMap::new();
 
                 for (level_indices, level) in data.iter_raw_levels_with_indices() {
-                    load_level_metadata_into_buffers(
-                        load_context,
-                        level_indices,
-                        level,
-                        &mut level_map,
-                        &mut dependent_asset_paths,
-                    )?;
+                    let LoadLevelMetadataResult {
+                        level_metadata,
+                        dependent_asset_paths: new_asset_paths,
+                    } = load_level_metadata(load_context, level_indices, level, true)?;
+
+                    level_map.insert(level.iid.clone(), level_metadata);
+                    dependent_asset_paths.extend(new_asset_paths);
                 }
 
                 LdtkProject::Standalone(LdtkProjectWithMetadata::new(

@@ -4,7 +4,7 @@
 use crate::resources::SetClearColor;
 use crate::{
     app::{LdtkEntityMap, LdtkIntCellMap},
-    assets::{LdtkProject, LdtkProjectGetters, LevelSelectionAccessor},
+    assets::{LdtkProject, LevelSelectionAccessor},
     components::*,
     ldtk::{Level, TilesetDefinition},
     level::spawn_level,

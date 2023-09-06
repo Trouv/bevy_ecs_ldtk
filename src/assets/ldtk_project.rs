@@ -2,8 +2,8 @@ use std::path::Path;
 
 use crate::{
     assets::{
-        ExternalLevelMetadata, LdtkProjectGetters, LdtkProjectWithMetadata, LevelIndices,
-        LevelMetadata, LevelSelectionAccessor,
+        ExternalLevelMetadata, LdtkProjectWithMetadata, LevelIndices, LevelMetadata,
+        LevelSelectionAccessor,
     },
     ldtk::{raw_level_accessor::RawLevelAccessor, LdtkJson, Level},
 };
@@ -39,22 +39,22 @@ impl LdtkProject {
     }
 }
 
-impl LdtkProjectGetters for LdtkProject {
-    fn data(&self) -> &crate::ldtk::LdtkJson {
+impl LdtkProject {
+    pub fn data(&self) -> &crate::ldtk::LdtkJson {
         match self {
             LdtkProject::Standalone(project) => project.data(),
             LdtkProject::Parent(project) => project.data(),
         }
     }
 
-    fn tileset_map(&self) -> &std::collections::HashMap<i32, Handle<Image>> {
+    pub fn tileset_map(&self) -> &std::collections::HashMap<i32, Handle<Image>> {
         match self {
             LdtkProject::Standalone(project) => project.tileset_map(),
             LdtkProject::Parent(project) => project.tileset_map(),
         }
     }
 
-    fn int_grid_image_handle(&self) -> &Option<Handle<Image>> {
+    pub fn int_grid_image_handle(&self) -> &Option<Handle<Image>> {
         match self {
             LdtkProject::Standalone(project) => project.int_grid_image_handle(),
             LdtkProject::Parent(project) => project.int_grid_image_handle(),

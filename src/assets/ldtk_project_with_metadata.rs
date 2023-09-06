@@ -9,9 +9,10 @@ use bevy::{
     prelude::*,
     reflect::{TypePath, TypeUuid},
 };
+use derive_getters::Getters;
 use std::collections::HashMap;
 
-use super::{ExternalLevelMetadata, LdtkExternalLevel, LdtkProjectGetters};
+use super::{ExternalLevelMetadata, LdtkExternalLevel};
 
 fn expect_level_loaded(level: &Level) -> LoadedLevel {
     LoadedLevel::try_from(level)
@@ -24,7 +25,7 @@ fn expect_level_loaded(level: &Level) -> LoadedLevel {
 /// [`LdtkWorldBundle`].
 ///
 /// [`LdtkWorldBundle`]: crate::components::LdtkWorldBundle
-#[derive(Clone, Debug, PartialEq, TypeUuid, TypePath)]
+#[derive(Clone, Debug, PartialEq, TypeUuid, TypePath, Getters)]
 #[uuid = "ecfb87b7-9cd9-4970-8482-f2f68b770d31"]
 pub struct LdtkProjectWithMetadata<L> {
     /// Raw ldtk project data.
@@ -35,20 +36,6 @@ pub struct LdtkProjectWithMetadata<L> {
     int_grid_image_handle: Option<Handle<Image>>,
     /// Map from level iids to level metadata.
     level_map: HashMap<String, L>,
-}
-
-impl<L> LdtkProjectGetters for LdtkProjectWithMetadata<L> {
-    fn data(&self) -> &LdtkJson {
-        &self.data
-    }
-
-    fn tileset_map(&self) -> &HashMap<i32, Handle<Image>> {
-        &self.tileset_map
-    }
-
-    fn int_grid_image_handle(&self) -> &Option<Handle<Image>> {
-        &self.int_grid_image_handle
-    }
 }
 
 impl<L> LdtkProjectWithMetadata<L> {
@@ -64,10 +51,6 @@ impl<L> LdtkProjectWithMetadata<L> {
             int_grid_image_handle,
             level_map,
         }
-    }
-
-    pub fn level_map(&self) -> &HashMap<String, L> {
-        &self.level_map
     }
 }
 

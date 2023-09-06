@@ -1,5 +1,5 @@
 use crate::{
-    assets::{LevelIndices, LevelMetadata},
+    assets::LevelMetadata,
     ldtk::{raw_level_accessor::RawLevelAccessor, Level},
     LevelSelection,
 };
@@ -19,9 +19,12 @@ pub trait LevelMetadataAccessor: RawLevelAccessor {
         match level_selection {
             LevelSelection::Iid(iid) => self.get_raw_level_by_iid(iid.get()),
             LevelSelection::Indices(indices) => self.get_raw_level_at_indices(indices),
-            _ => self
+            LevelSelection::Identifier(selected_identifier) => self
                 .iter_raw_levels()
-                .find(|l| level_selection.is_match(&LevelIndices::default(), l)),
+                .find(|Level { identifier, .. }| identifier == selected_identifier),
+            LevelSelection::Uid(selected_uid) => self
+                .iter_raw_levels()
+                .find(|Level { uid, .. }| uid == selected_uid),
         }
     }
 }

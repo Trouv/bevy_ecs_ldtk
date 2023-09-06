@@ -47,3 +47,43 @@ impl ExternalLevelMetadata {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use bevy::render::texture::DEFAULT_IMAGE_HANDLE;
+
+    use super::*;
+
+    #[test]
+    fn level_metadata_construction() {
+        let level_metadata = LevelMetadata::new(None, LevelIndices::in_root(1));
+
+        assert_eq!(*level_metadata.bg_image(), None);
+        assert_eq!(*level_metadata.indices(), LevelIndices::in_root(1));
+
+        let level_metadata = LevelMetadata::new(
+            Some(DEFAULT_IMAGE_HANDLE.typed()),
+            LevelIndices::in_world(2, 3),
+        );
+
+        assert_eq!(
+            *level_metadata.bg_image(),
+            Some(DEFAULT_IMAGE_HANDLE.typed())
+        );
+        assert_eq!(*level_metadata.indices(), LevelIndices::in_world(2, 3));
+    }
+
+    #[test]
+    fn external_level_metadata_construction() {
+        let level_metadata = LevelMetadata::new(None, LevelIndices::in_root(1));
+
+        let external_level_metadata =
+            ExternalLevelMetadata::new(level_metadata.clone(), Handle::default());
+
+        assert_eq!(*external_level_metadata.metadata(), level_metadata);
+        assert_eq!(
+            *external_level_metadata.external_handle(),
+            Handle::default()
+        );
+    }
+}

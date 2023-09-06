@@ -3,7 +3,7 @@ use std::path::Path;
 use crate::{
     assets::{
         ExternalLevelMetadata, LdtkProjectWithMetadata, LevelIndices, LevelMetadata,
-        LevelSelectionAccessor,
+        LevelMetadataAccessor,
     },
     ldtk::{raw_level_accessor::RawLevelAccessor, LdtkJson, Level},
 };
@@ -72,17 +72,11 @@ impl RawLevelAccessor for LdtkProject {
     }
 }
 
-impl LevelSelectionAccessor for LdtkProject {
-    fn get_indices_for_iid(&self, iid: &String) -> Option<&crate::prelude::LevelIndices> {
+impl LevelMetadataAccessor for LdtkProject {
+    fn get_level_metadata_by_iid(&self, iid: &String) -> Option<&LevelMetadata> {
         match self {
-            LdtkProject::Standalone(project) => project
-                .level_map()
-                .get(iid)
-                .map(|level_metadata| level_metadata.indices()),
-            LdtkProject::Parent(project) => project
-                .level_map()
-                .get(iid)
-                .map(|external_level_metadata| external_level_metadata.metadata().indices()),
+            LdtkProject::Standalone(project) => project.get_level_metadata_by_iid(iid),
+            LdtkProject::Parent(project) => project.get_level_metadata_by_iid(iid),
         }
     }
 }

@@ -1,5 +1,5 @@
 use crate::{
-    assets::{LevelIndices, LevelMetadata, LevelSelectionAccessor},
+    assets::{LevelIndices, LevelMetadata, LevelMetadataAccessor},
     ldtk::{
         loaded_level::LoadedLevel, raw_level_accessor::RawLevelAccessor, LdtkJson, Level, World,
     },
@@ -64,9 +64,9 @@ impl<L> RawLevelAccessor for LdtkProjectWithMetadata<L> {
     }
 }
 
-impl LevelSelectionAccessor for LdtkProjectWithMetadata<LevelMetadata> {
-    fn get_indices_for_iid(&self, iid: &String) -> Option<&LevelIndices> {
-        Some(self.level_map.get(iid)?.indices())
+impl LevelMetadataAccessor for LdtkProjectWithMetadata<LevelMetadata> {
+    fn get_level_metadata_by_iid(&self, iid: &String) -> Option<&LevelMetadata> {
+        self.level_map.get(iid)
     }
 }
 
@@ -93,9 +93,9 @@ impl LdtkProjectWithMetadata<LevelMetadata> {
     }
 }
 
-impl LevelSelectionAccessor for LdtkProjectWithMetadata<ExternalLevelMetadata> {
-    fn get_indices_for_iid(&self, iid: &String) -> Option<&LevelIndices> {
-        Some(self.level_map.get(iid)?.metadata().indices())
+impl LevelMetadataAccessor for LdtkProjectWithMetadata<ExternalLevelMetadata> {
+    fn get_level_metadata_by_iid(&self, iid: &String) -> Option<&LevelMetadata> {
+        Some(self.level_map.get(iid)?.metadata())
     }
 }
 

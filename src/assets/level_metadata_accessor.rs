@@ -1,15 +1,15 @@
 use crate::{
-    assets::LevelIndices,
+    assets::{LevelIndices, LevelMetadata},
     ldtk::{raw_level_accessor::RawLevelAccessor, Level},
     LevelSelection,
 };
 
-pub trait LevelSelectionAccessor: RawLevelAccessor {
-    fn get_indices_for_iid(&self, iid: &String) -> Option<&LevelIndices>;
+pub trait LevelMetadataAccessor: RawLevelAccessor {
+    fn get_level_metadata_by_iid(&self, iid: &String) -> Option<&LevelMetadata>;
 
     fn get_raw_level_by_iid(&self, iid: &String) -> Option<&Level> {
-        self.get_indices_for_iid(iid)
-            .and_then(|indices| self.get_raw_level_at_indices(indices))
+        self.get_level_metadata_by_iid(iid)
+            .and_then(|metadata| self.get_raw_level_at_indices(metadata.indices()))
     }
 
     fn find_raw_level_by_level_selection(

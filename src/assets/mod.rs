@@ -9,6 +9,9 @@ pub use ldtk_asset_plugin::LdtkAssetPlugin;
 mod level_metadata;
 pub use level_metadata::{ExternalLevelMetadata, LevelMetadata};
 
+mod level_metadata_accessor;
+pub use level_metadata_accessor::LevelMetadataAccessor;
+
 mod ldtk_level;
 pub use ldtk_level::LdtkLevel;
 

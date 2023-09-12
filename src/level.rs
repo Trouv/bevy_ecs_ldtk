@@ -524,9 +524,9 @@ pub fn spawn_level(
                                                         tile_pos_to_tile_if_int_grid_nonzero_maker(
                                                             tile_pos_to_invisible_tile,
                                                             &layer_instance.int_grid_csv,
+                                                            &grid_tiles,
                                                             layer_instance.c_wid,
                                                             layer_instance.c_hei,
-                                                            None
                                                         ),
                                                         layer_instance.opacity,
                                                     ),

@@ -141,14 +141,34 @@ pub(crate) fn tile_pos_to_tile_if_int_grid_nonzero_maker(
     int_grid_csv: &[i32],
     layer_width_in_tiles: i32,
     layer_height_in_tiles: i32,
+    grid_tiles: Option<&[TileInstance]>,
 ) -> impl FnMut(TilePos) -> Option<TileBundle> {
     let int_grid_map =
         tile_pos_to_int_grid_map(int_grid_csv, layer_width_in_tiles, layer_height_in_tiles);
+
+    let grid_tile_positions_option:Option<Vec<TilePos>> = if let Some(t) = grid_tiles {
+        Some(t.iter()
+            .map(|x| TilePos::new(x.src.x as u32,x.src.y as u32) ) // x.src.x + x.src.y * layer_width_in_tiles)
+            .collect())
+    } else {
+        None
+    };
 
     move |tile_pos: TilePos| -> Option<TileBundle> {
         int_grid_map
             .get(&tile_pos)
             .and_then(|_| tile_maker(tile_pos))
+            .and_then(|tb| {
+                if let Some(grid_tile_positions) = &grid_tile_positions_option {
+                    if grid_tile_positions.contains(&tb.position) {
+                        Some(tb)
+                    }else{
+                        None
+                    }
+                }else{
+                    Some(tb)
+                }
+            })
     }
 }
 
@@ -173,6 +193,7 @@ pub(crate) fn tile_pos_to_int_grid_with_grid_tiles_tile_maker(
         int_grid_csv,
         layer_width_in_tiles,
         layer_height_in_tiles,
+        Some(grid_tiles)
     );
 
     move |tile_pos: TilePos| -> Option<TileBundle> {

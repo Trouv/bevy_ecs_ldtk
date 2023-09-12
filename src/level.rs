@@ -526,6 +526,7 @@ pub fn spawn_level(
                                                             &layer_instance.int_grid_csv,
                                                             layer_instance.c_wid,
                                                             layer_instance.c_hei,
+                                                            None
                                                         ),
                                                         layer_instance.opacity,
                                                     ),

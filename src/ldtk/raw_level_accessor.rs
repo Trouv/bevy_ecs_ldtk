@@ -154,21 +154,25 @@ pub mod tests {
 
     pub fn sample_levels() -> [Level; 4] {
         let level_a = Level {
+            iid: "e7371660-4e9b-479a-9e14-ab9fb8332619".to_string(),
             identifier: "Tutorial".to_string(),
             ..Default::default()
         };
 
         let level_b = Level {
+            iid: "3485168c-20d8-41c2-a145-a9e10bb30b3e".to_string(),
             identifier: "New_Beginnings".to_string(),
             ..Default::default()
         };
 
         let level_c = Level {
+            iid: "8dcf07d0-3382-474d-99a4-d2a27bf937c8".to_string(),
             identifier: "Turning_Point".to_string(),
             ..Default::default()
         };
 
         let level_d = Level {
+            iid: "248dafc9-75d7-4edb-97b7-44558042632d".to_string(),
             identifier: "Final_Boss".to_string(),
             ..Default::default()
         };

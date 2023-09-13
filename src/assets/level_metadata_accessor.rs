@@ -39,3 +39,131 @@ pub trait LevelMetadataAccessor: RawLevelAccessor {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashMap;
+
+    use crate::ldtk::{raw_level_accessor::tests::sample_levels, LdtkJson, World};
+
+    use super::*;
+
+    struct BasicLevelMetadataAccessor {
+        data: LdtkJson,
+        level_metadata: HashMap<String, LevelMetadata>,
+    }
+
+    impl RawLevelAccessor for BasicLevelMetadataAccessor {
+        fn worlds(&self) -> &[crate::ldtk::World] {
+            self.data.worlds()
+        }
+
+        fn root_levels(&self) -> &[Level] {
+            self.data.root_levels()
+        }
+    }
+
+    impl LevelMetadataAccessor for BasicLevelMetadataAccessor {
+        fn get_level_metadata_by_iid(&self, iid: &String) -> Option<&LevelMetadata> {
+            self.level_metadata.get(iid)
+        }
+    }
+
+    impl BasicLevelMetadataAccessor {
+        fn valid() -> BasicLevelMetadataAccessor {
+            let [level_a, level_b, level_c, level_d] = sample_levels();
+
+            let data = LdtkJson {
+                levels: vec![level_a, level_b, level_c, level_d],
+                ..Default::default()
+            };
+
+            let level_metadata = data
+                .iter_raw_levels_with_indices()
+                .map(|(indices, level)| (level.iid.clone(), LevelMetadata::new(None, indices)))
+                .collect();
+
+            BasicLevelMetadataAccessor {
+                data,
+                level_metadata,
+            }
+        }
+
+        fn valid_multi_world() -> BasicLevelMetadataAccessor {
+            let [level_a, level_b, level_c, level_d] = sample_levels();
+
+            let world_a = World {
+                levels: vec![level_a.clone(), level_b.clone()],
+                ..Default::default()
+            };
+
+            let world_b = World {
+                levels: vec![level_c.clone(), level_d.clone()],
+                ..Default::default()
+            };
+
+            let data = LdtkJson {
+                worlds: vec![world_a, world_b],
+                ..Default::default()
+            };
+
+            let level_metadata = data
+                .iter_raw_levels_with_indices()
+                .map(|(indices, level)| (level.iid.clone(), LevelMetadata::new(None, indices)))
+                .collect();
+
+            BasicLevelMetadataAccessor {
+                data,
+                level_metadata,
+            }
+        }
+    }
+
+    #[test]
+    fn iid_lookup_returns_expected_root_levels() {
+        let accessor = BasicLevelMetadataAccessor::valid();
+
+        let expected_levels = sample_levels();
+
+        assert_eq!(
+            accessor.get_raw_level_by_iid(&expected_levels[0].iid),
+            Some(&expected_levels[0])
+        );
+        assert_eq!(
+            accessor.get_raw_level_by_iid(&expected_levels[1].iid),
+            Some(&expected_levels[1])
+        );
+        assert_eq!(
+            accessor.get_raw_level_by_iid(&expected_levels[2].iid),
+            Some(&expected_levels[2])
+        );
+        assert_eq!(
+            accessor.get_raw_level_by_iid(&expected_levels[3].iid),
+            Some(&expected_levels[3])
+        );
+    }
+
+    #[test]
+    fn iid_lookup_returns_expected_world_levels() {
+        let accessor = BasicLevelMetadataAccessor::valid_multi_world();
+
+        let expected_levels = sample_levels();
+
+        assert_eq!(
+            accessor.get_raw_level_by_iid(&expected_levels[0].iid),
+            Some(&expected_levels[0])
+        );
+        assert_eq!(
+            accessor.get_raw_level_by_iid(&expected_levels[1].iid),
+            Some(&expected_levels[1])
+        );
+        assert_eq!(
+            accessor.get_raw_level_by_iid(&expected_levels[2].iid),
+            Some(&expected_levels[2])
+        );
+        assert_eq!(
+            accessor.get_raw_level_by_iid(&expected_levels[3].iid),
+            Some(&expected_levels[3])
+        );
+    }
+}

@@ -138,10 +138,10 @@ mod tests {
 
         let expected_levels = sample_levels();
 
-        for i in 0..expected_levels.len() {
+        for expected_level in expected_levels {
             assert_eq!(
-                accessor.get_raw_level_by_iid(&expected_levels[i].iid),
-                Some(&expected_levels[i])
+                accessor.get_raw_level_by_iid(&expected_level.iid),
+                Some(&expected_level)
             );
         }
         assert_eq!(
@@ -156,10 +156,10 @@ mod tests {
 
         let expected_levels = sample_levels();
 
-        for i in 0..expected_levels.len() {
+        for expected_level in expected_levels {
             assert_eq!(
-                accessor.get_raw_level_by_iid(&expected_levels[i].iid),
-                Some(&expected_levels[i])
+                accessor.get_raw_level_by_iid(&expected_level.iid),
+                Some(&expected_level)
             );
         }
         assert_eq!(
@@ -174,28 +174,27 @@ mod tests {
 
         let expected_levels = sample_levels();
 
-        for i in 0..expected_levels.len() {
+        for (i, expected_level) in expected_levels.iter().enumerate() {
             assert_eq!(
                 accessor.find_raw_level_by_level_selection(&LevelSelection::index(i)),
-                Some(&expected_levels[i])
+                Some(expected_level)
             );
             assert_eq!(
                 accessor.find_raw_level_by_level_selection(&LevelSelection::Identifier(
-                    expected_levels[i].identifier.clone()
+                    expected_level.identifier.clone()
                 )),
-                Some(&expected_levels[i])
+                Some(expected_level)
             );
             assert_eq!(
                 accessor.find_raw_level_by_level_selection(&LevelSelection::Iid(LevelIid::new(
-                    expected_levels[i].iid.clone()
+                    expected_level.iid.clone()
                 ))),
-                Some(&expected_levels[i])
+                Some(expected_level)
             );
             assert_eq!(
-                accessor.find_raw_level_by_level_selection(&LevelSelection::Uid(
-                    expected_levels[i].uid
-                )),
-                Some(&expected_levels[i])
+                accessor
+                    .find_raw_level_by_level_selection(&LevelSelection::Uid(expected_level.uid)),
+                Some(expected_level)
             );
         }
 
@@ -227,28 +226,27 @@ mod tests {
 
         let expected_levels = sample_levels();
 
-        for i in 0..expected_levels.len() {
+        for (i, expected_level) in expected_levels.iter().enumerate() {
             assert_eq!(
                 accessor.find_raw_level_by_level_selection(&LevelSelection::indices(i / 2, i % 2)),
-                Some(&expected_levels[i])
+                Some(expected_level)
             );
             assert_eq!(
                 accessor.find_raw_level_by_level_selection(&LevelSelection::Identifier(
-                    expected_levels[i].identifier.clone()
+                    expected_level.identifier.clone()
                 )),
-                Some(&expected_levels[i])
+                Some(expected_level)
             );
             assert_eq!(
                 accessor.find_raw_level_by_level_selection(&LevelSelection::Iid(LevelIid::new(
-                    expected_levels[i].iid.clone()
+                    expected_level.iid.clone()
                 ))),
-                Some(&expected_levels[i])
+                Some(expected_level)
             );
             assert_eq!(
-                accessor.find_raw_level_by_level_selection(&LevelSelection::Uid(
-                    expected_levels[i].uid
-                )),
-                Some(&expected_levels[i])
+                accessor
+                    .find_raw_level_by_level_selection(&LevelSelection::Uid(expected_level.uid)),
+                Some(expected_level)
             );
         }
 

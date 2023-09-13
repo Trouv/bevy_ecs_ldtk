@@ -44,7 +44,10 @@ pub trait LevelMetadataAccessor: RawLevelAccessor {
 mod tests {
     use std::collections::HashMap;
 
-    use crate::ldtk::{raw_level_accessor::tests::sample_levels, LdtkJson, World};
+    use crate::{
+        ldtk::{raw_level_accessor::tests::sample_levels, LdtkJson, World},
+        LevelIid,
+    };
 
     use super::*;
 
@@ -70,7 +73,7 @@ mod tests {
     }
 
     impl BasicLevelMetadataAccessor {
-        fn valid() -> BasicLevelMetadataAccessor {
+        fn sample_with_root_levels() -> BasicLevelMetadataAccessor {
             let [level_a, level_b, level_c, level_d] = sample_levels();
 
             let data = LdtkJson {
@@ -89,7 +92,7 @@ mod tests {
             }
         }
 
-        fn valid_multi_world() -> BasicLevelMetadataAccessor {
+        fn sample_with_world_levels() -> BasicLevelMetadataAccessor {
             let [level_a, level_b, level_c, level_d] = sample_levels();
 
             let world_a = World {
@@ -121,49 +124,143 @@ mod tests {
 
     #[test]
     fn iid_lookup_returns_expected_root_levels() {
-        let accessor = BasicLevelMetadataAccessor::valid();
+        let accessor = BasicLevelMetadataAccessor::sample_with_root_levels();
 
         let expected_levels = sample_levels();
 
+        for i in 0..expected_levels.len() {
+            assert_eq!(
+                accessor.get_raw_level_by_iid(&expected_levels[i].iid),
+                Some(&expected_levels[i])
+            );
+        }
         assert_eq!(
-            accessor.get_raw_level_by_iid(&expected_levels[0].iid),
-            Some(&expected_levels[0])
-        );
-        assert_eq!(
-            accessor.get_raw_level_by_iid(&expected_levels[1].iid),
-            Some(&expected_levels[1])
-        );
-        assert_eq!(
-            accessor.get_raw_level_by_iid(&expected_levels[2].iid),
-            Some(&expected_levels[2])
-        );
-        assert_eq!(
-            accessor.get_raw_level_by_iid(&expected_levels[3].iid),
-            Some(&expected_levels[3])
+            accessor.get_raw_level_by_iid(&"cd51071d-5224-4628-ae0d-abbe28090521".to_string()),
+            None,
         );
     }
 
     #[test]
     fn iid_lookup_returns_expected_world_levels() {
-        let accessor = BasicLevelMetadataAccessor::valid_multi_world();
+        let accessor = BasicLevelMetadataAccessor::sample_with_world_levels();
 
         let expected_levels = sample_levels();
 
+        for i in 0..expected_levels.len() {
+            assert_eq!(
+                accessor.get_raw_level_by_iid(&expected_levels[i].iid),
+                Some(&expected_levels[i])
+            );
+        }
         assert_eq!(
-            accessor.get_raw_level_by_iid(&expected_levels[0].iid),
-            Some(&expected_levels[0])
+            accessor.get_raw_level_by_iid(&"cd51071d-5224-4628-ae0d-abbe28090521".to_string()),
+            None,
+        );
+    }
+
+    #[test]
+    fn find_by_level_selection_returns_expected_root_levels() {
+        let accessor = BasicLevelMetadataAccessor::sample_with_root_levels();
+
+        let expected_levels = sample_levels();
+
+        for i in 0..expected_levels.len() {
+            assert_eq!(
+                accessor.find_raw_level_by_level_selection(&LevelSelection::index(i)),
+                Some(&expected_levels[i])
+            );
+            assert_eq!(
+                accessor.find_raw_level_by_level_selection(&LevelSelection::Identifier(
+                    expected_levels[i].identifier.clone()
+                )),
+                Some(&expected_levels[i])
+            );
+            assert_eq!(
+                accessor.find_raw_level_by_level_selection(&LevelSelection::Iid(LevelIid::new(
+                    expected_levels[i].iid.clone()
+                ))),
+                Some(&expected_levels[i])
+            );
+            assert_eq!(
+                accessor.find_raw_level_by_level_selection(&LevelSelection::Uid(
+                    expected_levels[i].uid
+                )),
+                Some(&expected_levels[i])
+            );
+        }
+
+        assert_eq!(
+            accessor.find_raw_level_by_level_selection(&LevelSelection::index(4)),
+            None
         );
         assert_eq!(
-            accessor.get_raw_level_by_iid(&expected_levels[1].iid),
-            Some(&expected_levels[1])
+            accessor.find_raw_level_by_level_selection(&LevelSelection::Identifier(
+                "Back_Rooms".to_string()
+            )),
+            None
         );
         assert_eq!(
-            accessor.get_raw_level_by_iid(&expected_levels[2].iid),
-            Some(&expected_levels[2])
+            accessor.find_raw_level_by_level_selection(&LevelSelection::Iid(LevelIid::new(
+                "cd51071d-5224-4628-ae0d-abbe28090521".to_string()
+            ))),
+            None
         );
         assert_eq!(
-            accessor.get_raw_level_by_iid(&expected_levels[3].iid),
-            Some(&expected_levels[3])
+            accessor.find_raw_level_by_level_selection(&LevelSelection::Uid(2023)),
+            None,
+        );
+    }
+
+    #[test]
+    fn find_by_level_selection_returns_expected_world_levels() {
+        let accessor = BasicLevelMetadataAccessor::sample_with_world_levels();
+
+        let expected_levels = sample_levels();
+
+        for i in 0..expected_levels.len() {
+            assert_eq!(
+                accessor.find_raw_level_by_level_selection(&LevelSelection::indices(i / 2, i % 2)),
+                Some(&expected_levels[i])
+            );
+            assert_eq!(
+                accessor.find_raw_level_by_level_selection(&LevelSelection::Identifier(
+                    expected_levels[i].identifier.clone()
+                )),
+                Some(&expected_levels[i])
+            );
+            assert_eq!(
+                accessor.find_raw_level_by_level_selection(&LevelSelection::Iid(LevelIid::new(
+                    expected_levels[i].iid.clone()
+                ))),
+                Some(&expected_levels[i])
+            );
+            assert_eq!(
+                accessor.find_raw_level_by_level_selection(&LevelSelection::Uid(
+                    expected_levels[i].uid
+                )),
+                Some(&expected_levels[i])
+            );
+        }
+
+        assert_eq!(
+            accessor.find_raw_level_by_level_selection(&LevelSelection::index(4)),
+            None
+        );
+        assert_eq!(
+            accessor.find_raw_level_by_level_selection(&LevelSelection::Identifier(
+                "Back_Rooms".to_string()
+            )),
+            None
+        );
+        assert_eq!(
+            accessor.find_raw_level_by_level_selection(&LevelSelection::Iid(LevelIid::new(
+                "cd51071d-5224-4628-ae0d-abbe28090521".to_string()
+            ))),
+            None
+        );
+        assert_eq!(
+            accessor.find_raw_level_by_level_selection(&LevelSelection::Uid(2023)),
+            None,
         );
     }
 }

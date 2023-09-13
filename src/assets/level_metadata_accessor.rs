@@ -7,11 +7,21 @@ use crate::{
 /// Convenience methods for types that store levels and level metadata.
 pub trait LevelMetadataAccessor: RawLevelAccessor {
     /// Returns a reference to the level metadata corresponding to the given level iid.
+    // We accept an `&String` here to avoid creating a new `String`.
+    // Implementations will use this to index a `HashMap<String, _>`, which requires `&String`.
+    // So, accepting `&str` or `AsRef<str>` or `Into<String>` would all require either taking
+    // ownership or creating a new string.
+    #[allow(clippy::ptr_arg)]
     fn get_level_metadata_by_iid(&self, iid: &String) -> Option<&LevelMetadata>;
 
     /// Immutable access to a level at the given level iid.
     ///
     /// Note: all levels are considered [raw](RawLevelAccessor#raw-levels).
+    // We accept an `&String` here to avoid creating a new `String`.
+    // Implementations will use this to index a `HashMap<String, _>`, which requires `&String`.
+    // So, accepting `&str` or `AsRef<str>` or `Into<String>` would all require either taking
+    // ownership or creating a new string.
+    #[allow(clippy::ptr_arg)]
     fn get_raw_level_by_iid(&self, iid: &String) -> Option<&Level> {
         self.get_level_metadata_by_iid(iid)
             .and_then(|metadata| self.get_raw_level_at_indices(metadata.indices()))

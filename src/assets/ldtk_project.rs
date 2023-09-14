@@ -108,7 +108,7 @@ fn load_level_metadata<'a>(
         .bg_rel_path
         .as_ref()
         .map(|rel_path| {
-            let asset_path = ldtk_path_to_asset_path(load_context.path(), &rel_path);
+            let asset_path = ldtk_path_to_asset_path(load_context.path(), rel_path);
 
             (
                 Some(asset_path.clone()),

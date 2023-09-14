@@ -150,7 +150,7 @@ pub fn apply_level_set(
                 .filter_map(|&iid| project.get_raw_level_by_iid(iid.get()))
                 .map(|level| {
                     level_events.send(LevelEvent::SpawnTriggered(LevelIid::new(level.iid.clone())));
-                    pre_spawn_level(&mut commands, &level, &ldtk_settings)
+                    pre_spawn_level(&mut commands, level, &ldtk_settings)
                 })
                 .collect::<Vec<_>>();
 

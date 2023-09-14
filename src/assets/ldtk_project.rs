@@ -40,6 +40,7 @@ impl LdtkProject {
 }
 
 impl LdtkProject {
+    /// Raw ldtk project data.
     pub fn data(&self) -> &crate::ldtk::LdtkJson {
         match self {
             LdtkProject::Standalone(project) => project.data(),
@@ -47,6 +48,7 @@ impl LdtkProject {
         }
     }
 
+    /// Map from tileset uids to image handles for the loaded tileset.
     pub fn tileset_map(&self) -> &std::collections::HashMap<i32, Handle<Image>> {
         match self {
             LdtkProject::Standalone(project) => project.tileset_map(),
@@ -54,6 +56,7 @@ impl LdtkProject {
         }
     }
 
+    /// Image used for rendering int grid colors.
     pub fn int_grid_image_handle(&self) -> &Option<Handle<Image>> {
         match self {
             LdtkProject::Standalone(project) => project.int_grid_image_handle(),

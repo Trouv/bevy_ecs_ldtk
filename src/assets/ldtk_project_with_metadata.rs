@@ -10,6 +10,7 @@ use bevy::{
     reflect::{TypePath, TypeUuid},
 };
 use derive_getters::Getters;
+use derive_more::Constructor;
 use std::collections::HashMap;
 
 use super::{ExternalLevelMetadata, LdtkExternalLevel};
@@ -25,7 +26,7 @@ fn expect_level_loaded(level: &Level) -> LoadedLevel {
 /// [`LdtkWorldBundle`].
 ///
 /// [`LdtkWorldBundle`]: crate::components::LdtkWorldBundle
-#[derive(Clone, Debug, PartialEq, TypeUuid, TypePath, Getters)]
+#[derive(Clone, Debug, PartialEq, TypeUuid, TypePath, Constructor, Getters)]
 #[uuid = "ecfb87b7-9cd9-4970-8482-f2f68b770d31"]
 pub struct LdtkProjectWithMetadata<L> {
     /// Raw ldtk project data.
@@ -36,22 +37,6 @@ pub struct LdtkProjectWithMetadata<L> {
     int_grid_image_handle: Option<Handle<Image>>,
     /// Map from level iids to level metadata.
     level_map: HashMap<String, L>,
-}
-
-impl<L> LdtkProjectWithMetadata<L> {
-    pub(crate) fn new(
-        data: LdtkJson,
-        tileset_map: HashMap<i32, Handle<Image>>,
-        int_grid_image_handle: Option<Handle<Image>>,
-        level_map: HashMap<String, L>,
-    ) -> Self {
-        Self {
-            data,
-            tileset_map,
-            int_grid_image_handle,
-            level_map,
-        }
-    }
 }
 
 impl<L> RawLevelAccessor for LdtkProjectWithMetadata<L> {

@@ -2,7 +2,7 @@ use std::path::Path;
 
 use crate::{
     assets::{
-        ExternalLevelMetadata, LdtkProjectWithMetadata, LevelIndices, LevelMetadata,
+        ExternalLevelMetadata, LdtkJsonWithMetadata, LevelIndices, LevelMetadata,
         LevelMetadataAccessor,
     },
     ldtk::{raw_level_accessor::RawLevelAccessor, LdtkJson, Level},
@@ -25,16 +25,16 @@ fn ldtk_path_to_asset_path<'b>(ldtk_path: &Path, rel_path: &str) -> AssetPath<'b
 #[uuid = "00989906-69af-496f-a8a9-fdfef5c594f5"]
 #[try_into(owned, ref)]
 pub enum LdtkProject {
-    Standalone(LdtkProjectWithMetadata<LevelMetadata>),
-    Parent(LdtkProjectWithMetadata<ExternalLevelMetadata>),
+    Standalone(LdtkJsonWithMetadata<LevelMetadata>),
+    Parent(LdtkJsonWithMetadata<ExternalLevelMetadata>),
 }
 
 impl LdtkProject {
-    pub fn standalone(&self) -> &LdtkProjectWithMetadata<LevelMetadata> {
+    pub fn standalone(&self) -> &LdtkJsonWithMetadata<LevelMetadata> {
         self.try_into().unwrap()
     }
 
-    pub fn parent(&self) -> &LdtkProjectWithMetadata<ExternalLevelMetadata> {
+    pub fn parent(&self) -> &LdtkJsonWithMetadata<ExternalLevelMetadata> {
         self.try_into().unwrap()
     }
 }
@@ -199,7 +199,7 @@ impl AssetLoader for LdtkProjectLoader {
                     dependent_asset_paths.extend(new_asset_paths);
                 }
 
-                LdtkProject::Parent(LdtkProjectWithMetadata::new(
+                LdtkProject::Parent(LdtkJsonWithMetadata::new(
                     data,
                     tileset_map,
                     int_grid_image_handle,
@@ -218,7 +218,7 @@ impl AssetLoader for LdtkProjectLoader {
                     dependent_asset_paths.extend(new_asset_paths);
                 }
 
-                LdtkProject::Standalone(LdtkProjectWithMetadata::new(
+                LdtkProject::Standalone(LdtkJsonWithMetadata::new(
                     data,
                     tileset_map,
                     int_grid_image_handle,

@@ -28,7 +28,7 @@ fn expect_level_loaded(level: &Level) -> LoadedLevel {
 /// [`LdtkWorldBundle`]: crate::components::LdtkWorldBundle
 #[derive(Clone, Debug, PartialEq, TypeUuid, TypePath, Constructor, Getters)]
 #[uuid = "ecfb87b7-9cd9-4970-8482-f2f68b770d31"]
-pub struct LdtkProjectWithMetadata<L> {
+pub struct LdtkJsonWithMetadata<L> {
     /// Raw ldtk project data.
     data: LdtkJson,
     /// Map from tileset uids to image handles for the loaded tileset.
@@ -39,7 +39,7 @@ pub struct LdtkProjectWithMetadata<L> {
     level_map: HashMap<String, L>,
 }
 
-impl<L> RawLevelAccessor for LdtkProjectWithMetadata<L> {
+impl<L> RawLevelAccessor for LdtkJsonWithMetadata<L> {
     fn root_levels(&self) -> &[Level] {
         self.data.root_levels()
     }
@@ -49,13 +49,13 @@ impl<L> RawLevelAccessor for LdtkProjectWithMetadata<L> {
     }
 }
 
-impl LevelMetadataAccessor for LdtkProjectWithMetadata<LevelMetadata> {
+impl LevelMetadataAccessor for LdtkJsonWithMetadata<LevelMetadata> {
     fn get_level_metadata_by_iid(&self, iid: &String) -> Option<&LevelMetadata> {
         self.level_map.get(iid)
     }
 }
 
-impl LdtkProjectWithMetadata<LevelMetadata> {
+impl LdtkJsonWithMetadata<LevelMetadata> {
     pub fn iter_loaded_levels(&self) -> impl Iterator<Item = LoadedLevel> {
         self.iter_raw_levels().map(expect_level_loaded)
     }
@@ -78,13 +78,13 @@ impl LdtkProjectWithMetadata<LevelMetadata> {
     }
 }
 
-impl LevelMetadataAccessor for LdtkProjectWithMetadata<ExternalLevelMetadata> {
+impl LevelMetadataAccessor for LdtkJsonWithMetadata<ExternalLevelMetadata> {
     fn get_level_metadata_by_iid(&self, iid: &String) -> Option<&LevelMetadata> {
         Some(self.level_map.get(iid)?.metadata())
     }
 }
 
-impl LdtkProjectWithMetadata<ExternalLevelMetadata> {
+impl LdtkJsonWithMetadata<ExternalLevelMetadata> {
     pub fn iter_external_levels<'a>(
         &'a self,
         external_level_assets: &'a Assets<LdtkExternalLevel>,
@@ -163,7 +163,7 @@ mod tests {
             ..Default::default()
         };
 
-        let project = LdtkProjectWithMetadata::<()> {
+        let project = LdtkJsonWithMetadata::<()> {
             data: data.clone(),
             tileset_map: HashMap::default(),
             level_map: HashMap::default(),

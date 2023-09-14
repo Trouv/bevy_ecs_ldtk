@@ -12,8 +12,8 @@ pub use level_metadata_accessor::LevelMetadataAccessor;
 mod ldtk_external_level;
 pub use ldtk_external_level::LdtkExternalLevel;
 
-mod ldtk_project_with_metadata;
-pub use ldtk_project_with_metadata::LdtkProjectWithMetadata;
+mod ldtk_json_with_metadata;
+pub use ldtk_json_with_metadata::LdtkJsonWithMetadata;
 
 mod ldtk_project;
 pub use ldtk_project::LdtkProject;

@@ -3,11 +3,14 @@
 mod ldtk_asset_plugin;
 pub use ldtk_asset_plugin::LdtkAssetPlugin;
 
-mod ldtk_external_level;
-pub use ldtk_external_level::LdtkExternalLevel;
+mod level_metadata;
+pub use level_metadata::{ExternalLevelMetadata, LevelMetadata};
 
-mod ldtk_project_with_metadata;
-pub use ldtk_project_with_metadata::LdtkProjectWithMetadata;
+mod level_metadata_accessor;
+pub use level_metadata_accessor::LevelMetadataAccessor;
+
+mod ldtk_level;
+pub use ldtk_level::LdtkLevel;
 
 mod ldtk_project;
 pub use ldtk_project::LdtkProject;

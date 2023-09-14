@@ -32,10 +32,6 @@ fn expect_level_loaded(level: &Level) -> LoadedLevel {
 pub struct LdtkJsonWithMetadata<L> {
     /// Raw ldtk project data.
     data: LdtkJson,
-    /// Map from tileset uids to image handles for the loaded tileset.
-    tileset_map: HashMap<i32, Handle<Image>>,
-    /// Image used for rendering int grid colors.
-    int_grid_image_handle: Option<Handle<Image>>,
     /// Map from level iids to level metadata.
     level_map: HashMap<String, L>,
 }

@@ -13,7 +13,8 @@ use bevy::{
     reflect::{TypePath, TypeUuid},
     utils::BoxedFuture,
 };
-use derive_more::{From, TryInto};
+use derive_getters::Getters;
+use derive_more::{Constructor, From, TryInto};
 use std::collections::HashMap;
 use thiserror::Error;
 
@@ -24,12 +25,12 @@ fn ldtk_path_to_asset_path<'b>(ldtk_path: &Path, rel_path: &str) -> AssetPath<'b
 #[derive(Clone, Debug, PartialEq, From, TryInto, TypeUuid, TypePath)]
 #[uuid = "00989906-69af-496f-a8a9-fdfef5c594f5"]
 #[try_into(owned, ref)]
-pub enum LdtkProject {
+pub enum EitherLdtkJsonWithMetadata {
     Standalone(LdtkJsonWithMetadata<LevelMetadata>),
     Parent(LdtkJsonWithMetadata<ExternalLevelMetadata>),
 }
 
-impl LdtkProject {
+impl EitherLdtkJsonWithMetadata {
     pub fn standalone(&self) -> &LdtkJsonWithMetadata<LevelMetadata> {
         self.try_into().unwrap()
     }
@@ -39,28 +40,22 @@ impl LdtkProject {
     }
 }
 
+#[derive(Clone, Debug, PartialEq, From, TypeUuid, TypePath, Getters, Constructor)]
+#[uuid = "43571891-8570-4416-903f-582efe3426ac"]
+pub struct LdtkProject {
+    either_ldtk_json_with_metadata: EitherLdtkJsonWithMetadata,
+    /// Map from tileset uids to image handles for the loaded tileset.
+    tileset_map: HashMap<i32, Handle<Image>>,
+    /// Image used for rendering int grid colors.
+    int_grid_image_handle: Option<Handle<Image>>,
+}
+
 impl LdtkProject {
     /// Raw ldtk project data.
     pub fn data(&self) -> &crate::ldtk::LdtkJson {
-        match self {
-            LdtkProject::Standalone(project) => project.data(),
-            LdtkProject::Parent(project) => project.data(),
-        }
-    }
-
-    /// Map from tileset uids to image handles for the loaded tileset.
-    pub fn tileset_map(&self) -> &std::collections::HashMap<i32, Handle<Image>> {
-        match self {
-            LdtkProject::Standalone(project) => project.tileset_map(),
-            LdtkProject::Parent(project) => project.tileset_map(),
-        }
-    }
-
-    /// Image used for rendering int grid colors.
-    pub fn int_grid_image_handle(&self) -> &Option<Handle<Image>> {
-        match self {
-            LdtkProject::Standalone(project) => project.int_grid_image_handle(),
-            LdtkProject::Parent(project) => project.int_grid_image_handle(),
+        match &self.either_ldtk_json_with_metadata {
+            EitherLdtkJsonWithMetadata::Standalone(project) => project.data(),
+            EitherLdtkJsonWithMetadata::Parent(project) => project.data(),
         }
     }
 }
@@ -77,9 +72,11 @@ impl RawLevelAccessor for LdtkProject {
 
 impl LevelMetadataAccessor for LdtkProject {
     fn get_level_metadata_by_iid(&self, iid: &String) -> Option<&LevelMetadata> {
-        match self {
-            LdtkProject::Standalone(project) => project.get_level_metadata_by_iid(iid),
-            LdtkProject::Parent(project) => project.get_level_metadata_by_iid(iid),
+        match &self.either_ldtk_json_with_metadata {
+            EitherLdtkJsonWithMetadata::Standalone(project) => {
+                project.get_level_metadata_by_iid(iid)
+            }
+            EitherLdtkJsonWithMetadata::Parent(project) => project.get_level_metadata_by_iid(iid),
         }
     }
 }
@@ -202,12 +199,11 @@ impl AssetLoader for LdtkProjectLoader {
                     dependent_asset_paths.extend(new_asset_paths);
                 }
 
-                LdtkProject::Parent(LdtkJsonWithMetadata::new(
-                    data,
+                LdtkProject::new(
+                    EitherLdtkJsonWithMetadata::Parent(LdtkJsonWithMetadata::new(data, level_map)),
                     tileset_map,
                     int_grid_image_handle,
-                    level_map,
-                ))
+                )
             } else {
                 let mut level_map = HashMap::new();
 
@@ -221,12 +217,13 @@ impl AssetLoader for LdtkProjectLoader {
                     dependent_asset_paths.extend(new_asset_paths);
                 }
 
-                LdtkProject::Standalone(LdtkJsonWithMetadata::new(
-                    data,
+                LdtkProject::new(
+                    EitherLdtkJsonWithMetadata::Standalone(LdtkJsonWithMetadata::new(
+                        data, level_map,
+                    )),
                     tileset_map,
                     int_grid_image_handle,
-                    level_map,
-                ))
+                )
             };
 
             load_context.set_default_asset(

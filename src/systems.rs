@@ -4,7 +4,7 @@
 use crate::resources::SetClearColor;
 use crate::{
     app::{LdtkEntityMap, LdtkIntCellMap},
-    assets::{LdtkProject, LevelMetadataAccessor},
+    assets::{EitherLdtkJsonWithMetadata, LdtkProject, LevelMetadataAccessor},
     components::*,
     ldtk::{Level, TilesetDefinition},
     level::spawn_level,
@@ -260,8 +260,8 @@ pub fn process_ldtk_levels(
 
                     let worldly_set = worldly_query.iter().cloned().collect();
 
-                    let maybe_level_data = match ldtk_project {
-                        LdtkProject::Standalone(project) => project
+                    let maybe_level_data = match ldtk_project.either_ldtk_json_with_metadata() {
+                        EitherLdtkJsonWithMetadata::Standalone(project) => project
                             .level_map()
                             .get(level_iid.get())
                             .and_then(|level_metadata| {
@@ -270,7 +270,7 @@ pub fn process_ldtk_levels(
 
                                 Some((level_metadata, loaded_level))
                             }),
-                        LdtkProject::Parent(project) => project
+                        EitherLdtkJsonWithMetadata::Parent(project) => project
                             .level_map()
                             .get(level_iid.get())
                             .and_then(|level_metadata| {

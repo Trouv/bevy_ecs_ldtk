@@ -308,7 +308,7 @@ impl From<&LayerInstance> for LayerMetadata {
 
 /// [Component] that indicates that an LDtk level or world should respawn.
 ///
-/// Inserting this component on an entity with either `Handle<LdtkProject>` or `Handle<LdtkLevel>`
+/// Inserting this component on an entity with either `Handle<LdtkProject>` or `Handle<LdtkExternalLevel>`
 /// components will cause it to respawn.
 /// This can be used to implement a simple level-restart feature.
 /// Internally, this is used to support the entire level spawning process
@@ -337,7 +337,7 @@ pub(crate) struct EntityInstanceBundle {
 /// After the ldtk file is done loading, the levels you've chosen with [LevelSelection] or
 /// [LevelSet] will begin to spawn.
 /// Each level is its own entity, with the [LdtkWorldBundle] as its parent.
-/// Each level has a `Handle<LdtkLevel>` component.
+/// Each level has a `Handle<LdtkExternalLevel>` component.
 ///
 /// All non-Entity layers (IntGrid, Tile, and AutoTile) will also spawn as their own entities.
 /// Each layer's parent will be the level entity.

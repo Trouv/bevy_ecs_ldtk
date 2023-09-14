@@ -9,17 +9,14 @@ pub use level_metadata::{ExternalLevelMetadata, LevelMetadata};
 mod level_metadata_accessor;
 pub use level_metadata_accessor::LevelMetadataAccessor;
 
-mod ldtk_level;
-pub use ldtk_level::LdtkLevel;
+mod ldtk_external_level;
+pub use ldtk_external_level::LdtkExternalLevel;
+
+mod ldtk_project_with_metadata;
+pub use ldtk_project_with_metadata::LdtkProjectWithMetadata;
 
 mod ldtk_project;
 pub use ldtk_project::LdtkProject;
-
-mod level_metadata;
-pub use level_metadata::{ExternalLevelMetadata, LevelMetadata};
-
-mod level_metadata_accessor;
-pub use level_metadata_accessor::LevelMetadataAccessor;
 
 mod level_indices;
 pub use level_indices::LevelIndices;

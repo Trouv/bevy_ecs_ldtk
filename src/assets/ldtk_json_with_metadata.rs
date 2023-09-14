@@ -20,12 +20,13 @@ fn expect_level_loaded(level: &Level) -> LoadedLevel {
         .expect("LdtkProject construction should guarantee that internal levels are loaded")
 }
 
-/// Main asset for loading ldtk files.
+/// LDtk json data and all metadata produced when loading an [`LdtkProject`] asset.
 ///
-/// Load your ldtk project with the asset server, then insert the handle into the
-/// [`LdtkWorldBundle`].
+/// Generic over the level metadata type, `L`.
+/// This is done so that this type can be used for both internal- and external-level projects.
+/// In practice, `L` will only ever be either [`LevelMetadata`] or [`ExternalLevelMetadata`].
 ///
-/// [`LdtkWorldBundle`]: crate::components::LdtkWorldBundle
+/// [`LdtkProject`]: crate::assets::LdtkProject
 #[derive(Clone, Debug, PartialEq, TypeUuid, TypePath, Constructor, Getters)]
 #[uuid = "ecfb87b7-9cd9-4970-8482-f2f68b770d31"]
 pub struct LdtkJsonWithMetadata<L> {

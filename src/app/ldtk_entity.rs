@@ -60,8 +60,9 @@ use std::{collections::HashMap, marker::PhantomData};
 /// Now, when loading your ldtk file, any entities with the entity identifier
 /// "my_entity_identifier" will be spawned as `MyBundle`s.
 ///
-/// By default, each component or nested bundle in the bundle will be created using their [Default]
-/// implementations.
+/// By default, each component or nested bundle in the bundle will be consumed from bundle's
+/// [Default] implementation, which means that deriving (or implementing manually) [Default]
+/// is required.
 /// However, this behavior can be overridden with some field attribute macros...
 ///
 /// ### `#[sprite_bundle...]`

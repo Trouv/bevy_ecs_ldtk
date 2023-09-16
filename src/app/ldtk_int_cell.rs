@@ -56,8 +56,9 @@ use std::{collections::HashMap, marker::PhantomData};
 /// Now, when loading your ldtk file, any IntGrid tiles with the value `1` will be spawned with as
 /// tiles with `MyBundle` inserted.
 ///
-/// By default, each component or nested bundle in the bundle will be created using their [Default]
-/// implementations.
+/// By default, each component or nested bundle in the bundle will be consumed from bundle's
+/// [Default] implementation, which means that deriving (or implementing manually) [Default]
+/// is required.
 /// However, this behavior can be overriden with some field attribute macros...
 ///
 /// ### `#[ldtk_int_cell]`

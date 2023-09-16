@@ -138,7 +138,7 @@ pub mod prelude {
 
     pub use crate::{
         app::{LdtkEntity, LdtkEntityAppExt, LdtkIntCell, LdtkIntCellAppExt},
-        assets::{LdtkLevel, LdtkProject, LevelIndices},
+        assets::{LdtkLevel, LdtkProject, LevelIndices, LevelMetadataAccessor},
         components::{
             EntityIid, EntityInstance, GridCoords, IntGridCell, LayerMetadata, LdtkWorldBundle,
             LevelIid, LevelSet, Respawn, TileEnumTags, TileMetadata, Worldly,

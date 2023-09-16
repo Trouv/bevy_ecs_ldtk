@@ -1,6 +1,6 @@
 use crate::{
-    assets::{ldtk_path_to_asset_path, LdtkLevel, LevelIndices},
-    ldtk::{LdtkJson, Level},
+    assets::{ldtk_path_to_asset_path, LdtkLevel},
+    ldtk::{raw_level_accessor::RawLevelAccessor, LdtkJson, Level},
     resources::LevelSelection,
 };
 use bevy::{
@@ -31,39 +31,24 @@ pub struct LdtkProject {
     int_grid_image_handle: Option<Handle<Image>>,
 }
 
+impl RawLevelAccessor for LdtkProject {
+    fn worlds(&self) -> &[crate::ldtk::World] {
+        self.data.worlds()
+    }
+
+    fn root_levels(&self) -> &[Level] {
+        self.data.root_levels()
+    }
+}
+
 impl LdtkProject {
-    /// Get an iterator of all the levels in the LDtk file.
-    ///
-    /// This abstraction avoids compatibility issues between pre-multi-world and post-multi-world
-    /// LDtk projects.
-    ///
-    /// Note: the returned levels are the ones existent in the [`LdtkProject`].
-    /// These levels will have "incomplete" data if you use LDtk's external levels feature.
-    /// To always get full level data, you'll need to access `Assets<LdtkLevel>`.
-    pub fn iter_levels(&self) -> impl Iterator<Item = &Level> {
-        self.data.iter_levels()
-    }
-
-    /// Iterate through all levels in the project paired with their [`LevelIndices`].
-    ///
-    /// This works for multi-world and single-world projects agnostically.
-    /// It iterates through levels in the root first, then levels in the worlds.
-    pub fn iter_levels_with_indices(&self) -> impl Iterator<Item = (LevelIndices, &Level)> {
-        self.data.iter_levels_with_indices()
-    }
-
-    /// Immutable access to a level at the given [`LevelIndices`].
-    pub fn get_level_at_indices(&self, indices: &LevelIndices) -> Option<&Level> {
-        self.data.get_level_at_indices(indices)
-    }
-
     /// Find a particular level using a [`LevelSelection`].
     ///
     /// Note: the returned level is the one existent in the [`LdtkProject`].
     /// This level will have "incomplete" data if you use LDtk's external levels feature.
     /// To always get full level data, you'll need to access `Assets<LdtkLevel>`.
     pub fn get_level(&self, level_selection: &LevelSelection) -> Option<&Level> {
-        self.iter_levels_with_indices()
+        self.iter_raw_levels_with_indices()
             .find(|(i, l)| level_selection.is_match(i, l))
             .map(|(_, l)| l)
     }
@@ -85,7 +70,7 @@ impl AssetLoader for LdtkProjectLoader {
             let mut level_map = HashMap::new();
             let mut background_images = Vec::new();
             if data.external_levels {
-                for level in data.iter_levels() {
+                for level in data.iter_raw_levels() {
                     if let Some(external_rel_path) = &level.external_rel_path {
                         let asset_path =
                             ldtk_path_to_asset_path(load_context.path(), external_rel_path);
@@ -95,7 +80,7 @@ impl AssetLoader for LdtkProjectLoader {
                     }
                 }
             } else {
-                for level in data.iter_levels() {
+                for level in data.iter_raw_levels() {
                     let label = level.identifier.as_ref();
 
                     let mut background_image = None;
@@ -151,5 +136,43 @@ impl AssetLoader for LdtkProjectLoader {
 
     fn extensions(&self) -> &[&str] {
         &["ldtk"]
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::ldtk::{raw_level_accessor::tests::sample_levels, World};
+
+    use super::*;
+
+    #[test]
+    fn raw_level_accessor_implementation_is_transparent() {
+        let [level_a, level_b, level_c, level_d] = sample_levels();
+
+        let world_a = World {
+            levels: vec![level_c.clone()],
+            ..Default::default()
+        };
+
+        let world_b = World {
+            levels: vec![level_d.clone()],
+            ..Default::default()
+        };
+
+        let data = LdtkJson {
+            worlds: vec![world_a, world_b],
+            levels: vec![level_a.clone(), level_b.clone()],
+            ..Default::default()
+        };
+
+        let project = LdtkProject {
+            data: data.clone(),
+            tileset_map: HashMap::default(),
+            level_map: HashMap::default(),
+            int_grid_image_handle: None,
+        };
+
+        assert_eq!(project.root_levels(), data.root_levels());
+        assert_eq!(project.worlds(), data.worlds());
     }
 }

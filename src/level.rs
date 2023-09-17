@@ -5,7 +5,7 @@ use crate::{
         LdtkEntity, LdtkEntityMap, LdtkIntCellMap, PhantomLdtkEntity, PhantomLdtkEntityTrait,
         PhantomLdtkIntCell, PhantomLdtkIntCellTrait,
     },
-    assets::{LdtkLevel, TilesetMap},
+    assets::LdtkLevel,
     components::*,
     ldtk::{
         EntityDefinition, EnumTagValue, LayerDefinition, LayerInstance, LevelBackgroundPosition,
@@ -209,20 +209,20 @@ pub fn spawn_level(
     ldtk_level: &LdtkLevel,
     commands: &mut Commands,
     asset_server: &AssetServer,
-    images: &mut Assets<Image>,
+    images: &Assets<Image>,
     texture_atlases: &mut Assets<TextureAtlas>,
     ldtk_entity_map: &LdtkEntityMap,
     ldtk_int_cell_map: &LdtkIntCellMap,
     entity_definition_map: &HashMap<i32, &EntityDefinition>,
     layer_definition_map: &HashMap<i32, &LayerDefinition>,
-    tileset_map: &TilesetMap,
+    tileset_map: &HashMap<i32, Handle<Image>>,
     tileset_definition_map: &HashMap<i32, &TilesetDefinition>,
     int_grid_image_handle: &Option<Handle<Image>>,
     worldly_set: HashSet<Worldly>,
     ldtk_entity: Entity,
     ldtk_settings: &LdtkSettings,
 ) {
-    let level = &ldtk_level.level;
+    let level = ldtk_level.data();
 
     if let Some(layer_instances) = &level.layer_instances {
         let mut layer_z = 0;
@@ -248,7 +248,7 @@ pub fn spawn_level(
 
             // Spawn background image
             if let (Some(background_image_handle), Some(background_position)) =
-                (&ldtk_level.background_image, &level.bg_pos)
+                (ldtk_level.background_image(), &level.bg_pos)
             {
                 match background_image_sprite_sheet_bundle(
                     images,

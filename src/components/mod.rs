@@ -2,21 +2,26 @@
 mod entity_iid;
 pub use entity_iid::EntityIid;
 
+mod level_iid;
+pub use level_iid::LevelIid;
+
+mod level_set;
+pub use level_set::LevelSet;
+
 pub use crate::ldtk::EntityInstance;
-use crate::ldtk::{LayerInstance, Type};
+use crate::{
+    ldtk::{LayerInstance, Type},
+    utils::ldtk_grid_coords_to_grid_coords,
+};
 use bevy::prelude::*;
 
-use std::{
-    collections::HashSet,
-    ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign},
-};
+use std::ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign};
 
 #[allow(unused_imports)]
 use crate::{
     assets::LdtkLevel,
     prelude::{LdtkEntity, LdtkIntCell},
-    resources::{LevelSelection, LevelSpawnBehavior},
-    utils::ldtk_grid_coords_to_grid_coords,
+    resources::LevelSelection,
 };
 
 use bevy_ecs_tilemap::tiles::{TileBundle, TilePos};
@@ -30,29 +35,6 @@ use bevy_ecs_tilemap::tiles::{TileBundle, TilePos};
 #[reflect(Component)]
 pub struct IntGridCell {
     pub value: i32,
-}
-
-/// [Component] that determines the desired levels to be loaded for an [LdtkWorldBundle].
-///
-/// There is an abstraction for this in the form of the [LevelSelection] resource.
-/// This component does not respond to the
-/// [LevelSpawnBehavior::UseWorldTranslation::load_level_neighbors] option at all, while the
-/// [LevelSelection] does.
-/// If a [LevelSelection] is inserted, the plugin will update this component based off its value.
-/// If not, [LevelSet] allows you to have more direct control over the levels you spawn.
-///
-/// Changes to this component are idempotent, so levels won't be respawned greedily.
-#[derive(Clone, Eq, PartialEq, Debug, Default, Component)]
-pub struct LevelSet {
-    pub iids: HashSet<String>,
-}
-
-impl LevelSet {
-    pub fn from_iid<T: Into<String>>(iid: T) -> Self {
-        let mut iids = HashSet::default();
-        iids.insert(iid.into());
-        Self { iids }
-    }
 }
 
 /// [Component] that indicates that an ldtk entity should be a child of the world, not the level.
@@ -325,7 +307,7 @@ impl From<&LayerInstance> for LayerMetadata {
 
 /// [Component] that indicates that an LDtk level or world should respawn.
 ///
-/// Inserting this component on an entity with either `Handle<LdtkAsset>` or `Handle<LdtkLevel>`
+/// Inserting this component on an entity with either `Handle<LdtkProject>` or `Handle<LdtkLevel>`
 /// components will cause it to respawn.
 /// This can be used to implement a simple level-restart feature.
 /// Internally, this is used to support the entire level spawning process
@@ -365,7 +347,7 @@ pub(crate) struct EntityInstanceBundle {
 /// unless marked by a [Worldly] component.
 #[derive(Clone, Default, Bundle)]
 pub struct LdtkWorldBundle {
-    pub ldtk_handle: Handle<crate::assets::LdtkAsset>,
+    pub ldtk_handle: Handle<crate::assets::LdtkProject>,
     pub level_set: LevelSet,
     pub transform: Transform,
     pub global_transform: GlobalTransform,

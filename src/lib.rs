@@ -22,7 +22,7 @@
 //!         .add_plugins(DefaultPlugins)
 //!         .add_plugins(LdtkPlugin)
 //!         .add_systems(Startup, setup)
-//!         .insert_resource(LevelSelection::Index(0))
+//!         .insert_resource(LevelSelection::index(0))
 //!         .register_ldtk_entity::<MyBundle>("MyEntityIdentifier")
 //!         .run();
 //! }
@@ -116,7 +116,7 @@
 //! [bevy_ecs_tilemap]: https://docs.rs/bevy_ecs_tilemap
 
 pub mod app;
-mod assets;
+pub mod assets;
 mod components;
 pub mod ldtk;
 mod level;
@@ -126,7 +126,6 @@ pub mod systems;
 mod tile_makers;
 pub mod utils;
 
-pub use assets::*;
 pub use components::*;
 pub use plugin::*;
 pub use resources::*;
@@ -139,10 +138,10 @@ pub mod prelude {
 
     pub use crate::{
         app::{LdtkEntity, LdtkEntityAppExt, LdtkIntCell, LdtkIntCellAppExt},
-        assets::{LdtkAsset, LdtkLevel},
+        assets::{LdtkLevel, LdtkProject, LevelIndices},
         components::{
             EntityIid, EntityInstance, GridCoords, IntGridCell, LayerMetadata, LdtkWorldBundle,
-            LevelSet, Respawn, TileEnumTags, TileMetadata, Worldly,
+            LevelIid, LevelSet, Respawn, TileEnumTags, TileMetadata, Worldly,
         },
         ldtk::{self, ldtk_fields::LdtkFields, FieldValue, LayerInstance, TilesetDefinition},
         plugin::{LdtkPlugin, ProcessLdtkApi},

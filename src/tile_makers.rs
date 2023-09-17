@@ -12,6 +12,7 @@ use crate::{
     ldtk::{IntGridValueDefinition, TileInstance},
     level::tile_to_grid_coords,
     utils::*,
+    AutoTileInvisibleTiles, LdtkSettings,
 };
 use bevy::prelude::*;
 use bevy_ecs_tilemap::tiles::{
@@ -164,12 +165,19 @@ pub(crate) fn tile_pos_to_int_grid_with_grid_tiles_tile_maker(
     layer_width_in_tiles: i32,
     layer_height_in_tiles: i32,
     layer_grid_size: i32,
+    ldtk_settings: &LdtkSettings,
 ) -> impl FnMut(TilePos) -> Option<TileBundle> {
     // Creating the tile makers outside of the returned tile maker so we only do it once.
     let mut auto_tile_maker =
         tile_pos_to_tile_maker(grid_tiles, layer_height_in_tiles, layer_grid_size);
+
+    let invis_tile_type = match ldtk_settings.auto_tile_invisible_tiles {
+        AutoTileInvisibleTiles::Active => tile_pos_to_invisible_tile,
+        AutoTileInvisibleTiles::Nonexistent => |_| None,
+    };
+
     let mut invisible_tile_maker = tile_pos_to_tile_if_int_grid_nonzero_maker(
-        tile_pos_to_invisible_tile,
+        invis_tile_type,
         int_grid_csv,
         layer_width_in_tiles,
         layer_height_in_tiles,
@@ -348,7 +356,7 @@ mod tests {
     }
 
     #[test]
-    fn test_tile_pos_to_int_grid_with_grid_tiles_tile_maker() {
+    fn test_tile_pos_to_int_grid_with_grid_tiles_tile_maker_no_invis() {
         // Test is designed to have all permutations of tile/intgrid existence:
         // 1. tile + nonzero intgrid
         // 2. tile + zero intgrid
@@ -372,8 +380,75 @@ mod tests {
 
         let int_grid_csv = vec![1, 0, 2, 0];
 
-        let mut tile_maker =
-            tile_pos_to_int_grid_with_grid_tiles_tile_maker(&grid_tiles, &int_grid_csv, 2, 2, 32);
+        let settings = LdtkSettings {
+            auto_tile_invisible_tiles: AutoTileInvisibleTiles::Nonexistent,
+            ..Default::default()
+        };
+
+        let mut tile_maker = tile_pos_to_int_grid_with_grid_tiles_tile_maker(
+            &grid_tiles,
+            &int_grid_csv,
+            2,
+            2,
+            32,
+            &settings,
+        );
+
+        assert!(tile_maker(TilePos { x: 0, y: 0 }).is_none());
+
+        assert!(tile_maker(TilePos { x: 1, y: 0 }).is_none());
+
+        assert_eq!(
+            tile_maker(TilePos { x: 0, y: 1 }).unwrap().texture_index.0,
+            1
+        );
+        assert!(tile_maker(TilePos { x: 0, y: 1 }).unwrap().visible.0);
+
+        assert_eq!(
+            tile_maker(TilePos { x: 1, y: 1 }).unwrap().texture_index.0,
+            2
+        );
+        assert!(tile_maker(TilePos { x: 1, y: 1 }).unwrap().visible.0);
+    }
+
+    #[test]
+    fn test_tile_pos_to_int_grid_with_grid_tiles_tile_maker_with_invis() {
+        // Test is designed to have all permutations of tile/intgrid existence:
+        // 1. tile + nonzero intgrid
+        // 2. tile + zero intgrid
+        // 3. no tile + nonzero intgrid
+        // 4. no tile + zero intgrid
+
+        let grid_tiles = vec![
+            TileInstance {
+                px: IVec2::new(0, 0),
+                src: IVec2::new(0, 0),
+                t: 1,
+                ..Default::default()
+            },
+            TileInstance {
+                px: IVec2::new(32, 0),
+                src: IVec2::new(32, 0),
+                t: 2,
+                ..Default::default()
+            },
+        ];
+
+        let int_grid_csv = vec![1, 0, 2, 0];
+
+        let settings = LdtkSettings {
+            auto_tile_invisible_tiles: AutoTileInvisibleTiles::Active,
+            ..Default::default()
+        };
+
+        let mut tile_maker = tile_pos_to_int_grid_with_grid_tiles_tile_maker(
+            &grid_tiles,
+            &int_grid_csv,
+            2,
+            2,
+            32,
+            &settings,
+        );
 
         assert_eq!(
             tile_maker(TilePos { x: 0, y: 0 }).unwrap().texture_index.0,

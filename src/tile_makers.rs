@@ -12,7 +12,7 @@ use crate::{
     ldtk::{IntGridValueDefinition, TileInstance},
     level::tile_to_grid_coords,
     utils::*,
-    AutoTileInvisibleTiles, LdtkSettings,
+    AutoLayerInvisibleTiles, LdtkSettings,
 };
 use bevy::prelude::*;
 use bevy_ecs_tilemap::tiles::{
@@ -155,7 +155,7 @@ pub(crate) fn tile_pos_to_tile_if_int_grid_nonzero_maker(
 
 /// Creates a tile maker that returns one of the following:
 /// 1. Returns a tile that matches the tileset visual of the ldtk layer, if it exists
-/// 2. Returns an invisible tile, if the corresponding intgrid position is nonzero,
+/// 2. Returns an invisible tile, if the corresponding intgrid position is nonzero and "auto_layer_invisible_tiles" in [LdtkSettings] is set to [AutoLayerInvisibleTiles::Active],
 /// 3. Returns none
 ///
 /// Used for spawning IntGrid layers with AutoTile functionality.
@@ -171,9 +171,9 @@ pub(crate) fn tile_pos_to_int_grid_with_grid_tiles_tile_maker(
     let mut auto_tile_maker =
         tile_pos_to_tile_maker(grid_tiles, layer_height_in_tiles, layer_grid_size);
 
-    let invis_tile_type = match ldtk_settings.auto_tile_invisible_tiles {
-        AutoTileInvisibleTiles::Active => tile_pos_to_invisible_tile,
-        AutoTileInvisibleTiles::Nonexistent => |_| None,
+    let invis_tile_type = match ldtk_settings.auto_layer_invisible_tiles {
+        AutoLayerInvisibleTiles::Active => tile_pos_to_invisible_tile,
+        AutoLayerInvisibleTiles::Nonexistent => |_| None,
     };
 
     let mut invisible_tile_maker = tile_pos_to_tile_if_int_grid_nonzero_maker(
@@ -381,7 +381,7 @@ mod tests {
         let int_grid_csv = vec![1, 0, 2, 0];
 
         let settings = LdtkSettings {
-            auto_tile_invisible_tiles: AutoTileInvisibleTiles::Nonexistent,
+            auto_layer_invisible_tiles: AutoLayerInvisibleTiles::Nonexistent,
             ..Default::default()
         };
 
@@ -437,7 +437,7 @@ mod tests {
         let int_grid_csv = vec![1, 0, 2, 0];
 
         let settings = LdtkSettings {
-            auto_tile_invisible_tiles: AutoTileInvisibleTiles::Active,
+            auto_layer_invisible_tiles: AutoLayerInvisibleTiles::Active,
             ..Default::default()
         };
 

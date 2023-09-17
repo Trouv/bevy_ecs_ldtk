@@ -68,14 +68,14 @@ pub enum LevelBackground {
 }
 
 
-/// Option in [LdtkSettings] that determines if AutoTile layers should have invisible tiles.
-/// These might appear if an AutoTile rule can't match to any tile.
+/// Option in [LdtkSettings] that determines if Auto-layer layers should have invisible tiles.
+/// These might appear if an Auto-layer rule can't match to any tile.
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default)]
-pub enum AutoTileInvisibleTiles {
-    /// There will be no tile entity if AutoTile rules can't match a tile.
+pub enum AutoLayerInvisibleTiles {
+    /// There will be no tile entity if Auto-layer rules can't match a tile.
     #[default]
     Nonexistent,
-    /// If AutoTile rules can't match to a tile, an invisible one will be inserted instead.
+    /// If Auto-layer rules can't match to a tile, an invisible one will be inserted instead.
     Active,
 }
 
@@ -87,5 +87,5 @@ pub struct LdtkSettings {
     pub set_clear_color: SetClearColor,
     pub int_grid_rendering: IntGridRendering,
     pub level_background: LevelBackground,
-    pub auto_tile_invisible_tiles: AutoTileInvisibleTiles,
+    pub auto_layer_invisible_tiles: AutoLayerInvisibleTiles,
 }

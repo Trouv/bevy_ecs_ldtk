@@ -62,7 +62,7 @@ use std::{collections::HashMap, marker::PhantomData};
 ///
 /// By default, each component or nested bundle in the bundle will be consumed from bundle's
 /// [Default] implementation, which means that deriving (or implementing manually) [Default]
-/// is required.
+/// is required (unless all fields are overriden, see below).
 /// However, this behavior can be overridden with some field attribute macros...
 ///
 /// ### `#[sprite_bundle...]`

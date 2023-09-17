@@ -101,6 +101,12 @@ pub fn expand_ldtk_entity_derive(ast: syn::DeriveInput) -> proc_macro::TokenStre
     let generics = &ast.generics;
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
+    let struct_update = if field_constructions.len() < fields.len() {
+        quote! { ..<Self as std::default::Default>::default() }
+    } else {
+        quote! {}
+    };
+
     let gen = quote! {
         impl #impl_generics bevy_ecs_ldtk::prelude::LdtkEntity for #struct_name #ty_generics #where_clause {
             fn bundle_entity(
@@ -113,7 +119,7 @@ pub fn expand_ldtk_entity_derive(ast: syn::DeriveInput) -> proc_macro::TokenStre
             ) -> Self {
                 Self {
                     #(#field_constructions)*
-                    ..<Self as std::default::Default>::default()
+                    #struct_update
                 }
             }
         }

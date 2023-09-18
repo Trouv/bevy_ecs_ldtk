@@ -46,7 +46,7 @@ use std::{collections::HashMap, marker::PhantomData};
 /// # struct ComponentB;
 /// # #[derive(Component, Default)]
 /// # struct ComponentC;
-/// #[derive(Bundle, LdtkIntCell)]
+/// #[derive(Bundle, LdtkIntCell, Default)]
 /// pub struct MyBundle {
 ///     a: ComponentA,
 ///     b: ComponentB,
@@ -56,8 +56,9 @@ use std::{collections::HashMap, marker::PhantomData};
 /// Now, when loading your ldtk file, any IntGrid tiles with the value `1` will be spawned with as
 /// tiles with `MyBundle` inserted.
 ///
-/// By default, each component or nested bundle in the bundle will be created using their [Default]
-/// implementations.
+/// By default, each component or nested bundle in the bundle will be consumed from bundle's
+/// [Default] implementation, which means that deriving (or implementing manually) [Default]
+/// is required (unless all fields are overriden, see below).
 /// However, this behavior can be overriden with some field attribute macros...
 ///
 /// ### `#[ldtk_int_cell]`
@@ -74,12 +75,12 @@ use std::{collections::HashMap, marker::PhantomData};
 /// # struct RigidBody;
 /// # #[derive(Component, Default)]
 /// # struct Damage;
-/// #[derive(Bundle, LdtkIntCell)]
+/// #[derive(Bundle, LdtkIntCell, Default)]
 /// pub struct Wall {
 ///     rigid_body: RigidBody,
 /// }
 ///
-/// #[derive(Bundle, LdtkIntCell)]
+/// #[derive(Bundle, LdtkIntCell, Default)]
 /// pub struct DestructibleWall {
 ///     #[ldtk_int_cell]
 ///     wall: Wall,
@@ -115,7 +116,7 @@ use std::{collections::HashMap, marker::PhantomData};
 ///     }
 /// }
 ///
-/// #[derive(Bundle, LdtkIntCell)]
+/// #[derive(Bundle, LdtkIntCell, Default)]
 /// pub struct Lava {
 ///     #[from_int_grid_cell]
 ///     fluid: Fluid,
@@ -146,7 +147,7 @@ use std::{collections::HashMap, marker::PhantomData};
 ///     }
 /// }
 ///
-/// #[derive(Bundle, LdtkIntCell)]
+/// #[derive(Bundle, LdtkIntCell, Default)]
 /// pub struct Lava {
 ///     #[with(initial_fluid)]
 ///     fluid: Fluid,

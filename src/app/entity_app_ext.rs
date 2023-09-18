@@ -56,7 +56,7 @@ pub trait LdtkEntityAppExt {
     /// # struct ComponentB;
     /// # #[derive(Component, Default)]
     /// # struct ComponentC;
-    /// #[derive(Bundle, LdtkEntity)]
+    /// #[derive(Bundle, LdtkEntity, Default)]
     /// pub struct MyBundle {
     ///     a: ComponentA,
     ///     b: ComponentB,

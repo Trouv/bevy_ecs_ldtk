@@ -12,7 +12,6 @@ use crate::{
     ldtk::{IntGridValueDefinition, TileInstance},
     level::tile_to_grid_coords,
     utils::*,
-    AutoLayerInvisibleTiles, LdtkSettings,
 };
 use bevy::prelude::*;
 use bevy_ecs_tilemap::tiles::{
@@ -155,7 +154,7 @@ pub(crate) fn tile_pos_to_tile_if_int_grid_nonzero_maker(
 
 /// Creates a tile maker that returns one of the following:
 /// 1. Returns a tile that matches the tileset visual of the ldtk layer, if it exists
-/// 2. Returns an invisible tile, if the corresponding intgrid position is nonzero and "auto_layer_invisible_tiles" in [LdtkSettings] is set to [AutoLayerInvisibleTiles::Active],
+/// 2. Returns an invisible tile, if the corresponding intgrid position is nonzero and the sublayer index is 0,
 /// 3. Returns none
 ///
 /// Used for spawning IntGrid layers with AutoTile functionality.
@@ -165,15 +164,16 @@ pub(crate) fn tile_pos_to_int_grid_with_grid_tiles_tile_maker(
     layer_width_in_tiles: i32,
     layer_height_in_tiles: i32,
     layer_grid_size: i32,
-    ldtk_settings: &LdtkSettings,
+    sublayer_index: usize,
 ) -> impl FnMut(TilePos) -> Option<TileBundle> {
     // Creating the tile makers outside of the returned tile maker so we only do it once.
     let mut auto_tile_maker =
         tile_pos_to_tile_maker(grid_tiles, layer_height_in_tiles, layer_grid_size);
 
-    let invis_tile_type = match ldtk_settings.auto_layer_invisible_tiles {
-        AutoLayerInvisibleTiles::Active => tile_pos_to_invisible_tile,
-        AutoLayerInvisibleTiles::Nonexistent => |_| None,
+    let invis_tile_type = if sublayer_index == 0 {
+        tile_pos_to_invisible_tile
+    } else {
+        |_| None
     };
 
     let mut invisible_tile_maker = tile_pos_to_tile_if_int_grid_nonzero_maker(
@@ -356,7 +356,7 @@ mod tests {
     }
 
     #[test]
-    fn test_tile_pos_to_int_grid_with_grid_tiles_tile_maker_no_invis() {
+    fn test_tile_pos_to_int_grid_with_grid_tiles_tile_maker() {
         // Test is designed to have all permutations of tile/intgrid existence:
         // 1. tile + nonzero intgrid
         // 2. tile + zero intgrid
@@ -380,21 +380,21 @@ mod tests {
 
         let int_grid_csv = vec![1, 0, 2, 0];
 
-        let settings = LdtkSettings {
-            auto_layer_invisible_tiles: AutoLayerInvisibleTiles::Nonexistent,
-            ..Default::default()
-        };
-
+        // Test when sublayer index is 0. Invisibile tiles should be created
         let mut tile_maker = tile_pos_to_int_grid_with_grid_tiles_tile_maker(
             &grid_tiles,
             &int_grid_csv,
             2,
             2,
             32,
-            &settings,
+            0,
         );
 
-        assert!(tile_maker(TilePos { x: 0, y: 0 }).is_none());
+        assert_eq!(
+            tile_maker(TilePos { x: 0, y: 0 }).unwrap().texture_index.0,
+            0
+        );
+        assert!(!tile_maker(TilePos { x: 0, y: 0 }).unwrap().visible.0);
 
         assert!(tile_maker(TilePos { x: 1, y: 0 }).is_none());
 
@@ -409,52 +409,18 @@ mod tests {
             2
         );
         assert!(tile_maker(TilePos { x: 1, y: 1 }).unwrap().visible.0);
-    }
 
-    #[test]
-    fn test_tile_pos_to_int_grid_with_grid_tiles_tile_maker_with_invis() {
-        // Test is designed to have all permutations of tile/intgrid existence:
-        // 1. tile + nonzero intgrid
-        // 2. tile + zero intgrid
-        // 3. no tile + nonzero intgrid
-        // 4. no tile + zero intgrid
-
-        let grid_tiles = vec![
-            TileInstance {
-                px: IVec2::new(0, 0),
-                src: IVec2::new(0, 0),
-                t: 1,
-                ..Default::default()
-            },
-            TileInstance {
-                px: IVec2::new(32, 0),
-                src: IVec2::new(32, 0),
-                t: 2,
-                ..Default::default()
-            },
-        ];
-
-        let int_grid_csv = vec![1, 0, 2, 0];
-
-        let settings = LdtkSettings {
-            auto_layer_invisible_tiles: AutoLayerInvisibleTiles::Active,
-            ..Default::default()
-        };
-
+        // Test when sublayer index isn't 0. There should be no invisible tiles
         let mut tile_maker = tile_pos_to_int_grid_with_grid_tiles_tile_maker(
             &grid_tiles,
             &int_grid_csv,
             2,
             2,
             32,
-            &settings,
+            1,
         );
 
-        assert_eq!(
-            tile_maker(TilePos { x: 0, y: 0 }).unwrap().texture_index.0,
-            0
-        );
-        assert!(!tile_maker(TilePos { x: 0, y: 0 }).unwrap().visible.0);
+        assert!(tile_maker(TilePos { x: 0, y: 0 }).is_none());
 
         assert!(tile_maker(TilePos { x: 1, y: 0 }).is_none());
 

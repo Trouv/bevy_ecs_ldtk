@@ -481,7 +481,7 @@ pub fn spawn_level(
                                                     layer_instance.c_wid,
                                                     layer_instance.c_hei,
                                                     layer_instance.grid_size,
-                                                    ldtk_settings
+                                                    i,
                                                 ),
                                                 layer_instance.opacity,
                                             ),

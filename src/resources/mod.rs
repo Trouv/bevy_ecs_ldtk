@@ -67,18 +67,6 @@ pub enum LevelBackground {
     Nonexistent,
 }
 
-
-/// Option in [LdtkSettings] that determines if Auto-layer layers should have invisible tiles.
-/// These might appear if an Auto-layer rule can't match to any tile.
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Default)]
-pub enum AutoLayerInvisibleTiles {
-    /// There will be no tile entity if Auto-layer rules can't match a tile.
-    #[default]
-    Nonexistent,
-    /// If Auto-layer rules can't match to a tile, an invisible one will be inserted instead.
-    Active,
-}
-
 /// Settings resource for the plugin.
 /// Check out the documentation for each field type to learn more.
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Resource)]
@@ -87,5 +75,4 @@ pub struct LdtkSettings {
     pub set_clear_color: SetClearColor,
     pub int_grid_rendering: IntGridRendering,
     pub level_background: LevelBackground,
-    pub auto_layer_invisible_tiles: AutoLayerInvisibleTiles,
 }

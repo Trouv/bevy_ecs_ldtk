@@ -15,8 +15,11 @@ pub use ldtk_external_level::LdtkExternalLevel;
 mod ldtk_json_with_metadata;
 pub use ldtk_json_with_metadata::LdtkJsonWithMetadata;
 
+mod ldtk_project_data;
+pub use ldtk_project_data::LdtkProjectData;
+
 mod ldtk_project;
-pub use ldtk_project::{LdtkProject, LdtkProjectData};
+pub use ldtk_project::LdtkProject;
 
 mod level_indices;
 pub use level_indices::LevelIndices;

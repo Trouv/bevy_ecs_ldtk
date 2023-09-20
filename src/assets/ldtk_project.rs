@@ -2,7 +2,7 @@ use std::path::Path;
 
 use crate::{
     assets::{
-        ExternalLevelMetadata, LdtkJsonWithMetadata, LevelIndices, LevelMetadata,
+        ExternalLevelMetadata, LdtkJsonWithMetadata, LdtkProjectData, LevelIndices, LevelMetadata,
         LevelMetadataAccessor,
     },
     ldtk::{raw_level_accessor::RawLevelAccessor, LdtkJson, Level},
@@ -14,30 +14,12 @@ use bevy::{
     utils::BoxedFuture,
 };
 use derive_getters::Getters;
-use derive_more::{Constructor, From, TryInto};
+use derive_more::{Constructor, From};
 use std::collections::HashMap;
 use thiserror::Error;
 
 fn ldtk_path_to_asset_path<'b>(ldtk_path: &Path, rel_path: &str) -> AssetPath<'b> {
     ldtk_path.parent().unwrap().join(Path::new(rel_path)).into()
-}
-
-#[derive(Clone, Debug, PartialEq, From, TryInto, TypeUuid, TypePath)]
-#[uuid = "00989906-69af-496f-a8a9-fdfef5c594f5"]
-#[try_into(owned, ref)]
-pub enum LdtkProjectData {
-    Standalone(LdtkJsonWithMetadata<LevelMetadata>),
-    Parent(LdtkJsonWithMetadata<ExternalLevelMetadata>),
-}
-
-impl LdtkProjectData {
-    pub fn as_standalone(&self) -> &LdtkJsonWithMetadata<LevelMetadata> {
-        self.try_into().unwrap()
-    }
-
-    pub fn as_parent(&self) -> &LdtkJsonWithMetadata<ExternalLevelMetadata> {
-        self.try_into().unwrap()
-    }
 }
 
 #[derive(Clone, Debug, PartialEq, From, TypeUuid, TypePath, Getters, Constructor)]

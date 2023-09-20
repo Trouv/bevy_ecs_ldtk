@@ -34,11 +34,8 @@ pub struct LdtkProject {
 
 impl LdtkProject {
     /// Raw ldtk json data.
-    pub fn ldtk_json(&self) -> &crate::ldtk::LdtkJson {
-        match &self.data {
-            LdtkProjectData::Standalone(project) => project.data(),
-            LdtkProjectData::Parent(project) => project.data(),
-        }
+    pub fn ldtk_json(&self) -> &LdtkJson {
+        self.data.ldtk_json()
     }
 
     pub fn as_standalone(&self) -> &LdtkJsonWithMetadata<LevelMetadata> {
@@ -52,20 +49,17 @@ impl LdtkProject {
 
 impl RawLevelAccessor for LdtkProject {
     fn worlds(&self) -> &[crate::ldtk::World] {
-        self.ldtk_json().worlds()
+        self.data.worlds()
     }
 
     fn root_levels(&self) -> &[Level] {
-        self.ldtk_json().root_levels()
+        self.data.root_levels()
     }
 }
 
 impl LevelMetadataAccessor for LdtkProject {
     fn get_level_metadata_by_iid(&self, iid: &String) -> Option<&LevelMetadata> {
-        match &self.data {
-            LdtkProjectData::Standalone(project) => project.get_level_metadata_by_iid(iid),
-            LdtkProjectData::Parent(project) => project.get_level_metadata_by_iid(iid),
-        }
+        self.data.get_level_metadata_by_iid(iid)
     }
 }
 

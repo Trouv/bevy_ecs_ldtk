@@ -128,7 +128,7 @@ pub fn spawn_wall_collision(
                     .expect("Project should be loaded if level has spawned");
 
                 let level = ldtk_project
-                    .standalone()
+                    .as_standalone()
                     .get_loaded_level_by_iid(&level_iid.to_string())
                     .expect("Spawned level should exist in LDtk project");
 

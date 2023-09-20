@@ -4,7 +4,7 @@
 use crate::resources::SetClearColor;
 use crate::{
     app::{LdtkEntityMap, LdtkIntCellMap},
-    assets::{EitherLdtkJsonWithMetadata, LdtkProject, LevelMetadataAccessor},
+    assets::{LdtkProject, LdtkProjectData, LevelMetadataAccessor},
     components::*,
     ldtk::{Level, TilesetDefinition},
     level::spawn_level,
@@ -54,7 +54,7 @@ pub fn process_ldtk_assets(
     if ldtk_settings.set_clear_color == SetClearColor::FromEditorBackground {
         for handle in ldtk_handles_for_clear_color.iter() {
             if let Some(project) = &ldtk_project_assets.get(handle) {
-                clear_color.0 = project.data().bg_color;
+                clear_color.0 = project.ldtk_json().bg_color;
             }
         }
     }
@@ -243,7 +243,7 @@ pub fn process_ldtk_levels(
                 if let Some(ldtk_project) = ldtk_project_assets.get(ldtk_handle) {
                     // Commence the spawning
                     let tileset_definition_map: HashMap<i32, &TilesetDefinition> = ldtk_project
-                        .data()
+                        .ldtk_json()
                         .defs
                         .tilesets
                         .iter()
@@ -251,17 +251,17 @@ pub fn process_ldtk_levels(
                         .collect();
 
                     let entity_definition_map =
-                        create_entity_definition_map(&ldtk_project.data().defs.entities);
+                        create_entity_definition_map(&ldtk_project.ldtk_json().defs.entities);
 
                     let layer_definition_map =
-                        create_layer_definition_map(&ldtk_project.data().defs.layers);
+                        create_layer_definition_map(&ldtk_project.ldtk_json().defs.layers);
 
                     let int_grid_image_handle = &ldtk_project.int_grid_image_handle();
 
                     let worldly_set = worldly_query.iter().cloned().collect();
 
-                    let maybe_level_data = match ldtk_project.either_ldtk_json_with_metadata() {
-                        EitherLdtkJsonWithMetadata::Standalone(project) => project
+                    let maybe_level_data = match ldtk_project.data() {
+                        LdtkProjectData::Standalone(project) => project
                             .level_map()
                             .get(level_iid.get())
                             .and_then(|level_metadata| {
@@ -270,7 +270,7 @@ pub fn process_ldtk_levels(
 
                                 Some((level_metadata, loaded_level))
                             }),
-                        EitherLdtkJsonWithMetadata::Parent(project) => project
+                        LdtkProjectData::Parent(project) => project
                             .level_map()
                             .get(level_iid.get())
                             .and_then(|level_metadata| {

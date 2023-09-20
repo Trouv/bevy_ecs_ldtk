@@ -30,7 +30,7 @@ fn expect_level_loaded(level: &Level) -> LoadedLevel {
 #[derive(Clone, Debug, PartialEq, TypeUuid, TypePath, Constructor, Getters)]
 #[uuid = "ecfb87b7-9cd9-4970-8482-f2f68b770d31"]
 pub struct LdtkJsonWithMetadata<L> {
-    /// Raw ldtk project data.
+    /// Raw ldtk json data.
     data: LdtkJson,
     /// Map from level iids to level metadata.
     level_map: HashMap<String, L>,
@@ -162,9 +162,7 @@ mod tests {
 
         let project = LdtkJsonWithMetadata::<()> {
             data: data.clone(),
-            tileset_map: HashMap::default(),
             level_map: HashMap::default(),
-            int_grid_image_handle: None,
         };
 
         assert_eq!(project.root_levels(), data.root_levels());

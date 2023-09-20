@@ -16,7 +16,7 @@ mod ldtk_json_with_metadata;
 pub use ldtk_json_with_metadata::LdtkJsonWithMetadata;
 
 mod ldtk_project;
-pub use ldtk_project::{EitherLdtkJsonWithMetadata, LdtkProject};
+pub use ldtk_project::{LdtkProject, LdtkProjectData};
 
 mod level_indices;
 pub use level_indices::LevelIndices;

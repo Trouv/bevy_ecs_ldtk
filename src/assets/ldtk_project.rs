@@ -34,8 +34,8 @@ pub struct LdtkProject {
 
 impl LdtkProject {
     /// Raw ldtk json data.
-    pub fn ldtk_json(&self) -> &LdtkJson {
-        self.data.ldtk_json()
+    pub fn json_data(&self) -> &LdtkJson {
+        self.data.json_data()
     }
 
     pub fn as_standalone(&self) -> &LdtkJsonWithMetadata<LevelMetadata> {

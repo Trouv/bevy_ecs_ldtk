@@ -27,18 +27,18 @@ fn expect_level_loaded(level: &Level) -> LoadedLevel {
 #[derive(Clone, Debug, PartialEq, Constructor, Getters)]
 pub struct LdtkJsonWithMetadata<L> {
     /// Raw ldtk json data.
-    data: LdtkJson,
+    json_data: LdtkJson,
     /// Map from level iids to level metadata.
     level_map: HashMap<String, L>,
 }
 
 impl<L> RawLevelAccessor for LdtkJsonWithMetadata<L> {
     fn root_levels(&self) -> &[Level] {
-        self.data.root_levels()
+        self.json_data.root_levels()
     }
 
     fn worlds(&self) -> &[World] {
-        self.data.worlds()
+        self.json_data.worlds()
     }
 }
 
@@ -157,7 +157,7 @@ mod tests {
         };
 
         let project = LdtkJsonWithMetadata::<()> {
-            data: data.clone(),
+            json_data: data.clone(),
             level_map: HashMap::default(),
         };
 

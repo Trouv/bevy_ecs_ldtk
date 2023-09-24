@@ -13,10 +13,10 @@ pub enum LdtkProjectData {
 }
 
 impl LdtkProjectData {
-    pub fn ldtk_json(&self) -> &LdtkJson {
+    pub fn json_data(&self) -> &LdtkJson {
         match self {
-            LdtkProjectData::Standalone(project) => project.data(),
-            LdtkProjectData::Parent(project) => project.data(),
+            LdtkProjectData::Standalone(project) => project.json_data(),
+            LdtkProjectData::Parent(project) => project.json_data(),
         }
     }
 
@@ -31,11 +31,11 @@ impl LdtkProjectData {
 
 impl RawLevelAccessor for LdtkProjectData {
     fn worlds(&self) -> &[crate::ldtk::World] {
-        self.ldtk_json().worlds()
+        self.json_data().worlds()
     }
 
     fn root_levels(&self) -> &[Level] {
-        self.ldtk_json().root_levels()
+        self.json_data().root_levels()
     }
 }
 

@@ -54,7 +54,7 @@ pub fn process_ldtk_assets(
     if ldtk_settings.set_clear_color == SetClearColor::FromEditorBackground {
         for handle in ldtk_handles_for_clear_color.iter() {
             if let Some(project) = &ldtk_project_assets.get(handle) {
-                clear_color.0 = project.ldtk_json().bg_color;
+                clear_color.0 = project.json_data().bg_color;
             }
         }
     }
@@ -243,7 +243,7 @@ pub fn process_ldtk_levels(
                 if let Some(ldtk_project) = ldtk_project_assets.get(ldtk_handle) {
                     // Commence the spawning
                     let tileset_definition_map: HashMap<i32, &TilesetDefinition> = ldtk_project
-                        .ldtk_json()
+                        .json_data()
                         .defs
                         .tilesets
                         .iter()
@@ -251,10 +251,10 @@ pub fn process_ldtk_levels(
                         .collect();
 
                     let entity_definition_map =
-                        create_entity_definition_map(&ldtk_project.ldtk_json().defs.entities);
+                        create_entity_definition_map(&ldtk_project.json_data().defs.entities);
 
                     let layer_definition_map =
-                        create_layer_definition_map(&ldtk_project.ldtk_json().defs.layers);
+                        create_layer_definition_map(&ldtk_project.json_data().defs.layers);
 
                     let int_grid_image_handle = &ldtk_project.int_grid_image_handle();
 

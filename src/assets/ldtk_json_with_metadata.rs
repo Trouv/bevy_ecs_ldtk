@@ -19,7 +19,7 @@ fn expect_level_loaded(level: &Level) -> LoadedLevel {
         .expect("LdtkProject construction should guarantee that internal levels are loaded")
 }
 
-/// LDtk json data and all metadata produced when loading an [`LdtkProject`] asset.
+/// LDtk json data and level metadata produced when loading an [`LdtkProject`] asset.
 ///
 /// Generic over the level metadata type, `L`.
 /// This is done so that this type can be used for both internal- and external-level projects.
@@ -51,19 +51,40 @@ impl LevelMetadataAccessor for LdtkJsonWithMetadata<LevelMetadata> {
 }
 
 impl LdtkJsonWithMetadata<LevelMetadata> {
+    /// Iterate through this project's loaded levels.
+    ///
+    /// This first iterates through [root levels, then world levels](RawLevelAccessor#root-vs-world-levels).
+    ///
+    /// These levels are "loaded", meaning that they are type-guaranteed to have complete data.
+    /// See [`LoadedLevel`] for more details.
     pub fn iter_loaded_levels(&self) -> impl Iterator<Item = LoadedLevel> {
         self.iter_raw_levels().map(expect_level_loaded)
     }
 
+    /// Immutable access to a loaded level at the given [`LevelIndices`].
+    ///
+    /// These levels are "loaded", meaning that they are type-guaranteed to have complete data.
+    /// See [`LoadedLevel`] for more details.
     pub fn get_loaded_level_by_indices(&self, indices: &LevelIndices) -> Option<LoadedLevel> {
         self.get_raw_level_at_indices(indices)
             .map(expect_level_loaded)
     }
 
+    /// Returns a reference to the loaded level metadata corresponding to the given level iid.
+    ///
+    /// These levels are "loaded", meaning that they are type-guaranteed to have complete data.
+    /// See [`LoadedLevel`] for more details.
     pub fn get_loaded_level_by_iid(&self, iid: &String) -> Option<LoadedLevel> {
         self.get_raw_level_by_iid(iid).map(expect_level_loaded)
     }
 
+    /// Find the loaded level matching the given [`LevelSelection`].
+    ///
+    /// This lookup is constant for [`LevelSelection::Iid`] and [`LevelSelection::Indices`] variants.
+    /// The other variants require iterating through the levels to find the match.
+    ///
+    /// These levels are "loaded", meaning that they are type-guaranteed to have complete data.
+    /// See [`LoadedLevel`] for more details.
     pub fn find_loaded_level_by_level_selection(
         &self,
         level_selection: &LevelSelection,
@@ -82,6 +103,12 @@ impl LevelMetadataAccessor for LdtkJsonWithMetadata<ExternalLevelMetadata> {
 
 #[cfg(feature = "external_levels")]
 impl LdtkJsonWithMetadata<ExternalLevelMetadata> {
+    /// Iterate through this project's external levels.
+    ///
+    /// This first iterates through [root levels, then world levels](RawLevelAccessor#root-vs-world-levels).
+    ///
+    /// These levels are "loaded", meaning that they are type-guaranteed to have complete data.
+    /// See [`LoadedLevel`] for more details.
     pub fn iter_external_levels<'a>(
         &'a self,
         external_level_assets: &'a Assets<LdtkExternalLevel>,
@@ -92,6 +119,10 @@ impl LdtkJsonWithMetadata<ExternalLevelMetadata> {
             .map(LdtkExternalLevel::data)
     }
 
+    /// Immutable access to an external level at the given [`LevelIndices`].
+    ///
+    /// These levels are "loaded", meaning that they are type-guaranteed to have complete data.
+    /// See [`LoadedLevel`] for more details.
     pub fn get_external_level_by_indices<'a>(
         &'a self,
         external_level_assets: &'a Assets<LdtkExternalLevel>,
@@ -103,6 +134,10 @@ impl LdtkJsonWithMetadata<ExternalLevelMetadata> {
         )
     }
 
+    /// Returns a reference to the external level metadata corresponding to the given level iid.
+    ///
+    /// These levels are "loaded", meaning that they are type-guaranteed to have complete data.
+    /// See [`LoadedLevel`] for more details.
     pub fn get_external_level_by_iid<'a>(
         &'a self,
         external_level_assets: &'a Assets<LdtkExternalLevel>,
@@ -114,6 +149,13 @@ impl LdtkJsonWithMetadata<ExternalLevelMetadata> {
             .map(LdtkExternalLevel::data)
     }
 
+    /// Find the external level matching the given [`LevelSelection`].
+    ///
+    /// This lookup is constant for [`LevelSelection::Iid`] and [`LevelSelection::Indices`] variants.
+    /// The other variants require iterating through the levels to find the match.
+    ///
+    /// These levels are "loaded", meaning that they are type-guaranteed to have complete data.
+    /// See [`LoadedLevel`] for more details.
     pub fn find_external_level_by_level_selection<'a>(
         &'a self,
         external_level_assets: &'a Assets<LdtkExternalLevel>,

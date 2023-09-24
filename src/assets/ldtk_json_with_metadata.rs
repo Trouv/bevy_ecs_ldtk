@@ -10,7 +10,7 @@ use derive_more::Constructor;
 use std::collections::HashMap;
 
 #[cfg(feature = "external_levels")]
-use crate::assets::ExternalLevelMetadata;
+use crate::assets::{ExternalLevelMetadata, LdtkExternalLevel};
 #[cfg(feature = "external_levels")]
 use bevy::prelude::*;
 

@@ -40,6 +40,7 @@ impl LdtkProject {
         self.data.json_data()
     }
 
+    #[cfg(feature = "internal_levels")]
     pub fn as_standalone(&self) -> &LdtkJsonWithMetadata<LevelMetadata> {
         self.data.as_standalone()
     }
@@ -70,7 +71,7 @@ impl LevelMetadataAccessor for LdtkProject {
 #[derive(Debug, Error)]
 pub enum LdtkProjectLoaderError {
     #[error("LDtk project uses internal levels, but the internal_levels feature is disabled")]
-    IternalLevelsDisabled,
+    InternalLevelsDisabled,
     #[error("LDtk project uses external levels, but the external_levels feature is disabled")]
     ExternalLevelsDisabled,
     #[error("LDtk project uses internal levels, but some level's layer_instances is null")]
@@ -203,23 +204,31 @@ impl AssetLoader for LdtkProjectLoader {
                     Err(LdtkProjectLoaderError::ExternalLevelsDisabled)?
                 }
             } else {
-                let mut level_map = HashMap::new();
+                #[cfg(feature = "internal_levels")]
+                {
+                    let mut level_map = HashMap::new();
 
-                for (level_indices, level) in data.iter_raw_levels_with_indices() {
-                    let LoadLevelMetadataResult {
-                        level_metadata,
-                        dependent_asset_paths: new_asset_paths,
-                    } = load_level_metadata(load_context, level_indices, level, true)?;
+                    for (level_indices, level) in data.iter_raw_levels_with_indices() {
+                        let LoadLevelMetadataResult {
+                            level_metadata,
+                            dependent_asset_paths: new_asset_paths,
+                        } = load_level_metadata(load_context, level_indices, level, true)?;
 
-                    level_map.insert(level.iid.clone(), level_metadata);
-                    dependent_asset_paths.extend(new_asset_paths);
+                        level_map.insert(level.iid.clone(), level_metadata);
+                        dependent_asset_paths.extend(new_asset_paths);
+                    }
+
+                    LdtkProject::new(
+                        LdtkProjectData::Standalone(LdtkJsonWithMetadata::new(data, level_map)),
+                        tileset_map,
+                        int_grid_image_handle,
+                    )
                 }
 
-                LdtkProject::new(
-                    LdtkProjectData::Standalone(LdtkJsonWithMetadata::new(data, level_map)),
-                    tileset_map,
-                    int_grid_image_handle,
-                )
+                #[cfg(not(feature = "internal_levels"))]
+                {
+                    Err(LdtkProjectLoaderError::InternalLevelsDisabled)?
+                }
             };
 
             load_context.set_default_asset(

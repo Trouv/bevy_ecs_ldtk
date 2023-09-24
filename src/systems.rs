@@ -262,6 +262,7 @@ pub fn process_ldtk_levels(
                     let worldly_set = worldly_query.iter().cloned().collect();
 
                     let maybe_level_data = match ldtk_project.data() {
+                        #[cfg(feature = "internal_levels")]
                         LdtkProjectData::Standalone(project) => project
                             .level_map()
                             .get(level_iid.get())

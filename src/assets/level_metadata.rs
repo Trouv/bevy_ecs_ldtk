@@ -1,8 +1,5 @@
 use crate::assets::LevelIndices;
-use bevy::{
-    prelude::*,
-    reflect::{TypePath, TypeUuid},
-};
+use bevy::prelude::*;
 use derive_getters::Getters;
 
 use crate::assets::LdtkExternalLevel;
@@ -10,8 +7,7 @@ use crate::assets::LdtkExternalLevel;
 /// Metadata produced for every level during [`LdtkProject`] loading.
 ///
 /// [`LdtkProject`]: crate::assets::LdtkProject
-#[derive(Clone, Debug, Default, Eq, PartialEq, TypeUuid, TypePath, Getters)]
-#[uuid = "bba47e30-5036-4994-acde-d62a440b16b8"]
+#[derive(Clone, Debug, Default, Eq, PartialEq, Getters)]
 pub struct LevelMetadata {
     /// Image handle for the background image of this level, if it has one.
     bg_image: Option<Handle<Image>>,
@@ -29,8 +25,7 @@ impl LevelMetadata {
 /// Metadata produced for every level during [`LdtkProject`] loading for external-levels projects.
 ///
 /// [`LdtkProject`]: crate::assets::LdtkProject
-#[derive(Clone, Debug, Default, Eq, PartialEq, TypeUuid, TypePath, Getters)]
-#[uuid = "d3190ad4-6fa4-4f47-b15b-87f92f191738"]
+#[derive(Clone, Debug, Default, Eq, PartialEq, Getters)]
 pub struct ExternalLevelMetadata {
     /// Common metadata for this level.
     metadata: LevelMetadata,

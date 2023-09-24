@@ -5,10 +5,7 @@ use crate::{
     },
     resources::LevelSelection,
 };
-use bevy::{
-    prelude::*,
-    reflect::{TypePath, TypeUuid},
-};
+use bevy::prelude::*;
 use derive_getters::Getters;
 use derive_more::Constructor;
 use std::collections::HashMap;
@@ -27,8 +24,7 @@ fn expect_level_loaded(level: &Level) -> LoadedLevel {
 /// In practice, `L` will only ever be either [`LevelMetadata`] or [`ExternalLevelMetadata`].
 ///
 /// [`LdtkProject`]: crate::assets::LdtkProject
-#[derive(Clone, Debug, PartialEq, TypeUuid, TypePath, Constructor, Getters)]
-#[uuid = "ecfb87b7-9cd9-4970-8482-f2f68b770d31"]
+#[derive(Clone, Debug, PartialEq, Constructor, Getters)]
 pub struct LdtkJsonWithMetadata<L> {
     /// Raw ldtk json data.
     data: LdtkJson,

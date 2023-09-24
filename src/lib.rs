@@ -138,7 +138,7 @@ pub mod prelude {
 
     pub use crate::{
         app::{LdtkEntity, LdtkEntityAppExt, LdtkIntCell, LdtkIntCellAppExt},
-        assets::{LdtkExternalLevel, LdtkProject, LevelIndices, LevelMetadataAccessor},
+        assets::{LdtkProject, LevelIndices, LevelMetadataAccessor},
         components::{
             EntityIid, EntityInstance, GridCoords, IntGridCell, LayerMetadata, LdtkWorldBundle,
             LevelIid, LevelSet, Respawn, TileEnumTags, TileMetadata, Worldly,
@@ -156,4 +156,7 @@ pub mod prelude {
 
     #[cfg(feature = "derive")]
     pub use crate::{LdtkEntity, LdtkIntCell};
+
+    #[cfg(feature = "external_levels")]
+    pub use crate::assets::LdtkExternalLevel;
 }

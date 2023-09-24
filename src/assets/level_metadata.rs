@@ -2,6 +2,7 @@ use crate::assets::LevelIndices;
 use bevy::prelude::*;
 use derive_getters::Getters;
 
+#[cfg(feature = "external_levels")]
 use crate::assets::LdtkExternalLevel;
 
 /// Metadata produced for every level during [`LdtkProject`] loading.
@@ -22,6 +23,7 @@ impl LevelMetadata {
     }
 }
 
+#[cfg(feature = "external_levels")]
 /// Metadata produced for every level during [`LdtkProject`] loading for external-levels projects.
 ///
 /// [`LdtkProject`]: crate::assets::LdtkProject
@@ -33,6 +35,7 @@ pub struct ExternalLevelMetadata {
     external_handle: Handle<LdtkExternalLevel>,
 }
 
+#[cfg(feature = "external_levels")]
 impl ExternalLevelMetadata {
     /// Construct a new [`ExternalLevelMetadata`].
     pub fn new(metadata: LevelMetadata, external_handle: Handle<LdtkExternalLevel>) -> Self {
@@ -68,6 +71,7 @@ mod tests {
         assert_eq!(*level_metadata.indices(), LevelIndices::in_world(2, 3));
     }
 
+    #[cfg(feature = "external_levels")]
     #[test]
     fn external_level_metadata_construction() {
         let level_metadata = LevelMetadata::new(None, LevelIndices::in_root(1));

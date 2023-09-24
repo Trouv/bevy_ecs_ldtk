@@ -2,8 +2,7 @@ use std::path::Path;
 
 use crate::{
     assets::{
-        ExternalLevelMetadata, LdtkJsonWithMetadata, LdtkProjectData, LevelIndices, LevelMetadata,
-        LevelMetadataAccessor,
+        LdtkJsonWithMetadata, LdtkProjectData, LevelIndices, LevelMetadata, LevelMetadataAccessor,
     },
     ldtk::{raw_level_accessor::RawLevelAccessor, LdtkJson, Level},
 };
@@ -17,6 +16,9 @@ use derive_getters::Getters;
 use derive_more::{Constructor, From};
 use std::collections::HashMap;
 use thiserror::Error;
+
+#[cfg(feature = "external_levels")]
+use crate::assets::ExternalLevelMetadata;
 
 fn ldtk_path_to_asset_path<'b>(ldtk_path: &Path, rel_path: &str) -> AssetPath<'b> {
     ldtk_path.parent().unwrap().join(Path::new(rel_path)).into()
@@ -42,6 +44,7 @@ impl LdtkProject {
         self.data.as_standalone()
     }
 
+    #[cfg(feature = "external_levels")]
     pub fn as_parent(&self) -> &LdtkJsonWithMetadata<ExternalLevelMetadata> {
         self.data.as_parent()
     }
@@ -66,6 +69,10 @@ impl LevelMetadataAccessor for LdtkProject {
 #[allow(dead_code)]
 #[derive(Debug, Error)]
 pub enum LdtkProjectLoaderError {
+    #[error("LDtk project uses internal levels, but the internal_levels feature is disabled")]
+    IternalLevelsDisabled,
+    #[error("LDtk project uses external levels, but the external_levels feature is disabled")]
+    ExternalLevelsDisabled,
     #[error("LDtk project uses internal levels, but some level's layer_instances is null")]
     InternalLevelWithNullLayers,
     #[error("LDtk project uses external levels, but some level's external_rel_path is null")]
@@ -111,6 +118,7 @@ fn load_level_metadata<'a>(
     })
 }
 
+#[cfg(feature = "external_levels")]
 fn load_external_level_metadata<'a>(
     load_context: &LoadContext,
     level_indices: LevelIndices,
@@ -169,23 +177,31 @@ impl AssetLoader for LdtkProjectLoader {
             });
 
             let ldtk_project = if data.external_levels {
-                let mut level_map = HashMap::new();
+                #[cfg(feature = "external_levels")]
+                {
+                    let mut level_map = HashMap::new();
 
-                for (level_indices, level) in data.iter_raw_levels_with_indices() {
-                    let LoadLevelMetadataResult {
-                        level_metadata,
-                        dependent_asset_paths: new_asset_paths,
-                    } = load_external_level_metadata(load_context, level_indices, level)?;
+                    for (level_indices, level) in data.iter_raw_levels_with_indices() {
+                        let LoadLevelMetadataResult {
+                            level_metadata,
+                            dependent_asset_paths: new_asset_paths,
+                        } = load_external_level_metadata(load_context, level_indices, level)?;
 
-                    level_map.insert(level.iid.clone(), level_metadata);
-                    dependent_asset_paths.extend(new_asset_paths);
+                        level_map.insert(level.iid.clone(), level_metadata);
+                        dependent_asset_paths.extend(new_asset_paths);
+                    }
+
+                    LdtkProject::new(
+                        LdtkProjectData::Parent(LdtkJsonWithMetadata::new(data, level_map)),
+                        tileset_map,
+                        int_grid_image_handle,
+                    )
                 }
 
-                LdtkProject::new(
-                    LdtkProjectData::Parent(LdtkJsonWithMetadata::new(data, level_map)),
-                    tileset_map,
-                    int_grid_image_handle,
-                )
+                #[cfg(not(feature = "external_levels"))]
+                {
+                    Err(LdtkProjectLoaderError::ExternalLevelsDisabled)?
+                }
             } else {
                 let mut level_map = HashMap::new();
 

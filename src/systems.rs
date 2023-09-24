@@ -12,6 +12,7 @@ use crate::{
     utils::*,
 };
 
+#[cfg(feature = "external_levels")]
 use crate::assets::LdtkExternalLevel;
 
 use bevy::{ecs::system::SystemState, prelude::*};
@@ -208,7 +209,7 @@ pub fn process_ldtk_levels(
     images: ResMut<Assets<Image>>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
-    level_assets: Res<Assets<LdtkExternalLevel>>,
+    #[cfg(feature = "external_levels")] level_assets: Res<Assets<LdtkExternalLevel>>,
     ldtk_entity_map: NonSend<LdtkEntityMap>,
     ldtk_int_cell_map: NonSend<LdtkIntCellMap>,
     ldtk_query: Query<&Handle<LdtkProject>>,
@@ -270,6 +271,7 @@ pub fn process_ldtk_levels(
 
                                 Some((level_metadata, loaded_level))
                             }),
+                        #[cfg(feature = "external_levels")]
                         LdtkProjectData::Parent(project) => project
                             .level_map()
                             .get(level_iid.get())

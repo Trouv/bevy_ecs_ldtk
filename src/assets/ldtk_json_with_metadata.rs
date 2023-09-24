@@ -5,12 +5,14 @@ use crate::{
     },
     resources::LevelSelection,
 };
-use bevy::prelude::*;
 use derive_getters::Getters;
 use derive_more::Constructor;
 use std::collections::HashMap;
 
-use super::{ExternalLevelMetadata, LdtkExternalLevel};
+#[cfg(feature = "external_levels")]
+use crate::assets::ExternalLevelMetadata;
+#[cfg(feature = "external_levels")]
+use bevy::prelude::*;
 
 fn expect_level_loaded(level: &Level) -> LoadedLevel {
     LoadedLevel::try_from(level)
@@ -71,12 +73,14 @@ impl LdtkJsonWithMetadata<LevelMetadata> {
     }
 }
 
+#[cfg(feature = "external_levels")]
 impl LevelMetadataAccessor for LdtkJsonWithMetadata<ExternalLevelMetadata> {
     fn get_level_metadata_by_iid(&self, iid: &String) -> Option<&LevelMetadata> {
         Some(self.level_map.get(iid)?.metadata())
     }
 }
 
+#[cfg(feature = "external_levels")]
 impl LdtkJsonWithMetadata<ExternalLevelMetadata> {
     pub fn iter_external_levels<'a>(
         &'a self,

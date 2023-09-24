@@ -4,12 +4,19 @@ mod ldtk_asset_plugin;
 pub use ldtk_asset_plugin::LdtkAssetPlugin;
 
 mod level_metadata;
-pub use level_metadata::{ExternalLevelMetadata, LevelMetadata};
+
+#[cfg(feature = "external_levels")]
+pub use level_metadata::ExternalLevelMetadata;
+
+pub use level_metadata::LevelMetadata;
 
 mod level_metadata_accessor;
 pub use level_metadata_accessor::LevelMetadataAccessor;
 
+#[cfg(feature = "external_levels")]
 mod ldtk_external_level;
+
+#[cfg(feature = "external_levels")]
 pub use ldtk_external_level::LdtkExternalLevel;
 
 mod ldtk_json_with_metadata;

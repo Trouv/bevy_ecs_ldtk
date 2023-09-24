@@ -20,7 +20,6 @@ use std::ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign};
 
 #[allow(unused_imports)]
 use crate::{
-    assets::LdtkExternalLevel,
     prelude::{LdtkEntity, LdtkIntCell},
     resources::LevelSelection,
 };

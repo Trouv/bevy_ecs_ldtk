@@ -1,14 +1,18 @@
 use crate::{
-    assets::{ExternalLevelMetadata, LdtkJsonWithMetadata, LevelMetadata, LevelMetadataAccessor},
+    assets::{LdtkJsonWithMetadata, LevelMetadata, LevelMetadataAccessor},
     ldtk::{LdtkJson, Level},
     prelude::RawLevelAccessor,
 };
 use derive_more::{From, TryInto};
 
+#[cfg(feature = "external_levels")]
+use crate::assets::ExternalLevelMetadata;
+
 #[derive(Clone, Debug, PartialEq, From, TryInto)]
 #[try_into(owned, ref)]
 pub enum LdtkProjectData {
     Standalone(LdtkJsonWithMetadata<LevelMetadata>),
+    #[cfg(feature = "external_levels")]
     Parent(LdtkJsonWithMetadata<ExternalLevelMetadata>),
 }
 
@@ -17,6 +21,7 @@ impl LdtkProjectData {
     pub fn json_data(&self) -> &LdtkJson {
         match self {
             LdtkProjectData::Standalone(project) => project.json_data(),
+            #[cfg(feature = "external_levels")]
             LdtkProjectData::Parent(project) => project.json_data(),
         }
     }
@@ -43,6 +48,7 @@ impl LdtkProjectData {
     ///
     /// [`LdtkJsonWithMetadata<ExternalLevelMetadata>`]: LdtkJsonWithMetadata
     /// [`LoadedLevel`]: crate::assets::loaded_level::LoadedLevel
+    #[cfg(feature = "external_levels")]
     pub fn as_parent(&self) -> &LdtkJsonWithMetadata<ExternalLevelMetadata> {
         self.try_into().unwrap()
     }
@@ -62,6 +68,7 @@ impl LevelMetadataAccessor for LdtkProjectData {
     fn get_level_metadata_by_iid(&self, iid: &String) -> Option<&LevelMetadata> {
         match self {
             LdtkProjectData::Standalone(project) => project.get_level_metadata_by_iid(iid),
+            #[cfg(feature = "external_levels")]
             LdtkProjectData::Parent(project) => project.get_level_metadata_by_iid(iid),
         }
     }

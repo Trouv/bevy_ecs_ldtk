@@ -8,11 +8,32 @@ use derive_more::{From, TryInto};
 #[cfg(feature = "external_levels")]
 use crate::assets::ExternalLevelMetadata;
 
+/// LDtk json data and level metadata for both internal- and external-level projects.
+///
+/// We need to abstract over these cases to allow them in the same asset type: [`LdtkProject`].
+/// All methods that are available in both cases are available here.
+/// However, methods exclusive to each case require accessing the internal type.
+/// These include methods for obtaining [`LoadedLevel`]s.
+/// See the [`LoadedLevel`]-accessing methods in the following impls:
+/// - [standalone projects](LdtkJsonWithMetadata#impl-LdtkJsonWithMetadata<LevelMetadata>)
+/// - [parent projects](LdtkJsonWithMetadata#impl-LdtkJsonWithMetadata<ExternalLevelMetadata>)
+///
+/// Note that this type's variants are under different feature flags.
+/// At least one of these feature flags needs to be enabled for the plugin to compile.
+///
+/// [`LdtkProject`]: crate::assets::LdtkProject
+/// [`LoadedLevel`]: crate::ldtk::loaded_level::LoadedLevel
 #[derive(Clone, Debug, PartialEq, From, TryInto)]
 #[try_into(owned, ref)]
 pub enum LdtkProjectData {
+    /// LDtk data for a standalone project (uses internal levels).
+    ///
+    /// This is only available under the `internal_levels` feature.
     #[cfg(feature = "internal_levels")]
     Standalone(LdtkJsonWithMetadata<LevelMetadata>),
+    /// LDtk data for a parent project (uses external levels).
+    ///
+    /// This is only available under the `external_levels` feature.
     #[cfg(feature = "external_levels")]
     Parent(LdtkJsonWithMetadata<ExternalLevelMetadata>),
 }

@@ -22,8 +22,13 @@ fn expect_level_loaded(level: &Level) -> LoadedLevel {
 /// LDtk json data and level metadata produced when loading an [`LdtkProject`] asset.
 ///
 /// Generic over the level metadata type, `L`.
-/// This is done so that this type can be used for both internal- and external-level projects.
+/// This helps differentiate between internal- and external-level projects.
 /// In practice, `L` will only ever be either [`LevelMetadata`] or [`ExternalLevelMetadata`].
+/// This provides some abstraction over the two cases, but they are ultimately different types.
+/// Some methods are exclusive to each case, especially for obtaining [`LoadedLevel`]s.
+/// See the [`LoadedLevel`]-accessing methods in the following impls:
+/// - [internal-levels](LdtkJsonWithMetadata#impl-LdtkJsonWithMetadata<LevelMetadata>)
+/// - [external-levels](LdtkJsonWithMetadata#impl-LdtkJsonWithMetadata<ExternalLevelMetadata>)
 ///
 /// [`LdtkProject`]: crate::assets::LdtkProject
 #[derive(Clone, Debug, PartialEq, Constructor, Getters)]

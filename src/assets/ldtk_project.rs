@@ -42,11 +42,29 @@ impl LdtkProject {
         self.data.json_data()
     }
 
+    /// Unwrap as a [`LdtkJsonWithMetadata<LevelMetadata>`].
+    /// For use on internal-levels ldtk projects only.
+    ///
+    /// # Panics
+    /// Panics if `self.data()` is not [`LdtkProjectData::Standalone`].
+    /// This shouldn't occur if the project uses internal levels.
+    ///
+    /// [`LdtkJsonWithMetadata<LevelMetadata>`]: LdtkJsonWithMetadata
+    /// [`LoadedLevel`]: crate::assets::loaded_level::LoadedLevel
     #[cfg(feature = "internal_levels")]
     pub fn as_standalone(&self) -> &LdtkJsonWithMetadata<LevelMetadata> {
         self.data.as_standalone()
     }
 
+    /// Unwrap as a [`LdtkJsonWithMetadata<ExternalLevelMetadata>`].
+    /// For use on external-levels ldtk projects only.
+    ///
+    /// # Panics
+    /// Panics if `self.data()` is not [`LdtkProjectData::Parent`].
+    /// This shouldn't occur if the project uses external levels.
+    ///
+    /// [`LdtkJsonWithMetadata<ExternalLevelMetadata>`]: LdtkJsonWithMetadata
+    /// [`LoadedLevel`]: crate::assets::loaded_level::LoadedLevel
     #[cfg(feature = "external_levels")]
     pub fn as_parent(&self) -> &LdtkJsonWithMetadata<ExternalLevelMetadata> {
         self.data.as_parent()

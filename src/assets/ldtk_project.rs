@@ -87,19 +87,25 @@ impl LevelMetadataAccessor for LdtkProject {
     }
 }
 
+/// Errors that can occur when loading an [`LdtkProject`] asset.
 #[allow(dead_code)]
 #[derive(Debug, Error)]
 pub enum LdtkProjectLoaderError {
+    /// LDtk project uses internal levels, but the `internal_levels` feature is disabled.
     #[error("LDtk project uses internal levels, but the internal_levels feature is disabled")]
     InternalLevelsDisabled,
+    /// LDtk project uses external levels, but the `external_levels` feature is disabled.
     #[error("LDtk project uses external levels, but the external_levels feature is disabled")]
     ExternalLevelsDisabled,
+    /// LDtk project uses internal levels, but some level's `layer_instances` is null.
     #[error("LDtk project uses internal levels, but some level's layer_instances is null")]
     InternalLevelWithNullLayers,
+    /// LDtk project uses external levels, but some level's `external_rel_path` is null.
     #[error("LDtk project uses external levels, but some level's external_rel_path is null")]
     ExternalLevelWithNullPath,
 }
 
+/// AssetLoader for [`LdtkProject`].
 #[derive(Default)]
 pub struct LdtkProjectLoader;
 

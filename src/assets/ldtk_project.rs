@@ -25,6 +25,48 @@ fn ldtk_path_to_asset_path<'b>(ldtk_path: &Path, rel_path: &str) -> AssetPath<'b
 }
 
 /// Main asset for loading LDtk project data.
+///
+/// # Accessing level data
+/// This type provides many methods for accessing level data.
+/// The correct method for you will vary depending on whether or not you need "complete" level
+/// data, and if so, whether or not your project uses internal levels or external levels.
+///
+/// ## Raw vs loaded levels
+/// There are a couple main flavors that level data can have - raw and loaded.
+///
+/// Raw levels don't have any type guarantee that the level data is complete or incomplete.
+/// Level data may be incomplete and contain no layer instances if external levels are enabled.
+/// However, even in this case, a raw level is sufficient if you don't need any layer data.
+/// Raw levels are represented by the [`Level`] type from LDtk.
+/// See [`RawLevelAccessor`] and [`LevelMetadataAccessor`] for some methods that access raw levels.
+///
+/// On the other hand, loaded levels are type-guaranteed to have complete level data.
+/// Loaded levels are represented by the [`LoadedLevel`] type.
+/// Methods for accessing loaded levels vary depending on if the levels are internal or external.
+///
+/// ## Internal levels vs external levels
+/// By default, LDtk stores level data inside the main project file.
+/// You have the option to store level data externally, where each level gets its own file.
+/// In this case, some of the level data remains available in the project file, but not layer data.
+/// See the [previous section](LdtkProject#raw-vs-loaded-levels) for more details.
+///
+/// Level data stored so differently on disk results in a similar difference when loaded in memory.
+/// In the external case, an entirely different asset type [`LdtkExternalLevel`] comes into play.
+/// So, methods for accessing loaded levels vary between the two cases.
+///
+/// If you know that your project uses internal levels, you can coerce it as a "standalone project".
+/// To do this, use [`LdtkProject::as_standalone`].
+/// With that, you can use these [`loaded_level` accessors].
+///
+/// If you know that your project uses external levels, you can coerce it as a "parent project".
+/// To do this, use [`LdtkProject::as_parent`].
+/// You will also need the [`LdtkExternalLevel`] asset collection.
+/// With these, you can use these [`external_level` accessors].
+///
+/// [`LoadedLevel`]: crate::ldtk::loaded_level::LoadedLevel
+/// [`LdtkExternalLevel`]: crate::assets::LdtkExternalLevel
+/// [`loaded_level` accessors]: LdtkJsonWithMetadata#impl-LdtkJsonWithMetadata<LevelMetadata>
+/// [`external_level` accessors]: LdtkJsonWithMetadata#impl-LdtkJsonWithMetadata<ExternalLevelMetadata>
 #[derive(Clone, Debug, PartialEq, From, TypeUuid, TypePath, Getters, Constructor)]
 #[uuid = "43571891-8570-4416-903f-582efe3426ac"]
 pub struct LdtkProject {

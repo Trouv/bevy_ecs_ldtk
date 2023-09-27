@@ -24,9 +24,11 @@ fn ldtk_path_to_asset_path<'b>(ldtk_path: &Path, rel_path: &str) -> AssetPath<'b
     ldtk_path.parent().unwrap().join(Path::new(rel_path)).into()
 }
 
+/// Main asset for loading LDtk project data.
 #[derive(Clone, Debug, PartialEq, From, TypeUuid, TypePath, Getters, Constructor)]
 #[uuid = "43571891-8570-4416-903f-582efe3426ac"]
 pub struct LdtkProject {
+    /// LDtk json data and level metadata.
     data: LdtkProjectData,
     /// Map from tileset uids to image handles for the loaded tileset.
     tileset_map: HashMap<i32, Handle<Image>>,

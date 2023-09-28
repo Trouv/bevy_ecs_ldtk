@@ -44,7 +44,7 @@ fn ldtk_path_to_asset_path<'b>(ldtk_path: &Path, rel_path: &str) -> AssetPath<'b
 /// Loaded levels are represented by the [`LoadedLevel`] type.
 /// Methods for accessing loaded levels vary depending on if the levels are internal or external.
 ///
-/// ## Internal levels vs external levels
+/// ## Accessing internal and external loaded levels
 /// By default, LDtk stores level data inside the main project file.
 /// You have the option to store level data externally, where each level gets its own file.
 /// In this case, some of the level data remains available in the project file, but not layer data.

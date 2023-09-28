@@ -16,7 +16,7 @@ pub trait LevelMetadataAccessor: RawLevelAccessor {
 
     /// Immutable access to a level at the given level iid.
     ///
-    /// Note: all levels are considered [raw](RawLevelAccessor#raw-levels).
+    /// Note: all levels are considered [raw](crate::assets::LdtkProject#raw-vs-loaded-levels).
     // We accept an `&String` here to avoid creating a new `String`.
     // Implementations will use this to index a `HashMap<String, _>`, which requires `&String`.
     // So, accepting `&str` or `AsRef<str>` or `Into<String>` would all require either taking
@@ -32,7 +32,7 @@ pub trait LevelMetadataAccessor: RawLevelAccessor {
     /// This lookup is constant for [`LevelSelection::Iid`] and [`LevelSelection::Indices`] variants.
     /// The other variants require iterating through the levels to find the match.
     ///
-    /// Note: all levels are considered [raw](RawLevelAccessor#raw-levels).
+    /// Note: all levels are considered [raw](crate::assets::LdtkProject#raw-vs-loaded-levels).
     fn find_raw_level_by_level_selection(
         &self,
         level_selection: &LevelSelection,

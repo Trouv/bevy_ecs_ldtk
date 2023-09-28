@@ -7,12 +7,11 @@ use bevy::{
 };
 use thiserror::Error;
 
-/// Secondary asset for loading ldtk files, specific to level data.
+/// Secondary asset for loading external-levels ldtk files, specific to level data.
 ///
-/// Loaded as a labeled asset when loading a standalone ldtk file with [`LdtkProject`].
-/// The label is just the level's identifier.
+/// Loaded as a dependency of the [`LdtkProject`] asset.
 ///
-/// Loaded as a dependency to the [`LdtkProject`] when loading an ldtk file with external levels.
+/// Requires the `external_levels` feature to be enabled.
 ///
 /// [`LdtkProject`]: crate::assets::LdtkProject
 #[derive(Clone, Debug, PartialEq, TypeUuid, Reflect)]

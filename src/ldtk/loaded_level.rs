@@ -17,9 +17,11 @@ pub struct LevelNotLoaded;
 /// In particular, the main project file will have levels whose `layer_instances` field is null.
 /// The complete data for these levels will exist in a separate file.
 ///
-/// Can be constructed via [`LoadedLevel::try_from`].
-/// This construction verifies that the `layer_instances` are not null.
+/// Can be constructed via [`LoadedLevel::try_from`], or accessed via the [asset types].
+/// The construction verifies that the `layer_instances` are not null.
 /// As a result, the [`LoadedLevel::layer_instances`] accessor expects the `Option` away.
+///
+/// [asset types]: crate::assets::LdtkProject#accessing-internal-and-external-loaded-levels
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct LoadedLevel<'a> {
     level: &'a Level,

@@ -200,8 +200,8 @@ fn pre_spawn_level(commands: &mut Commands, level: &Level, ldtk_settings: &LdtkS
         .id()
 }
 
-/// Performs all the spawning of levels, layers, chunks, bundles, entities, tiles, etc. when an
-/// LdtkLevelBundle is added.
+/// Performs all the spawning of levels, layers, chunks, bundles, entities, tiles, etc. when a
+/// LevelIid is added or respawned.
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub fn process_ldtk_levels(
     mut commands: Commands,

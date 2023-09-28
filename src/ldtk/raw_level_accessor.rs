@@ -49,14 +49,6 @@ pub type IterLevelsWithIndices<'a> =
 /// This sort of data stores levels both in the "root" of the project, and in each [`World`].
 /// The former is referred to in trait methods as `root_levels`, and the latter as `world_levels`.
 /// Root levels may be removed in the future after LDtk's multi-worlds update.
-///
-/// # Raw levels
-/// All levels that these methods can retrieve are considered "raw".
-/// Raw levels do not have any type guarantee that the level data is complete.
-/// Level data may be incomplete and contain no layer instances if external levels are enabled.
-/// Other methods to retrieve a [`LoadedLevel`] can be used to guarantee level data completion.
-///
-/// [`LoadedLevel`]: crate::ldtk::loaded_level::LoadedLevel
 pub trait RawLevelAccessor {
     /// Slice to this project's collection of [root levels](RawLevelAccessor#root-vs-world-levels).
     fn root_levels(&self) -> &[Level];
@@ -66,14 +58,14 @@ pub trait RawLevelAccessor {
 
     /// Iterate through this project's [root levels](RawLevelAccessor#root-vs-world-levels).
     ///
-    /// Note: all levels are considered [raw](RawLevelAccessor#raw-levels).
+    /// Note: all levels are considered [raw](crate::assets::LdtkProject#raw-vs-loaded-levels).
     fn iter_root_levels(&self) -> IterRootLevels {
         self.root_levels().iter()
     }
 
     /// Iterate through this project's [world levels](RawLevelAccessor#root-vs-world-levels).
     ///
-    /// Note: all levels are considered [raw](RawLevelAccessor#raw-levels).
+    /// Note: all levels are considered [raw](crate::assets::LdtkProject#raw-vs-loaded-levels).
     fn iter_world_levels(&self) -> IterWorldLevels {
         self.worlds().iter().flat_map(|world| world.levels.iter())
     }
@@ -82,7 +74,7 @@ pub trait RawLevelAccessor {
     ///
     /// This first iterates through [root levels, then world levels](RawLevelAccessor#root-vs-world-levels).
     ///
-    /// Note: all levels are considered [raw](RawLevelAccessor#raw-levels).
+    /// Note: all levels are considered [raw](crate::assets::LdtkProject#raw-vs-loaded-levels).
     fn iter_raw_levels(&self) -> IterLevels {
         self.iter_root_levels().chain(self.iter_world_levels())
     }
@@ -90,7 +82,7 @@ pub trait RawLevelAccessor {
     /// Iterate through this project's [root levels](RawLevelAccessor#root-vs-world-levels)
     /// enumerated with their [`LevelIndices`].
     ///
-    /// Note: all levels are considered [raw](RawLevelAccessor#raw-levels).
+    /// Note: all levels are considered [raw](crate::assets::LdtkProject#raw-vs-loaded-levels).
     fn iter_root_levels_with_indices(&self) -> IterRootLevelsWithIndices {
         self.root_levels()
             .iter()
@@ -101,7 +93,7 @@ pub trait RawLevelAccessor {
     /// Iterate through this project's [world levels](RawLevelAccessor#root-vs-world-levels)
     /// enumerated with their [`LevelIndices`].
     ///
-    /// Note: all levels are considered [raw](RawLevelAccessor#raw-levels).
+    /// Note: all levels are considered [raw](crate::assets::LdtkProject#raw-vs-loaded-levels).
     fn iter_world_levels_with_indices(&self) -> IterWorldLevelsWithIndices {
         self.worlds()
             .iter()
@@ -119,7 +111,7 @@ pub trait RawLevelAccessor {
     ///
     /// This first iterates through [root levels, then world levels](RawLevelAccessor#root-vs-world-levels).
     ///
-    /// Note: all levels are considered [raw](RawLevelAccessor#raw-levels).
+    /// Note: all levels are considered [raw](crate::assets::LdtkProject#raw-vs-loaded-levels).
     fn iter_raw_levels_with_indices(&self) -> IterLevelsWithIndices {
         self.iter_root_levels_with_indices()
             .chain(self.iter_world_levels_with_indices())
@@ -127,7 +119,7 @@ pub trait RawLevelAccessor {
 
     /// Immutable access to a level at the given [`LevelIndices`].
     ///
-    /// Note: all levels are considered [raw](RawLevelAccessor#raw-levels).
+    /// Note: all levels are considered [raw](crate::assets::LdtkProject#raw-vs-loaded-levels).
     fn get_raw_level_at_indices(&self, indices: &LevelIndices) -> Option<&Level> {
         match indices.world {
             Some(world_index) => self.worlds().get(world_index)?.levels.get(indices.level),

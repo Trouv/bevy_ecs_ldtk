@@ -307,10 +307,12 @@ impl From<&LayerInstance> for LayerMetadata {
 
 /// [Component] that indicates that an LDtk level or world should respawn.
 ///
-/// Inserting this component on an entity with either `Handle<LdtkProject>` or `Handle<LdtkExternalLevel>`
+/// Inserting this component on an entity with either [`Handle<LdtkProject>`] or [`LevelIid`]
 /// components will cause it to respawn.
 /// This can be used to implement a simple level-restart feature.
 /// Internally, this is used to support the entire level spawning process
+///
+/// [`Handle<LdtkProject>`]: crate::assets::LdtkProject
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Hash, Component, Reflect)]
 #[reflect(Component)]
 pub struct Respawn;

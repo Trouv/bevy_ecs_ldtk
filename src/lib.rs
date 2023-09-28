@@ -99,13 +99,18 @@
 //! ### Feature flags
 //!
 //! This crate uses the following set of [feature flags]:
+//! - `internal_levels`: Enable support for projects that store levels internally.
+//! I.e., projects that store level data within the main project file.
+//! - `external_levels`: Enable support for projects that store levels externally.
+//! I.e., projects that store data for each level in files separate from the main project file.
 //! - `derive`: Enables the derive macros for [LdtkEntity] and [LdtkIntCell].
 //! - `render`: Enables rendering via [bevy_ecs_tilemap]'s `render` feature. Disable it if you want
 //! to run in headless mode.
 //! - `atlas`: Enables the `atlas` feature of [bevy_ecs_tilemap]. This is required for WASM support
 //! and also for tile spacing to work on Tile and AutoTile layers.
 //!
-//! The `derive` and `render` features are enabled by default.
+//! The `derive`, `render`, and `internal_levels` features are enabled by default.
+//! Furthermore, one or both of `internal_levels` and `external_levels` must be enabled.
 //!
 //! [App]: bevy::prelude::App
 //! [Commands]: bevy::prelude::Commands

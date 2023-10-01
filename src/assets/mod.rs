@@ -1,4 +1,4 @@
-//! Assets for loading ldtk files.
+//! Assets and related items for loading LDtk files.
 
 mod ldtk_asset_plugin;
 pub use ldtk_asset_plugin::LdtkAssetPlugin;

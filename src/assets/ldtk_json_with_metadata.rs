@@ -5,6 +5,7 @@ use crate::{
     },
     resources::LevelSelection,
 };
+use bevy::reflect::Reflect;
 use derive_getters::Getters;
 use derive_more::Constructor;
 use std::collections::HashMap;
@@ -31,7 +32,7 @@ fn expect_level_loaded(level: &Level) -> LoadedLevel {
 /// - [external-levels](LdtkJsonWithMetadata#impl-LdtkJsonWithMetadata<ExternalLevelMetadata>)
 ///
 /// [`LdtkProject`]: crate::assets::LdtkProject
-#[derive(Clone, Debug, PartialEq, Constructor, Getters)]
+#[derive(Clone, Debug, PartialEq, Constructor, Getters, Reflect)]
 pub struct LdtkJsonWithMetadata<L> {
     /// Raw ldtk json data.
     json_data: LdtkJson,

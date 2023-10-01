@@ -1,3 +1,5 @@
+use bevy::reflect::Reflect;
+
 /// Indices pointing to the location of a level in an [`LdtkProject`] or [`LdtkJson`].
 ///
 /// This type supports multi-world projects by storing an optional `world` index.
@@ -6,7 +8,7 @@
 ///
 /// [`LdtkProject`]: crate::assets::LdtkProject
 /// [`LdtkJson`]: crate::ldtk::LdtkJson
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Reflect)]
 pub struct LevelIndices {
     /// The index of the world the level belongs to, if the project is multi-world.
     pub world: Option<usize>,

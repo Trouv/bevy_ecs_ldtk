@@ -1,5 +1,5 @@
 use crate::assets::LevelIndices;
-use bevy::prelude::*;
+use bevy::{prelude::*, reflect::Reflect};
 use derive_getters::Getters;
 
 #[cfg(feature = "external_levels")]
@@ -8,7 +8,7 @@ use crate::assets::LdtkExternalLevel;
 /// Metadata produced for every level during [`LdtkProject`] loading.
 ///
 /// [`LdtkProject`]: crate::assets::LdtkProject
-#[derive(Clone, Debug, Default, Eq, PartialEq, Getters)]
+#[derive(Clone, Debug, Default, Eq, PartialEq, Getters, Reflect)]
 pub struct LevelMetadata {
     /// Image handle for the background image of this level, if it has one.
     bg_image: Option<Handle<Image>>,
@@ -27,7 +27,7 @@ impl LevelMetadata {
 /// Metadata produced for every level during [`LdtkProject`] loading for external-levels projects.
 ///
 /// [`LdtkProject`]: crate::assets::LdtkProject
-#[derive(Clone, Debug, Default, Eq, PartialEq, Getters)]
+#[derive(Clone, Debug, Default, Eq, PartialEq, Getters, Reflect)]
 pub struct ExternalLevelMetadata {
     /// Common metadata for this level.
     metadata: LevelMetadata,

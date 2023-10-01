@@ -9,7 +9,7 @@ use crate::{
 use bevy::{
     asset::{AssetLoader, AssetPath, LoadContext, LoadedAsset},
     prelude::*,
-    reflect::{TypePath, TypeUuid},
+    reflect::{Reflect, TypeUuid},
     utils::BoxedFuture,
 };
 use derive_getters::Getters;
@@ -67,7 +67,7 @@ fn ldtk_path_to_asset_path<'b>(ldtk_path: &Path, rel_path: &str) -> AssetPath<'b
 /// [`LdtkExternalLevel`]: crate::assets::LdtkExternalLevel
 /// [`loaded_level` accessors]: LdtkJsonWithMetadata#impl-LdtkJsonWithMetadata<LevelMetadata>
 /// [`external_level` accessors]: LdtkJsonWithMetadata#impl-LdtkJsonWithMetadata<ExternalLevelMetadata>
-#[derive(Clone, Debug, PartialEq, From, TypeUuid, TypePath, Getters, Constructor)]
+#[derive(Clone, Debug, PartialEq, From, TypeUuid, Getters, Constructor, Reflect)]
 #[uuid = "43571891-8570-4416-903f-582efe3426ac"]
 pub struct LdtkProject {
     /// LDtk json data and level metadata.

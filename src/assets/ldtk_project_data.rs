@@ -3,6 +3,7 @@ use crate::{
     ldtk::{LdtkJson, Level},
     prelude::RawLevelAccessor,
 };
+use bevy::reflect::Reflect;
 use derive_more::{From, TryInto};
 
 #[cfg(feature = "external_levels")]
@@ -23,7 +24,7 @@ use crate::assets::ExternalLevelMetadata;
 ///
 /// [`LdtkProject`]: crate::assets::LdtkProject
 /// [`LoadedLevel`]: crate::ldtk::loaded_level::LoadedLevel
-#[derive(Clone, Debug, PartialEq, From, TryInto)]
+#[derive(Clone, Debug, PartialEq, From, TryInto, Reflect)]
 #[try_into(owned, ref)]
 pub enum LdtkProjectData {
     /// LDtk data for a standalone project (uses internal levels).

@@ -51,7 +51,7 @@ pub trait LevelMetadataAccessor: RawLevelAccessor {
 }
 
 #[cfg(test)]
-mod tests {
+pub mod tests {
     use std::collections::HashMap;
 
     use crate::{
@@ -61,9 +61,9 @@ mod tests {
 
     use super::*;
 
-    struct BasicLevelMetadataAccessor {
-        data: LdtkJson,
-        level_metadata: HashMap<String, LevelMetadata>,
+    pub struct BasicLevelMetadataAccessor {
+        pub data: LdtkJson,
+        pub level_metadata: HashMap<String, LevelMetadata>,
     }
 
     impl RawLevelAccessor for BasicLevelMetadataAccessor {
@@ -83,7 +83,7 @@ mod tests {
     }
 
     impl BasicLevelMetadataAccessor {
-        fn sample_with_root_levels() -> BasicLevelMetadataAccessor {
+        pub fn sample_with_root_levels() -> BasicLevelMetadataAccessor {
             let [level_a, level_b, level_c, level_d] = sample_levels();
 
             let data = LdtkJson {
@@ -102,7 +102,7 @@ mod tests {
             }
         }
 
-        fn sample_with_world_levels() -> BasicLevelMetadataAccessor {
+        pub fn sample_with_world_levels() -> BasicLevelMetadataAccessor {
             let [level_a, level_b, level_c, level_d] = sample_levels();
 
             let world_a = World {

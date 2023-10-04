@@ -186,7 +186,10 @@ impl LdtkJsonWithMetadata<ExternalLevelMetadata> {
 
 #[cfg(test)]
 mod tests {
-    use crate::ldtk::{raw_level_accessor::tests::sample_levels, World};
+    use crate::{
+        assets::level_metadata_accessor::tests::BasicLevelMetadataAccessor,
+        ldtk::{raw_level_accessor::tests::sample_levels, World},
+    };
 
     use super::*;
 
@@ -217,5 +220,67 @@ mod tests {
 
         assert_eq!(project.root_levels(), data.root_levels());
         assert_eq!(project.worlds(), data.worlds());
+    }
+
+    #[test]
+    #[cfg(feature = "internal_levels")]
+    fn level_metadata_accessor_implementation_is_transparent() {
+        let basic = BasicLevelMetadataAccessor::sample_with_root_levels();
+
+        let ldtk_json_with_metadata = LdtkJsonWithMetadata {
+            json_data: basic.data.clone(),
+            level_map: basic.level_metadata.clone(),
+        };
+
+        let expected_levels = sample_levels();
+
+        for level in expected_levels {
+            assert_eq!(
+                ldtk_json_with_metadata.get_level_metadata_by_iid(&level.iid),
+                basic.get_level_metadata_by_iid(&level.iid),
+            );
+        }
+
+        assert_eq!(
+            ldtk_json_with_metadata
+                .get_level_metadata_by_iid(&"This_level_doesnt_exist".to_string()),
+            None
+        );
+    }
+
+    #[test]
+    #[cfg(feature = "external_levels")]
+    fn external_level_metadata_accessor_is_transparent() {
+        let basic = BasicLevelMetadataAccessor::sample_with_root_levels();
+
+        let ldtk_json_with_metadata = LdtkJsonWithMetadata {
+            json_data: basic.data.clone(),
+            level_map: basic
+                .level_metadata
+                .clone()
+                .into_iter()
+                .map(|(iid, level_metadata)| {
+                    (
+                        iid,
+                        ExternalLevelMetadata::new(level_metadata, Handle::default()),
+                    )
+                })
+                .collect(),
+        };
+
+        let expected_levels = sample_levels();
+
+        for level in expected_levels {
+            assert_eq!(
+                ldtk_json_with_metadata.get_level_metadata_by_iid(&level.iid),
+                basic.get_level_metadata_by_iid(&level.iid),
+            );
+        }
+
+        assert_eq!(
+            ldtk_json_with_metadata
+                .get_level_metadata_by_iid(&"This_level_doesnt_exist".to_string()),
+            None
+        );
     }
 }

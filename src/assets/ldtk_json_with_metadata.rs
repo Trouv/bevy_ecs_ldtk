@@ -50,12 +50,14 @@ impl<L> RawLevelAccessor for LdtkJsonWithMetadata<L> {
     }
 }
 
+#[cfg(feature = "internal_levels")]
 impl LevelMetadataAccessor for LdtkJsonWithMetadata<LevelMetadata> {
     fn get_level_metadata_by_iid(&self, iid: &String) -> Option<&LevelMetadata> {
         self.level_map.get(iid)
     }
 }
 
+#[cfg(feature = "internal_levels")]
 impl LdtkJsonWithMetadata<LevelMetadata> {
     /// Iterate through this project's loaded levels.
     ///

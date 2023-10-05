@@ -68,8 +68,8 @@ fn ldtk_path_to_asset_path<'b>(ldtk_path: &Path, rel_path: &str) -> AssetPath<'b
 ///
 /// [`LoadedLevel`]: crate::ldtk::loaded_level::LoadedLevel
 /// [`LdtkExternalLevel`]: crate::assets::LdtkExternalLevel
-/// [`loaded_level` accessors]: LdtkJsonWithMetadata#impl-LdtkJsonWithMetadata<LevelMetadata>
-/// [`external_level` accessors]: LdtkJsonWithMetadata#impl-LdtkJsonWithMetadata<ExternalLevelMetadata>
+/// [`loaded_level` accessors]: LdtkJsonWithMetadata#impl-LdtkJsonWithMetadata<InternalLevels>
+/// [`external_level` accessors]: LdtkJsonWithMetadata#impl-LdtkJsonWithMetadata<ExternalLevels>
 #[derive(Clone, Debug, PartialEq, From, TypeUuid, Getters, Constructor, Reflect)]
 #[uuid = "43571891-8570-4416-903f-582efe3426ac"]
 pub struct LdtkProject {
@@ -87,28 +87,28 @@ impl LdtkProject {
         self.data.json_data()
     }
 
-    /// Unwrap as a [`LdtkJsonWithMetadata<LevelMetadata>`].
+    /// Unwrap as a [`LdtkJsonWithMetadata<InternalLevels>`].
     /// For use on internal-levels ldtk projects only.
     ///
     /// # Panics
     /// Panics if `self.data()` is not [`LdtkProjectData::Standalone`].
     /// This shouldn't occur if the project uses internal levels.
     ///
-    /// [`LdtkJsonWithMetadata<LevelMetadata>`]: LdtkJsonWithMetadata
+    /// [`LdtkJsonWithMetadata<InternalLevels>`]: LdtkJsonWithMetadata
     /// [`LoadedLevel`]: crate::assets::loaded_level::LoadedLevel
     #[cfg(feature = "internal_levels")]
     pub fn as_standalone(&self) -> &LdtkJsonWithMetadata<InternalLevels> {
         self.data.as_standalone()
     }
 
-    /// Unwrap as a [`LdtkJsonWithMetadata<ExternalLevelMetadata>`].
+    /// Unwrap as a [`LdtkJsonWithMetadata<ExternalLevels>`].
     /// For use on external-levels ldtk projects only.
     ///
     /// # Panics
     /// Panics if `self.data()` is not [`LdtkProjectData::Parent`].
     /// This shouldn't occur if the project uses external levels.
     ///
-    /// [`LdtkJsonWithMetadata<ExternalLevelMetadata>`]: LdtkJsonWithMetadata
+    /// [`LdtkJsonWithMetadata<ExternalLevels>`]: LdtkJsonWithMetadata
     /// [`LoadedLevel`]: crate::assets::loaded_level::LoadedLevel
     #[cfg(feature = "external_levels")]
     pub fn as_parent(&self) -> &LdtkJsonWithMetadata<ExternalLevels> {

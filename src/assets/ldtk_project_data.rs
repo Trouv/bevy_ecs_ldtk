@@ -19,8 +19,8 @@ use crate::assets::ExternalLevels;
 /// However, methods exclusive to each case require accessing the internal type.
 /// These include methods for obtaining [`LoadedLevel`]s.
 /// See the [`LoadedLevel`]-accessing methods in the following impls:
-/// - [standalone projects](LdtkJsonWithMetadata#impl-LdtkJsonWithMetadata<LevelMetadata>)
-/// - [parent projects](LdtkJsonWithMetadata#impl-LdtkJsonWithMetadata<ExternalLevelMetadata>)
+/// - [standalone projects](LdtkJsonWithMetadata#impl-LdtkJsonWithMetadata<InternalLevels>)
+/// - [parent projects](LdtkJsonWithMetadata#impl-LdtkJsonWithMetadata<ExternalLevels>)
 ///
 /// Note that this type's variants are under different feature flags.
 /// At least one of these feature flags needs to be enabled for the plugin to compile.
@@ -53,28 +53,28 @@ impl LdtkProjectData {
         }
     }
 
-    /// Unwrap as a [`LdtkJsonWithMetadata<LevelMetadata>`].
+    /// Unwrap as a [`LdtkJsonWithMetadata<InternalLevels>`].
     /// For use on internal-levels ldtk projects only.
     ///
     /// # Panics
     /// Panics if this is not [`LdtkProjectData::Standalone`].
     /// This shouldn't occur if the project uses internal levels.
     ///
-    /// [`LdtkJsonWithMetadata<LevelMetadata>`]: LdtkJsonWithMetadata
+    /// [`LdtkJsonWithMetadata<InternalLevels>`]: LdtkJsonWithMetadata
     /// [`LoadedLevel`]: crate::assets::loaded_level::LoadedLevel
     #[cfg(feature = "internal_levels")]
     pub fn as_standalone(&self) -> &LdtkJsonWithMetadata<InternalLevels> {
         self.try_into().unwrap()
     }
 
-    /// Unwrap as a [`LdtkJsonWithMetadata<ExternalLevelMetadata>`].
+    /// Unwrap as a [`LdtkJsonWithMetadata<ExternalLevels>`].
     /// For use on external-levels ldtk projects only.
     ///
     /// # Panics
     /// Panics if this is not [`LdtkProjectData::Parent`].
     /// This shouldn't occur if the project uses external levels.
     ///
-    /// [`LdtkJsonWithMetadata<ExternalLevelMetadata>`]: LdtkJsonWithMetadata
+    /// [`LdtkJsonWithMetadata<ExternalLevels>`]: LdtkJsonWithMetadata
     /// [`LoadedLevel`]: crate::assets::loaded_level::LoadedLevel
     #[cfg(feature = "external_levels")]
     pub fn as_parent(&self) -> &LdtkJsonWithMetadata<ExternalLevels> {

@@ -203,94 +203,132 @@ mod tests {
 
     use super::*;
 
-    #[test]
-    fn raw_level_accessor_implementation_is_transparent() {
-        let [level_a, level_b, level_c, level_d] = sample_levels();
-
-        let world_a = World {
-            levels: vec![level_c.clone()],
-            ..Default::default()
-        };
-
-        let world_b = World {
-            levels: vec![level_d.clone()],
-            ..Default::default()
-        };
-
-        let data = LdtkJson {
-            worlds: vec![world_a, world_b],
-            levels: vec![level_a.clone(), level_b.clone()],
-            ..Default::default()
-        };
-
-        let project = LdtkJsonWithMetadata::<()> {
-            json_data: data.clone(),
-            level_map: HashMap::default(),
-        };
-
-        assert_eq!(project.root_levels(), data.root_levels());
-        assert_eq!(project.worlds(), data.worlds());
-    }
-
-    #[test]
     #[cfg(feature = "internal_levels")]
-    fn level_metadata_accessor_implementation_is_transparent() {
-        let basic = BasicLevelMetadataAccessor::sample_with_root_levels();
+    mod internal_levels {
+        use super::*;
 
-        let ldtk_json_with_metadata = LdtkJsonWithMetadata {
-            json_data: basic.data.clone(),
-            level_map: basic.level_metadata.clone(),
-        };
+        #[test]
+        fn raw_level_accessor_implementation_is_transparent() {
+            let [level_a, level_b, level_c, level_d] = sample_levels();
 
-        let expected_levels = sample_levels();
+            let world_a = World {
+                levels: vec![level_c.clone()],
+                ..Default::default()
+            };
 
-        for level in expected_levels {
-            assert_eq!(
-                ldtk_json_with_metadata.get_level_metadata_by_iid(&level.iid),
-                basic.get_level_metadata_by_iid(&level.iid),
-            );
+            let world_b = World {
+                levels: vec![level_d.clone()],
+                ..Default::default()
+            };
+
+            let data = LdtkJson {
+                worlds: vec![world_a, world_b],
+                levels: vec![level_a.clone(), level_b.clone()],
+                ..Default::default()
+            };
+
+            let project = LdtkJsonWithMetadata::<InternalLevels> {
+                json_data: data.clone(),
+                level_map: HashMap::default(),
+            };
+
+            assert_eq!(project.root_levels(), data.root_levels());
+            assert_eq!(project.worlds(), data.worlds());
         }
 
-        assert_eq!(
-            ldtk_json_with_metadata
-                .get_level_metadata_by_iid(&"This_level_doesnt_exist".to_string()),
-            None
-        );
+        #[test]
+        fn level_metadata_accessor_implementation_is_transparent() {
+            let basic = BasicLevelMetadataAccessor::sample_with_root_levels();
+
+            let ldtk_json_with_metadata = LdtkJsonWithMetadata::<InternalLevels> {
+                json_data: basic.data.clone(),
+                level_map: basic.level_metadata.clone(),
+            };
+
+            let expected_levels = sample_levels();
+
+            for level in expected_levels {
+                assert_eq!(
+                    ldtk_json_with_metadata.get_level_metadata_by_iid(&level.iid),
+                    basic.get_level_metadata_by_iid(&level.iid),
+                );
+            }
+
+            assert_eq!(
+                ldtk_json_with_metadata
+                    .get_level_metadata_by_iid(&"This_level_doesnt_exist".to_string()),
+                None
+            );
+        }
     }
 
-    #[test]
     #[cfg(feature = "external_levels")]
-    fn external_level_metadata_accessor_is_transparent() {
-        let basic = BasicLevelMetadataAccessor::sample_with_root_levels();
+    mod external_levels {
+        use super::*;
+        use crate::assets::ExternalLevelMetadata;
 
-        let ldtk_json_with_metadata = LdtkJsonWithMetadata {
-            json_data: basic.data.clone(),
-            level_map: basic
-                .level_metadata
-                .clone()
-                .into_iter()
-                .map(|(iid, level_metadata)| {
-                    (
-                        iid,
-                        ExternalLevelMetadata::new(level_metadata, Handle::default()),
-                    )
-                })
-                .collect(),
-        };
+        #[test]
+        fn raw_level_accessor_implementation_is_transparent() {
+            let [level_a, level_b, level_c, level_d] = sample_levels();
 
-        let expected_levels = sample_levels();
+            let world_a = World {
+                levels: vec![level_c.clone()],
+                ..Default::default()
+            };
 
-        for level in expected_levels {
-            assert_eq!(
-                ldtk_json_with_metadata.get_level_metadata_by_iid(&level.iid),
-                basic.get_level_metadata_by_iid(&level.iid),
-            );
+            let world_b = World {
+                levels: vec![level_d.clone()],
+                ..Default::default()
+            };
+
+            let data = LdtkJson {
+                worlds: vec![world_a, world_b],
+                levels: vec![level_a.clone(), level_b.clone()],
+                ..Default::default()
+            };
+
+            let project = LdtkJsonWithMetadata::<ExternalLevels> {
+                json_data: data.clone(),
+                level_map: HashMap::default(),
+            };
+
+            assert_eq!(project.root_levels(), data.root_levels());
+            assert_eq!(project.worlds(), data.worlds());
         }
 
-        assert_eq!(
-            ldtk_json_with_metadata
-                .get_level_metadata_by_iid(&"This_level_doesnt_exist".to_string()),
-            None
-        );
+        #[test]
+        fn external_level_metadata_accessor_is_transparent() {
+            let basic = BasicLevelMetadataAccessor::sample_with_root_levels();
+
+            let ldtk_json_with_metadata = LdtkJsonWithMetadata::<ExternalLevels> {
+                json_data: basic.data.clone(),
+                level_map: basic
+                    .level_metadata
+                    .clone()
+                    .into_iter()
+                    .map(|(iid, level_metadata)| {
+                        (
+                            iid,
+                            ExternalLevelMetadata::new(level_metadata, Handle::default()),
+                        )
+                    })
+                    .collect(),
+            };
+
+            let expected_levels = sample_levels();
+
+            for level in expected_levels {
+                assert_eq!(
+                    ldtk_json_with_metadata.get_level_metadata_by_iid(&level.iid),
+                    basic.get_level_metadata_by_iid(&level.iid),
+                );
+            }
+
+            assert_eq!(
+                ldtk_json_with_metadata
+                    .get_level_metadata_by_iid(&"This_level_doesnt_exist".to_string()),
+                None
+            );
+        }
     }
 }

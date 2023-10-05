@@ -8,6 +8,14 @@ mod level_metadata;
 #[cfg(feature = "external_levels")]
 pub use level_metadata::ExternalLevelMetadata;
 
+mod level_locale;
+
+#[cfg(feature = "internal_levels")]
+pub use level_locale::InternalLevels;
+
+#[cfg(feature = "external_levels")]
+pub use level_locale::ExternalLevels;
+
 pub use level_metadata::LevelMetadata;
 
 mod level_metadata_accessor;

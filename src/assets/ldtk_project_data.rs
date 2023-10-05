@@ -6,8 +6,11 @@ use crate::{
 use bevy::reflect::Reflect;
 use derive_more::{From, TryInto};
 
+#[cfg(feature = "internal_levels")]
+use crate::assets::InternalLevels;
+
 #[cfg(feature = "external_levels")]
-use crate::assets::ExternalLevelMetadata;
+use crate::assets::ExternalLevels;
 
 /// LDtk json data and level metadata for both internal- and external-level projects.
 ///
@@ -31,12 +34,12 @@ pub enum LdtkProjectData {
     ///
     /// This is only available under the `internal_levels` feature.
     #[cfg(feature = "internal_levels")]
-    Standalone(LdtkJsonWithMetadata<LevelMetadata>),
+    Standalone(LdtkJsonWithMetadata<InternalLevels>),
     /// LDtk data for a parent project (uses external levels).
     ///
     /// This is only available under the `external_levels` feature.
     #[cfg(feature = "external_levels")]
-    Parent(LdtkJsonWithMetadata<ExternalLevelMetadata>),
+    Parent(LdtkJsonWithMetadata<ExternalLevels>),
 }
 
 impl LdtkProjectData {
@@ -60,7 +63,7 @@ impl LdtkProjectData {
     /// [`LdtkJsonWithMetadata<LevelMetadata>`]: LdtkJsonWithMetadata
     /// [`LoadedLevel`]: crate::assets::loaded_level::LoadedLevel
     #[cfg(feature = "internal_levels")]
-    pub fn as_standalone(&self) -> &LdtkJsonWithMetadata<LevelMetadata> {
+    pub fn as_standalone(&self) -> &LdtkJsonWithMetadata<InternalLevels> {
         self.try_into().unwrap()
     }
 
@@ -74,7 +77,7 @@ impl LdtkProjectData {
     /// [`LdtkJsonWithMetadata<ExternalLevelMetadata>`]: LdtkJsonWithMetadata
     /// [`LoadedLevel`]: crate::assets::loaded_level::LoadedLevel
     #[cfg(feature = "external_levels")]
-    pub fn as_parent(&self) -> &LdtkJsonWithMetadata<ExternalLevelMetadata> {
+    pub fn as_parent(&self) -> &LdtkJsonWithMetadata<ExternalLevels> {
         self.try_into().unwrap()
     }
 }

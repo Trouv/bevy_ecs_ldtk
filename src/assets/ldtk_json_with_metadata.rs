@@ -1,5 +1,5 @@
 use crate::{
-    assets::{LevelIndices, LevelMetadata, LevelMetadataAccessor},
+    assets::{level_locale::LevelLocale, LevelIndices, LevelMetadata, LevelMetadataAccessor},
     ldtk::{
         loaded_level::LoadedLevel, raw_level_accessor::RawLevelAccessor, LdtkJson, Level, World,
     },
@@ -10,11 +10,15 @@ use derive_getters::Getters;
 use derive_more::Constructor;
 use std::collections::HashMap;
 
+#[cfg(feature = "internal_levels")]
+use crate::assets::InternalLevels;
+
 #[cfg(feature = "external_levels")]
-use crate::assets::{ExternalLevelMetadata, LdtkExternalLevel};
+use crate::assets::{ExternalLevels, LdtkExternalLevel};
 #[cfg(feature = "external_levels")]
 use bevy::prelude::*;
 
+#[cfg(feature = "internal_levels")]
 fn expect_level_loaded(level: &Level) -> LoadedLevel {
     LoadedLevel::try_from(level)
         .expect("LdtkProject construction should guarantee that internal levels are loaded")
@@ -33,14 +37,20 @@ fn expect_level_loaded(level: &Level) -> LoadedLevel {
 ///
 /// [`LdtkProject`]: crate::assets::LdtkProject
 #[derive(Clone, Debug, PartialEq, Constructor, Getters, Reflect)]
-pub struct LdtkJsonWithMetadata<L> {
+pub struct LdtkJsonWithMetadata<L>
+where
+    L: LevelLocale,
+{
     /// Raw ldtk json data.
     json_data: LdtkJson,
     /// Map from level iids to level metadata.
-    level_map: HashMap<String, L>,
+    level_map: HashMap<String, L::Metadata>,
 }
 
-impl<L> RawLevelAccessor for LdtkJsonWithMetadata<L> {
+impl<L> RawLevelAccessor for LdtkJsonWithMetadata<L>
+where
+    L: LevelLocale,
+{
     fn root_levels(&self) -> &[Level] {
         self.json_data.root_levels()
     }
@@ -51,14 +61,14 @@ impl<L> RawLevelAccessor for LdtkJsonWithMetadata<L> {
 }
 
 #[cfg(feature = "internal_levels")]
-impl LevelMetadataAccessor for LdtkJsonWithMetadata<LevelMetadata> {
+impl LevelMetadataAccessor for LdtkJsonWithMetadata<InternalLevels> {
     fn get_level_metadata_by_iid(&self, iid: &String) -> Option<&LevelMetadata> {
         self.level_map.get(iid)
     }
 }
 
 #[cfg(feature = "internal_levels")]
-impl LdtkJsonWithMetadata<LevelMetadata> {
+impl LdtkJsonWithMetadata<InternalLevels> {
     /// Iterate through this project's loaded levels.
     ///
     /// This first iterates through [root levels, then world levels](RawLevelAccessor#root-vs-world-levels).
@@ -103,14 +113,14 @@ impl LdtkJsonWithMetadata<LevelMetadata> {
 }
 
 #[cfg(feature = "external_levels")]
-impl LevelMetadataAccessor for LdtkJsonWithMetadata<ExternalLevelMetadata> {
+impl LevelMetadataAccessor for LdtkJsonWithMetadata<ExternalLevels> {
     fn get_level_metadata_by_iid(&self, iid: &String) -> Option<&LevelMetadata> {
         Some(self.level_map.get(iid)?.metadata())
     }
 }
 
 #[cfg(feature = "external_levels")]
-impl LdtkJsonWithMetadata<ExternalLevelMetadata> {
+impl LdtkJsonWithMetadata<ExternalLevels> {
     /// Iterate through this project's external levels.
     ///
     /// This first iterates through [root levels, then world levels](RawLevelAccessor#root-vs-world-levels).

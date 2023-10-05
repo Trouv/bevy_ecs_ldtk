@@ -17,8 +17,11 @@ use derive_more::{Constructor, From};
 use std::collections::HashMap;
 use thiserror::Error;
 
+#[cfg(feature = "internal_levels")]
+use crate::assets::InternalLevels;
+
 #[cfg(feature = "external_levels")]
-use crate::assets::ExternalLevelMetadata;
+use crate::assets::{ExternalLevelMetadata, ExternalLevels};
 
 fn ldtk_path_to_asset_path<'b>(ldtk_path: &Path, rel_path: &str) -> AssetPath<'b> {
     ldtk_path.parent().unwrap().join(Path::new(rel_path)).into()
@@ -94,7 +97,7 @@ impl LdtkProject {
     /// [`LdtkJsonWithMetadata<LevelMetadata>`]: LdtkJsonWithMetadata
     /// [`LoadedLevel`]: crate::assets::loaded_level::LoadedLevel
     #[cfg(feature = "internal_levels")]
-    pub fn as_standalone(&self) -> &LdtkJsonWithMetadata<LevelMetadata> {
+    pub fn as_standalone(&self) -> &LdtkJsonWithMetadata<InternalLevels> {
         self.data.as_standalone()
     }
 
@@ -108,7 +111,7 @@ impl LdtkProject {
     /// [`LdtkJsonWithMetadata<ExternalLevelMetadata>`]: LdtkJsonWithMetadata
     /// [`LoadedLevel`]: crate::assets::loaded_level::LoadedLevel
     #[cfg(feature = "external_levels")]
-    pub fn as_parent(&self) -> &LdtkJsonWithMetadata<ExternalLevelMetadata> {
+    pub fn as_parent(&self) -> &LdtkJsonWithMetadata<ExternalLevels> {
         self.data.as_parent()
     }
 }

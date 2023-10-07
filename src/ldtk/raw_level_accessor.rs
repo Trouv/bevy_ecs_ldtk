@@ -140,7 +140,12 @@ impl RawLevelAccessor for LdtkJson {
 
 #[cfg(test)]
 pub mod tests {
-    use crate::ldtk::World;
+    use fake::Fake;
+
+    use crate::ldtk::fake::{
+        MixedLevelsLdtkJsonFaker, RootLevelsLdtkJsonFaker, UnloadedLevelsFaker,
+        WorldLevelsLdtkJsonFaker,
+    };
 
     use super::*;
 
@@ -178,30 +183,15 @@ pub mod tests {
 
     #[test]
     fn iter_levels_in_root() {
-        let [level_a, level_b, level_c, level_d] = sample_levels();
-
-        let project = LdtkJson {
-            levels: vec![
-                level_a.clone(),
-                level_b.clone(),
-                level_c.clone(),
-                level_d.clone(),
-            ],
-            ..Default::default()
-        };
+        let project: LdtkJson = RootLevelsLdtkJsonFaker(UnloadedLevelsFaker(4..8)).fake();
 
         let iter_raw_levels_with_indices =
             project.iter_raw_levels_with_indices().collect::<Vec<_>>();
 
-        assert_eq!(
-            iter_raw_levels_with_indices,
-            vec![
-                (LevelIndices::in_root(0), &level_a),
-                (LevelIndices::in_root(1), &level_b),
-                (LevelIndices::in_root(2), &level_c),
-                (LevelIndices::in_root(3), &level_d)
-            ]
-        );
+        for (i, (indices, level)) in iter_raw_levels_with_indices.iter().enumerate() {
+            assert_eq!(indices, &LevelIndices::in_root(i));
+            assert_eq!(*level, &project.levels[i]);
+        }
 
         // same results from root_levels iterator
         assert_eq!(
@@ -230,35 +220,15 @@ pub mod tests {
 
     #[test]
     fn iter_levels_in_worlds() {
-        let [level_a, level_b, level_c, level_d] = sample_levels();
-
-        let world_a = World {
-            levels: vec![level_a.clone(), level_b.clone()],
-            ..Default::default()
-        };
-
-        let world_b = World {
-            levels: vec![level_c.clone(), level_d.clone()],
-            ..Default::default()
-        };
-
-        let project = LdtkJson {
-            worlds: vec![world_a, world_b],
-            ..Default::default()
-        };
+        let project: LdtkJson = WorldLevelsLdtkJsonFaker(UnloadedLevelsFaker(4..5), 4..5).fake();
 
         let iter_raw_levels_with_indices =
             project.iter_raw_levels_with_indices().collect::<Vec<_>>();
 
-        assert_eq!(
-            iter_raw_levels_with_indices,
-            vec![
-                (LevelIndices::in_world(0, 0), &level_a),
-                (LevelIndices::in_world(0, 1), &level_b),
-                (LevelIndices::in_world(1, 0), &level_c),
-                (LevelIndices::in_world(1, 1), &level_d)
-            ]
-        );
+        for (i, (indices, level)) in iter_raw_levels_with_indices.iter().enumerate() {
+            assert_eq!(indices, &LevelIndices::in_world(i / 4, i % 4));
+            assert_eq!(*level, &project.worlds[i / 4].levels[i % 4]);
+        }
 
         // same results from world_levels iterator
         assert_eq!(
@@ -287,44 +257,29 @@ pub mod tests {
 
     #[test]
     fn iter_raw_levels_iterates_through_root_levels_first() {
-        let [level_a, level_b, level_c, level_d] = sample_levels();
-
-        let world_a = World {
-            levels: vec![level_c.clone()],
-            ..Default::default()
-        };
-
-        let world_b = World {
-            levels: vec![level_d.clone()],
-            ..Default::default()
-        };
-
-        let project = LdtkJson {
-            worlds: vec![world_a, world_b],
-            levels: vec![level_a.clone(), level_b.clone()],
-            ..Default::default()
-        };
+        let project: LdtkJson = MixedLevelsLdtkJsonFaker(UnloadedLevelsFaker(4..5), 4..5).fake();
 
         let iter_raw_levels_with_indices =
             project.iter_raw_levels_with_indices().collect::<Vec<_>>();
 
-        assert_eq!(
-            iter_raw_levels_with_indices,
-            vec![
-                (LevelIndices::in_root(0), &level_a),
-                (LevelIndices::in_root(1), &level_b),
-                (LevelIndices::in_world(0, 0), &level_c),
-                (LevelIndices::in_world(1, 0), &level_d)
-            ]
-        );
+        for (i, (indices, level)) in iter_raw_levels_with_indices.iter().enumerate() {
+            if i < 4 {
+                assert_eq!(indices, &LevelIndices::in_root(i));
+                assert_eq!(*level, &project.levels[i]);
+            } else {
+                let i = i - 4;
+                assert_eq!(indices, &LevelIndices::in_world(i / 4, i % 4));
+                assert_eq!(*level, &project.worlds[i / 4].levels[i % 4]);
+            }
+        }
 
         // same results from root_levels and world_levelsiterator
         assert_eq!(
-            iter_raw_levels_with_indices[0..2],
+            iter_raw_levels_with_indices[0..4],
             project.iter_root_levels_with_indices().collect::<Vec<_>>(),
         );
         assert_eq!(
-            iter_raw_levels_with_indices[2..4],
+            iter_raw_levels_with_indices[4..20],
             project.iter_world_levels_with_indices().collect::<Vec<_>>(),
         );
 
@@ -339,11 +294,11 @@ pub mod tests {
         );
         assert_eq!(
             project.iter_root_levels().collect::<Vec<_>>(),
-            iter_raw_levels_without_indices[0..2],
+            iter_raw_levels_without_indices[0..4],
         );
         assert_eq!(
             project.iter_world_levels().collect::<Vec<_>>(),
-            iter_raw_levels_without_indices[2..4],
+            iter_raw_levels_without_indices[4..20],
         );
     }
 
@@ -360,35 +315,14 @@ pub mod tests {
 
     #[test]
     fn get_root_levels_by_indices() {
-        let [level_a, level_b, level_c, level_d] = sample_levels();
+        let project: LdtkJson = RootLevelsLdtkJsonFaker(UnloadedLevelsFaker(4..5)).fake();
 
-        let project = LdtkJson {
-            levels: vec![
-                level_a.clone(),
-                level_b.clone(),
-                level_c.clone(),
-                level_d.clone(),
-            ],
-            ..Default::default()
-        };
-
-        // positive cases
-        assert_eq!(
-            project.get_raw_level_at_indices(&LevelIndices::in_root(0)),
-            Some(&level_a)
-        );
-        assert_eq!(
-            project.get_raw_level_at_indices(&LevelIndices::in_root(1)),
-            Some(&level_b)
-        );
-        assert_eq!(
-            project.get_raw_level_at_indices(&LevelIndices::in_root(2)),
-            Some(&level_c)
-        );
-        assert_eq!(
-            project.get_raw_level_at_indices(&LevelIndices::in_root(3)),
-            Some(&level_d)
-        );
+        for (i, level) in project.levels.iter().enumerate() {
+            assert_eq!(
+                project.get_raw_level_at_indices(&LevelIndices::in_root(i)),
+                Some(level)
+            );
+        }
 
         // negative cases
         assert_eq!(
@@ -403,52 +337,39 @@ pub mod tests {
 
     #[test]
     fn get_world_levels_by_indices() {
-        let [level_a, level_b, level_c, level_d] = sample_levels();
+        let project: LdtkJson = WorldLevelsLdtkJsonFaker(UnloadedLevelsFaker(4..5), 4..5).fake();
 
-        let world_a = World {
-            levels: vec![level_a.clone(), level_b.clone()],
-            ..Default::default()
-        };
-
-        let world_b = World {
-            levels: vec![level_c.clone(), level_d.clone()],
-            ..Default::default()
-        };
-
-        let project = LdtkJson {
-            worlds: vec![world_a, world_b],
-            ..Default::default()
-        };
-
-        // positive cases
-        assert_eq!(
-            project.get_raw_level_at_indices(&LevelIndices::in_world(0, 0)),
-            Some(&level_a)
-        );
-        assert_eq!(
-            project.get_raw_level_at_indices(&LevelIndices::in_world(0, 1)),
-            Some(&level_b)
-        );
-        assert_eq!(
-            project.get_raw_level_at_indices(&LevelIndices::in_world(1, 0)),
-            Some(&level_c)
-        );
-        assert_eq!(
-            project.get_raw_level_at_indices(&LevelIndices::in_world(1, 1)),
-            Some(&level_d)
-        );
+        for (world_index, world) in project.worlds.iter().enumerate() {
+            for (level_index, level) in world.levels.iter().enumerate() {
+                assert_eq!(
+                    project.get_raw_level_at_indices(&LevelIndices::in_world(
+                        world_index,
+                        level_index
+                    )),
+                    Some(level)
+                );
+            }
+        }
 
         // negative cases
         assert_eq!(
-            project.get_raw_level_at_indices(&LevelIndices::in_world(0, 2)),
+            project.get_raw_level_at_indices(&LevelIndices::in_world(0, 5)),
             None
         );
         assert_eq!(
-            project.get_raw_level_at_indices(&LevelIndices::in_world(1, 2)),
+            project.get_raw_level_at_indices(&LevelIndices::in_world(1, 5)),
             None
         );
         assert_eq!(
-            project.get_raw_level_at_indices(&LevelIndices::in_world(2, 0)),
+            project.get_raw_level_at_indices(&LevelIndices::in_world(2, 5)),
+            None
+        );
+        assert_eq!(
+            project.get_raw_level_at_indices(&LevelIndices::in_world(3, 5)),
+            None
+        );
+        assert_eq!(
+            project.get_raw_level_at_indices(&LevelIndices::in_world(4, 0)),
             None
         );
         assert_eq!(

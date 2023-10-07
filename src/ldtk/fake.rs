@@ -63,7 +63,7 @@ impl Dummy<LoadedLevelsFaker> for Vec<Level> {
 }
 
 #[derive(Clone, Default, Debug, PartialEq, Eq)]
-pub struct WorldFaker<L>(L)
+pub struct WorldFaker<L>(pub L)
 where
     Vec<Level>: Dummy<L>;
 
@@ -82,7 +82,7 @@ where
 }
 
 #[derive(Clone, Default, Debug, PartialEq, Eq)]
-pub struct RootLevelsLdtkJsonFaker<L>(L)
+pub struct RootLevelsLdtkJsonFaker<L>(pub L)
 where
     Vec<Level>: Dummy<L>;
 
@@ -102,7 +102,7 @@ where
 }
 
 #[derive(Clone, Default, Debug, PartialEq, Eq)]
-pub struct WorldLevelsLdtkJsonFaker<L>(L, Range<usize>)
+pub struct WorldLevelsLdtkJsonFaker<L>(pub L, pub Range<usize>)
 where
     Vec<Level>: Dummy<L>;
 
@@ -122,7 +122,28 @@ where
 }
 
 #[derive(Clone, Default, Debug, PartialEq, Eq)]
-struct RootLevelsLdtkJsonWithExternalLevelsFaker(RootLevelsLdtkJsonFaker<LoadedLevelsFaker>);
+pub struct MixedLevelsLdtkJsonFaker<L>(pub L, pub Range<usize>)
+where
+    Vec<Level>: Dummy<L>;
+
+impl<L> Dummy<MixedLevelsLdtkJsonFaker<L>> for LdtkJson
+where
+    Vec<Level>: Dummy<L>,
+    L: Clone + 'static,
+{
+    fn dummy_with_rng<R: Rng + ?Sized>(config: &MixedLevelsLdtkJsonFaker<L>, rng: &mut R) -> Self {
+        LdtkJson {
+            iid: UUIDv4.fake_with_rng(rng),
+            levels: config.0.fake_with_rng(rng),
+            worlds: Fake::fake_with_rng(&(WorldFaker(config.0.clone()), config.1.clone()), rng),
+            external_levels: TypeId::of::<L>() == TypeId::of::<UnloadedLevelsFaker>(),
+            ..Default::default()
+        }
+    }
+}
+
+#[derive(Clone, Default, Debug, PartialEq, Eq)]
+struct RootLevelsLdtkJsonWithExternalLevelsFaker(pub RootLevelsLdtkJsonFaker<LoadedLevelsFaker>);
 
 impl Dummy<RootLevelsLdtkJsonWithExternalLevelsFaker> for (LdtkJson, Vec<Level>) {
     fn dummy_with_rng<R: Rng + ?Sized>(
@@ -144,7 +165,7 @@ impl Dummy<RootLevelsLdtkJsonWithExternalLevelsFaker> for (LdtkJson, Vec<Level>)
 }
 
 #[derive(Clone, Default, Debug, PartialEq, Eq)]
-struct WorldLevelsLdtkJsonWithExternalLevelsFaker(WorldLevelsLdtkJsonFaker<LoadedLevelsFaker>);
+struct WorldLevelsLdtkJsonWithExternalLevelsFaker(pub WorldLevelsLdtkJsonFaker<LoadedLevelsFaker>);
 
 impl Dummy<WorldLevelsLdtkJsonWithExternalLevelsFaker> for (LdtkJson, Vec<Level>) {
     fn dummy_with_rng<R: Rng + ?Sized>(

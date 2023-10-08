@@ -198,34 +198,20 @@ impl LdtkJsonWithMetadata<ExternalLevels> {
 mod tests {
     use crate::{
         assets::level_metadata_accessor::tests::BasicLevelMetadataAccessor,
-        ldtk::{raw_level_accessor::tests::sample_levels, World},
+        ldtk::fake::{MixedLevelsLdtkJsonFaker, UnloadedLevelsFaker},
     };
+    use fake::Fake;
 
     use super::*;
 
     #[cfg(feature = "internal_levels")]
     mod internal_levels {
+
         use super::*;
 
         #[test]
         fn raw_level_accessor_implementation_is_transparent() {
-            let [level_a, level_b, level_c, level_d] = sample_levels();
-
-            let world_a = World {
-                levels: vec![level_c.clone()],
-                ..Default::default()
-            };
-
-            let world_b = World {
-                levels: vec![level_d.clone()],
-                ..Default::default()
-            };
-
-            let data = LdtkJson {
-                worlds: vec![world_a, world_b],
-                levels: vec![level_a.clone(), level_b.clone()],
-                ..Default::default()
-            };
+            let data: LdtkJson = MixedLevelsLdtkJsonFaker(UnloadedLevelsFaker(4..8), 4..8).fake();
 
             let project = LdtkJsonWithMetadata::<InternalLevels> {
                 json_data: data.clone(),
@@ -245,9 +231,7 @@ mod tests {
                 level_map: basic.level_metadata.clone(),
             };
 
-            let expected_levels = sample_levels();
-
-            for level in expected_levels {
+            for level in &basic.data.levels {
                 assert_eq!(
                     ldtk_json_with_metadata.get_level_metadata_by_iid(&level.iid),
                     basic.get_level_metadata_by_iid(&level.iid),
@@ -269,23 +253,7 @@ mod tests {
 
         #[test]
         fn raw_level_accessor_implementation_is_transparent() {
-            let [level_a, level_b, level_c, level_d] = sample_levels();
-
-            let world_a = World {
-                levels: vec![level_c.clone()],
-                ..Default::default()
-            };
-
-            let world_b = World {
-                levels: vec![level_d.clone()],
-                ..Default::default()
-            };
-
-            let data = LdtkJson {
-                worlds: vec![world_a, world_b],
-                levels: vec![level_a.clone(), level_b.clone()],
-                ..Default::default()
-            };
+            let data: LdtkJson = MixedLevelsLdtkJsonFaker(UnloadedLevelsFaker(4..8), 4..8).fake();
 
             let project = LdtkJsonWithMetadata::<ExternalLevels> {
                 json_data: data.clone(),
@@ -315,9 +283,7 @@ mod tests {
                     .collect(),
             };
 
-            let expected_levels = sample_levels();
-
-            for level in expected_levels {
+            for level in &basic.data.levels {
                 assert_eq!(
                     ldtk_json_with_metadata.get_level_metadata_by_iid(&level.iid),
                     basic.get_level_metadata_by_iid(&level.iid),

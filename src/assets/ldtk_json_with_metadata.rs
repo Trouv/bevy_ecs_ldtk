@@ -200,14 +200,42 @@ mod tests {
         assets::level_metadata_accessor::tests::BasicLevelMetadataAccessor,
         ldtk::fake::{MixedLevelsLdtkJsonFaker, UnloadedLevelsFaker},
     };
-    use fake::Fake;
+    use fake::{Dummy, Fake, Faker};
 
     use super::*;
 
     #[cfg(feature = "internal_levels")]
     mod internal_levels {
 
+        use crate::{
+            ldtk::fake::{LoadedLevelsFaker, RootLevelsLdtkJsonFaker},
+            LevelIid,
+        };
+
         use super::*;
+
+        impl Dummy<Faker> for LdtkJsonWithMetadata<InternalLevels> {
+            fn dummy_with_rng<R: rand::Rng + ?Sized>(_: &Faker, rng: &mut R) -> Self {
+                let json_data: LdtkJson =
+                    RootLevelsLdtkJsonFaker(LoadedLevelsFaker(4..8)).fake_with_rng(rng);
+                let level_map = json_data
+                    .levels
+                    .iter()
+                    .enumerate()
+                    .map(|(i, level)| {
+                        (
+                            level.iid.clone(),
+                            LevelMetadata::new(None, LevelIndices::in_root(i)),
+                        )
+                    })
+                    .collect();
+
+                LdtkJsonWithMetadata {
+                    json_data,
+                    level_map,
+                }
+            }
+        }
 
         #[test]
         fn raw_level_accessor_implementation_is_transparent() {

@@ -143,7 +143,9 @@ where
 }
 
 #[derive(Clone, Default, Debug, PartialEq, Eq)]
-struct RootLevelsLdtkJsonWithExternalLevelsFaker(pub RootLevelsLdtkJsonFaker<LoadedLevelsFaker>);
+pub struct RootLevelsLdtkJsonWithExternalLevelsFaker(
+    pub RootLevelsLdtkJsonFaker<LoadedLevelsFaker>,
+);
 
 impl Dummy<RootLevelsLdtkJsonWithExternalLevelsFaker> for (LdtkJson, Vec<Level>) {
     fn dummy_with_rng<R: Rng + ?Sized>(
@@ -165,7 +167,9 @@ impl Dummy<RootLevelsLdtkJsonWithExternalLevelsFaker> for (LdtkJson, Vec<Level>)
 }
 
 #[derive(Clone, Default, Debug, PartialEq, Eq)]
-struct WorldLevelsLdtkJsonWithExternalLevelsFaker(pub WorldLevelsLdtkJsonFaker<LoadedLevelsFaker>);
+pub struct WorldLevelsLdtkJsonWithExternalLevelsFaker(
+    pub WorldLevelsLdtkJsonFaker<LoadedLevelsFaker>,
+);
 
 impl Dummy<WorldLevelsLdtkJsonWithExternalLevelsFaker> for (LdtkJson, Vec<Level>) {
     fn dummy_with_rng<R: Rng + ?Sized>(

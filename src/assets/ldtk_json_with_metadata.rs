@@ -402,7 +402,56 @@ mod tests {
     #[cfg(feature = "external_levels")]
     mod external_levels {
         use super::*;
-        use crate::assets::ExternalLevelMetadata;
+        use crate::{
+            assets::ExternalLevelMetadata,
+            ldtk::fake::{
+                LoadedLevelsFaker, RootLevelsLdtkJsonFaker,
+                RootLevelsLdtkJsonWithExternalLevelsFaker,
+            },
+            LevelIid,
+        };
+
+        fn app_setup() -> App {
+            let mut app = App::new();
+            app.add_plugins(AssetPlugin::default())
+                .add_asset::<LdtkExternalLevel>();
+
+            app
+        }
+
+        fn fake_and_load_ldtk_json_with_metadata(
+            app: &mut App,
+        ) -> LdtkJsonWithMetadata<ExternalLevels> {
+            let (json_data, levels): (LdtkJson, Vec<Level>) =
+                RootLevelsLdtkJsonWithExternalLevelsFaker(RootLevelsLdtkJsonFaker(
+                    LoadedLevelsFaker(4..8),
+                ))
+                .fake();
+
+            let mut assets = app
+                .world
+                .get_resource_mut::<Assets<LdtkExternalLevel>>()
+                .unwrap();
+
+            let level_map = levels
+                .iter()
+                .enumerate()
+                .map(|(i, level)| {
+                    (
+                        level.iid.clone(),
+                        ExternalLevelMetadata::new(
+                            LevelMetadata::new(None, LevelIndices::in_root(i)),
+                            assets.add(LdtkExternalLevel::new(level.clone())),
+                        ),
+                    )
+                })
+                .collect();
+
+            LdtkJsonWithMetadata {
+                json_data,
+                level_map,
+            }
+        }
 
         #[test]
         fn raw_level_accessor_implementation_is_transparent() {

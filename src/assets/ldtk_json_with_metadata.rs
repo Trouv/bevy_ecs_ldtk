@@ -131,8 +131,8 @@ impl LdtkJsonWithMetadata<ExternalLevels> {
         &'a self,
         external_level_assets: &'a Assets<LdtkExternalLevel>,
     ) -> impl Iterator<Item = LoadedLevel<'a>> {
-        self.level_map()
-            .values()
+        self.iter_raw_levels()
+            .filter_map(|level| self.level_map.get(&level.iid))
             .filter_map(|metadata| external_level_assets.get(metadata.external_handle()))
             .map(LdtkExternalLevel::data)
     }

@@ -272,6 +272,131 @@ mod tests {
                 None
             );
         }
+
+        #[test]
+        fn loaded_level_iteration() {
+            let project: LdtkJsonWithMetadata<InternalLevels> = Faker.fake();
+
+            assert_eq!(
+                project.iter_loaded_levels().count(),
+                project.json_data.levels.len()
+            );
+
+            for (loaded_level, expected_level) in project
+                .iter_loaded_levels()
+                .zip(project.json_data.levels.iter())
+            {
+                assert_eq!(loaded_level.raw(), expected_level)
+            }
+        }
+
+        #[test]
+        fn indices_lookup_returns_expected_loaded_levels() {
+            let project: LdtkJsonWithMetadata<InternalLevels> = Faker.fake();
+
+            for (i, expected_level) in project.json_data.levels.iter().enumerate() {
+                assert_eq!(
+                    project
+                        .get_loaded_level_by_indices(&LevelIndices::in_root(i))
+                        .unwrap()
+                        .raw(),
+                    expected_level
+                );
+            }
+
+            assert_eq!(
+                project.get_raw_level_at_indices(&LevelIndices::in_root(10)),
+                None
+            );
+            assert_eq!(
+                project.get_raw_level_at_indices(&LevelIndices::in_world(0, 0)),
+                None
+            );
+        }
+
+        #[test]
+        fn iid_lookup_returns_expected_loaded_levels() {
+            let project: LdtkJsonWithMetadata<InternalLevels> = Faker.fake();
+
+            for expected_level in &project.json_data.levels {
+                assert_eq!(
+                    project
+                        .get_loaded_level_by_iid(&expected_level.iid)
+                        .unwrap()
+                        .raw(),
+                    expected_level
+                );
+            }
+
+            assert_eq!(
+                project
+                    .get_loaded_level_by_iid(&"cd51071d-5224-4628-ae0d-abbe28090521".to_string()),
+                None
+            )
+        }
+
+        #[test]
+        fn find_by_level_selection_returns_expected_loaded_levels() {
+            let project: LdtkJsonWithMetadata<InternalLevels> = Faker.fake();
+
+            for (i, expected_level) in project.json_data.levels.iter().enumerate() {
+                assert_eq!(
+                    project
+                        .find_loaded_level_by_level_selection(&LevelSelection::index(i))
+                        .unwrap()
+                        .raw(),
+                    expected_level
+                );
+                assert_eq!(
+                    project
+                        .find_loaded_level_by_level_selection(&LevelSelection::Identifier(
+                            expected_level.identifier.clone()
+                        ))
+                        .unwrap()
+                        .raw(),
+                    expected_level
+                );
+                assert_eq!(
+                    project
+                        .find_loaded_level_by_level_selection(&LevelSelection::Iid(LevelIid::new(
+                            expected_level.iid.clone()
+                        )))
+                        .unwrap()
+                        .raw(),
+                    expected_level
+                );
+                assert_eq!(
+                    project
+                        .find_loaded_level_by_level_selection(&LevelSelection::Uid(
+                            expected_level.uid
+                        ))
+                        .unwrap()
+                        .raw(),
+                    expected_level
+                );
+            }
+
+            assert_eq!(
+                project.find_loaded_level_by_level_selection(&LevelSelection::index(10)),
+                None
+            );
+            assert_eq!(
+                project.find_loaded_level_by_level_selection(&LevelSelection::Identifier(
+                    "Back_Rooms".to_string()
+                )),
+                None
+            );
+            assert_eq!(
+                project.find_loaded_level_by_level_selection(&LevelSelection::Iid(LevelIid::new(
+                    "cd51071d-5224-4628-ae0d-abbe28090521".to_string()
+                ))),
+                None
+            );
+            assert_eq!(
+                project.find_loaded_level_by_level_selection(&LevelSelection::Uid(2023)),
+                None,
+            );
+        }
     }
 
     #[cfg(feature = "external_levels")]

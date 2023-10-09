@@ -498,5 +498,168 @@ mod tests {
                 None
             );
         }
+
+        #[test]
+        fn external_level_iteration() {
+            let mut app = app_setup();
+            let project = fake_and_load_ldtk_json_with_metadata(&mut app);
+
+            assert_eq!(
+                project
+                    .iter_external_levels(
+                        app.world
+                            .get_resource::<Assets<LdtkExternalLevel>>()
+                            .unwrap()
+                    )
+                    .count(),
+                project.json_data.levels.len()
+            );
+
+            for (external_level, expected_level) in project
+                .iter_external_levels(
+                    app.world
+                        .get_resource::<Assets<LdtkExternalLevel>>()
+                        .unwrap(),
+                )
+                .zip(project.json_data.levels.iter())
+            {
+                assert_eq!(external_level.iid(), &expected_level.iid)
+            }
+        }
+
+        #[test]
+        fn indices_lookup_returns_expected_external_levels() {
+            let mut app = app_setup();
+            let project = fake_and_load_ldtk_json_with_metadata(&mut app);
+
+            let assets = app
+                .world
+                .get_resource::<Assets<LdtkExternalLevel>>()
+                .unwrap();
+
+            for (i, expected_level) in project.json_data.levels.iter().enumerate() {
+                assert_eq!(
+                    project
+                        .get_external_level_at_indices(assets, &LevelIndices::in_root(i))
+                        .unwrap()
+                        .iid(),
+                    &expected_level.iid
+                );
+            }
+
+            assert_eq!(
+                project.get_external_level_at_indices(assets, &LevelIndices::in_root(10)),
+                None
+            );
+            assert_eq!(
+                project.get_external_level_at_indices(assets, &LevelIndices::in_world(0, 0)),
+                None
+            );
+        }
+
+        #[test]
+        fn iid_lookup_returns_expected_external_levels() {
+            let mut app = app_setup();
+            let project = fake_and_load_ldtk_json_with_metadata(&mut app);
+
+            let assets = app
+                .world
+                .get_resource::<Assets<LdtkExternalLevel>>()
+                .unwrap();
+
+            for expected_level in &project.json_data.levels {
+                assert_eq!(
+                    project
+                        .get_external_level_by_iid(assets, &expected_level.iid)
+                        .unwrap()
+                        .iid(),
+                    &expected_level.iid
+                );
+            }
+
+            assert_eq!(
+                project.get_external_level_by_iid(
+                    assets,
+                    &"cd51071d-5224-4628-ae0d-abbe28090521".to_string()
+                ),
+                None
+            )
+        }
+
+        #[test]
+        fn find_by_level_selection_returns_expected_external_levels() {
+            let mut app = app_setup();
+            let project = fake_and_load_ldtk_json_with_metadata(&mut app);
+
+            let assets = app
+                .world
+                .get_resource::<Assets<LdtkExternalLevel>>()
+                .unwrap();
+
+            for (i, expected_level) in project.json_data.levels.iter().enumerate() {
+                assert_eq!(
+                    project
+                        .find_external_level_by_level_selection(assets, &LevelSelection::index(i))
+                        .unwrap()
+                        .iid(),
+                    &expected_level.iid
+                );
+                assert_eq!(
+                    project
+                        .find_external_level_by_level_selection(
+                            assets,
+                            &LevelSelection::Identifier(expected_level.identifier.clone())
+                        )
+                        .unwrap()
+                        .iid(),
+                    &expected_level.iid
+                );
+                assert_eq!(
+                    project
+                        .find_external_level_by_level_selection(
+                            assets,
+                            &LevelSelection::Iid(LevelIid::new(expected_level.iid.clone()))
+                        )
+                        .unwrap()
+                        .iid(),
+                    &expected_level.iid
+                );
+                assert_eq!(
+                    project
+                        .find_external_level_by_level_selection(
+                            assets,
+                            &LevelSelection::Uid(expected_level.uid)
+                        )
+                        .unwrap()
+                        .iid(),
+                    &expected_level.iid
+                );
+            }
+
+            assert_eq!(
+                project.find_external_level_by_level_selection(assets, &LevelSelection::index(10)),
+                None
+            );
+            assert_eq!(
+                project.find_external_level_by_level_selection(
+                    assets,
+                    &LevelSelection::Identifier("Back_Rooms".to_string())
+                ),
+                None
+            );
+            assert_eq!(
+                project.find_external_level_by_level_selection(
+                    assets,
+                    &LevelSelection::Iid(LevelIid::new(
+                        "cd51071d-5224-4628-ae0d-abbe28090521".to_string()
+                    ))
+                ),
+                None
+            );
+            assert_eq!(
+                project.find_external_level_by_level_selection(assets, &LevelSelection::Uid(2023)),
+                None,
+            );
+        }
     }
 }

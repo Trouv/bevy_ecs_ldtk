@@ -268,7 +268,7 @@ pub fn process_ldtk_levels(
                             .get(level_iid.get())
                             .and_then(|level_metadata| {
                                 let loaded_level = project
-                                    .get_loaded_level_by_indices(level_metadata.indices())?;
+                                    .get_loaded_level_at_indices(level_metadata.indices())?;
 
                                 Some((level_metadata, loaded_level))
                             }),
@@ -277,7 +277,7 @@ pub fn process_ldtk_levels(
                             .level_map()
                             .get(level_iid.get())
                             .and_then(|level_metadata| {
-                                let loaded_level = project.get_external_level_by_indices(
+                                let loaded_level = project.get_external_level_at_indices(
                                     &level_assets,
                                     level_metadata.metadata().indices(),
                                 )?;

@@ -83,7 +83,7 @@ impl LdtkJsonWithMetadata<InternalLevels> {
     ///
     /// These levels are "loaded", meaning that they are type-guaranteed to have complete data.
     /// See [`LoadedLevel`] for more details.
-    pub fn get_loaded_level_by_indices(&self, indices: &LevelIndices) -> Option<LoadedLevel> {
+    pub fn get_loaded_level_at_indices(&self, indices: &LevelIndices) -> Option<LoadedLevel> {
         self.get_raw_level_at_indices(indices)
             .map(expect_level_loaded)
     }
@@ -141,7 +141,7 @@ impl LdtkJsonWithMetadata<ExternalLevels> {
     ///
     /// These levels are "loaded", meaning that they are type-guaranteed to have complete data.
     /// See [`LoadedLevel`] for more details.
-    pub fn get_external_level_by_indices<'a>(
+    pub fn get_external_level_at_indices<'a>(
         &'a self,
         external_level_assets: &'a Assets<LdtkExternalLevel>,
         indices: &LevelIndices,
@@ -184,7 +184,7 @@ impl LdtkJsonWithMetadata<ExternalLevels> {
                 self.get_external_level_by_iid(external_level_assets, iid.get())
             }
             LevelSelection::Indices(indices) => {
-                self.get_external_level_by_indices(external_level_assets, indices)
+                self.get_external_level_at_indices(external_level_assets, indices)
             }
             _ => self.get_external_level_by_iid(
                 external_level_assets,
@@ -297,7 +297,7 @@ mod tests {
             for (i, expected_level) in project.json_data.levels.iter().enumerate() {
                 assert_eq!(
                     project
-                        .get_loaded_level_by_indices(&LevelIndices::in_root(i))
+                        .get_loaded_level_at_indices(&LevelIndices::in_root(i))
                         .unwrap()
                         .raw(),
                     expected_level
@@ -305,11 +305,11 @@ mod tests {
             }
 
             assert_eq!(
-                project.get_raw_level_at_indices(&LevelIndices::in_root(10)),
+                project.get_loaded_level_at_indices(&LevelIndices::in_root(10)),
                 None
             );
             assert_eq!(
-                project.get_raw_level_at_indices(&LevelIndices::in_world(0, 0)),
+                project.get_loaded_level_at_indices(&LevelIndices::in_world(0, 0)),
                 None
             );
         }

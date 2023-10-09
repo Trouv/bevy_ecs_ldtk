@@ -22,6 +22,11 @@ pub struct LdtkExternalLevel {
 }
 
 impl LdtkExternalLevel {
+    #[cfg(test)]
+    pub fn new(data: Level) -> LdtkExternalLevel {
+        LdtkExternalLevel { data }
+    }
+
     pub fn data(&self) -> LoadedLevel {
         LoadedLevel::try_from(&self.data)
             .expect("construction of LdtkExternalLevel should guarantee that the level is loaded.")

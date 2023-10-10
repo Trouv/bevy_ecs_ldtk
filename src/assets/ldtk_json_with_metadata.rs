@@ -73,16 +73,18 @@ impl LdtkJsonWithMetadata<InternalLevels> {
     ///
     /// This first iterates through [root levels, then world levels](RawLevelAccessor#root-vs-world-levels).
     ///
-    /// These levels are "loaded", meaning that they are type-guaranteed to have complete data.
-    /// See [`LoadedLevel`] for more details.
+    /// These levels are [loaded], meaning that they are type-guaranteed to have complete data.
+    ///
+    /// [loaded]: crate::assets::LdtkProject#raw-vs-loaded-levels
     pub fn iter_loaded_levels(&self) -> impl Iterator<Item = LoadedLevel> {
         self.iter_raw_levels().map(expect_level_loaded)
     }
 
     /// Immutable access to a loaded level at the given [`LevelIndices`].
     ///
-    /// These levels are "loaded", meaning that they are type-guaranteed to have complete data.
-    /// See [`LoadedLevel`] for more details.
+    /// These levels are [loaded], meaning that they are type-guaranteed to have complete data.
+    ///
+    /// [loaded]: crate::assets::LdtkProject#raw-vs-loaded-levels
     pub fn get_loaded_level_at_indices(&self, indices: &LevelIndices) -> Option<LoadedLevel> {
         self.get_raw_level_at_indices(indices)
             .map(expect_level_loaded)
@@ -90,8 +92,9 @@ impl LdtkJsonWithMetadata<InternalLevels> {
 
     /// Returns a reference to the loaded level metadata corresponding to the given level iid.
     ///
-    /// These levels are "loaded", meaning that they are type-guaranteed to have complete data.
-    /// See [`LoadedLevel`] for more details.
+    /// These levels are [loaded], meaning that they are type-guaranteed to have complete data.
+    ///
+    /// [loaded]: crate::assets::LdtkProject#raw-vs-loaded-levels
     pub fn get_loaded_level_by_iid(&self, iid: &String) -> Option<LoadedLevel> {
         self.get_raw_level_by_iid(iid).map(expect_level_loaded)
     }
@@ -101,8 +104,9 @@ impl LdtkJsonWithMetadata<InternalLevels> {
     /// This lookup is constant for [`LevelSelection::Iid`] and [`LevelSelection::Indices`] variants.
     /// The other variants require iterating through the levels to find the match.
     ///
-    /// These levels are "loaded", meaning that they are type-guaranteed to have complete data.
-    /// See [`LoadedLevel`] for more details.
+    /// These levels are [loaded], meaning that they are type-guaranteed to have complete data.
+    ///
+    /// [loaded]: crate::assets::LdtkProject#raw-vs-loaded-levels
     pub fn find_loaded_level_by_level_selection(
         &self,
         level_selection: &LevelSelection,
@@ -125,8 +129,9 @@ impl LdtkJsonWithMetadata<ExternalLevels> {
     ///
     /// This first iterates through [root levels, then world levels](RawLevelAccessor#root-vs-world-levels).
     ///
-    /// These levels are "loaded", meaning that they are type-guaranteed to have complete data.
-    /// See [`LoadedLevel`] for more details.
+    /// These levels are [loaded], meaning that they are type-guaranteed to have complete data.
+    ///
+    /// [loaded]: crate::assets::LdtkProject#raw-vs-loaded-levels
     pub fn iter_external_levels<'a>(
         &'a self,
         external_level_assets: &'a Assets<LdtkExternalLevel>,
@@ -139,8 +144,9 @@ impl LdtkJsonWithMetadata<ExternalLevels> {
 
     /// Immutable access to an external level at the given [`LevelIndices`].
     ///
-    /// These levels are "loaded", meaning that they are type-guaranteed to have complete data.
-    /// See [`LoadedLevel`] for more details.
+    /// These levels are [loaded], meaning that they are type-guaranteed to have complete data.
+    ///
+    /// [loaded]: crate::assets::LdtkProject#raw-vs-loaded-levels
     pub fn get_external_level_at_indices<'a>(
         &'a self,
         external_level_assets: &'a Assets<LdtkExternalLevel>,
@@ -154,8 +160,9 @@ impl LdtkJsonWithMetadata<ExternalLevels> {
 
     /// Returns a reference to the external level metadata corresponding to the given level iid.
     ///
-    /// These levels are "loaded", meaning that they are type-guaranteed to have complete data.
-    /// See [`LoadedLevel`] for more details.
+    /// These levels are [loaded], meaning that they are type-guaranteed to have complete data.
+    ///
+    /// [loaded]: crate::assets::LdtkProject#raw-vs-loaded-levels
     pub fn get_external_level_by_iid<'a>(
         &'a self,
         external_level_assets: &'a Assets<LdtkExternalLevel>,
@@ -172,8 +179,9 @@ impl LdtkJsonWithMetadata<ExternalLevels> {
     /// This lookup is constant for [`LevelSelection::Iid`] and [`LevelSelection::Indices`] variants.
     /// The other variants require iterating through the levels to find the match.
     ///
-    /// These levels are "loaded", meaning that they are type-guaranteed to have complete data.
-    /// See [`LoadedLevel`] for more details.
+    /// These levels are [loaded], meaning that they are type-guaranteed to have complete data.
+    ///
+    /// [loaded]: crate::assets::LdtkProject#raw-vs-loaded-levels
     pub fn find_external_level_by_level_selection<'a>(
         &'a self,
         external_level_assets: &'a Assets<LdtkExternalLevel>,

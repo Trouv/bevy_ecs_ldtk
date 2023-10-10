@@ -23,18 +23,22 @@ pub trait LevelLocale {
 /// Marker type for indicating an internal-levels LDtk project.
 ///
 /// Used to parameterize [`LdtkJsonWithMetadata`].
+///
+/// [`LdtkJsonWithMetadata`]: crate::assets::LdtkJsonWithMetadata
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Reflect)]
 pub struct InternalLevels;
 
 #[cfg(feature = "internal_levels")]
-/// Marker type for indicating an external-levels LDtk projects.
-///
-/// Used to parameterize [`LdtkJsonWithMetadata`].
 impl LevelLocale for InternalLevels {
     type Metadata = LevelMetadata;
 }
 
 #[cfg(feature = "external_levels")]
+/// Marker type for indicating an external-levels LDtk projects.
+///
+/// Used to parameterize [`LdtkJsonWithMetadata`].
+///
+/// [`LdtkJsonWithMetadata`]: crate::assets::LdtkJsonWithMetadata
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Reflect)]
 pub struct ExternalLevels;
 

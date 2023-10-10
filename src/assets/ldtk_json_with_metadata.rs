@@ -202,255 +202,34 @@ impl LdtkJsonWithMetadata<ExternalLevels> {
     }
 }
 
+#[cfg(feature = "internal_levels")]
 #[cfg(test)]
-mod tests {
+mod internal_level_tests {
     use crate::{
         assets::level_metadata_accessor::tests::BasicLevelMetadataAccessor,
         ldtk::fake::{MixedLevelsLdtkJsonFaker, UnloadedLevelsFaker},
     };
     use fake::{Dummy, Fake, Faker};
 
+    use crate::{
+        ldtk::fake::{LoadedLevelsFaker, RootLevelsLdtkJsonFaker},
+        LevelIid,
+    };
+
     use super::*;
 
-    #[cfg(feature = "internal_levels")]
-    mod internal_levels {
-
-        use crate::{
-            ldtk::fake::{LoadedLevelsFaker, RootLevelsLdtkJsonFaker},
-            LevelIid,
-        };
-
-        use super::*;
-
-        impl Dummy<Faker> for LdtkJsonWithMetadata<InternalLevels> {
-            fn dummy_with_rng<R: rand::Rng + ?Sized>(_: &Faker, rng: &mut R) -> Self {
-                let json_data: LdtkJson =
-                    RootLevelsLdtkJsonFaker(LoadedLevelsFaker(4..8)).fake_with_rng(rng);
-                let level_map = json_data
-                    .levels
-                    .iter()
-                    .enumerate()
-                    .map(|(i, level)| {
-                        (
-                            level.iid.clone(),
-                            LevelMetadata::new(None, LevelIndices::in_root(i)),
-                        )
-                    })
-                    .collect();
-
-                LdtkJsonWithMetadata {
-                    json_data,
-                    level_map,
-                }
-            }
-        }
-
-        #[test]
-        fn raw_level_accessor_implementation_is_transparent() {
-            let data: LdtkJson = MixedLevelsLdtkJsonFaker(UnloadedLevelsFaker(4..8), 4..8).fake();
-
-            let project = LdtkJsonWithMetadata::<InternalLevels> {
-                json_data: data.clone(),
-                level_map: HashMap::default(),
-            };
-
-            assert_eq!(project.root_levels(), data.root_levels());
-            assert_eq!(project.worlds(), data.worlds());
-        }
-
-        #[test]
-        fn level_metadata_accessor_implementation_is_transparent() {
-            let basic = BasicLevelMetadataAccessor::sample_with_root_levels();
-
-            let ldtk_json_with_metadata = LdtkJsonWithMetadata::<InternalLevels> {
-                json_data: basic.data.clone(),
-                level_map: basic.level_metadata.clone(),
-            };
-
-            for level in &basic.data.levels {
-                assert_eq!(
-                    ldtk_json_with_metadata.get_level_metadata_by_iid(&level.iid),
-                    basic.get_level_metadata_by_iid(&level.iid),
-                );
-            }
-
-            assert_eq!(
-                ldtk_json_with_metadata
-                    .get_level_metadata_by_iid(&"This_level_doesnt_exist".to_string()),
-                None
-            );
-        }
-
-        #[test]
-        fn loaded_level_iteration() {
-            let project: LdtkJsonWithMetadata<InternalLevels> = Faker.fake();
-
-            assert_eq!(
-                project.iter_loaded_levels().count(),
-                project.json_data.levels.len()
-            );
-
-            for (loaded_level, expected_level) in project
-                .iter_loaded_levels()
-                .zip(project.json_data.levels.iter())
-            {
-                assert_eq!(loaded_level.raw(), expected_level)
-            }
-        }
-
-        #[test]
-        fn indices_lookup_returns_expected_loaded_levels() {
-            let project: LdtkJsonWithMetadata<InternalLevels> = Faker.fake();
-
-            for (i, expected_level) in project.json_data.levels.iter().enumerate() {
-                assert_eq!(
-                    project
-                        .get_loaded_level_at_indices(&LevelIndices::in_root(i))
-                        .unwrap()
-                        .raw(),
-                    expected_level
-                );
-            }
-
-            assert_eq!(
-                project.get_loaded_level_at_indices(&LevelIndices::in_root(10)),
-                None
-            );
-            assert_eq!(
-                project.get_loaded_level_at_indices(&LevelIndices::in_world(0, 0)),
-                None
-            );
-        }
-
-        #[test]
-        fn iid_lookup_returns_expected_loaded_levels() {
-            let project: LdtkJsonWithMetadata<InternalLevels> = Faker.fake();
-
-            for expected_level in &project.json_data.levels {
-                assert_eq!(
-                    project
-                        .get_loaded_level_by_iid(&expected_level.iid)
-                        .unwrap()
-                        .raw(),
-                    expected_level
-                );
-            }
-
-            assert_eq!(
-                project
-                    .get_loaded_level_by_iid(&"cd51071d-5224-4628-ae0d-abbe28090521".to_string()),
-                None
-            )
-        }
-
-        #[test]
-        fn find_by_level_selection_returns_expected_loaded_levels() {
-            let project: LdtkJsonWithMetadata<InternalLevels> = Faker.fake();
-
-            for (i, expected_level) in project.json_data.levels.iter().enumerate() {
-                assert_eq!(
-                    project
-                        .find_loaded_level_by_level_selection(&LevelSelection::index(i))
-                        .unwrap()
-                        .raw(),
-                    expected_level
-                );
-                assert_eq!(
-                    project
-                        .find_loaded_level_by_level_selection(&LevelSelection::Identifier(
-                            expected_level.identifier.clone()
-                        ))
-                        .unwrap()
-                        .raw(),
-                    expected_level
-                );
-                assert_eq!(
-                    project
-                        .find_loaded_level_by_level_selection(&LevelSelection::Iid(LevelIid::new(
-                            expected_level.iid.clone()
-                        )))
-                        .unwrap()
-                        .raw(),
-                    expected_level
-                );
-                assert_eq!(
-                    project
-                        .find_loaded_level_by_level_selection(&LevelSelection::Uid(
-                            expected_level.uid
-                        ))
-                        .unwrap()
-                        .raw(),
-                    expected_level
-                );
-            }
-
-            assert_eq!(
-                project.find_loaded_level_by_level_selection(&LevelSelection::index(10)),
-                None
-            );
-            assert_eq!(
-                project.find_loaded_level_by_level_selection(&LevelSelection::Identifier(
-                    "Back_Rooms".to_string()
-                )),
-                None
-            );
-            assert_eq!(
-                project.find_loaded_level_by_level_selection(&LevelSelection::Iid(LevelIid::new(
-                    "cd51071d-5224-4628-ae0d-abbe28090521".to_string()
-                ))),
-                None
-            );
-            assert_eq!(
-                project.find_loaded_level_by_level_selection(&LevelSelection::Uid(2023)),
-                None,
-            );
-        }
-    }
-
-    #[cfg(feature = "external_levels")]
-    mod external_levels {
-        use super::*;
-        use crate::{
-            assets::ExternalLevelMetadata,
-            ldtk::fake::{
-                LoadedLevelsFaker, RootLevelsLdtkJsonFaker,
-                RootLevelsLdtkJsonWithExternalLevelsFaker,
-            },
-            LevelIid,
-        };
-
-        fn app_setup() -> App {
-            let mut app = App::new();
-            app.add_plugins(AssetPlugin::default())
-                .add_asset::<LdtkExternalLevel>();
-
-            app
-        }
-
-        fn fake_and_load_ldtk_json_with_metadata(
-            app: &mut App,
-        ) -> LdtkJsonWithMetadata<ExternalLevels> {
-            let (json_data, levels): (LdtkJson, Vec<Level>) =
-                RootLevelsLdtkJsonWithExternalLevelsFaker(RootLevelsLdtkJsonFaker(
-                    LoadedLevelsFaker(4..8),
-                ))
-                .fake();
-
-            let mut assets = app
-                .world
-                .get_resource_mut::<Assets<LdtkExternalLevel>>()
-                .unwrap();
-
-            let level_map = levels
+    impl Dummy<Faker> for LdtkJsonWithMetadata<InternalLevels> {
+        fn dummy_with_rng<R: rand::Rng + ?Sized>(_: &Faker, rng: &mut R) -> Self {
+            let json_data: LdtkJson =
+                RootLevelsLdtkJsonFaker(LoadedLevelsFaker(4..8)).fake_with_rng(rng);
+            let level_map = json_data
+                .levels
                 .iter()
                 .enumerate()
                 .map(|(i, level)| {
                     (
                         level.iid.clone(),
-                        ExternalLevelMetadata::new(
-                            LevelMetadata::new(None, LevelIndices::in_root(i)),
-                            assets.add(LdtkExternalLevel::new(level.clone())),
-                        ),
+                        LevelMetadata::new(None, LevelIndices::in_root(i)),
                     )
                 })
                 .collect();
@@ -460,214 +239,432 @@ mod tests {
                 level_map,
             }
         }
+    }
 
-        #[test]
-        fn raw_level_accessor_implementation_is_transparent() {
-            let data: LdtkJson = MixedLevelsLdtkJsonFaker(UnloadedLevelsFaker(4..8), 4..8).fake();
+    #[test]
+    fn raw_level_accessor_implementation_is_transparent() {
+        let data: LdtkJson = MixedLevelsLdtkJsonFaker(UnloadedLevelsFaker(4..8), 4..8).fake();
 
-            let project = LdtkJsonWithMetadata::<ExternalLevels> {
-                json_data: data.clone(),
-                level_map: HashMap::default(),
-            };
+        let project = LdtkJsonWithMetadata::<InternalLevels> {
+            json_data: data.clone(),
+            level_map: HashMap::default(),
+        };
 
-            assert_eq!(project.root_levels(), data.root_levels());
-            assert_eq!(project.worlds(), data.worlds());
-        }
+        assert_eq!(project.root_levels(), data.root_levels());
+        assert_eq!(project.worlds(), data.worlds());
+    }
 
-        #[test]
-        fn external_level_metadata_accessor_is_transparent() {
-            let basic = BasicLevelMetadataAccessor::sample_with_root_levels();
+    #[test]
+    fn level_metadata_accessor_implementation_is_transparent() {
+        let basic = BasicLevelMetadataAccessor::sample_with_root_levels();
 
-            let ldtk_json_with_metadata = LdtkJsonWithMetadata::<ExternalLevels> {
-                json_data: basic.data.clone(),
-                level_map: basic
-                    .level_metadata
-                    .clone()
-                    .into_iter()
-                    .map(|(iid, level_metadata)| {
-                        (
-                            iid,
-                            ExternalLevelMetadata::new(level_metadata, Handle::default()),
-                        )
-                    })
-                    .collect(),
-            };
+        let ldtk_json_with_metadata = LdtkJsonWithMetadata::<InternalLevels> {
+            json_data: basic.data.clone(),
+            level_map: basic.level_metadata.clone(),
+        };
 
-            for level in &basic.data.levels {
-                assert_eq!(
-                    ldtk_json_with_metadata.get_level_metadata_by_iid(&level.iid),
-                    basic.get_level_metadata_by_iid(&level.iid),
-                );
-            }
-
+        for level in &basic.data.levels {
             assert_eq!(
-                ldtk_json_with_metadata
-                    .get_level_metadata_by_iid(&"This_level_doesnt_exist".to_string()),
-                None
+                ldtk_json_with_metadata.get_level_metadata_by_iid(&level.iid),
+                basic.get_level_metadata_by_iid(&level.iid),
             );
         }
 
-        #[test]
-        fn external_level_iteration() {
-            let mut app = app_setup();
-            let project = fake_and_load_ldtk_json_with_metadata(&mut app);
+        assert_eq!(
+            ldtk_json_with_metadata
+                .get_level_metadata_by_iid(&"This_level_doesnt_exist".to_string()),
+            None
+        );
+    }
 
+    #[test]
+    fn loaded_level_iteration() {
+        let project: LdtkJsonWithMetadata<InternalLevels> = Faker.fake();
+
+        assert_eq!(
+            project.iter_loaded_levels().count(),
+            project.json_data.levels.len()
+        );
+
+        for (loaded_level, expected_level) in project
+            .iter_loaded_levels()
+            .zip(project.json_data.levels.iter())
+        {
+            assert_eq!(loaded_level.raw(), expected_level)
+        }
+    }
+
+    #[test]
+    fn indices_lookup_returns_expected_loaded_levels() {
+        let project: LdtkJsonWithMetadata<InternalLevels> = Faker.fake();
+
+        for (i, expected_level) in project.json_data.levels.iter().enumerate() {
             assert_eq!(
                 project
-                    .iter_external_levels(
-                        app.world
-                            .get_resource::<Assets<LdtkExternalLevel>>()
-                            .unwrap()
-                    )
-                    .count(),
-                project.json_data.levels.len()
+                    .get_loaded_level_at_indices(&LevelIndices::in_root(i))
+                    .unwrap()
+                    .raw(),
+                expected_level
             );
+        }
 
-            for (external_level, expected_level) in project
+        assert_eq!(
+            project.get_loaded_level_at_indices(&LevelIndices::in_root(10)),
+            None
+        );
+        assert_eq!(
+            project.get_loaded_level_at_indices(&LevelIndices::in_world(0, 0)),
+            None
+        );
+    }
+
+    #[test]
+    fn iid_lookup_returns_expected_loaded_levels() {
+        let project: LdtkJsonWithMetadata<InternalLevels> = Faker.fake();
+
+        for expected_level in &project.json_data.levels {
+            assert_eq!(
+                project
+                    .get_loaded_level_by_iid(&expected_level.iid)
+                    .unwrap()
+                    .raw(),
+                expected_level
+            );
+        }
+
+        assert_eq!(
+            project.get_loaded_level_by_iid(&"cd51071d-5224-4628-ae0d-abbe28090521".to_string()),
+            None
+        )
+    }
+
+    #[test]
+    fn find_by_level_selection_returns_expected_loaded_levels() {
+        let project: LdtkJsonWithMetadata<InternalLevels> = Faker.fake();
+
+        for (i, expected_level) in project.json_data.levels.iter().enumerate() {
+            assert_eq!(
+                project
+                    .find_loaded_level_by_level_selection(&LevelSelection::index(i))
+                    .unwrap()
+                    .raw(),
+                expected_level
+            );
+            assert_eq!(
+                project
+                    .find_loaded_level_by_level_selection(&LevelSelection::Identifier(
+                        expected_level.identifier.clone()
+                    ))
+                    .unwrap()
+                    .raw(),
+                expected_level
+            );
+            assert_eq!(
+                project
+                    .find_loaded_level_by_level_selection(&LevelSelection::Iid(LevelIid::new(
+                        expected_level.iid.clone()
+                    )))
+                    .unwrap()
+                    .raw(),
+                expected_level
+            );
+            assert_eq!(
+                project
+                    .find_loaded_level_by_level_selection(&LevelSelection::Uid(expected_level.uid))
+                    .unwrap()
+                    .raw(),
+                expected_level
+            );
+        }
+
+        assert_eq!(
+            project.find_loaded_level_by_level_selection(&LevelSelection::index(10)),
+            None
+        );
+        assert_eq!(
+            project.find_loaded_level_by_level_selection(&LevelSelection::Identifier(
+                "Back_Rooms".to_string()
+            )),
+            None
+        );
+        assert_eq!(
+            project.find_loaded_level_by_level_selection(&LevelSelection::Iid(LevelIid::new(
+                "cd51071d-5224-4628-ae0d-abbe28090521".to_string()
+            ))),
+            None
+        );
+        assert_eq!(
+            project.find_loaded_level_by_level_selection(&LevelSelection::Uid(2023)),
+            None,
+        );
+    }
+}
+
+#[cfg(feature = "external_levels")]
+#[cfg(test)]
+mod external_level_tests {
+    use super::*;
+    use crate::{
+        assets::level_metadata_accessor::tests::BasicLevelMetadataAccessor,
+        ldtk::fake::{MixedLevelsLdtkJsonFaker, UnloadedLevelsFaker},
+    };
+    use crate::{
+        assets::ExternalLevelMetadata,
+        ldtk::fake::{
+            LoadedLevelsFaker, RootLevelsLdtkJsonFaker, RootLevelsLdtkJsonWithExternalLevelsFaker,
+        },
+        LevelIid,
+    };
+    use fake::Fake;
+
+    fn app_setup() -> App {
+        let mut app = App::new();
+        app.add_plugins(AssetPlugin::default())
+            .add_asset::<LdtkExternalLevel>();
+
+        app
+    }
+
+    fn fake_and_load_ldtk_json_with_metadata(
+        app: &mut App,
+    ) -> LdtkJsonWithMetadata<ExternalLevels> {
+        let (json_data, levels): (LdtkJson, Vec<Level>) =
+            RootLevelsLdtkJsonWithExternalLevelsFaker(RootLevelsLdtkJsonFaker(LoadedLevelsFaker(
+                4..8,
+            )))
+            .fake();
+
+        let mut assets = app
+            .world
+            .get_resource_mut::<Assets<LdtkExternalLevel>>()
+            .unwrap();
+
+        let level_map = levels
+            .iter()
+            .enumerate()
+            .map(|(i, level)| {
+                (
+                    level.iid.clone(),
+                    ExternalLevelMetadata::new(
+                        LevelMetadata::new(None, LevelIndices::in_root(i)),
+                        assets.add(LdtkExternalLevel::new(level.clone())),
+                    ),
+                )
+            })
+            .collect();
+
+        LdtkJsonWithMetadata {
+            json_data,
+            level_map,
+        }
+    }
+
+    #[test]
+    fn raw_level_accessor_implementation_is_transparent() {
+        let data: LdtkJson = MixedLevelsLdtkJsonFaker(UnloadedLevelsFaker(4..8), 4..8).fake();
+
+        let project = LdtkJsonWithMetadata::<ExternalLevels> {
+            json_data: data.clone(),
+            level_map: HashMap::default(),
+        };
+
+        assert_eq!(project.root_levels(), data.root_levels());
+        assert_eq!(project.worlds(), data.worlds());
+    }
+
+    #[test]
+    fn external_level_metadata_accessor_is_transparent() {
+        let basic = BasicLevelMetadataAccessor::sample_with_root_levels();
+
+        let ldtk_json_with_metadata = LdtkJsonWithMetadata::<ExternalLevels> {
+            json_data: basic.data.clone(),
+            level_map: basic
+                .level_metadata
+                .clone()
+                .into_iter()
+                .map(|(iid, level_metadata)| {
+                    (
+                        iid,
+                        ExternalLevelMetadata::new(level_metadata, Handle::default()),
+                    )
+                })
+                .collect(),
+        };
+
+        for level in &basic.data.levels {
+            assert_eq!(
+                ldtk_json_with_metadata.get_level_metadata_by_iid(&level.iid),
+                basic.get_level_metadata_by_iid(&level.iid),
+            );
+        }
+
+        assert_eq!(
+            ldtk_json_with_metadata
+                .get_level_metadata_by_iid(&"This_level_doesnt_exist".to_string()),
+            None
+        );
+    }
+
+    #[test]
+    fn external_level_iteration() {
+        let mut app = app_setup();
+        let project = fake_and_load_ldtk_json_with_metadata(&mut app);
+
+        assert_eq!(
+            project
                 .iter_external_levels(
                     app.world
                         .get_resource::<Assets<LdtkExternalLevel>>()
-                        .unwrap(),
+                        .unwrap()
                 )
-                .zip(project.json_data.levels.iter())
-            {
-                assert_eq!(external_level.iid(), &expected_level.iid)
-            }
-        }
+                .count(),
+            project.json_data.levels.len()
+        );
 
-        #[test]
-        fn indices_lookup_returns_expected_external_levels() {
-            let mut app = app_setup();
-            let project = fake_and_load_ldtk_json_with_metadata(&mut app);
-
-            let assets = app
-                .world
-                .get_resource::<Assets<LdtkExternalLevel>>()
-                .unwrap();
-
-            for (i, expected_level) in project.json_data.levels.iter().enumerate() {
-                assert_eq!(
-                    project
-                        .get_external_level_at_indices(assets, &LevelIndices::in_root(i))
-                        .unwrap()
-                        .iid(),
-                    &expected_level.iid
-                );
-            }
-
-            assert_eq!(
-                project.get_external_level_at_indices(assets, &LevelIndices::in_root(10)),
-                None
-            );
-            assert_eq!(
-                project.get_external_level_at_indices(assets, &LevelIndices::in_world(0, 0)),
-                None
-            );
-        }
-
-        #[test]
-        fn iid_lookup_returns_expected_external_levels() {
-            let mut app = app_setup();
-            let project = fake_and_load_ldtk_json_with_metadata(&mut app);
-
-            let assets = app
-                .world
-                .get_resource::<Assets<LdtkExternalLevel>>()
-                .unwrap();
-
-            for expected_level in &project.json_data.levels {
-                assert_eq!(
-                    project
-                        .get_external_level_by_iid(assets, &expected_level.iid)
-                        .unwrap()
-                        .iid(),
-                    &expected_level.iid
-                );
-            }
-
-            assert_eq!(
-                project.get_external_level_by_iid(
-                    assets,
-                    &"cd51071d-5224-4628-ae0d-abbe28090521".to_string()
-                ),
-                None
+        for (external_level, expected_level) in project
+            .iter_external_levels(
+                app.world
+                    .get_resource::<Assets<LdtkExternalLevel>>()
+                    .unwrap(),
             )
+            .zip(project.json_data.levels.iter())
+        {
+            assert_eq!(external_level.iid(), &expected_level.iid)
+        }
+    }
+
+    #[test]
+    fn indices_lookup_returns_expected_external_levels() {
+        let mut app = app_setup();
+        let project = fake_and_load_ldtk_json_with_metadata(&mut app);
+
+        let assets = app
+            .world
+            .get_resource::<Assets<LdtkExternalLevel>>()
+            .unwrap();
+
+        for (i, expected_level) in project.json_data.levels.iter().enumerate() {
+            assert_eq!(
+                project
+                    .get_external_level_at_indices(assets, &LevelIndices::in_root(i))
+                    .unwrap()
+                    .iid(),
+                &expected_level.iid
+            );
         }
 
-        #[test]
-        fn find_by_level_selection_returns_expected_external_levels() {
-            let mut app = app_setup();
-            let project = fake_and_load_ldtk_json_with_metadata(&mut app);
+        assert_eq!(
+            project.get_external_level_at_indices(assets, &LevelIndices::in_root(10)),
+            None
+        );
+        assert_eq!(
+            project.get_external_level_at_indices(assets, &LevelIndices::in_world(0, 0)),
+            None
+        );
+    }
 
-            let assets = app
-                .world
-                .get_resource::<Assets<LdtkExternalLevel>>()
-                .unwrap();
+    #[test]
+    fn iid_lookup_returns_expected_external_levels() {
+        let mut app = app_setup();
+        let project = fake_and_load_ldtk_json_with_metadata(&mut app);
 
-            for (i, expected_level) in project.json_data.levels.iter().enumerate() {
-                assert_eq!(
-                    project
-                        .find_external_level_by_level_selection(assets, &LevelSelection::index(i))
-                        .unwrap()
-                        .iid(),
-                    &expected_level.iid
-                );
-                assert_eq!(
-                    project
-                        .find_external_level_by_level_selection(
-                            assets,
-                            &LevelSelection::Identifier(expected_level.identifier.clone())
-                        )
-                        .unwrap()
-                        .iid(),
-                    &expected_level.iid
-                );
-                assert_eq!(
-                    project
-                        .find_external_level_by_level_selection(
-                            assets,
-                            &LevelSelection::Iid(LevelIid::new(expected_level.iid.clone()))
-                        )
-                        .unwrap()
-                        .iid(),
-                    &expected_level.iid
-                );
-                assert_eq!(
-                    project
-                        .find_external_level_by_level_selection(
-                            assets,
-                            &LevelSelection::Uid(expected_level.uid)
-                        )
-                        .unwrap()
-                        .iid(),
-                    &expected_level.iid
-                );
-            }
+        let assets = app
+            .world
+            .get_resource::<Assets<LdtkExternalLevel>>()
+            .unwrap();
 
+        for expected_level in &project.json_data.levels {
             assert_eq!(
-                project.find_external_level_by_level_selection(assets, &LevelSelection::index(10)),
-                None
-            );
-            assert_eq!(
-                project.find_external_level_by_level_selection(
-                    assets,
-                    &LevelSelection::Identifier("Back_Rooms".to_string())
-                ),
-                None
-            );
-            assert_eq!(
-                project.find_external_level_by_level_selection(
-                    assets,
-                    &LevelSelection::Iid(LevelIid::new(
-                        "cd51071d-5224-4628-ae0d-abbe28090521".to_string()
-                    ))
-                ),
-                None
-            );
-            assert_eq!(
-                project.find_external_level_by_level_selection(assets, &LevelSelection::Uid(2023)),
-                None,
+                project
+                    .get_external_level_by_iid(assets, &expected_level.iid)
+                    .unwrap()
+                    .iid(),
+                &expected_level.iid
             );
         }
+
+        assert_eq!(
+            project.get_external_level_by_iid(
+                assets,
+                &"cd51071d-5224-4628-ae0d-abbe28090521".to_string()
+            ),
+            None
+        )
+    }
+
+    #[test]
+    fn find_by_level_selection_returns_expected_external_levels() {
+        let mut app = app_setup();
+        let project = fake_and_load_ldtk_json_with_metadata(&mut app);
+
+        let assets = app
+            .world
+            .get_resource::<Assets<LdtkExternalLevel>>()
+            .unwrap();
+
+        for (i, expected_level) in project.json_data.levels.iter().enumerate() {
+            assert_eq!(
+                project
+                    .find_external_level_by_level_selection(assets, &LevelSelection::index(i))
+                    .unwrap()
+                    .iid(),
+                &expected_level.iid
+            );
+            assert_eq!(
+                project
+                    .find_external_level_by_level_selection(
+                        assets,
+                        &LevelSelection::Identifier(expected_level.identifier.clone())
+                    )
+                    .unwrap()
+                    .iid(),
+                &expected_level.iid
+            );
+            assert_eq!(
+                project
+                    .find_external_level_by_level_selection(
+                        assets,
+                        &LevelSelection::Iid(LevelIid::new(expected_level.iid.clone()))
+                    )
+                    .unwrap()
+                    .iid(),
+                &expected_level.iid
+            );
+            assert_eq!(
+                project
+                    .find_external_level_by_level_selection(
+                        assets,
+                        &LevelSelection::Uid(expected_level.uid)
+                    )
+                    .unwrap()
+                    .iid(),
+                &expected_level.iid
+            );
+        }
+
+        assert_eq!(
+            project.find_external_level_by_level_selection(assets, &LevelSelection::index(10)),
+            None
+        );
+        assert_eq!(
+            project.find_external_level_by_level_selection(
+                assets,
+                &LevelSelection::Identifier("Back_Rooms".to_string())
+            ),
+            None
+        );
+        assert_eq!(
+            project.find_external_level_by_level_selection(
+                assets,
+                &LevelSelection::Iid(LevelIid::new(
+                    "cd51071d-5224-4628-ae0d-abbe28090521".to_string()
+                ))
+            ),
+            None
+        );
+        assert_eq!(
+            project.find_external_level_by_level_selection(assets, &LevelSelection::Uid(2023)),
+            None,
+        );
     }
 }

@@ -95,7 +95,6 @@ impl LdtkProject {
     /// This shouldn't occur if the project uses internal levels.
     ///
     /// [`LdtkJsonWithMetadata<InternalLevels>`]: LdtkJsonWithMetadata
-    /// [`LoadedLevel`]: crate::assets::loaded_level::LoadedLevel
     #[cfg(feature = "internal_levels")]
     pub fn as_standalone(&self) -> &LdtkJsonWithMetadata<InternalLevels> {
         self.data.as_standalone()
@@ -109,7 +108,6 @@ impl LdtkProject {
     /// This shouldn't occur if the project uses external levels.
     ///
     /// [`LdtkJsonWithMetadata<ExternalLevels>`]: LdtkJsonWithMetadata
-    /// [`LoadedLevel`]: crate::assets::loaded_level::LoadedLevel
     #[cfg(feature = "external_levels")]
     pub fn as_parent(&self) -> &LdtkJsonWithMetadata<ExternalLevels> {
         self.data.as_parent()

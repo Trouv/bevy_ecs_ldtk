@@ -100,3 +100,44 @@ impl LevelMetadataAccessor for LdtkProjectData {
         }
     }
 }
+
+#[cfg(test)]
+#[cfg(feature = "internal_levels")]
+mod internal_level_tests {
+    use crate::ldtk::fake::{MixedLevelsLdtkJsonFaker, UnloadedLevelsFaker};
+
+    use super::*;
+    use fake::{Dummy, Fake, Faker};
+
+    impl Dummy<InternalLevels> for LdtkProjectData {
+        fn dummy_with_rng<R: rand::Rng + ?Sized>(_: &InternalLevels, rng: &mut R) -> Self {
+            LdtkProjectData::Standalone(Faker.fake_with_rng(rng))
+        }
+    }
+
+    #[test]
+    fn json_data_accessor_is_transparent() {
+        let project: LdtkProjectData = InternalLevels.fake();
+
+        assert_eq!(project.json_data(), project.as_standalone().json_data());
+    }
+
+    #[test]
+    fn raw_level_accessor_implementation_is_transparent() {
+        let data: LdtkJson = MixedLevelsLdtkJsonFaker(UnloadedLevelsFaker(4..8), 4..8).fake();
+
+        let project = LdtkProjectData::Standalone(LdtkJsonWithMetadata {
+            json_data: data.clone(),
+            level_map: HashMap::default(),
+        });
+
+        assert_eq!(project.root_levels(), data.root_levels());
+        assert_eq!(project.worlds(), data.worlds());
+    }
+}
+
+#[cfg(test)]
+#[cfg(feature = "external_levels")]
+mod external_level_tests {
+    use super::*;
+}

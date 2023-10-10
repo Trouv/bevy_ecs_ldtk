@@ -207,14 +207,13 @@ impl LdtkJsonWithMetadata<ExternalLevels> {
 mod internal_level_tests {
     use crate::{
         assets::level_metadata_accessor::tests::BasicLevelMetadataAccessor,
-        ldtk::fake::{MixedLevelsLdtkJsonFaker, UnloadedLevelsFaker},
-    };
-    use fake::{Dummy, Fake, Faker};
-
-    use crate::{
-        ldtk::fake::{LoadedLevelsFaker, RootLevelsLdtkJsonFaker},
+        ldtk::fake::{
+            LoadedLevelsFaker, MixedLevelsLdtkJsonFaker, RootLevelsLdtkJsonFaker,
+            UnloadedLevelsFaker,
+        },
         LevelIid,
     };
+    use fake::{Dummy, Fake, Faker};
 
     use super::*;
 
@@ -405,13 +404,12 @@ mod internal_level_tests {
 mod external_level_tests {
     use super::*;
     use crate::{
-        assets::level_metadata_accessor::tests::BasicLevelMetadataAccessor,
-        ldtk::fake::{MixedLevelsLdtkJsonFaker, UnloadedLevelsFaker},
-    };
-    use crate::{
-        assets::ExternalLevelMetadata,
+        assets::{
+            level_metadata_accessor::tests::BasicLevelMetadataAccessor, ExternalLevelMetadata,
+        },
         ldtk::fake::{
-            LoadedLevelsFaker, RootLevelsLdtkJsonFaker, RootLevelsLdtkJsonWithExternalLevelsFaker,
+            LoadedLevelsFaker, MixedLevelsLdtkJsonFaker, RootLevelsLdtkJsonFaker,
+            RootLevelsLdtkJsonWithExternalLevelsFaker, UnloadedLevelsFaker,
         },
         LevelIid,
     };

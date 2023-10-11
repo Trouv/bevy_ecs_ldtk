@@ -104,10 +104,29 @@ impl LevelMetadataAccessor for LdtkProjectData {
 #[cfg(test)]
 #[cfg(feature = "internal_levels")]
 mod internal_level_tests {
-    use crate::ldtk::fake::{MixedLevelsLdtkJsonFaker, UnloadedLevelsFaker};
+    use crate::{
+        assets::ldtk_json_with_metadata::internal_level_tests::LdtkJsonWithMetadataFaker,
+        ldtk::fake::{MixedLevelsLdtkJsonFaker, UnloadedLevelsFaker},
+    };
 
     use super::*;
     use fake::{Dummy, Fake, Faker};
+
+    pub struct StandaloneLdtkProjectDataFaker<F>(pub F)
+    where
+        LdtkJsonWithMetadata<InternalLevels>: Dummy<F>;
+
+    impl<F> Dummy<StandaloneLdtkProjectDataFaker<F>> for LdtkProjectData
+    where
+        LdtkJsonWithMetadata<InternalLevels>: Dummy<F>,
+    {
+        fn dummy_with_rng<R: rand::Rng + ?Sized>(
+            config: &StandaloneLdtkProjectDataFaker<F>,
+            rng: &mut R,
+        ) -> Self {
+            LdtkProjectData::Standalone(config.0.fake_with_rng(rng))
+        }
+    }
 
     impl Dummy<InternalLevels> for LdtkProjectData {
         fn dummy_with_rng<R: rand::Rng + ?Sized>(_: &InternalLevels, rng: &mut R) -> Self {

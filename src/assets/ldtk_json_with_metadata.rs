@@ -203,7 +203,7 @@ impl LdtkJsonWithMetadata<ExternalLevels> {
 }
 
 #[cfg(test)]
-mod tests {
+pub mod tests {
     use super::*;
     use fake::Dummy;
 
@@ -212,7 +212,7 @@ mod tests {
         LdtkJson: Dummy<F>;
 
     #[cfg(feature = "internal_levels")]
-    pub mod internal_levels {
+    mod internal_levels {
         use fake::{Fake, Faker};
 
         use crate::{
@@ -435,7 +435,7 @@ mod tests {
             LevelIid,
         };
         use bevy::asset::HandleId;
-        use fake::Fake;
+        use fake::{Fake, Faker};
 
         impl<F> Dummy<LdtkJsonWithMetadataFaker<F>> for LdtkJsonWithMetadata<ExternalLevels>
         where
@@ -465,6 +465,13 @@ mod tests {
                     json_data,
                     level_map,
                 }
+            }
+        }
+
+        impl Dummy<Faker> for LdtkJsonWithMetadata<ExternalLevels> {
+            fn dummy_with_rng<R: rand::Rng + ?Sized>(_: &Faker, rng: &mut R) -> Self {
+                LdtkJsonWithMetadataFaker(RootLevelsLdtkJsonFaker(LoadedLevelsFaker(4..8)))
+                    .fake_with_rng(rng)
             }
         }
 
@@ -512,15 +519,13 @@ mod tests {
 
         #[test]
         fn raw_level_accessor_implementation_is_transparent() {
-            let data: LdtkJson = MixedLevelsLdtkJsonFaker(UnloadedLevelsFaker(4..8), 4..8).fake();
+            let project: LdtkJsonWithMetadata<ExternalLevels> = LdtkJsonWithMetadataFaker(
+                MixedLevelsLdtkJsonFaker(UnloadedLevelsFaker(4..8), 4..8),
+            )
+            .fake();
 
-            let project = LdtkJsonWithMetadata::<ExternalLevels> {
-                json_data: data.clone(),
-                level_map: HashMap::default(),
-            };
-
-            assert_eq!(project.root_levels(), data.root_levels());
-            assert_eq!(project.worlds(), data.worlds());
+            assert_eq!(project.root_levels(), project.json_data().root_levels());
+            assert_eq!(project.worlds(), project.json_data().worlds());
         }
 
         #[test]

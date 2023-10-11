@@ -105,7 +105,7 @@ impl LevelMetadataAccessor for LdtkProjectData {
 #[cfg(feature = "internal_levels")]
 mod internal_level_tests {
     use crate::{
-        assets::ldtk_json_with_metadata::internal_level_tests::LdtkJsonWithMetadataFaker,
+        assets::ldtk_json_with_metadata::tests::LdtkJsonWithMetadataFaker,
         ldtk::fake::{MixedLevelsLdtkJsonFaker, UnloadedLevelsFaker},
     };
 
@@ -175,5 +175,68 @@ mod internal_level_tests {
 #[cfg(test)]
 #[cfg(feature = "external_levels")]
 mod external_level_tests {
+    use crate::{
+        assets::ldtk_json_with_metadata::tests::LdtkJsonWithMetadataFaker,
+        ldtk::fake::{MixedLevelsLdtkJsonFaker, UnloadedLevelsFaker},
+    };
+
     use super::*;
+    use fake::{Dummy, Fake, Faker};
+
+    pub struct ParentLdtkProjectDataFaker<F>(pub F)
+    where
+        LdtkJsonWithMetadata<ExternalLevels>: Dummy<F>;
+
+    impl<F> Dummy<ParentLdtkProjectDataFaker<F>> for LdtkProjectData
+    where
+        LdtkJsonWithMetadata<ExternalLevels>: Dummy<F>,
+    {
+        fn dummy_with_rng<R: rand::Rng + ?Sized>(
+            config: &ParentLdtkProjectDataFaker<F>,
+            rng: &mut R,
+        ) -> Self {
+            LdtkProjectData::Parent(config.0.fake_with_rng(rng))
+        }
+    }
+
+    impl Dummy<ExternalLevels> for LdtkProjectData {
+        fn dummy_with_rng<R: rand::Rng + ?Sized>(_: &ExternalLevels, rng: &mut R) -> Self {
+            LdtkProjectData::Parent(Faker.fake_with_rng(rng))
+        }
+    }
+
+    #[test]
+    fn json_data_accessor_is_transparent() {
+        let project: LdtkProjectData = ExternalLevels.fake();
+
+        assert_eq!(project.json_data(), project.as_parent().json_data());
+    }
+
+    #[test]
+    fn raw_level_accessor_implementation_is_transparent() {
+        let project: LdtkProjectData = ParentLdtkProjectDataFaker(LdtkJsonWithMetadataFaker(
+            MixedLevelsLdtkJsonFaker(UnloadedLevelsFaker(4..8), 4..8),
+        ))
+        .fake();
+
+        assert_eq!(project.root_levels(), project.json_data().root_levels());
+        assert_eq!(project.worlds(), project.json_data().worlds());
+    }
+
+    #[test]
+    fn level_metadata_accessor_implementation_is_transparent() {
+        let project: LdtkProjectData = ExternalLevels.fake();
+
+        for level in &project.json_data().levels {
+            assert_eq!(
+                project.get_level_metadata_by_iid(&level.iid),
+                project.as_parent().get_level_metadata_by_iid(&level.iid),
+            );
+        }
+
+        assert_eq!(
+            project.get_level_metadata_by_iid(&"This_level_doesnt_exist".to_string()),
+            None
+        );
+    }
 }

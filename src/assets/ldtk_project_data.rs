@@ -170,6 +170,15 @@ mod internal_level_tests {
             None
         );
     }
+
+    #[cfg(feature = "external_levels")]
+    #[test]
+    #[should_panic]
+    fn standalone_project_as_parent_panics() {
+        let project: LdtkProjectData = InternalLevels.fake();
+
+        let _should_panic = project.as_parent();
+    }
 }
 
 #[cfg(test)]
@@ -238,5 +247,14 @@ mod external_level_tests {
             project.get_level_metadata_by_iid(&"This_level_doesnt_exist".to_string()),
             None
         );
+    }
+
+    #[cfg(feature = "internal_levels")]
+    #[test]
+    #[should_panic]
+    fn parent_project_as_standalone_panics() {
+        let project: LdtkProjectData = ExternalLevels.fake();
+
+        let _should_panic = project.as_standalone();
     }
 }

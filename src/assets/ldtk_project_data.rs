@@ -143,15 +143,32 @@ mod internal_level_tests {
 
     #[test]
     fn raw_level_accessor_implementation_is_transparent() {
-        let data: LdtkJson = MixedLevelsLdtkJsonFaker(UnloadedLevelsFaker(4..8), 4..8).fake();
+        let project: LdtkProjectData = StandaloneLdtkProjectDataFaker(LdtkJsonWithMetadataFaker(
+            MixedLevelsLdtkJsonFaker(UnloadedLevelsFaker(4..8), 4..8),
+        ))
+        .fake();
 
-        let project = LdtkProjectData::Standalone(LdtkJsonWithMetadata {
-            json_data: data.clone(),
-            level_map: HashMap::default(),
-        });
+        assert_eq!(project.root_levels(), project.json_data().root_levels());
+        assert_eq!(project.worlds(), project.json_data().worlds());
+    }
 
-        assert_eq!(project.root_levels(), data.root_levels());
-        assert_eq!(project.worlds(), data.worlds());
+    #[test]
+    fn level_metadata_accessor_implementation_is_transparent() {
+        let project: LdtkProjectData = InternalLevels.fake();
+
+        for level in &project.json_data().levels {
+            assert_eq!(
+                project.get_level_metadata_by_iid(&level.iid),
+                project
+                    .as_standalone()
+                    .get_level_metadata_by_iid(&level.iid),
+            );
+        }
+
+        assert_eq!(
+            project.get_level_metadata_by_iid(&"This_level_doesnt_exist".to_string()),
+            None
+        );
     }
 }
 

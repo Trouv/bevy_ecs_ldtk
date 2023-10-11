@@ -204,7 +204,7 @@ impl LdtkJsonWithMetadata<ExternalLevels> {
 
 #[cfg(feature = "internal_levels")]
 #[cfg(test)]
-mod internal_level_tests {
+pub mod internal_level_tests {
     use crate::{
         assets::level_metadata_accessor::tests::BasicLevelMetadataAccessor,
         ldtk::fake::{
@@ -217,10 +217,19 @@ mod internal_level_tests {
 
     use super::*;
 
-    impl Dummy<Faker> for LdtkJsonWithMetadata<InternalLevels> {
-        fn dummy_with_rng<R: rand::Rng + ?Sized>(_: &Faker, rng: &mut R) -> Self {
-            let json_data: LdtkJson =
-                RootLevelsLdtkJsonFaker(LoadedLevelsFaker(4..8)).fake_with_rng(rng);
+    pub struct LdtkJsonWithMetadataFaker<F>(pub F)
+    where
+        LdtkJson: Dummy<F>;
+
+    impl<F> Dummy<LdtkJsonWithMetadataFaker<F>> for LdtkJsonWithMetadata<InternalLevels>
+    where
+        LdtkJson: Dummy<F>,
+    {
+        fn dummy_with_rng<R: rand::Rng + ?Sized>(
+            config: &LdtkJsonWithMetadataFaker<F>,
+            rng: &mut R,
+        ) -> Self {
+            let json_data: LdtkJson = config.0.fake_with_rng(rng);
             let level_map = json_data
                 .levels
                 .iter()
@@ -237,6 +246,13 @@ mod internal_level_tests {
                 json_data,
                 level_map,
             }
+        }
+    }
+
+    impl Dummy<Faker> for LdtkJsonWithMetadata<InternalLevels> {
+        fn dummy_with_rng<R: rand::Rng + ?Sized>(_: &Faker, rng: &mut R) -> Self {
+            LdtkJsonWithMetadataFaker(RootLevelsLdtkJsonFaker(LoadedLevelsFaker(4..8)))
+                .fake_with_rng(rng)
         }
     }
 

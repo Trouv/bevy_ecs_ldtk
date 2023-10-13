@@ -103,7 +103,7 @@ impl LevelMetadataAccessor for LdtkProjectData {
 
 #[cfg(test)]
 #[cfg(feature = "internal_levels")]
-mod internal_level_tests {
+pub mod internal_level_tests {
     use crate::{
         assets::ldtk_json_with_metadata::tests::LdtkJsonWithMetadataFaker,
         ldtk::fake::{LoadedLevelsFaker, MixedLevelsLdtkJsonFaker},
@@ -189,7 +189,7 @@ mod internal_level_tests {
 
 #[cfg(test)]
 #[cfg(feature = "external_levels")]
-mod external_level_tests {
+pub mod external_level_tests {
     use crate::{
         assets::ldtk_json_with_metadata::tests::LdtkJsonWithMetadataFaker,
         ldtk::fake::{LoadedLevelsFaker, MixedLevelsLdtkJsonFaker},

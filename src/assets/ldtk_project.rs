@@ -351,6 +351,14 @@ mod tests {
 
     #[cfg(feature = "internal_levels")]
     mod internal_levels {
+        use crate::{
+            assets::{
+                ldtk_json_with_metadata::tests::LdtkJsonWithMetadataFaker,
+                ldtk_project_data::internal_level_tests::StandaloneLdtkProjectDataFaker,
+            },
+            ldtk::fake::{LoadedLevelsFaker, MixedLevelsLdtkJsonFaker},
+        };
+
         use super::*;
 
         impl Dummy<InternalLevels> for LdtkProject {
@@ -360,6 +368,44 @@ mod tests {
                 }
                 .fake_with_rng(rng)
             }
+        }
+
+        #[test]
+        fn json_data_accessor_is_transparent() {
+            let project: LdtkProject = InternalLevels.fake();
+
+            assert_eq!(project.json_data(), project.data().json_data());
+        }
+
+        #[test]
+        fn raw_level_accessor_implementation_is_transparent() {
+            let project: LdtkProject = LdtkProjectFaker::new(StandaloneLdtkProjectDataFaker::new(
+                LdtkJsonWithMetadataFaker::new(MixedLevelsLdtkJsonFaker::new(
+                    LoadedLevelsFaker::default(),
+                    4..8,
+                )),
+            ))
+            .fake();
+
+            assert_eq!(project.root_levels(), project.json_data().root_levels());
+            assert_eq!(project.worlds(), project.json_data().worlds());
+        }
+
+        #[test]
+        fn level_metadata_accessor_implementation_is_transparent() {
+            let project: LdtkProject = InternalLevels.fake();
+
+            for level in &project.json_data().levels {
+                assert_eq!(
+                    project.get_level_metadata_by_iid(&level.iid),
+                    project.data().get_level_metadata_by_iid(&level.iid),
+                );
+            }
+
+            assert_eq!(
+                project.get_level_metadata_by_iid(&"This_level_doesnt_exist".to_string()),
+                None
+            );
         }
     }
 

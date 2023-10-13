@@ -60,12 +60,18 @@ impl Dummy<UnloadedLevelsFaker> for Vec<Level> {
 }
 
 #[derive(Clone, Default, Debug, PartialEq)]
-pub struct LoadedLevelFaker(pub Vec<LayerInstance>);
+pub struct LoadedLevelFaker(pub Vec<LayerFaker>);
 
 impl Dummy<LoadedLevelFaker> for Level {
     fn dummy_with_rng<R: Rng + ?Sized>(config: &LoadedLevelFaker, rng: &mut R) -> Level {
         Level {
-            layer_instances: Some(config.0.clone()),
+            layer_instances: Some(
+                config
+                    .0
+                    .iter()
+                    .map(|layer_faker| layer_faker.fake_with_rng(rng))
+                    .collect(),
+            ),
             ..UnloadedLevelFaker.fake_with_rng(rng)
         }
     }

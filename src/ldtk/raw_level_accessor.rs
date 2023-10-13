@@ -140,7 +140,7 @@ impl RawLevelAccessor for LdtkJson {
 
 #[cfg(test)]
 pub mod tests {
-    use fake::Fake;
+    use fake::{Fake, Faker};
 
     use crate::ldtk::fake::{
         MixedLevelsLdtkJsonFaker, RootLevelsLdtkJsonFaker, UnloadedLevelsFaker,
@@ -151,7 +151,7 @@ pub mod tests {
 
     #[test]
     fn iter_levels_in_root() {
-        let project: LdtkJson = RootLevelsLdtkJsonFaker(UnloadedLevelsFaker(4..8)).fake();
+        let project: LdtkJson = Faker.fake();
 
         let iter_raw_levels_with_indices =
             project.iter_raw_levels_with_indices().collect::<Vec<_>>();
@@ -188,7 +188,8 @@ pub mod tests {
 
     #[test]
     fn iter_levels_in_worlds() {
-        let project: LdtkJson = WorldLevelsLdtkJsonFaker(UnloadedLevelsFaker(4..5), 4..5).fake();
+        let project: LdtkJson =
+            WorldLevelsLdtkJsonFaker::new(UnloadedLevelsFaker::new(4..5), 4..5).fake();
 
         let iter_raw_levels_with_indices =
             project.iter_raw_levels_with_indices().collect::<Vec<_>>();
@@ -225,7 +226,8 @@ pub mod tests {
 
     #[test]
     fn iter_raw_levels_iterates_through_root_levels_first() {
-        let project: LdtkJson = MixedLevelsLdtkJsonFaker(UnloadedLevelsFaker(4..5), 4..5).fake();
+        let project: LdtkJson =
+            MixedLevelsLdtkJsonFaker::new(UnloadedLevelsFaker::new(4..5), 4..5).fake();
 
         let iter_raw_levels_with_indices =
             project.iter_raw_levels_with_indices().collect::<Vec<_>>();
@@ -283,7 +285,7 @@ pub mod tests {
 
     #[test]
     fn get_root_levels_by_indices() {
-        let project: LdtkJson = RootLevelsLdtkJsonFaker(UnloadedLevelsFaker(4..5)).fake();
+        let project: LdtkJson = RootLevelsLdtkJsonFaker::new(UnloadedLevelsFaker::new(4..5)).fake();
 
         for (i, level) in project.levels.iter().enumerate() {
             assert_eq!(
@@ -305,7 +307,8 @@ pub mod tests {
 
     #[test]
     fn get_world_levels_by_indices() {
-        let project: LdtkJson = WorldLevelsLdtkJsonFaker(UnloadedLevelsFaker(4..5), 4..5).fake();
+        let project: LdtkJson =
+            WorldLevelsLdtkJsonFaker::new(UnloadedLevelsFaker::new(4..5), 4..5).fake();
 
         for (world_index, world) in project.worlds.iter().enumerate() {
             for (level_index, level) in world.levels.iter().enumerate() {

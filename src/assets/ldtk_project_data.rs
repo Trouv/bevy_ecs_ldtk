@@ -106,15 +106,20 @@ impl LevelMetadataAccessor for LdtkProjectData {
 mod internal_level_tests {
     use crate::{
         assets::ldtk_json_with_metadata::tests::LdtkJsonWithMetadataFaker,
-        ldtk::fake::{MixedLevelsLdtkJsonFaker, UnloadedLevelsFaker},
+        ldtk::fake::{LoadedLevelsFaker, MixedLevelsLdtkJsonFaker},
     };
+    use derive_more::Constructor;
 
     use super::*;
     use fake::{Dummy, Fake, Faker};
 
-    pub struct StandaloneLdtkProjectDataFaker<F>(pub F)
+    #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Constructor)]
+    pub struct StandaloneLdtkProjectDataFaker<F>
     where
-        LdtkJsonWithMetadata<InternalLevels>: Dummy<F>;
+        LdtkJsonWithMetadata<InternalLevels>: Dummy<F>,
+    {
+        pub ldtk_json_with_metadata_faker: F,
+    }
 
     impl<F> Dummy<StandaloneLdtkProjectDataFaker<F>> for LdtkProjectData
     where
@@ -124,7 +129,7 @@ mod internal_level_tests {
             config: &StandaloneLdtkProjectDataFaker<F>,
             rng: &mut R,
         ) -> Self {
-            LdtkProjectData::Standalone(config.0.fake_with_rng(rng))
+            LdtkProjectData::Standalone(config.ldtk_json_with_metadata_faker.fake_with_rng(rng))
         }
     }
 
@@ -186,15 +191,20 @@ mod internal_level_tests {
 mod external_level_tests {
     use crate::{
         assets::ldtk_json_with_metadata::tests::LdtkJsonWithMetadataFaker,
-        ldtk::fake::{MixedLevelsLdtkJsonFaker, UnloadedLevelsFaker},
+        ldtk::fake::{LoadedLevelsFaker, MixedLevelsLdtkJsonFaker},
     };
+    use derive_more::Constructor;
 
     use super::*;
     use fake::{Dummy, Fake, Faker};
 
-    pub struct ParentLdtkProjectDataFaker<F>(pub F)
+    #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Constructor)]
+    pub struct ParentLdtkProjectDataFaker<F>
     where
-        LdtkJsonWithMetadata<ExternalLevels>: Dummy<F>;
+        LdtkJsonWithMetadata<ExternalLevels>: Dummy<F>,
+    {
+        pub ldtk_json_with_metadata_faker: F,
+    }
 
     impl<F> Dummy<ParentLdtkProjectDataFaker<F>> for LdtkProjectData
     where
@@ -204,7 +214,7 @@ mod external_level_tests {
             config: &ParentLdtkProjectDataFaker<F>,
             rng: &mut R,
         ) -> Self {
-            LdtkProjectData::Parent(config.0.fake_with_rng(rng))
+            LdtkProjectData::Parent(config.ldtk_json_with_metadata_faker.fake_with_rng(rng))
         }
     }
 

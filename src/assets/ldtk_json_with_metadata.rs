@@ -207,9 +207,13 @@ pub mod tests {
     use super::*;
     use fake::Dummy;
 
-    pub struct LdtkJsonWithMetadataFaker<F>(pub F)
+    #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Constructor)]
+    pub struct LdtkJsonWithMetadataFaker<F>
     where
-        LdtkJson: Dummy<F>;
+        LdtkJson: Dummy<F>,
+    {
+        pub ldtk_json_faker: F,
+    }
 
     #[cfg(feature = "internal_levels")]
     mod internal_levels {
@@ -217,10 +221,7 @@ pub mod tests {
 
         use crate::{
             assets::level_metadata_accessor::tests::BasicLevelMetadataAccessor,
-            ldtk::fake::{
-                LoadedLevelsFaker, MixedLevelsLdtkJsonFaker, RootLevelsLdtkJsonFaker,
-                UnloadedLevelsFaker,
-            },
+            ldtk::fake::{LoadedLevelsFaker, MixedLevelsLdtkJsonFaker},
             LevelIid,
         };
 
@@ -234,7 +235,7 @@ pub mod tests {
                 config: &LdtkJsonWithMetadataFaker<F>,
                 rng: &mut R,
             ) -> Self {
-                let json_data: LdtkJson = config.0.fake_with_rng(rng);
+                let json_data: LdtkJson = config.ldtk_json_faker.fake_with_rng(rng);
                 let level_map = json_data
                     .levels
                     .iter()
@@ -445,7 +446,7 @@ pub mod tests {
                 config: &LdtkJsonWithMetadataFaker<F>,
                 rng: &mut R,
             ) -> Self {
-                let json_data: LdtkJson = config.0.fake_with_rng(rng);
+                let json_data: LdtkJson = config.ldtk_json_faker.fake_with_rng(rng);
                 let level_map = json_data
                     .levels
                     .iter()

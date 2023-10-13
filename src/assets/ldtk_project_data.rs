@@ -148,10 +148,11 @@ mod internal_level_tests {
 
     #[test]
     fn raw_level_accessor_implementation_is_transparent() {
-        let project: LdtkProjectData = StandaloneLdtkProjectDataFaker(LdtkJsonWithMetadataFaker(
-            MixedLevelsLdtkJsonFaker(UnloadedLevelsFaker(4..8), 4..8),
-        ))
-        .fake();
+        let project: LdtkProjectData =
+            StandaloneLdtkProjectDataFaker::new(LdtkJsonWithMetadataFaker::new(
+                MixedLevelsLdtkJsonFaker::new(LoadedLevelsFaker::default(), 4..8),
+            ))
+            .fake();
 
         assert_eq!(project.root_levels(), project.json_data().root_levels());
         assert_eq!(project.worlds(), project.json_data().worlds());
@@ -233,10 +234,11 @@ mod external_level_tests {
 
     #[test]
     fn raw_level_accessor_implementation_is_transparent() {
-        let project: LdtkProjectData = ParentLdtkProjectDataFaker(LdtkJsonWithMetadataFaker(
-            MixedLevelsLdtkJsonFaker(UnloadedLevelsFaker(4..8), 4..8),
-        ))
-        .fake();
+        let project: LdtkProjectData =
+            ParentLdtkProjectDataFaker::new(LdtkJsonWithMetadataFaker::new(
+                MixedLevelsLdtkJsonFaker::new(LoadedLevelsFaker::default(), 4..8),
+            ))
+            .fake();
 
         assert_eq!(project.root_levels(), project.json_data().root_levels());
         assert_eq!(project.worlds(), project.json_data().worlds());

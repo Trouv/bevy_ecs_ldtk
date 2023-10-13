@@ -293,8 +293,7 @@ impl Dummy<WorldLevelsLdtkJsonWithExternalLevelsFaker> for (LdtkJson, Vec<Level>
         let levels = ldtk_json
             .worlds
             .iter()
-            .map(|world| world.levels.iter().cloned())
-            .flatten()
+            .flat_map(|world| world.levels.iter().cloned())
             .collect();
 
         ldtk_json.worlds.iter_mut().for_each(|world| {

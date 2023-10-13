@@ -257,15 +257,14 @@ pub mod tests {
 
         impl Dummy<Faker> for LdtkJsonWithMetadata<InternalLevels> {
             fn dummy_with_rng<R: rand::Rng + ?Sized>(_: &Faker, rng: &mut R) -> Self {
-                LdtkJsonWithMetadataFaker(RootLevelsLdtkJsonFaker(LoadedLevelsFaker(4..8)))
-                    .fake_with_rng(rng)
+                LdtkJsonWithMetadataFaker::new(Faker).fake_with_rng(rng)
             }
         }
 
         #[test]
         fn raw_level_accessor_implementation_is_transparent() {
-            let project: LdtkJsonWithMetadata<InternalLevels> = LdtkJsonWithMetadataFaker(
-                MixedLevelsLdtkJsonFaker(UnloadedLevelsFaker(4..8), 4..8),
+            let project: LdtkJsonWithMetadata<InternalLevels> = LdtkJsonWithMetadataFaker::new(
+                MixedLevelsLdtkJsonFaker::new(LoadedLevelsFaker::default(), 4..8),
             )
             .fake();
 
@@ -471,8 +470,10 @@ pub mod tests {
 
         impl Dummy<Faker> for LdtkJsonWithMetadata<ExternalLevels> {
             fn dummy_with_rng<R: rand::Rng + ?Sized>(_: &Faker, rng: &mut R) -> Self {
-                LdtkJsonWithMetadataFaker(RootLevelsLdtkJsonFaker(LoadedLevelsFaker(4..8)))
-                    .fake_with_rng(rng)
+                LdtkJsonWithMetadataFaker::new(RootLevelsLdtkJsonFaker::new(
+                    UnloadedLevelsFaker::new(4..8),
+                ))
+                .fake_with_rng(rng)
             }
         }
 
@@ -488,8 +489,8 @@ pub mod tests {
             app: &mut App,
         ) -> LdtkJsonWithMetadata<ExternalLevels> {
             let (json_data, levels): (LdtkJson, Vec<Level>) =
-                RootLevelsLdtkJsonWithExternalLevelsFaker(RootLevelsLdtkJsonFaker(
-                    LoadedLevelsFaker(4..8),
+                RootLevelsLdtkJsonWithExternalLevelsFaker::new(RootLevelsLdtkJsonFaker::new(
+                    LoadedLevelsFaker::default(),
                 ))
                 .fake();
 
@@ -520,8 +521,8 @@ pub mod tests {
 
         #[test]
         fn raw_level_accessor_implementation_is_transparent() {
-            let project: LdtkJsonWithMetadata<ExternalLevels> = LdtkJsonWithMetadataFaker(
-                MixedLevelsLdtkJsonFaker(UnloadedLevelsFaker(4..8), 4..8),
+            let project: LdtkJsonWithMetadata<ExternalLevels> = LdtkJsonWithMetadataFaker::new(
+                MixedLevelsLdtkJsonFaker::new(LoadedLevelsFaker::default(), 4..8),
             )
             .fake();
 

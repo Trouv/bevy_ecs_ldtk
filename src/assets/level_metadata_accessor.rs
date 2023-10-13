@@ -58,7 +58,7 @@ pub mod tests {
 
     use crate::{
         ldtk::{
-            fake::{RootLevelsLdtkJsonFaker, UnloadedLevelsFaker, WorldLevelsLdtkJsonFaker},
+            fake::{LoadedLevelsFaker, RootLevelsLdtkJsonFaker, WorldLevelsLdtkJsonFaker},
             LdtkJson,
         },
         LevelIid,
@@ -89,7 +89,8 @@ pub mod tests {
 
     impl BasicLevelMetadataAccessor {
         pub fn sample_with_root_levels() -> BasicLevelMetadataAccessor {
-            let data: LdtkJson = RootLevelsLdtkJsonFaker(UnloadedLevelsFaker(4..5)).fake();
+            let data: LdtkJson =
+                RootLevelsLdtkJsonFaker::new(LoadedLevelsFaker::new(Some(4..5), None)).fake();
 
             let level_metadata = data
                 .iter_raw_levels_with_indices()
@@ -103,7 +104,9 @@ pub mod tests {
         }
 
         pub fn sample_with_world_levels() -> BasicLevelMetadataAccessor {
-            let data: LdtkJson = WorldLevelsLdtkJsonFaker(UnloadedLevelsFaker(4..5), 4..5).fake();
+            let data: LdtkJson =
+                WorldLevelsLdtkJsonFaker::new(LoadedLevelsFaker::new(Some(4..5), None), 4..5)
+                    .fake();
 
             let level_metadata = data
                 .iter_raw_levels_with_indices()

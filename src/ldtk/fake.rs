@@ -6,13 +6,32 @@ use rand::Rng;
 
 use super::LdtkJson;
 
-impl Dummy<Faker> for LayerInstance {
+#[derive(Clone, Default, Debug, PartialEq, Eq)]
+pub struct LayerFaker {
+    pub identifier: String,
+}
+
+impl Dummy<Faker> for LayerFaker {
     fn dummy_with_rng<R: Rng + ?Sized>(_: &Faker, rng: &mut R) -> Self {
+        let identifier = Words(2..5).fake_with_rng::<Vec<String>, R>(rng).join("_");
+        LayerFaker { identifier }
+    }
+}
+
+impl Dummy<LayerFaker> for LayerInstance {
+    fn dummy_with_rng<R: Rng + ?Sized>(config: &LayerFaker, rng: &mut R) -> Self {
         LayerInstance {
             iid: UUIDv4.fake_with_rng(rng),
-            identifier: Words(2..5).fake_with_rng::<Vec<String>, R>(rng).join("_"),
+            identifier: config.identifier.clone(),
             ..Default::default()
         }
+    }
+}
+
+impl Dummy<Faker> for LayerInstance {
+    fn dummy_with_rng<R: Rng + ?Sized>(_: &Faker, rng: &mut R) -> Self {
+        let layer_faker: LayerFaker = Faker.fake_with_rng(rng);
+        layer_faker.fake_with_rng(rng)
     }
 }
 

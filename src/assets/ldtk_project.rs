@@ -311,3 +311,69 @@ impl AssetLoader for LdtkProjectLoader {
         &["ldtk"]
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use bevy::asset::HandleId;
+    use fake::{Dummy, Fake};
+    use rand::Rng;
+
+    #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Constructor)]
+    pub struct LdtkProjectFaker<F>
+    where
+        LdtkProjectData: Dummy<F>,
+    {
+        ldtk_project_data_faker: F,
+    }
+
+    impl<F> Dummy<LdtkProjectFaker<F>> for LdtkProject
+    where
+        LdtkProjectData: Dummy<F>,
+    {
+        fn dummy_with_rng<R: Rng + ?Sized>(config: &LdtkProjectFaker<F>, rng: &mut R) -> Self {
+            let data: LdtkProjectData = config.ldtk_project_data_faker.fake_with_rng(rng);
+            let tileset_map = data
+                .json_data()
+                .defs
+                .tilesets
+                .iter()
+                .map(|tileset| (tileset.uid, Handle::weak(HandleId::random::<Image>())))
+                .collect();
+
+            LdtkProject {
+                data,
+                tileset_map,
+                int_grid_image_handle: Some(Handle::weak(HandleId::random::<Image>())),
+            }
+        }
+    }
+
+    #[cfg(feature = "internal_levels")]
+    mod internal_levels {
+        use super::*;
+
+        impl Dummy<InternalLevels> for LdtkProject {
+            fn dummy_with_rng<R: Rng + ?Sized>(_: &InternalLevels, rng: &mut R) -> Self {
+                LdtkProjectFaker {
+                    ldtk_project_data_faker: InternalLevels,
+                }
+                .fake_with_rng(rng)
+            }
+        }
+    }
+
+    #[cfg(feature = "external_levels")]
+    mod external_levels {
+        use super::*;
+
+        impl Dummy<ExternalLevels> for LdtkProject {
+            fn dummy_with_rng<R: Rng + ?Sized>(_: &ExternalLevels, rng: &mut R) -> Self {
+                LdtkProjectFaker {
+                    ldtk_project_data_faker: ExternalLevels,
+                }
+                .fake_with_rng(rng)
+            }
+        }
+    }
+}

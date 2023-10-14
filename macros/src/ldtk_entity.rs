@@ -8,7 +8,7 @@ static LDTK_ENTITY_ATTRIBUTE_NAME: &str = "ldtk_entity";
 static FROM_ENTITY_INSTANCE_ATTRIBUTE_NAME: &str = "from_entity_instance";
 static WITH_ATTRIBUTE_NAME: &str = "with";
 
-pub fn expand_ldtk_entity_derive(ast: &syn::DeriveInput) -> proc_macro::TokenStream {
+pub fn expand_ldtk_entity_derive(ast: syn::DeriveInput) -> proc_macro::TokenStream {
     let struct_name = &ast.ident;
 
     let fields = match &ast.data {
@@ -96,14 +96,16 @@ pub fn expand_ldtk_entity_derive(ast: &syn::DeriveInput) -> proc_macro::TokenStr
             field_constructions.push(expand_with_attribute(attribute, field_name, field_type));
             continue;
         }
-
-        field_constructions.push(quote! {
-            #field_name: <#field_type as std::default::Default>::default(),
-        });
     }
 
     let generics = &ast.generics;
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+
+    let struct_update = if field_constructions.len() < fields.len() {
+        quote! { ..<Self as std::default::Default>::default() }
+    } else {
+        quote! {}
+    };
 
     let gen = quote! {
         impl #impl_generics bevy_ecs_ldtk::prelude::LdtkEntity for #struct_name #ty_generics #where_clause {
@@ -117,6 +119,7 @@ pub fn expand_ldtk_entity_derive(ast: &syn::DeriveInput) -> proc_macro::TokenStr
             ) -> Self {
                 Self {
                     #(#field_constructions)*
+                    #struct_update
                 }
             }
         }

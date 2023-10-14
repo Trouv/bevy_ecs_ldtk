@@ -42,7 +42,7 @@
 //! # #[derive(Default, Component)]
 //! # struct ComponentB;
 //! #
-//! #[derive(Bundle, LdtkEntity)]
+//! #[derive(Default, Bundle, LdtkEntity)]
 //! pub struct MyBundle {
 //!     a: ComponentA,
 //!     b: ComponentB,

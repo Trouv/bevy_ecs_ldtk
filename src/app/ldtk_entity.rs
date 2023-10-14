@@ -50,7 +50,7 @@ use std::{collections::HashMap, marker::PhantomData};
 /// # struct ComponentB;
 /// # #[derive(Component, Default)]
 /// # struct ComponentC;
-/// #[derive(Bundle, LdtkEntity)]
+/// #[derive(Bundle, LdtkEntity, Default)]
 /// pub struct MyBundle {
 ///     a: ComponentA,
 ///     b: ComponentB,
@@ -60,8 +60,9 @@ use std::{collections::HashMap, marker::PhantomData};
 /// Now, when loading your ldtk file, any entities with the entity identifier
 /// "my_entity_identifier" will be spawned as `MyBundle`s.
 ///
-/// By default, each component or nested bundle in the bundle will be created using their [Default]
-/// implementations.
+/// By default, each component or nested bundle in the bundle will be consumed from bundle's
+/// [Default] implementation, which means that deriving (or implementing manually) [Default]
+/// is required (unless all fields are overriden, see below).
 /// However, this behavior can be overridden with some field attribute macros...
 ///
 /// ### `#[sprite_bundle...]`
@@ -80,14 +81,14 @@ use std::{collections::HashMap, marker::PhantomData};
 /// # struct PlayerComponent;
 /// # #[derive(Component, Default)]
 /// # struct Health;
-/// #[derive(Bundle, LdtkEntity)]
+/// #[derive(Bundle, LdtkEntity, Default)]
 /// pub struct Gem {
 ///     #[sprite_bundle("textures/gem.png")]
 ///     sprite_bundle: SpriteBundle,
 ///     sellable: Sellable,
 /// }
 ///
-/// #[derive(Bundle, LdtkEntity)]
+/// #[derive(Bundle, LdtkEntity, Default)]
 /// pub struct Player {
 ///     player: PlayerComponent,
 ///     health: Health,
@@ -116,14 +117,14 @@ use std::{collections::HashMap, marker::PhantomData};
 /// # struct Damage;
 /// # #[derive(Component, Default)]
 /// # struct BleedDamage;
-/// #[derive(Bundle, LdtkEntity)]
+/// #[derive(Bundle, LdtkEntity, Default)]
 /// pub struct Sword {
 ///     #[sprite_sheet_bundle("weapons.png", 32.0, 32.0, 4, 5, 5.0, 1.0, 17)]
 ///     sprite_sheet: SpriteSheetBundle,
 ///     damage: Damage,
 /// }
 ///
-/// #[derive(Bundle, LdtkEntity)]
+/// #[derive(Bundle, LdtkEntity, Default)]
 /// pub struct Dagger {
 ///     damage: Damage,
 ///     bleed_damage: BleedDamage,
@@ -145,7 +146,7 @@ use std::{collections::HashMap, marker::PhantomData};
 /// # struct Player;
 /// # #[derive(Component, Default)]
 /// # struct BleedDamage;
-/// #[derive(Bundle, LdtkEntity)]
+/// #[derive(Bundle, LdtkEntity, Default)]
 /// pub struct PlayerBundle {
 ///     player: Player,
 ///     #[sprite_sheet_bundle]
@@ -167,7 +168,7 @@ use std::{collections::HashMap, marker::PhantomData};
 /// # struct Block;
 /// # #[derive(Component, Default)]
 /// # struct Movable;
-/// #[derive(Bundle, LdtkEntity)]
+/// #[derive(Bundle, LdtkEntity, Default)]
 /// pub struct BlockBundle {
 ///     block: Block,
 ///     movable: Movable,
@@ -192,14 +193,14 @@ use std::{collections::HashMap, marker::PhantomData};
 /// # struct Damage;
 /// # #[derive(Component, Default)]
 /// # struct BleedDamage;
-/// #[derive(Bundle, LdtkEntity)]
+/// #[derive(Bundle, LdtkEntity, Default)]
 /// pub struct Weapon {
 ///     damage: Damage,
 ///     #[sprite_bundle]
 ///     sprite: SpriteBundle,
 /// }
 ///
-/// #[derive(Bundle, LdtkEntity)]
+/// #[derive(Bundle, LdtkEntity, Default)]
 /// pub struct Dagger {
 ///     #[ldtk_entity]
 ///     weapon_bundle: Weapon,
@@ -234,7 +235,7 @@ use std::{collections::HashMap, marker::PhantomData};
 ///     }
 /// }
 ///
-/// #[derive(Bundle, LdtkEntity)]
+/// #[derive(Bundle, LdtkEntity, Default)]
 /// pub struct NickelBundle {
 ///     #[sprite_bundle]
 ///     sprite: SpriteBundle,

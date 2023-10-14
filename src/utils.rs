@@ -676,11 +676,11 @@ mod tests {
     fn test_try_each_optional_permutation() {
         fn test_func(a: Option<i32>, b: Option<i32>) -> Option<i32> {
             match (a, b) {
-                (Some(a), Some(_)) if a == 1 => Some(1),
+                (Some(1), Some(_)) => Some(1),
                 (Some(_), Some(_)) => None,
-                (Some(a), None) if a == 2 => Some(2),
+                (Some(2), None) => Some(2),
                 (Some(_), None) => None,
-                (None, Some(b)) if b == 3 => Some(3),
+                (None, Some(3)) => Some(3),
                 (None, Some(_)) => None,
                 (None, None) => Some(4),
             }

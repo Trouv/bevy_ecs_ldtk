@@ -25,6 +25,7 @@ hex = "0.4"
 anyhow = "1.0"
 thiserror = "1.0"
 paste = "1.0"
+derive_more = "0.99.17"
 
 [dev-dependencies]
 bevy = "0.11"

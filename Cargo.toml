@@ -33,10 +33,12 @@ rand = "0.8"
 bevy-inspector-egui = "0.19.0"
 
 [features]
-default = ["derive", "render"]
+default = ["derive", "render", "internal_levels"]
 derive = ["bevy_ecs_ldtk_macros"]
 atlas = ["bevy_ecs_tilemap/atlas"]
 render = ["bevy_ecs_tilemap/render"]
+internal_levels = []
+external_levels = []
 
 [[example]]
 name = "platformer"

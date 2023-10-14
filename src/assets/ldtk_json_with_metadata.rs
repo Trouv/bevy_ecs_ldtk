@@ -14,7 +14,7 @@ use std::collections::HashMap;
 use crate::assets::InternalLevels;
 
 #[cfg(feature = "external_levels")]
-use crate::assets::{ExternalLevels, LdtkExternalLevel};
+use crate::assets::{ExternalLevels, LdtkLevel};
 #[cfg(feature = "external_levels")]
 use bevy::prelude::*;
 
@@ -134,12 +134,12 @@ impl LdtkJsonWithMetadata<ExternalLevels> {
     /// [loaded]: crate::assets::LdtkProject#raw-vs-loaded-levels
     pub fn iter_external_levels<'a>(
         &'a self,
-        external_level_assets: &'a Assets<LdtkExternalLevel>,
+        external_level_assets: &'a Assets<LdtkLevel>,
     ) -> impl Iterator<Item = LoadedLevel<'a>> {
         self.iter_raw_levels()
             .filter_map(|level| self.level_map.get(&level.iid))
             .filter_map(|metadata| external_level_assets.get(metadata.external_handle()))
-            .map(LdtkExternalLevel::data)
+            .map(|level_asset| LoadedLevel::try_from(level_asset.data()).expect("TODO: soon, the loaded-ness of this data will be type guaranteed, but this is not currently the case"))
     }
 
     /// Immutable access to an external level at the given [`LevelIndices`].
@@ -149,7 +149,7 @@ impl LdtkJsonWithMetadata<ExternalLevels> {
     /// [loaded]: crate::assets::LdtkProject#raw-vs-loaded-levels
     pub fn get_external_level_at_indices<'a>(
         &'a self,
-        external_level_assets: &'a Assets<LdtkExternalLevel>,
+        external_level_assets: &'a Assets<LdtkLevel>,
         indices: &LevelIndices,
     ) -> Option<LoadedLevel<'a>> {
         self.get_external_level_by_iid(
@@ -165,13 +165,13 @@ impl LdtkJsonWithMetadata<ExternalLevels> {
     /// [loaded]: crate::assets::LdtkProject#raw-vs-loaded-levels
     pub fn get_external_level_by_iid<'a>(
         &'a self,
-        external_level_assets: &'a Assets<LdtkExternalLevel>,
+        external_level_assets: &'a Assets<LdtkLevel>,
         iid: &String,
     ) -> Option<LoadedLevel<'a>> {
         self.level_map()
             .get(iid)
             .and_then(|metadata| external_level_assets.get(metadata.external_handle()))
-            .map(LdtkExternalLevel::data)
+            .map(|level_asset| LoadedLevel::try_from(level_asset.data()).expect("TODO: soon, the loaded-ness of this data will be type guaranteed, but this is not currently the case"))
     }
 
     /// Find the external level matching the given [`LevelSelection`].
@@ -184,7 +184,7 @@ impl LdtkJsonWithMetadata<ExternalLevels> {
     /// [loaded]: crate::assets::LdtkProject#raw-vs-loaded-levels
     pub fn find_external_level_by_level_selection<'a>(
         &'a self,
-        external_level_assets: &'a Assets<LdtkExternalLevel>,
+        external_level_assets: &'a Assets<LdtkLevel>,
         level_selection: &LevelSelection,
     ) -> Option<LoadedLevel<'a>> {
         match level_selection {
@@ -455,7 +455,7 @@ pub mod tests {
                             level.iid.clone(),
                             ExternalLevelMetadata::new(
                                 LevelMetadata::new(None, LevelIndices::in_root(i)),
-                                Handle::weak(HandleId::random::<LdtkExternalLevel>()),
+                                Handle::weak(HandleId::random::<LdtkLevel>()),
                             ),
                         )
                     })
@@ -480,7 +480,7 @@ pub mod tests {
         fn app_setup() -> App {
             let mut app = App::new();
             app.add_plugins(AssetPlugin::default())
-                .add_asset::<LdtkExternalLevel>();
+                .add_asset::<LdtkLevel>();
 
             app
         }
@@ -494,10 +494,7 @@ pub mod tests {
                 ))
                 .fake();
 
-            let mut assets = app
-                .world
-                .get_resource_mut::<Assets<LdtkExternalLevel>>()
-                .unwrap();
+            let mut assets = app.world.get_resource_mut::<Assets<LdtkLevel>>().unwrap();
 
             let level_map = levels
                 .iter()
@@ -507,7 +504,7 @@ pub mod tests {
                         level.iid.clone(),
                         ExternalLevelMetadata::new(
                             LevelMetadata::new(None, LevelIndices::in_root(i)),
-                            assets.add(LdtkExternalLevel::new(level.clone())),
+                            assets.add(LdtkLevel::new(level.clone(), None)),
                         ),
                     )
                 })
@@ -570,21 +567,13 @@ pub mod tests {
 
             assert_eq!(
                 project
-                    .iter_external_levels(
-                        app.world
-                            .get_resource::<Assets<LdtkExternalLevel>>()
-                            .unwrap()
-                    )
+                    .iter_external_levels(app.world.get_resource::<Assets<LdtkLevel>>().unwrap())
                     .count(),
                 project.json_data.levels.len()
             );
 
             for (external_level, expected_level) in project
-                .iter_external_levels(
-                    app.world
-                        .get_resource::<Assets<LdtkExternalLevel>>()
-                        .unwrap(),
-                )
+                .iter_external_levels(app.world.get_resource::<Assets<LdtkLevel>>().unwrap())
                 .zip(project.json_data.levels.iter())
             {
                 assert_eq!(external_level.iid(), &expected_level.iid)
@@ -596,10 +585,7 @@ pub mod tests {
             let mut app = app_setup();
             let project = fake_and_load_ldtk_json_with_metadata(&mut app);
 
-            let assets = app
-                .world
-                .get_resource::<Assets<LdtkExternalLevel>>()
-                .unwrap();
+            let assets = app.world.get_resource::<Assets<LdtkLevel>>().unwrap();
 
             for (i, expected_level) in project.json_data.levels.iter().enumerate() {
                 assert_eq!(
@@ -626,10 +612,7 @@ pub mod tests {
             let mut app = app_setup();
             let project = fake_and_load_ldtk_json_with_metadata(&mut app);
 
-            let assets = app
-                .world
-                .get_resource::<Assets<LdtkExternalLevel>>()
-                .unwrap();
+            let assets = app.world.get_resource::<Assets<LdtkLevel>>().unwrap();
 
             for expected_level in &project.json_data.levels {
                 assert_eq!(
@@ -655,10 +638,7 @@ pub mod tests {
             let mut app = app_setup();
             let project = fake_and_load_ldtk_json_with_metadata(&mut app);
 
-            let assets = app
-                .world
-                .get_resource::<Assets<LdtkExternalLevel>>()
-                .unwrap();
+            let assets = app.world.get_resource::<Assets<LdtkLevel>>().unwrap();
 
             for (i, expected_level) in project.json_data.levels.iter().enumerate() {
                 assert_eq!(

@@ -31,8 +31,10 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
       - name: Install Dependencies
         run: sudo apt-get update; sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev
-      - name: Run cargo check (no features, exclude examples)
-        run: cargo check --no-default-features
+      - name: Run cargo check (minimal features, internal levels, exclude examples)
+        run: cargo check --no-default-features --features internal_levels
+      - name: Run cargo check (minimal features, external levels, exclude examples)
+        run: cargo check --no-default-features --features external_levels
       - name: Run cargo check (default features)
         run: cargo check --all-targets
       - name: Run cargo check (all features)

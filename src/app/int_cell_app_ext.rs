@@ -56,7 +56,7 @@ pub trait LdtkIntCellAppExt {
     /// # struct ComponentB;
     /// # #[derive(Component, Default)]
     /// # struct ComponentC;
-    /// #[derive(Bundle, LdtkIntCell)]
+    /// #[derive(Bundle, LdtkIntCell, Default)]
     /// pub struct MyBundle {
     ///     a: ComponentA,
     ///     b: ComponentB,

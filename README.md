@@ -60,7 +60,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
 }
 
-#[derive(Bundle, LdtkEntity)]
+#[derive(Default, Bundle, LdtkEntity)]
 pub struct MyBundle {
     a: ComponentA,
     b: ComponentB,

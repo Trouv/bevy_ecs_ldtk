@@ -479,6 +479,7 @@ pub fn spawn_level(
                                                 layer_instance.c_wid,
                                                 layer_instance.c_hei,
                                                 layer_instance.grid_size,
+                                                i,
                                             ),
                                             layer_instance.opacity,
                                         ),
@@ -547,24 +548,24 @@ pub fn spawn_level(
                                         layer_instance.c_hei as u32,
                                     ).expect("int_grid_csv indices should be within the bounds of 0..(layer_width * layer_height)");
 
-                                let tile_entity = storage.get(&grid_coords.into()).unwrap();
+                                if let Some(tile_entity) = storage.get(&grid_coords.into()) {
+                                    let mut entity_commands = commands.entity(tile_entity);
 
-                                let mut entity_commands = commands.entity(tile_entity);
+                                    let default_ldtk_int_cell: Box<dyn PhantomLdtkIntCellTrait> =
+                                        Box::new(PhantomLdtkIntCell::<IntGridCellBundle>::new());
 
-                                let default_ldtk_int_cell: Box<dyn PhantomLdtkIntCellTrait> =
-                                    Box::new(PhantomLdtkIntCell::<IntGridCellBundle>::new());
-
-                                ldtk_map_get_or_default(
-                                    layer_instance.identifier.clone(),
-                                    *value,
-                                    &default_ldtk_int_cell,
-                                    ldtk_int_cell_map,
-                                )
-                                .evaluate(
-                                    &mut entity_commands,
-                                    IntGridCell { value: *value },
-                                    layer_instance,
-                                );
+                                    ldtk_map_get_or_default(
+                                        layer_instance.identifier.clone(),
+                                        *value,
+                                        &default_ldtk_int_cell,
+                                        ldtk_int_cell_map,
+                                    )
+                                    .evaluate(
+                                        &mut entity_commands,
+                                        IntGridCell { value: *value },
+                                        layer_instance,
+                                    );
+                                }
                             }
                         }
 

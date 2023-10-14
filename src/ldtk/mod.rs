@@ -41,6 +41,8 @@ use crate::prelude::LdtkEntity;
 
 pub mod all_some_iter;
 mod color;
+#[cfg(test)]
+pub mod fake;
 mod field_instance;
 mod impl_definitions;
 pub mod ldtk_fields;

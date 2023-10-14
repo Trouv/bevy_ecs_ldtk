@@ -16,7 +16,7 @@ pub trait LevelMetadataAccessor: RawLevelAccessor {
 
     /// Immutable access to a level at the given level iid.
     ///
-    /// Note: all levels are considered [raw](RawLevelAccessor#raw-levels).
+    /// Note: all levels are considered [raw](crate::assets::LdtkProject#raw-vs-loaded-levels).
     // We accept an `&String` here to avoid creating a new `String`.
     // Implementations will use this to index a `HashMap<String, _>`, which requires `&String`.
     // So, accepting `&str` or `AsRef<str>` or `Into<String>` would all require either taking
@@ -27,12 +27,12 @@ pub trait LevelMetadataAccessor: RawLevelAccessor {
             .and_then(|metadata| self.get_raw_level_at_indices(metadata.indices()))
     }
 
-    /// Find the level matching the given the given [`LevelSelection`].
+    /// Find the level matching the given [`LevelSelection`].
     ///
     /// This lookup is constant for [`LevelSelection::Iid`] and [`LevelSelection::Indices`] variants.
     /// The other variants require iterating through the levels to find the match.
     ///
-    /// Note: all levels are considered [raw](RawLevelAccessor#raw-levels).
+    /// Note: all levels are considered [raw](crate::assets::LdtkProject#raw-vs-loaded-levels).
     fn find_raw_level_by_level_selection(
         &self,
         level_selection: &LevelSelection,
@@ -51,19 +51,24 @@ pub trait LevelMetadataAccessor: RawLevelAccessor {
 }
 
 #[cfg(test)]
-mod tests {
+pub mod tests {
     use std::collections::HashMap;
 
+    use fake::Fake;
+
     use crate::{
-        ldtk::{raw_level_accessor::tests::sample_levels, LdtkJson, World},
+        ldtk::{
+            fake::{LoadedLevelsFaker, RootLevelsLdtkJsonFaker, WorldLevelsLdtkJsonFaker},
+            LdtkJson,
+        },
         LevelIid,
     };
 
     use super::*;
 
-    struct BasicLevelMetadataAccessor {
-        data: LdtkJson,
-        level_metadata: HashMap<String, LevelMetadata>,
+    pub struct BasicLevelMetadataAccessor {
+        pub data: LdtkJson,
+        pub level_metadata: HashMap<String, LevelMetadata>,
     }
 
     impl RawLevelAccessor for BasicLevelMetadataAccessor {
@@ -83,13 +88,9 @@ mod tests {
     }
 
     impl BasicLevelMetadataAccessor {
-        fn sample_with_root_levels() -> BasicLevelMetadataAccessor {
-            let [level_a, level_b, level_c, level_d] = sample_levels();
-
-            let data = LdtkJson {
-                levels: vec![level_a, level_b, level_c, level_d],
-                ..Default::default()
-            };
+        pub fn sample_with_root_levels() -> BasicLevelMetadataAccessor {
+            let data: LdtkJson =
+                RootLevelsLdtkJsonFaker::new(LoadedLevelsFaker::new(Some(4..5), None)).fake();
 
             let level_metadata = data
                 .iter_raw_levels_with_indices()
@@ -102,23 +103,10 @@ mod tests {
             }
         }
 
-        fn sample_with_world_levels() -> BasicLevelMetadataAccessor {
-            let [level_a, level_b, level_c, level_d] = sample_levels();
-
-            let world_a = World {
-                levels: vec![level_a.clone(), level_b.clone()],
-                ..Default::default()
-            };
-
-            let world_b = World {
-                levels: vec![level_c.clone(), level_d.clone()],
-                ..Default::default()
-            };
-
-            let data = LdtkJson {
-                worlds: vec![world_a, world_b],
-                ..Default::default()
-            };
+        pub fn sample_with_world_levels() -> BasicLevelMetadataAccessor {
+            let data: LdtkJson =
+                WorldLevelsLdtkJsonFaker::new(LoadedLevelsFaker::new(Some(4..5), None), 4..5)
+                    .fake();
 
             let level_metadata = data
                 .iter_raw_levels_with_indices()
@@ -136,12 +124,10 @@ mod tests {
     fn iid_lookup_returns_expected_root_levels() {
         let accessor = BasicLevelMetadataAccessor::sample_with_root_levels();
 
-        let expected_levels = sample_levels();
-
-        for expected_level in expected_levels {
+        for expected_level in &accessor.data.levels {
             assert_eq!(
                 accessor.get_raw_level_by_iid(&expected_level.iid),
-                Some(&expected_level)
+                Some(expected_level)
             );
         }
         assert_eq!(
@@ -154,12 +140,15 @@ mod tests {
     fn iid_lookup_returns_expected_world_levels() {
         let accessor = BasicLevelMetadataAccessor::sample_with_world_levels();
 
-        let expected_levels = sample_levels();
-
-        for expected_level in expected_levels {
+        for expected_level in accessor
+            .data
+            .worlds
+            .iter()
+            .flat_map(|world| world.levels.iter())
+        {
             assert_eq!(
                 accessor.get_raw_level_by_iid(&expected_level.iid),
-                Some(&expected_level)
+                Some(expected_level)
             );
         }
         assert_eq!(
@@ -172,9 +161,7 @@ mod tests {
     fn find_by_level_selection_returns_expected_root_levels() {
         let accessor = BasicLevelMetadataAccessor::sample_with_root_levels();
 
-        let expected_levels = sample_levels();
-
-        for (i, expected_level) in expected_levels.iter().enumerate() {
+        for (i, expected_level) in accessor.data.levels.iter().enumerate() {
             assert_eq!(
                 accessor.find_raw_level_by_level_selection(&LevelSelection::index(i)),
                 Some(expected_level)
@@ -224,30 +211,34 @@ mod tests {
     fn find_by_level_selection_returns_expected_world_levels() {
         let accessor = BasicLevelMetadataAccessor::sample_with_world_levels();
 
-        let expected_levels = sample_levels();
-
-        for (i, expected_level) in expected_levels.iter().enumerate() {
-            assert_eq!(
-                accessor.find_raw_level_by_level_selection(&LevelSelection::indices(i / 2, i % 2)),
-                Some(expected_level)
-            );
-            assert_eq!(
-                accessor.find_raw_level_by_level_selection(&LevelSelection::Identifier(
-                    expected_level.identifier.clone()
-                )),
-                Some(expected_level)
-            );
-            assert_eq!(
-                accessor.find_raw_level_by_level_selection(&LevelSelection::Iid(LevelIid::new(
-                    expected_level.iid.clone()
-                ))),
-                Some(expected_level)
-            );
-            assert_eq!(
-                accessor
-                    .find_raw_level_by_level_selection(&LevelSelection::Uid(expected_level.uid)),
-                Some(expected_level)
-            );
+        for (world_index, world) in accessor.data.worlds.iter().enumerate() {
+            for (level_index, expected_level) in world.levels.iter().enumerate() {
+                assert_eq!(
+                    accessor.find_raw_level_by_level_selection(&LevelSelection::indices(
+                        world_index,
+                        level_index
+                    )),
+                    Some(expected_level)
+                );
+                assert_eq!(
+                    accessor.find_raw_level_by_level_selection(&LevelSelection::Identifier(
+                        expected_level.identifier.clone()
+                    )),
+                    Some(expected_level)
+                );
+                assert_eq!(
+                    accessor.find_raw_level_by_level_selection(&LevelSelection::Iid(
+                        LevelIid::new(expected_level.iid.clone())
+                    )),
+                    Some(expected_level)
+                );
+                assert_eq!(
+                    accessor.find_raw_level_by_level_selection(&LevelSelection::Uid(
+                        expected_level.uid
+                    )),
+                    Some(expected_level)
+                );
+            }
         }
 
         assert_eq!(

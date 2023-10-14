@@ -4,6 +4,7 @@ mod ldtk_asset_plugin;
 pub use ldtk_asset_plugin::LdtkAssetPlugin;
 
 mod level_metadata;
+pub use level_metadata::LevelMetadata;
 
 #[cfg(feature = "external_levels")]
 pub use level_metadata::ExternalLevelMetadata;
@@ -15,8 +16,6 @@ pub use level_locale::InternalLevels;
 
 #[cfg(feature = "external_levels")]
 pub use level_locale::ExternalLevels;
-
-pub use level_metadata::LevelMetadata;
 
 mod level_metadata_accessor;
 pub use level_metadata_accessor::LevelMetadataAccessor;

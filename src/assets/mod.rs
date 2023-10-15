@@ -30,6 +30,9 @@ pub use ldtk_level::LdtkLevel;
 mod ldtk_json_with_metadata;
 pub use ldtk_json_with_metadata::LdtkJsonWithMetadata;
 
+mod ldtk_project_data;
+pub use ldtk_project_data::LdtkProjectData;
+
 mod ldtk_project;
 pub use ldtk_project::LdtkProject;
 

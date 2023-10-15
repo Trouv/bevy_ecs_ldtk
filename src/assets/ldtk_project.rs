@@ -13,7 +13,7 @@ use bevy::{
     utils::BoxedFuture,
 };
 use derive_getters::Getters;
-use derive_more::{Constructor, From};
+use derive_more::From;
 use std::collections::HashMap;
 use thiserror::Error;
 
@@ -70,7 +70,7 @@ fn ldtk_path_to_asset_path<'b>(ldtk_path: &Path, rel_path: &str) -> AssetPath<'b
 /// [`LdtkExternalLevel`]: crate::assets::LdtkExternalLevel
 /// [`loaded_level` accessors]: LdtkJsonWithMetadata#impl-LdtkJsonWithMetadata<InternalLevels>
 /// [`external_level` accessors]: LdtkJsonWithMetadata#impl-LdtkJsonWithMetadata<ExternalLevels>
-#[derive(Clone, Debug, PartialEq, From, TypeUuid, Getters, Constructor, Reflect)]
+#[derive(Clone, Debug, PartialEq, From, TypeUuid, Getters, Reflect)]
 #[uuid = "43571891-8570-4416-903f-582efe3426ac"]
 pub struct LdtkProject {
     /// LDtk json data and level metadata.
@@ -82,6 +82,21 @@ pub struct LdtkProject {
 }
 
 impl LdtkProject {
+    /// Construct a new [`LdtkProject`].
+    ///
+    /// Private to preserve type guarantees about loaded levels.
+    fn new(
+        data: LdtkProjectData,
+        tileset_map: HashMap<i32, Handle<Image>>,
+        int_grid_image_handle: Option<Handle<Image>>,
+    ) -> LdtkProject {
+        LdtkProject {
+            data,
+            tileset_map,
+            int_grid_image_handle,
+        }
+    }
+
     /// Raw ldtk json data.
     pub fn json_data(&self) -> &LdtkJson {
         self.data.json_data()
@@ -316,6 +331,7 @@ impl AssetLoader for LdtkProjectLoader {
 mod tests {
     use super::*;
     use bevy::asset::HandleId;
+    use derive_more::Constructor;
     use fake::{Dummy, Fake};
     use rand::Rng;
 

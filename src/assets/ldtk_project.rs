@@ -141,29 +141,16 @@ impl AssetLoader for LdtkProjectLoader {
 
 #[cfg(test)]
 mod tests {
-    use crate::ldtk::{raw_level_accessor::tests::sample_levels, World};
+    use fake::Fake;
+
+    use crate::ldtk::fake::{LoadedLevelsFaker, MixedLevelsLdtkJsonFaker};
 
     use super::*;
 
     #[test]
     fn raw_level_accessor_implementation_is_transparent() {
-        let [level_a, level_b, level_c, level_d] = sample_levels();
-
-        let world_a = World {
-            levels: vec![level_c.clone()],
-            ..Default::default()
-        };
-
-        let world_b = World {
-            levels: vec![level_d.clone()],
-            ..Default::default()
-        };
-
-        let data = LdtkJson {
-            worlds: vec![world_a, world_b],
-            levels: vec![level_a.clone(), level_b.clone()],
-            ..Default::default()
-        };
+        let data: LdtkJson =
+            MixedLevelsLdtkJsonFaker::new(LoadedLevelsFaker::default(), 4..8).fake();
 
         let project = LdtkProject {
             data: data.clone(),

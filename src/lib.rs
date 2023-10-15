@@ -148,7 +148,10 @@ pub mod prelude {
             EntityIid, EntityInstance, GridCoords, IntGridCell, LayerMetadata, LdtkWorldBundle,
             LevelIid, LevelSet, Respawn, TileEnumTags, TileMetadata, Worldly,
         },
-        ldtk::{self, ldtk_fields::LdtkFields, FieldValue, LayerInstance, TilesetDefinition},
+        ldtk::{
+            self, ldtk_fields::LdtkFields, raw_level_accessor::RawLevelAccessor, FieldValue,
+            LayerInstance, TilesetDefinition,
+        },
         plugin::{LdtkPlugin, ProcessLdtkApi},
         resources::{
             IntGridRendering, LdtkSettings, LevelBackground, LevelEvent, LevelSelection,

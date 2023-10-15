@@ -7,7 +7,6 @@ use crate::{
 };
 use bevy::reflect::Reflect;
 use derive_getters::Getters;
-use derive_more::Constructor;
 use std::collections::HashMap;
 
 #[cfg(feature = "internal_levels")]
@@ -36,7 +35,7 @@ fn expect_level_loaded(level: &Level) -> LoadedLevel {
 /// - [external-levels](LdtkJsonWithMetadata#impl-LdtkJsonWithMetadata<ExternalLevels>)
 ///
 /// [`LdtkProject`]: crate::assets::LdtkProject
-#[derive(Clone, Debug, PartialEq, Constructor, Getters, Reflect)]
+#[derive(Clone, Debug, PartialEq, Getters, Reflect)]
 pub struct LdtkJsonWithMetadata<L>
 where
     L: LevelLocale,
@@ -45,6 +44,24 @@ where
     json_data: LdtkJson,
     /// Map from level iids to level metadata.
     level_map: HashMap<String, L::Metadata>,
+}
+
+impl<L> LdtkJsonWithMetadata<L>
+where
+    L: LevelLocale,
+{
+    /// Construct a new [`LdtkJsonWithMetadata`].
+    ///
+    /// Only public to the crate to preserve type guarantees about loaded levels.
+    pub(crate) fn new(
+        json_data: LdtkJson,
+        level_map: HashMap<String, L::Metadata>,
+    ) -> LdtkJsonWithMetadata<L> {
+        LdtkJsonWithMetadata {
+            json_data,
+            level_map,
+        }
+    }
 }
 
 impl<L> RawLevelAccessor for LdtkJsonWithMetadata<L>
@@ -205,6 +222,7 @@ impl LdtkJsonWithMetadata<ExternalLevels> {
 #[cfg(test)]
 pub mod tests {
     use super::*;
+    use derive_more::Constructor;
     use fake::Dummy;
 
     #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Constructor)]

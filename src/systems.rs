@@ -35,18 +35,18 @@ pub fn process_ldtk_assets(
         match event {
             AssetEvent::Created { handle } => {
                 debug!("LDtk asset creation detected.");
-                ldtk_handles_for_clear_color.insert(handle.clone());
+                ldtk_handles_for_clear_color.insert(handle);
             }
             AssetEvent::Modified { handle } => {
                 info!("LDtk asset modification detected.");
-                ldtk_handles_to_respawn.insert(handle.clone());
-                ldtk_handles_for_clear_color.insert(handle.clone());
+                ldtk_handles_to_respawn.insert(handle);
+                ldtk_handles_for_clear_color.insert(handle);
             }
             AssetEvent::Removed { handle } => {
                 info!("LDtk asset removal detected.");
                 // if mesh was modified and removed in the same update, ignore the modification
                 // events are ordered so future modification events are ok
-                ldtk_handles_to_respawn.retain(|changed_handle| changed_handle != handle);
+                ldtk_handles_to_respawn.retain(|changed_handle| *changed_handle != handle);
             }
         }
     }

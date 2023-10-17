@@ -76,3 +76,32 @@ impl AssetLoader for LdtkExternalLevelLoader {
         &["ldtkl"]
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use fake::{Fake, Faker};
+
+    use crate::ldtk::fake::UnloadedLevelFaker;
+
+    use super::*;
+
+    #[test]
+    fn data_accessor_for_loaded_level_succeeds() {
+        // default level faker creates a loaded level
+        let level: Level = Faker.fake();
+
+        let ldtk_external_level = LdtkExternalLevel::new(level.clone());
+
+        assert_eq!(ldtk_external_level.data().raw(), &level);
+    }
+
+    #[test]
+    #[should_panic]
+    fn data_accessor_for_unloaded_level_panics() {
+        let level: Level = UnloadedLevelFaker.fake();
+
+        let ldtk_external_level = LdtkExternalLevel::new(level.clone());
+
+        let _should_panic = ldtk_external_level.data();
+    }
+}

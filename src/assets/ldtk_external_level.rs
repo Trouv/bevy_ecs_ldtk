@@ -17,28 +17,36 @@ use thiserror::Error;
 #[derive(Clone, Debug, PartialEq, TypeUuid, Reflect)]
 #[uuid = "5448469b-2134-44f5-a86c-a7b829f70a0c"]
 pub struct LdtkExternalLevel {
-    /// Raw ldtk level data.
+    /// Raw LDtk level data.
     data: Level,
 }
 
 impl LdtkExternalLevel {
+    /// Construct a new [`LdtkExternalLevel`].
+    ///
+    /// Only available for testing.
+    /// This type should only be constructed via the bevy asset system under normal use.
     #[cfg(test)]
     pub fn new(data: Level) -> LdtkExternalLevel {
         LdtkExternalLevel { data }
     }
 
+    /// Internal LDtk level data as a [`LoadedLevel`].
     pub fn data(&self) -> LoadedLevel {
         LoadedLevel::try_from(&self.data)
             .expect("construction of LdtkExternalLevel should guarantee that the level is loaded.")
     }
 }
 
+/// Errors that can occur when loading an [`LdtkExternalLevel`] asset.
 #[derive(Debug, Error)]
 pub enum LdtkExternalLevelLoaderError {
-    #[error("external LDtk level should contain all level data, but the level's layers is null")]
+    /// External LDtk level should contain all level data, but some level has null layers.
+    #[error("external LDtk level should contain all level data, but some level has null layers")]
     NullLayers,
 }
 
+/// AssetLoader for [`LdtkExternalLevel`]
 #[derive(Default)]
 pub struct LdtkExternalLevelLoader;
 

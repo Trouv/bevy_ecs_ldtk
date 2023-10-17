@@ -31,10 +31,6 @@ impl LdtkExternalLevel {
         LoadedLevel::try_from(&self.data)
             .expect("construction of LdtkExternalLevel should guarantee that the level is loaded.")
     }
-
-    pub fn background_image(&self) -> &Option<Handle<Image>> {
-        &None
-    }
 }
 
 #[derive(Debug, Error)]

@@ -1,34 +1,132 @@
+use std::path::Path;
+
 use crate::{
-    assets::{ldtk_path_to_asset_path, LdtkLevel},
+    assets::{
+        LdtkJsonWithMetadata, LdtkProjectData, LevelIndices, LevelMetadata, LevelMetadataAccessor,
+    },
     ldtk::{raw_level_accessor::RawLevelAccessor, LdtkJson, Level},
-    resources::LevelSelection,
 };
 use bevy::{
-    asset::{AssetLoader, LoadContext, LoadedAsset},
+    asset::{AssetLoader, AssetPath, LoadContext, LoadedAsset},
     prelude::*,
-    reflect::{TypePath, TypeUuid},
+    reflect::{Reflect, TypeUuid},
     utils::BoxedFuture,
 };
 use derive_getters::Getters;
+use derive_more::From;
 use std::collections::HashMap;
+use thiserror::Error;
 
-/// Main asset for loading ldtk files.
+#[cfg(feature = "internal_levels")]
+use crate::assets::InternalLevels;
+
+#[cfg(feature = "external_levels")]
+use crate::assets::{ExternalLevelMetadata, ExternalLevels};
+
+fn ldtk_path_to_asset_path<'b>(ldtk_path: &Path, rel_path: &str) -> AssetPath<'b> {
+    ldtk_path.parent().unwrap().join(Path::new(rel_path)).into()
+}
+
+/// Main asset for loading LDtk project data.
 ///
-/// Load your ldtk project with the asset server, then insert the handle into the
-/// [`LdtkWorldBundle`].
+/// # Accessing level data
+/// This type provides many methods for accessing level data.
+/// The correct method for you will vary depending on whether or not you need "complete" level
+/// data, and if so, whether or not your project uses internal levels or external levels.
 ///
-/// [`LdtkWorldBundle`]: crate::components::LdtkWorldBundle
-#[derive(Clone, Debug, PartialEq, TypeUuid, TypePath, Getters)]
-#[uuid = "ecfb87b7-9cd9-4970-8482-f2f68b770d31"]
+/// ## Raw vs loaded levels
+/// There are a couple main flavors that level data can have - raw and loaded.
+///
+/// Raw levels don't have any type guarantee that the level data is complete or incomplete.
+/// Level data may be incomplete and contain no layer instances if external levels are enabled.
+/// However, even in this case, a raw level is sufficient if you don't need any layer data.
+/// Raw levels are represented by the [`Level`] type from LDtk.
+/// See [`RawLevelAccessor`] and [`LevelMetadataAccessor`] for some methods that access raw levels.
+///
+/// On the other hand, loaded levels are type-guaranteed to have complete level data.
+/// Loaded levels are represented by the [`LoadedLevel`] type.
+/// Methods for accessing loaded levels vary depending on if the levels are internal or external.
+///
+/// ## Accessing internal and external loaded levels
+/// By default, LDtk stores level data inside the main project file.
+/// You have the option to store level data externally, where each level gets its own file.
+/// In this case, some of the level data remains available in the project file, but not layer data.
+/// See the [previous section](LdtkProject#raw-vs-loaded-levels) for more details.
+///
+/// Level data stored so differently on disk results in a similar difference when loaded in memory.
+/// In the external case, an entirely different asset type [`LdtkExternalLevel`] comes into play.
+/// So, methods for accessing loaded levels vary between the two cases.
+///
+/// If you know that your project uses internal levels, you can coerce it as a "standalone project".
+/// To do this, use [`LdtkProject::as_standalone`].
+/// With that, you can use these [`loaded_level` accessors].
+///
+/// If you know that your project uses external levels, you can coerce it as a "parent project".
+/// To do this, use [`LdtkProject::as_parent`].
+/// You will also need the [`LdtkExternalLevel`] asset collection.
+/// With these, you can use these [`external_level` accessors].
+///
+/// [`LoadedLevel`]: crate::ldtk::loaded_level::LoadedLevel
+/// [`LdtkExternalLevel`]: crate::assets::LdtkExternalLevel
+/// [`loaded_level` accessors]: LdtkJsonWithMetadata#impl-LdtkJsonWithMetadata<InternalLevels>
+/// [`external_level` accessors]: LdtkJsonWithMetadata#impl-LdtkJsonWithMetadata<ExternalLevels>
+#[derive(Clone, Debug, PartialEq, From, TypeUuid, Getters, Reflect)]
+#[uuid = "43571891-8570-4416-903f-582efe3426ac"]
 pub struct LdtkProject {
-    /// Raw ldtk project data.
-    data: LdtkJson,
+    /// LDtk json data and level metadata.
+    data: LdtkProjectData,
     /// Map from tileset uids to image handles for the loaded tileset.
     tileset_map: HashMap<i32, Handle<Image>>,
-    /// Map from level iids to level handles.
-    level_map: HashMap<String, Handle<LdtkLevel>>,
     /// Image used for rendering int grid colors.
     int_grid_image_handle: Option<Handle<Image>>,
+}
+
+impl LdtkProject {
+    /// Construct a new [`LdtkProject`].
+    ///
+    /// Private to preserve type guarantees about loaded levels.
+    fn new(
+        data: LdtkProjectData,
+        tileset_map: HashMap<i32, Handle<Image>>,
+        int_grid_image_handle: Option<Handle<Image>>,
+    ) -> LdtkProject {
+        LdtkProject {
+            data,
+            tileset_map,
+            int_grid_image_handle,
+        }
+    }
+
+    /// Raw ldtk json data.
+    pub fn json_data(&self) -> &LdtkJson {
+        self.data.json_data()
+    }
+
+    /// Unwrap as a [`LdtkJsonWithMetadata<InternalLevels>`].
+    /// For use on internal-levels ldtk projects only.
+    ///
+    /// # Panics
+    /// Panics if `self.data()` is not [`LdtkProjectData::Standalone`].
+    /// This shouldn't occur if the project uses internal levels.
+    ///
+    /// [`LdtkJsonWithMetadata<InternalLevels>`]: LdtkJsonWithMetadata
+    #[cfg(feature = "internal_levels")]
+    pub fn as_standalone(&self) -> &LdtkJsonWithMetadata<InternalLevels> {
+        self.data.as_standalone()
+    }
+
+    /// Unwrap as a [`LdtkJsonWithMetadata<ExternalLevels>`].
+    /// For use on external-levels ldtk projects only.
+    ///
+    /// # Panics
+    /// Panics if `self.data()` is not [`LdtkProjectData::Parent`].
+    /// This shouldn't occur if the project uses external levels.
+    ///
+    /// [`LdtkJsonWithMetadata<ExternalLevels>`]: LdtkJsonWithMetadata
+    #[cfg(feature = "external_levels")]
+    pub fn as_parent(&self) -> &LdtkJsonWithMetadata<ExternalLevels> {
+        self.data.as_parent()
+    }
 }
 
 impl RawLevelAccessor for LdtkProject {
@@ -41,21 +139,97 @@ impl RawLevelAccessor for LdtkProject {
     }
 }
 
-impl LdtkProject {
-    /// Find a particular level using a [`LevelSelection`].
-    ///
-    /// Note: the returned level is the one existent in the [`LdtkProject`].
-    /// This level will have "incomplete" data if you use LDtk's external levels feature.
-    /// To always get full level data, you'll need to access `Assets<LdtkLevel>`.
-    pub fn get_level(&self, level_selection: &LevelSelection) -> Option<&Level> {
-        self.iter_raw_levels_with_indices()
-            .find(|(i, l)| level_selection.is_match(i, l))
-            .map(|(_, l)| l)
+impl LevelMetadataAccessor for LdtkProject {
+    fn get_level_metadata_by_iid(&self, iid: &String) -> Option<&LevelMetadata> {
+        self.data.get_level_metadata_by_iid(iid)
     }
 }
 
+/// Errors that can occur when loading an [`LdtkProject`] asset.
+#[allow(dead_code)]
+#[derive(Debug, Error)]
+pub enum LdtkProjectLoaderError {
+    /// LDtk project uses internal levels, but the `internal_levels` feature is disabled.
+    #[error("LDtk project uses internal levels, but the internal_levels feature is disabled")]
+    InternalLevelsDisabled,
+    /// LDtk project uses external levels, but the `external_levels` feature is disabled.
+    #[error("LDtk project uses external levels, but the external_levels feature is disabled")]
+    ExternalLevelsDisabled,
+    /// LDtk project uses internal levels, but some level's `layer_instances` is null.
+    #[error("LDtk project uses internal levels, but some level's layer_instances is null")]
+    InternalLevelWithNullLayers,
+    /// LDtk project uses external levels, but some level's `external_rel_path` is null.
+    #[error("LDtk project uses external levels, but some level's external_rel_path is null")]
+    ExternalLevelWithNullPath,
+}
+
+/// AssetLoader for [`LdtkProject`].
 #[derive(Default)]
 pub struct LdtkProjectLoader;
+
+struct LoadLevelMetadataResult<'a, L> {
+    dependent_asset_paths: Vec<AssetPath<'a>>,
+    level_metadata: L,
+}
+
+fn load_level_metadata<'a>(
+    load_context: &LoadContext,
+    level_indices: LevelIndices,
+    level: &Level,
+    expect_level_loaded: bool,
+) -> Result<LoadLevelMetadataResult<'a, LevelMetadata>, LdtkProjectLoaderError> {
+    let (bg_image_path, bg_image) = level
+        .bg_rel_path
+        .as_ref()
+        .map(|rel_path| {
+            let asset_path = ldtk_path_to_asset_path(load_context.path(), rel_path);
+
+            (
+                Some(asset_path.clone()),
+                Some(load_context.get_handle(asset_path)),
+            )
+        })
+        .unwrap_or((None, None));
+
+    if expect_level_loaded && level.layer_instances.is_none() {
+        Err(LdtkProjectLoaderError::InternalLevelWithNullLayers)?;
+    }
+
+    let level_metadata = LevelMetadata::new(bg_image, level_indices);
+
+    Ok(LoadLevelMetadataResult {
+        dependent_asset_paths: bg_image_path.into_iter().collect(),
+        level_metadata,
+    })
+}
+
+#[cfg(feature = "external_levels")]
+fn load_external_level_metadata<'a>(
+    load_context: &LoadContext,
+    level_indices: LevelIndices,
+    level: &Level,
+) -> Result<LoadLevelMetadataResult<'a, ExternalLevelMetadata>, LdtkProjectLoaderError> {
+    let LoadLevelMetadataResult {
+        level_metadata,
+        mut dependent_asset_paths,
+    } = load_level_metadata(load_context, level_indices, level, false)?;
+
+    let external_level_path = ldtk_path_to_asset_path(
+        load_context.path(),
+        level
+            .external_rel_path
+            .as_ref()
+            .ok_or(LdtkProjectLoaderError::ExternalLevelWithNullPath)?,
+    );
+
+    let external_handle = load_context.get_handle(external_level_path.clone());
+    dependent_asset_paths.push(external_level_path);
+
+    Ok(LoadLevelMetadataResult {
+        level_metadata: ExternalLevelMetadata::new(level_metadata, external_handle),
+        dependent_asset_paths,
+    })
+}
 
 impl AssetLoader for LdtkProjectLoader {
     fn load<'a>(
@@ -66,45 +240,14 @@ impl AssetLoader for LdtkProjectLoader {
         Box::pin(async move {
             let data: LdtkJson = serde_json::from_slice(bytes)?;
 
-            let mut external_level_paths = Vec::new();
-            let mut level_map = HashMap::new();
-            let mut background_images = Vec::new();
-            if data.external_levels {
-                for level in data.iter_raw_levels() {
-                    if let Some(external_rel_path) = &level.external_rel_path {
-                        let asset_path =
-                            ldtk_path_to_asset_path(load_context.path(), external_rel_path);
+            let mut dependent_asset_paths = Vec::new();
 
-                        external_level_paths.push(asset_path.clone());
-                        level_map.insert(level.iid.clone(), load_context.get_handle(asset_path));
-                    }
-                }
-            } else {
-                for level in data.iter_raw_levels() {
-                    let label = level.identifier.as_ref();
-
-                    let mut background_image = None;
-                    if let Some(rel_path) = &level.bg_rel_path {
-                        let asset_path = ldtk_path_to_asset_path(load_context.path(), rel_path);
-                        background_images.push(asset_path.clone());
-                        background_image = Some(load_context.get_handle(asset_path));
-                    }
-
-                    let ldtk_level = LdtkLevel::new(level.clone(), background_image);
-                    let level_handle =
-                        load_context.set_labeled_asset(label, LoadedAsset::new(ldtk_level));
-
-                    level_map.insert(level.iid.clone(), level_handle);
-                }
-            }
-
-            let mut tileset_rel_paths = Vec::new();
-            let mut tileset_map = HashMap::new();
+            let mut tileset_map: HashMap<i32, Handle<Image>> = HashMap::new();
             for tileset in &data.defs.tilesets {
                 if let Some(tileset_path) = &tileset.rel_path {
                     let asset_path = ldtk_path_to_asset_path(load_context.path(), tileset_path);
 
-                    tileset_rel_paths.push(asset_path.clone());
+                    dependent_asset_paths.push(asset_path.clone());
                     tileset_map.insert(tileset.uid, load_context.get_handle(asset_path));
                 } else if tileset.embed_atlas.is_some() {
                     warn!("Ignoring LDtk's Internal_Icons. They cannot be displayed due to their license.");
@@ -118,17 +261,62 @@ impl AssetLoader for LdtkProjectLoader {
                 load_context.set_labeled_asset("int_grid_image", LoadedAsset::new(image))
             });
 
-            let ldtk_asset = LdtkProject {
-                data,
-                tileset_map,
-                level_map,
-                int_grid_image_handle,
+            let ldtk_project = if data.external_levels {
+                #[cfg(feature = "external_levels")]
+                {
+                    let mut level_map = HashMap::new();
+
+                    for (level_indices, level) in data.iter_raw_levels_with_indices() {
+                        let LoadLevelMetadataResult {
+                            level_metadata,
+                            dependent_asset_paths: new_asset_paths,
+                        } = load_external_level_metadata(load_context, level_indices, level)?;
+
+                        level_map.insert(level.iid.clone(), level_metadata);
+                        dependent_asset_paths.extend(new_asset_paths);
+                    }
+
+                    LdtkProject::new(
+                        LdtkProjectData::Parent(LdtkJsonWithMetadata::new(data, level_map)),
+                        tileset_map,
+                        int_grid_image_handle,
+                    )
+                }
+
+                #[cfg(not(feature = "external_levels"))]
+                {
+                    Err(LdtkProjectLoaderError::ExternalLevelsDisabled)?
+                }
+            } else {
+                #[cfg(feature = "internal_levels")]
+                {
+                    let mut level_map = HashMap::new();
+
+                    for (level_indices, level) in data.iter_raw_levels_with_indices() {
+                        let LoadLevelMetadataResult {
+                            level_metadata,
+                            dependent_asset_paths: new_asset_paths,
+                        } = load_level_metadata(load_context, level_indices, level, true)?;
+
+                        level_map.insert(level.iid.clone(), level_metadata);
+                        dependent_asset_paths.extend(new_asset_paths);
+                    }
+
+                    LdtkProject::new(
+                        LdtkProjectData::Standalone(LdtkJsonWithMetadata::new(data, level_map)),
+                        tileset_map,
+                        int_grid_image_handle,
+                    )
+                }
+
+                #[cfg(not(feature = "internal_levels"))]
+                {
+                    Err(LdtkProjectLoaderError::InternalLevelsDisabled)?
+                }
             };
+
             load_context.set_default_asset(
-                LoadedAsset::new(ldtk_asset)
-                    .with_dependencies(tileset_rel_paths)
-                    .with_dependencies(external_level_paths)
-                    .with_dependencies(background_images),
+                LoadedAsset::new(ldtk_project).with_dependencies(dependent_asset_paths),
             );
             Ok(())
         })
@@ -141,25 +329,159 @@ impl AssetLoader for LdtkProjectLoader {
 
 #[cfg(test)]
 mod tests {
-    use fake::Fake;
-
-    use crate::ldtk::fake::{LoadedLevelsFaker, MixedLevelsLdtkJsonFaker};
-
     use super::*;
+    use bevy::asset::HandleId;
+    use derive_more::Constructor;
+    use fake::{Dummy, Fake};
+    use rand::Rng;
 
-    #[test]
-    fn raw_level_accessor_implementation_is_transparent() {
-        let data: LdtkJson =
-            MixedLevelsLdtkJsonFaker::new(LoadedLevelsFaker::default(), 4..8).fake();
+    #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Constructor)]
+    pub struct LdtkProjectFaker<F>
+    where
+        LdtkProjectData: Dummy<F>,
+    {
+        ldtk_project_data_faker: F,
+    }
 
-        let project = LdtkProject {
-            data: data.clone(),
-            tileset_map: HashMap::default(),
-            level_map: HashMap::default(),
-            int_grid_image_handle: None,
+    impl<F> Dummy<LdtkProjectFaker<F>> for LdtkProject
+    where
+        LdtkProjectData: Dummy<F>,
+    {
+        fn dummy_with_rng<R: Rng + ?Sized>(config: &LdtkProjectFaker<F>, rng: &mut R) -> Self {
+            let data: LdtkProjectData = config.ldtk_project_data_faker.fake_with_rng(rng);
+            let tileset_map = data
+                .json_data()
+                .defs
+                .tilesets
+                .iter()
+                .map(|tileset| (tileset.uid, Handle::weak(HandleId::random::<Image>())))
+                .collect();
+
+            LdtkProject {
+                data,
+                tileset_map,
+                int_grid_image_handle: Some(Handle::weak(HandleId::random::<Image>())),
+            }
+        }
+    }
+
+    #[cfg(feature = "internal_levels")]
+    mod internal_levels {
+        use crate::{
+            assets::{
+                ldtk_json_with_metadata::tests::LdtkJsonWithMetadataFaker,
+                ldtk_project_data::internal_level_tests::StandaloneLdtkProjectDataFaker,
+            },
+            ldtk::fake::{LoadedLevelsFaker, MixedLevelsLdtkJsonFaker},
         };
 
-        assert_eq!(project.root_levels(), data.root_levels());
-        assert_eq!(project.worlds(), data.worlds());
+        use super::*;
+
+        impl Dummy<InternalLevels> for LdtkProject {
+            fn dummy_with_rng<R: Rng + ?Sized>(_: &InternalLevels, rng: &mut R) -> Self {
+                LdtkProjectFaker {
+                    ldtk_project_data_faker: InternalLevels,
+                }
+                .fake_with_rng(rng)
+            }
+        }
+
+        #[test]
+        fn json_data_accessor_is_transparent() {
+            let project: LdtkProject = InternalLevels.fake();
+
+            assert_eq!(project.json_data(), project.data().json_data());
+        }
+
+        #[test]
+        fn raw_level_accessor_implementation_is_transparent() {
+            let project: LdtkProject = LdtkProjectFaker::new(StandaloneLdtkProjectDataFaker::new(
+                LdtkJsonWithMetadataFaker::new(MixedLevelsLdtkJsonFaker::new(
+                    LoadedLevelsFaker::default(),
+                    4..8,
+                )),
+            ))
+            .fake();
+
+            assert_eq!(project.root_levels(), project.json_data().root_levels());
+            assert_eq!(project.worlds(), project.json_data().worlds());
+        }
+
+        #[test]
+        fn level_metadata_accessor_implementation_is_transparent() {
+            let project: LdtkProject = InternalLevels.fake();
+
+            for level in &project.json_data().levels {
+                assert_eq!(
+                    project.get_level_metadata_by_iid(&level.iid),
+                    project.data().get_level_metadata_by_iid(&level.iid),
+                );
+            }
+
+            assert_eq!(
+                project.get_level_metadata_by_iid(&"This_level_doesnt_exist".to_string()),
+                None
+            );
+        }
+    }
+
+    #[cfg(feature = "external_levels")]
+    mod external_levels {
+        use crate::{
+            assets::{
+                ldtk_json_with_metadata::tests::LdtkJsonWithMetadataFaker,
+                ldtk_project_data::external_level_tests::ParentLdtkProjectDataFaker,
+            },
+            ldtk::fake::{LoadedLevelsFaker, MixedLevelsLdtkJsonFaker},
+        };
+
+        use super::*;
+
+        impl Dummy<ExternalLevels> for LdtkProject {
+            fn dummy_with_rng<R: Rng + ?Sized>(_: &ExternalLevels, rng: &mut R) -> Self {
+                LdtkProjectFaker {
+                    ldtk_project_data_faker: ExternalLevels,
+                }
+                .fake_with_rng(rng)
+            }
+        }
+
+        #[test]
+        fn json_data_accessor_is_transparent() {
+            let project: LdtkProject = ExternalLevels.fake();
+
+            assert_eq!(project.json_data(), project.data().json_data());
+        }
+
+        #[test]
+        fn raw_level_accessor_implementation_is_transparent() {
+            let project: LdtkProject = LdtkProjectFaker::new(ParentLdtkProjectDataFaker::new(
+                LdtkJsonWithMetadataFaker::new(MixedLevelsLdtkJsonFaker::new(
+                    LoadedLevelsFaker::default(),
+                    4..8,
+                )),
+            ))
+            .fake();
+
+            assert_eq!(project.root_levels(), project.json_data().root_levels());
+            assert_eq!(project.worlds(), project.json_data().worlds());
+        }
+
+        #[test]
+        fn level_metadata_accessor_implementation_is_transparent() {
+            let project: LdtkProject = ExternalLevels.fake();
+
+            for level in &project.json_data().levels {
+                assert_eq!(
+                    project.get_level_metadata_by_iid(&level.iid),
+                    project.data().get_level_metadata_by_iid(&level.iid),
+                );
+            }
+
+            assert_eq!(
+                project.get_level_metadata_by_iid(&"This_level_doesnt_exist".to_string()),
+                None
+            );
+        }
     }
 }

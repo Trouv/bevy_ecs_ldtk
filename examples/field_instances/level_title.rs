@@ -11,22 +11,24 @@ pub struct LevelTitle(String);
 
 pub fn set_level_title_to_current_level(
     mut level_events: EventReader<LevelEvent>,
-    level_handles: Query<&Handle<LdtkLevel>>,
-    level_assets: Res<Assets<LdtkLevel>>,
+    levels: Query<&LevelIid>,
+    projects: Query<&Handle<LdtkProject>>,
+    project_assets: Res<Assets<LdtkProject>>,
     mut current_level_title: ResMut<LevelTitle>,
 ) {
     for level_event in level_events.iter() {
         if matches!(level_event, LevelEvent::Transformed(_)) {
-            let level_handle = level_handles
+            let level_iid = levels
                 .get_single()
                 .expect("only one level should be spawned at a time in this example");
 
-            let level_asset = level_assets
-                .get(level_handle)
-                .expect("level asset should be loaded before LevelEvent::Transformed");
+            let level_data = project_assets
+                .get(projects.single())
+                .expect("project asset should be loaded if levels are spawned")
+                .get_raw_level_by_iid(&level_iid.to_string())
+                .expect("spawned level should exist in the loaded project");
 
-            let title = level_asset
-                .data()
+            let title = level_data
                 .get_string_field("title")
                 .expect("level should have non-nullable title string field");
 

@@ -11,6 +11,7 @@ pub use level_set::LevelSet;
 pub use crate::ldtk::EntityInstance;
 use crate::{
     ldtk::{LayerInstance, Type},
+    prelude::LdtkProject,
     utils::ldtk_grid_coords_to_grid_coords,
 };
 use bevy::prelude::*;
@@ -19,7 +20,6 @@ use std::ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign};
 
 #[allow(unused_imports)]
 use crate::{
-    assets::LdtkLevel,
     prelude::{LdtkEntity, LdtkIntCell},
     resources::LevelSelection,
 };
@@ -307,10 +307,12 @@ impl From<&LayerInstance> for LayerMetadata {
 
 /// [Component] that indicates that an LDtk level or world should respawn.
 ///
-/// Inserting this component on an entity with either `Handle<LdtkProject>` or `Handle<LdtkLevel>`
+/// Inserting this component on an entity with either [`Handle<LdtkProject>`] or [`LevelIid`]
 /// components will cause it to respawn.
 /// This can be used to implement a simple level-restart feature.
 /// Internally, this is used to support the entire level spawning process
+///
+/// [`Handle<LdtkProject>`]: crate::assets::LdtkProject
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Hash, Component, Reflect)]
 #[reflect(Component)]
 pub struct Respawn;
@@ -331,23 +333,23 @@ pub(crate) struct EntityInstanceBundle {
     pub entity_instance: EntityInstance,
 }
 
-/// [Bundle] for spawning LDtk worlds and their levels. The main bundle for using this plugin.
+/// `Bundle` for spawning LDtk worlds and their levels. The main bundle for using this plugin.
 ///
-/// After the ldtk file is done loading, the levels you've chosen with [LevelSelection] or
-/// [LevelSet] will begin to spawn.
-/// Each level is its own entity, with the [LdtkWorldBundle] as its parent.
-/// Each level has a `Handle<LdtkLevel>` component.
+/// After the ldtk file is done loading, the levels you've chosen with [`LevelSelection`] or
+/// [`LevelSet`] will begin to spawn.
+/// Each level is its own entity, with the [`LdtkWorldBundle`] as its parent.
+/// Each level has a [`LevelIid`] component.
 ///
 /// All non-Entity layers (IntGrid, Tile, and AutoTile) will also spawn as their own entities.
 /// Each layer's parent will be the level entity.
-/// Each layer will have a [LayerMetadata] component, and are [bevy_ecs_tilemap::TilemapBundle]s.
+/// Each layer will have a [`LayerMetadata`] component, and are bevy_ecs_tilemap TileMaps.
 /// Each tile in these layers will have the layer entity as its parent.
 ///
 /// For Entity layers, all LDtk entities in the level are spawned as children to the level entity,
-/// unless marked by a [Worldly] component.
+/// unless marked by a [`Worldly`] component.
 #[derive(Clone, Default, Bundle)]
 pub struct LdtkWorldBundle {
-    pub ldtk_handle: Handle<crate::assets::LdtkProject>,
+    pub ldtk_handle: Handle<LdtkProject>,
     pub level_set: LevelSet,
     pub transform: Transform,
     pub global_transform: GlobalTransform,

@@ -3,7 +3,7 @@ use bevy::{prelude::*, reflect::Reflect};
 use derive_getters::Getters;
 
 #[cfg(feature = "external_levels")]
-use crate::assets::LdtkLevel;
+use crate::assets::LdtkExternalLevel;
 
 /// Metadata produced for every level during [`LdtkProject`] loading.
 ///
@@ -32,13 +32,13 @@ pub struct ExternalLevelMetadata {
     /// Common metadata for this level.
     metadata: LevelMetadata,
     /// Handle to this external level's asset data.
-    external_handle: Handle<LdtkLevel>,
+    external_handle: Handle<LdtkExternalLevel>,
 }
 
 #[cfg(feature = "external_levels")]
 impl ExternalLevelMetadata {
     /// Construct a new [`ExternalLevelMetadata`].
-    pub fn new(metadata: LevelMetadata, external_handle: Handle<LdtkLevel>) -> Self {
+    pub fn new(metadata: LevelMetadata, external_handle: Handle<LdtkExternalLevel>) -> Self {
         ExternalLevelMetadata {
             metadata,
             external_handle,

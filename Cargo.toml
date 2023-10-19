@@ -42,6 +42,9 @@ render = ["bevy_ecs_tilemap/render"]
 internal_levels = []
 external_levels = []
 
+[package.metadata.docs.rs]
+all-features = true
+
 [[example]]
 name = "platformer"
 path = "examples/platformer/main.rs"

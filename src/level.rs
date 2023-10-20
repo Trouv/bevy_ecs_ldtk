@@ -652,10 +652,18 @@ pub fn spawn_level(
                     // tilemap's default positioning, ensures all layers have the same
                     // bottom-left corner placement regardless of grid_size.
                     let tilemap_adjustment = Vec3::new(
-                        layer_instance.grid_size as f32,
-                        layer_instance.grid_size as f32,
+                        tileset_definition
+                            .map(|TilesetDefinition { tile_grid_size, .. }| *tile_grid_size)
+                            .unwrap_or(layer_instance.grid_size) as f32
+                            / 2.,
+                        layer_instance.grid_size as f32
+                            - (tileset_definition
+                                .map(|TilesetDefinition { tile_grid_size, .. }| *tile_grid_size)
+                                .unwrap_or(layer_instance.grid_size)
+                                as f32
+                                / 2.),
                         0.,
-                    ) / 2.;
+                    );
 
                     let layer_offset = Vec3::new(
                         layer_instance.px_total_offset_x as f32,

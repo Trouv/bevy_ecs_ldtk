@@ -17,7 +17,7 @@ base.
 ### Features
 - Support for all layer types
 - Support for loading external levels
-- Hot reloading (requires double-saving for external levels)
+- Hot reloading
 - Solutions for easily loading/unloading levels, changing levels, loading level neighbors...
 - Low-boilerplate solutions for spawning bundles for LDtk Entities and IntGrid
   tiles using derive macros (other options available)

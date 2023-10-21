@@ -352,20 +352,20 @@ pub fn spawn_level(
                     .tileset_def_uid
                     .map(|u| tileset_definition_map.get(&u).unwrap());
 
-                let tile_size = match tileset_definition {
-                    Some(tileset_definition) => TilemapTileSize {
-                        x: tileset_definition.tile_grid_size as f32,
-                        y: tileset_definition.tile_grid_size as f32,
-                    },
-                    None => TilemapTileSize {
-                        x: layer_instance.grid_size as f32,
-                        y: layer_instance.grid_size as f32,
-                    },
+                let tile_size = tileset_definition
+                    .map(|TilesetDefinition { tile_grid_size, .. }| *tile_grid_size)
+                    .unwrap_or(layer_instance.grid_size) as f32;
+
+                let tilemap_tile_size = TilemapTileSize {
+                    x: tile_size,
+                    y: tile_size,
                 };
 
-                let grid_size = TilemapGridSize {
-                    x: layer_instance.grid_size as f32,
-                    y: layer_instance.grid_size as f32,
+                let grid_size = layer_instance.grid_size as f32;
+
+                let tilemap_grid_size = TilemapGridSize {
+                    x: grid_size,
+                    y: grid_size,
                 };
 
                 let spacing = match tileset_definition {
@@ -575,12 +575,12 @@ pub fn spawn_level(
                         }
 
                         TilemapBundle {
-                            grid_size,
+                            grid_size: tilemap_grid_size,
                             size,
                             spacing,
                             storage,
                             texture: texture.clone(),
-                            tile_size,
+                            tile_size: tilemap_tile_size,
                             ..default()
                         }
                     } else {
@@ -621,12 +621,12 @@ pub fn spawn_level(
                         }
 
                         TilemapBundle {
-                            grid_size,
+                            grid_size: tilemap_grid_size,
                             size,
                             spacing,
                             storage,
                             texture: texture.clone(),
-                            tile_size,
+                            tile_size: tilemap_tile_size,
                             ..default()
                         }
                     };
@@ -654,9 +654,9 @@ pub fn spawn_level(
                     // tilemap's default positioning, ensures all layers have the same
                     // bottom-left corner placement regardless of grid_size.
                     let tilemap_adjustment = Vec3::new(
-                        tile_size.x / 2. + grid_size.x * tile_pivot_x - tile_size.x * tile_pivot_x,
-                        grid_size.y - grid_size.y * tile_pivot_y - tile_size.y / 2.
-                            + tile_size.y * tile_pivot_y,
+                        tile_size / 2. + grid_size * tile_pivot_x - tile_size * tile_pivot_x,
+                        grid_size - grid_size * tile_pivot_y - tile_size / 2.
+                            + tile_size * tile_pivot_y,
                         0.,
                     );
 

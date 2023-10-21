@@ -15,6 +15,7 @@ use bevy::{
 use derive_getters::Getters;
 use derive_more::From;
 use std::collections::HashMap;
+use path_clean::PathClean;
 use thiserror::Error;
 
 #[cfg(feature = "internal_levels")]
@@ -24,7 +25,12 @@ use crate::assets::InternalLevels;
 use crate::assets::{ExternalLevelMetadata, ExternalLevels};
 
 fn ldtk_path_to_asset_path<'b>(ldtk_path: &Path, rel_path: &str) -> AssetPath<'b> {
-    ldtk_path.parent().unwrap().join(Path::new(rel_path)).into()
+    ldtk_path
+        .parent()
+        .unwrap()
+        .join(Path::new(rel_path))
+        .clean()
+        .into()
 }
 
 /// Main asset for loading LDtk project data.
@@ -363,6 +369,27 @@ mod tests {
                 int_grid_image_handle: Some(Handle::weak(HandleId::random::<Image>())),
             }
         }
+    }
+
+    #[test]
+    fn normalizes_asset_paths() {
+        let resolve_path = |project_path, rel_path| {
+            let asset_path = ldtk_path_to_asset_path(Path::new(project_path), rel_path);
+            asset_path.path().to_owned()
+        };
+
+        assert_eq!(
+            resolve_path("project.ldtk", "images/tiles.png"),
+            Path::new("images/tiles.png"));
+        assert_eq!(
+            resolve_path("projects\\sub/project.ldtk", "../images/tiles.png"),
+            Path::new("projects/images/tiles.png"));
+        assert_eq!(
+            resolve_path("projects\\sub/project.ldtk", "../../images/tiles.png"),
+            Path::new("images/tiles.png"));
+        assert_eq!(
+            resolve_path("projects/sub\\project.ldtk", "../../tiles.png"),
+            Path::new("tiles.png"));
     }
 
     #[cfg(feature = "internal_levels")]

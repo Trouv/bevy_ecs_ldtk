@@ -647,30 +647,36 @@ pub fn spawn_level(
                         .get(&layer_instance.layer_def_uid)
                         .expect("Encountered layer without definition");
 
+                    let grid_tile_size_difference = grid_size - tile_size;
+
+                    let bottom_left_pixel = Vec2::new(0., grid_tile_size_difference);
                     // Tile positions are anchored to the center of the tile.
                     // Applying this adjustment to the layer places the bottom-left corner of
                     // the layer at the origin of the level.
                     // Making this adjustment at the layer level, as opposed to using the
                     // tilemap's default positioning, ensures all layers have the same
                     // bottom-left corner placement regardless of grid_size.
-                    let tilemap_adjustment = Vec3::new(
-                        tile_size / 2. + grid_size * tile_pivot_x - tile_size * tile_pivot_x,
-                        grid_size - grid_size * tile_pivot_y - tile_size / 2.
-                            + tile_size * tile_pivot_y,
-                        0.,
+                    let centering_adjustment = Vec2::splat(tile_size / 2.);
+
+                    let pivot_adjustment = Vec2::new(
+                        grid_tile_size_difference * tile_pivot_x,
+                        -grid_tile_size_difference * tile_pivot_y,
                     );
 
-                    let layer_offset = Vec3::new(
+                    let layer_offset = Vec2::new(
                         layer_instance.px_total_offset_x as f32,
                         -layer_instance.px_total_offset_y as f32,
-                        layer_z as f32,
                     );
 
                     commands
                         .entity(layer_entity)
                         .insert(tilemap_bundle)
                         .insert(SpatialBundle::from_transform(Transform::from_translation(
-                            layer_offset + tilemap_adjustment,
+                            (bottom_left_pixel
+                                + centering_adjustment
+                                + pivot_adjustment
+                                + layer_offset)
+                                .extend(layer_z as f32),
                         )))
                         .insert(LayerMetadata::from(layer_instance))
                         .insert(Name::new(layer_instance.identifier.to_owned()));

@@ -639,6 +639,14 @@ pub fn spawn_level(
                         TilemapId(layer_entity),
                     );
 
+                    let LayerDefinition {
+                        tile_pivot_x,
+                        tile_pivot_y,
+                        ..
+                    } = &layer_definition_map
+                        .get(&layer_instance.layer_def_uid)
+                        .expect("Encountered layer without definition");
+
                     // Tile positions are anchored to the center of the tile.
                     // Applying this adjustment to the layer places the bottom-left corner of
                     // the layer at the origin of the level.
@@ -646,16 +654,9 @@ pub fn spawn_level(
                     // tilemap's default positioning, ensures all layers have the same
                     // bottom-left corner placement regardless of grid_size.
                     let tilemap_adjustment = Vec3::new(
-                        tileset_definition
-                            .map(|TilesetDefinition { tile_grid_size, .. }| *tile_grid_size)
-                            .unwrap_or(layer_instance.grid_size) as f32
-                            / 2.,
-                        layer_instance.grid_size as f32
-                            - (tileset_definition
-                                .map(|TilesetDefinition { tile_grid_size, .. }| *tile_grid_size)
-                                .unwrap_or(layer_instance.grid_size)
-                                as f32
-                                / 2.),
+                        tile_size.x / 2. + grid_size.x * tile_pivot_x - tile_size.x * tile_pivot_x,
+                        grid_size.y - grid_size.y * tile_pivot_y - tile_size.y / 2.
+                            + tile_size.y * tile_pivot_y,
                         0.,
                     );
 

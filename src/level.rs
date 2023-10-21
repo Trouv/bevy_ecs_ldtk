@@ -363,15 +363,9 @@ pub fn spawn_level(
                     },
                 };
 
-                let grid_size = match tileset_definition {
-                    Some(_) => TilemapGridSize {
-                        x: layer_instance.grid_size as f32,
-                        y: layer_instance.grid_size as f32,
-                    },
-                    None => TilemapGridSize {
-                        x: tile_size.x,
-                        y: tile_size.y,
-                    },
+                let grid_size = TilemapGridSize {
+                    x: layer_instance.grid_size as f32,
+                    y: layer_instance.grid_size as f32,
                 };
 
                 let spacing = match tileset_definition {

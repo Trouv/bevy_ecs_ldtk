@@ -647,22 +647,34 @@ pub fn spawn_level(
                         .get(&layer_instance.layer_def_uid)
                         .expect("Encountered layer without definition");
 
+                    // The math for determining the x/y of a tilemap layer depends heavily on
+                    // both the layer's grid size and the tileset's tile size.
+                    // In particular, we care about their difference for properly reversing y
+                    // direction and for tile pivot calculations.
                     let grid_tile_size_difference = grid_size - tile_size;
 
+                    // It is useful to determine what we should treat as the desired "origin" of
+                    // the tilemap in bevy space.
+                    // This will be the bottom left pixel of the tilemap.
+                    // The y value is affected when there is a difference between the grid size and
+                    // tile size - it sinks below 0 when the grid size is greater.
                     let bottom_left_pixel = Vec2::new(0., grid_tile_size_difference);
-                    // Tile positions are anchored to the center of the tile.
-                    // Applying this adjustment to the layer places the bottom-left corner of
-                    // the layer at the origin of the level.
-                    // Making this adjustment at the layer level, as opposed to using the
-                    // tilemap's default positioning, ensures all layers have the same
-                    // bottom-left corner placement regardless of grid_size.
+
+                    // Tiles in bevy_ecs_tilemap are anchored to the center of the tile.
+                    // We need to cancel out this anchoring so that layers of different sizes will
+                    // stack on top of eachother as they do in LDtk.
                     let centering_adjustment = Vec2::splat(tile_size / 2.);
 
+                    // Layers in LDtk can have a pivot value that acts like an anchor.
+                    // The amount that a tile is translated by this pivot is simply the difference
+                    // between grid_size and tile_size again.
                     let pivot_adjustment = Vec2::new(
                         grid_tile_size_difference * tile_pivot_x,
                         -grid_tile_size_difference * tile_pivot_y,
                     );
 
+                    // Layers in LDtk can also have a plain offset value.
+                    // Not much calculation needs to be done here.
                     let layer_offset = Vec2::new(
                         layer_instance.px_total_offset_x as f32,
                         -layer_instance.px_total_offset_y as f32,

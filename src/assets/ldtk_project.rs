@@ -393,6 +393,7 @@ mod tests {
     }
 
     #[cfg(target_os = "windows")]
+    #[test]
     fn normalizes_windows_asset_paths() {
         let resolve_path = |project_path, rel_path| {
             let asset_path = ldtk_path_to_asset_path(Path::new(project_path), rel_path);

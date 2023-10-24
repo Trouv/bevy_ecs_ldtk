@@ -7,7 +7,8 @@ use regex::Regex;
 
 use crate::ldtk::color;
 
-#[derive(PartialEq, Debug, Clone, Serialize, Reflect)]
+#[derive(Debug, Clone, Serialize, PartialEq, Reflect)]
+#[serde(rename_all = "camelCase")]
 pub struct FieldInstance {
     /// Field definition identifier
     #[serde(rename = "__identifier")]
@@ -37,12 +38,10 @@ pub struct FieldInstance {
     pub value: FieldValue,
 
     /// Reference of the **Field definition** UID
-    #[serde(rename = "defUid")]
     pub def_uid: i32,
 
     /// Editor internal raw values
     #[reflect(ignore)]
-    #[serde(rename = "realEditorValues")]
     pub real_editor_values: Vec<Option<serde_json::Value>>,
 }
 

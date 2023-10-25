@@ -352,26 +352,20 @@ pub fn spawn_level(
                     .tileset_def_uid
                     .map(|u| tileset_definition_map.get(&u).unwrap());
 
-                let tile_size = match tileset_definition {
-                    Some(tileset_definition) => TilemapTileSize {
-                        x: tileset_definition.tile_grid_size as f32,
-                        y: tileset_definition.tile_grid_size as f32,
-                    },
-                    None => TilemapTileSize {
-                        x: layer_instance.grid_size as f32,
-                        y: layer_instance.grid_size as f32,
-                    },
+                let tile_size = tileset_definition
+                    .map(|TilesetDefinition { tile_grid_size, .. }| *tile_grid_size)
+                    .unwrap_or(layer_instance.grid_size) as f32;
+
+                let tilemap_tile_size = TilemapTileSize {
+                    x: tile_size,
+                    y: tile_size,
                 };
 
-                let grid_size = match tileset_definition {
-                    Some(_) => TilemapGridSize {
-                        x: layer_instance.grid_size as f32,
-                        y: layer_instance.grid_size as f32,
-                    },
-                    None => TilemapGridSize {
-                        x: tile_size.x,
-                        y: tile_size.y,
-                    },
+                let grid_size = layer_instance.grid_size as f32;
+
+                let tilemap_grid_size = TilemapGridSize {
+                    x: grid_size,
+                    y: grid_size,
                 };
 
                 let spacing = match tileset_definition {
@@ -581,12 +575,12 @@ pub fn spawn_level(
                         }
 
                         TilemapBundle {
-                            grid_size,
+                            grid_size: tilemap_grid_size,
                             size,
                             spacing,
                             storage,
                             texture: texture.clone(),
-                            tile_size,
+                            tile_size: tilemap_tile_size,
                             ..default()
                         }
                     } else {
@@ -627,12 +621,12 @@ pub fn spawn_level(
                         }
 
                         TilemapBundle {
-                            grid_size,
+                            grid_size: tilemap_grid_size,
                             size,
                             spacing,
                             storage,
                             texture: texture.clone(),
-                            tile_size,
+                            tile_size: tilemap_tile_size,
                             ..default()
                         }
                     };
@@ -645,29 +639,56 @@ pub fn spawn_level(
                         TilemapId(layer_entity),
                     );
 
-                    // Tile positions are anchored to the center of the tile.
-                    // Applying this adjustment to the layer places the bottom-left corner of
-                    // the layer at the origin of the level.
-                    // Making this adjustment at the layer level, as opposed to using the
-                    // tilemap's default positioning, ensures all layers have the same
-                    // bottom-left corner placement regardless of grid_size.
-                    let tilemap_adjustment = Vec3::new(
-                        layer_instance.grid_size as f32,
-                        layer_instance.grid_size as f32,
-                        0.,
-                    ) / 2.;
+                    let LayerDefinition {
+                        tile_pivot_x,
+                        tile_pivot_y,
+                        ..
+                    } = &layer_definition_map
+                        .get(&layer_instance.layer_def_uid)
+                        .expect("Encountered layer without definition");
 
-                    let layer_offset = Vec3::new(
+                    // The math for determining the x/y of a tilemap layer depends heavily on
+                    // both the layer's grid size and the tileset's tile size.
+                    // In particular, we care about their difference for properly reversing y
+                    // direction and for tile pivot calculations.
+                    let grid_tile_size_difference = grid_size - tile_size;
+
+                    // It is useful to determine what we should treat as the desired "origin" of
+                    // the tilemap in bevy space.
+                    // This will be the bottom left pixel of the tilemap.
+                    // The y value is affected when there is a difference between the grid size and
+                    // tile size - it sinks below 0 when the grid size is greater.
+                    let bottom_left_pixel = Vec2::new(0., grid_tile_size_difference);
+
+                    // Tiles in bevy_ecs_tilemap are anchored to the center of the tile.
+                    // We need to cancel out this anchoring so that layers of different sizes will
+                    // stack on top of eachother as they do in LDtk.
+                    let centering_adjustment = Vec2::splat(tile_size / 2.);
+
+                    // Layers in LDtk can have a pivot value that acts like an anchor.
+                    // The amount that a tile is translated by this pivot is simply the difference
+                    // between grid_size and tile_size again.
+                    let pivot_adjustment = Vec2::new(
+                        grid_tile_size_difference * tile_pivot_x,
+                        -grid_tile_size_difference * tile_pivot_y,
+                    );
+
+                    // Layers in LDtk can also have a plain offset value.
+                    // Not much calculation needs to be done here.
+                    let layer_offset = Vec2::new(
                         layer_instance.px_total_offset_x as f32,
                         -layer_instance.px_total_offset_y as f32,
-                        layer_z as f32,
                     );
 
                     commands
                         .entity(layer_entity)
                         .insert(tilemap_bundle)
                         .insert(SpatialBundle::from_transform(Transform::from_translation(
-                            layer_offset + tilemap_adjustment,
+                            (bottom_left_pixel
+                                + centering_adjustment
+                                + pivot_adjustment
+                                + layer_offset)
+                                .extend(layer_z as f32),
                         )))
                         .insert(LayerMetadata::from(layer_instance))
                         .insert(Name::new(layer_instance.identifier.to_owned()));

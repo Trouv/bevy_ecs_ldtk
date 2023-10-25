@@ -5,12 +5,12 @@
 		"doc": "https://ldtk.io/json",
 		"schema": "https://ldtk.io/files/JSON_SCHEMA.json",
 		"appAuthor": "Sebastien 'deepnight' Benard",
-		"appVersion": "1.3.3",
+		"appVersion": "1.4.1",
 		"url": "https://ldtk.io"
 	},
 	"iid": "39227760-c640-11ed-bac6-0b5f56187457",
-	"jsonVersion": "1.3.3",
-	"appBuildId": 468555,
+	"jsonVersion": "1.4.1",
+	"appBuildId": 471698,
 	"nextUid": 107,
 	"identifierStyle": "Capitalize",
 	"toc": [],
@@ -22,6 +22,8 @@
 	"defaultPivotX": 0.5,
 	"defaultPivotY": 1,
 	"defaultGridSize": 16,
+	"defaultEntityWidth": 16,
+	"defaultEntityHeight": 16,
 	"bgColor": "#806262",
 	"defaultLevelBgColor": "#50506A",
 	"minifyJson": false,
@@ -63,6 +65,7 @@
 			"requiredTags": [],
 			"excludedTags": [],
 			"intGridValues": [],
+			"intGridValuesGroups": [],
 			"autoRuleGroups": [],
 			"autoSourceLayerDefUid": null,
 			"tilesetDefUid": null,
@@ -93,7 +96,8 @@
 			"requiredTags": [],
 			"excludedTags": [],
 			"intGridValues": [],
-			"autoRuleGroups": [{ "uid": 98, "name": "shadows", "active": true, "isOptional": false, "rules": [
+			"intGridValuesGroups": [],
+			"autoRuleGroups": [{ "uid": 98, "name": "shadows", "color": null, "icon": null, "active": true, "isOptional": false, "rules": [
 				{
 					"uid": 100,
 					"active": true,
@@ -186,12 +190,13 @@
 			"requiredTags": [],
 			"excludedTags": [],
 			"intGridValues": [
-				{ "value": 1, "identifier": "dirt", "color": "#93573E", "tile": null },
-				{ "value": 2, "identifier": "ladder", "color": "#BBAA96", "tile": null },
-				{ "value": 3, "identifier": "stone", "color": "#BD9261", "tile": null }
+				{ "value": 1, "identifier": "dirt", "color": "#93573E", "tile": null, "groupUid": 0 },
+				{ "value": 2, "identifier": "ladder", "color": "#BBAA96", "tile": null, "groupUid": 0 },
+				{ "value": 3, "identifier": "stone", "color": "#BD9261", "tile": null, "groupUid": 0 }
 			],
+			"intGridValuesGroups": [],
 			"autoRuleGroups": [
-				{ "uid": 101, "name": "Inner wall fog", "active": true, "isOptional": false, "rules": [
+				{ "uid": 101, "name": "Inner wall fog", "color": null, "icon": null, "active": true, "isOptional": false, "rules": [
 					{
 						"uid": 102,
 						"active": true,
@@ -224,7 +229,7 @@
 						"perlinOctaves": 2
 					}
 				], "usesWizard": false },
-				{ "uid": 40, "name": "ladders", "active": true, "isOptional": false, "rules": [
+				{ "uid": 40, "name": "ladders", "color": null, "icon": null, "active": true, "isOptional": false, "rules": [
 					{
 						"uid": 41,
 						"active": true,
@@ -257,7 +262,7 @@
 						"perlinOctaves": 2
 					}
 				], "usesWizard": false },
-				{ "uid": 43, "name": "thin platforms", "active": true, "isOptional": false, "rules": [
+				{ "uid": 43, "name": "thin platforms", "color": null, "icon": null, "active": true, "isOptional": false, "rules": [
 					{
 						"uid": 85,
 						"active": true,
@@ -352,7 +357,7 @@
 						"perlinOctaves": 2
 					}
 				], "usesWizard": false },
-				{ "uid": 20, "name": "Vegetation", "active": true, "isOptional": false, "rules": [
+				{ "uid": 20, "name": "Vegetation", "color": null, "icon": null, "active": true, "isOptional": false, "rules": [
 					{
 						"uid": 35,
 						"active": true,
@@ -509,7 +514,7 @@
 						"perlinOctaves": 2
 					}
 				], "usesWizard": false },
-				{ "uid": 57, "name": "Stone walls", "active": true, "isOptional": false, "rules": [
+				{ "uid": 57, "name": "Stone walls", "color": null, "icon": null, "active": true, "isOptional": false, "rules": [
 					{
 						"uid": 69,
 						"active": true,
@@ -697,7 +702,7 @@
 						"perlinOctaves": 2
 					}
 				], "usesWizard": false },
-				{ "uid": 11, "name": "Dirt walls", "active": true, "isOptional": false, "rules": [
+				{ "uid": 11, "name": "Dirt walls", "color": null, "icon": null, "active": true, "isOptional": false, "rules": [
 					{
 						"uid": 36,
 						"active": true,
@@ -1101,8 +1106,9 @@
 			"requiredTags": [],
 			"excludedTags": [],
 			"intGridValues": [],
+			"intGridValuesGroups": [],
 			"autoRuleGroups": [
-				{ "uid": 82, "name": "Architecture props", "active": true, "isOptional": false, "rules": [
+				{ "uid": 82, "name": "Architecture props", "color": null, "icon": null, "active": true, "isOptional": false, "rules": [
 					{
 						"uid": 72,
 						"active": true,
@@ -1135,7 +1141,7 @@
 						"perlinOctaves": 2
 					}
 				], "usesWizard": false },
-				{ "uid": 76, "name": "Bg vegetation", "active": true, "isOptional": false, "rules": [
+				{ "uid": 76, "name": "Bg vegetation", "color": null, "icon": null, "active": true, "isOptional": false, "rules": [
 					{
 						"uid": 80,
 						"active": true,
@@ -1261,7 +1267,7 @@
 						"perlinOctaves": 2
 					}
 				], "usesWizard": false },
-				{ "uid": 25, "name": "Bg walls", "active": true, "isOptional": false, "rules": [
+				{ "uid": 25, "name": "Bg walls", "color": null, "icon": null, "active": true, "isOptional": false, "rules": [
 					{
 						"uid": 77,
 						"active": true,
@@ -1450,6 +1456,7 @@
 			"tilesetId": 105,
 			"tileRenderMode": "FitInside",
 			"tileRect": { "tilesetUid": 105, "x": 96, "y": 2720, "w": 32, "h": 32 },
+			"uiTileRect": null,
 			"nineSliceBorders": [],
 			"maxCount": 1,
 			"limitScope": "PerWorld",
@@ -1471,6 +1478,7 @@
 					"editorDisplayScale": 1,
 					"editorDisplayPos": "Above",
 					"editorLinkStyle": "StraightArrow",
+					"editorDisplayColor": null,
 					"editorAlwaysShow": false,
 					"editorShowInWorld": true,
 					"editorCutLongValues": true,
@@ -1518,6 +1526,7 @@
 			"tilesetId": 105,
 			"tileRenderMode": "FitInside",
 			"tileRect": { "tilesetUid": 105, "x": 64, "y": 192, "w": 32, "h": 32 },
+			"uiTileRect": null,
 			"nineSliceBorders": [],
 			"maxCount": 0,
 			"limitScope": "PerLevel",
@@ -1539,6 +1548,7 @@
 					"editorDisplayScale": 1,
 					"editorDisplayPos": "Above",
 					"editorLinkStyle": "StraightArrow",
+					"editorDisplayColor": null,
 					"editorAlwaysShow": false,
 					"editorShowInWorld": true,
 					"editorCutLongValues": true,
@@ -1586,6 +1596,7 @@
 			"tilesetId": 105,
 			"tileRenderMode": "Cover",
 			"tileRect": { "tilesetUid": 105, "x": 160, "y": 2720, "w": 32, "h": 32 },
+			"uiTileRect": null,
 			"nineSliceBorders": [],
 			"maxCount": 0,
 			"limitScope": "PerLevel",
@@ -1607,6 +1618,7 @@
 					"editorDisplayScale": 1,
 					"editorDisplayPos": "Above",
 					"editorLinkStyle": "StraightArrow",
+					"editorDisplayColor": null,
 					"editorAlwaysShow": false,
 					"editorShowInWorld": true,
 					"editorCutLongValues": true,
@@ -1641,6 +1653,7 @@
 					"editorDisplayScale": 1,
 					"editorDisplayPos": "Above",
 					"editorLinkStyle": "StraightArrow",
+					"editorDisplayColor": null,
 					"editorAlwaysShow": false,
 					"editorShowInWorld": true,
 					"editorCutLongValues": true,
@@ -1688,6 +1701,7 @@
 			"tilesetId": null,
 			"tileRenderMode": "Stretch",
 			"tileRect": null,
+			"uiTileRect": null,
 			"nineSliceBorders": [],
 			"maxCount": 0,
 			"limitScope": "PerLevel",
@@ -1709,6 +1723,7 @@
 					"editorDisplayScale": 1,
 					"editorDisplayPos": "Above",
 					"editorLinkStyle": "StraightArrow",
+					"editorDisplayColor": null,
 					"editorAlwaysShow": false,
 					"editorShowInWorld": true,
 					"editorCutLongValues": true,
@@ -1756,6 +1771,7 @@
 			"tilesetId": 105,
 			"tileRenderMode": "FitInside",
 			"tileRect": { "tilesetUid": 105, "x": 128, "y": 320, "w": 96, "h": 32 },
+			"uiTileRect": null,
 			"nineSliceBorders": [],
 			"maxCount": 0,
 			"limitScope": "PerLevel",
@@ -1828,12 +1844,12 @@
 			}
 		}
 	], "enums": [{ "identifier": "Item", "uid": 49, "values": [
-		{ "id": "Knife", "tileRect": { "tilesetUid": 105, "x": 96, "y": 32, "w": 32, "h": 32 }, "tileId": -1, "color": 12363427, "__tileSrcRect": [96,32,32,32] },
-		{ "id": "Healing_Plant", "tileRect": { "tilesetUid": 105, "x": 320, "y": 416, "w": 32, "h": 32 }, "tileId": -1, "color": 8563009, "__tileSrcRect": [320,416,32,32] },
-		{ "id": "Meat", "tileRect": { "tilesetUid": 105, "x": 32, "y": 224, "w": 32, "h": 32 }, "tileId": -1, "color": 13201487, "__tileSrcRect": [32,224,32,32] },
-		{ "id": "Boots", "tileRect": { "tilesetUid": 105, "x": 64, "y": 128, "w": 32, "h": 32 }, "tileId": -1, "color": 8876139, "__tileSrcRect": [64,128,32,32] },
-		{ "id": "Water", "tileRect": { "tilesetUid": 105, "x": 32, "y": 160, "w": 32, "h": 32 }, "tileId": -1, "color": 7901620, "__tileSrcRect": [32,160,32,32] },
-		{ "id": "Gem", "tileRect": { "tilesetUid": 105, "x": 352, "y": 2944, "w": 32, "h": 32 }, "tileId": -1, "color": 15035447, "__tileSrcRect": [352,2944,32,32] }
+		{ "id": "Knife", "tileRect": { "tilesetUid": 105, "x": 96, "y": 32, "w": 32, "h": 32 }, "color": 12363427 },
+		{ "id": "Healing_Plant", "tileRect": { "tilesetUid": 105, "x": 320, "y": 416, "w": 32, "h": 32 }, "color": 8563009 },
+		{ "id": "Meat", "tileRect": { "tilesetUid": 105, "x": 32, "y": 224, "w": 32, "h": 32 }, "color": 13201487 },
+		{ "id": "Boots", "tileRect": { "tilesetUid": 105, "x": 64, "y": 128, "w": 32, "h": 32 }, "color": 8876139 },
+		{ "id": "Water", "tileRect": { "tilesetUid": 105, "x": 32, "y": 160, "w": 32, "h": 32 }, "color": 7901620 },
+		{ "id": "Gem", "tileRect": { "tilesetUid": 105, "x": 352, "y": 2944, "w": 32, "h": 32 }, "color": 15035447 }
 	], "iconTilesetUid": 105, "externalRelPath": null, "externalFileChecksum": null, "tags": [] }], "externalEnums": [], "levelFields": [] },
 	"levels": [
 		{
@@ -1888,6 +1904,8 @@
 							"__tags": [],
 							"__tile": { "tilesetUid": 105, "x": 96, "y": 2720, "w": 32, "h": 32 },
 							"__smartColor": "#A7FF24",
+							"__worldX": 184,
+							"__worldY": 208,
 							"iid": "a315d323-66b0-11ec-9cd7-8ddce09157bc",
 							"width": 24,
 							"height": 24,
@@ -1908,6 +1926,8 @@
 							"__tags": [],
 							"__tile": { "tilesetUid": 105, "x": 64, "y": 192, "w": 32, "h": 32 },
 							"__smartColor": "#6ADDEC",
+							"__worldX": 504,
+							"__worldY": 288,
 							"iid": "a315d324-66b0-11ec-9cd7-0d0128b37734",
 							"width": 32,
 							"height": 24,
@@ -1931,6 +1951,8 @@
 							"__tags": [],
 							"__tile": { "tilesetUid": 105, "x": 160, "y": 2720, "w": 32, "h": 32 },
 							"__smartColor": "#FF0000",
+							"__worldX": 328,
+							"__worldY": 160,
 							"iid": "a315d325-66b0-11ec-9cd7-f9e1c56d6020",
 							"width": 20,
 							"height": 20,
@@ -1954,6 +1976,8 @@
 							"__tags": [],
 							"__tile": { "tilesetUid": 105, "x": 160, "y": 2720, "w": 32, "h": 32 },
 							"__smartColor": "#FF0000",
+							"__worldX": 264,
+							"__worldY": 288,
 							"iid": "a315d326-66b0-11ec-9cd7-cf3ea20f8dff",
 							"width": 20,
 							"height": 20,
@@ -1974,6 +1998,8 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#B7A87A",
+							"__worldX": 440,
+							"__worldY": 288,
 							"iid": "a315d327-66b0-11ec-9cd7-35c28e76b04b",
 							"width": 8,
 							"height": 32,
@@ -1988,6 +2014,8 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#B7A87A",
+							"__worldX": 568,
+							"__worldY": 128,
 							"iid": "a315d328-66b0-11ec-9cd7-c30477cb5ff1",
 							"width": 8,
 							"height": 48,
@@ -2002,6 +2030,8 @@
 							"__tags": [],
 							"__tile": { "tilesetUid": 105, "x": 128, "y": 320, "w": 96, "h": 32 },
 							"__smartColor": "#BE4A2F",
+							"__worldX": 680,
+							"__worldY": 288,
 							"iid": "6f7e6760-9f30-11ed-b47d-6b8c4f8b2877",
 							"width": 48,
 							"height": 16,
@@ -2621,13 +2651,13 @@
 						{ "px": [704,240], "src": [0,64], "f": 0, "t": 92, "d": [17,839], "a": 1 },
 						{ "px": [496,32], "src": [48,160], "f": 0, "t": 233, "d": [29,137], "a": 1 },
 						{ "px": [496,32], "src": [48,160], "f": 1, "t": 233, "d": [29,137], "a": 1 },
-						{ "px": [352,48], "src": [48,160], "f": 1, "t": 233, "d": [29,181], "a": 1 },
+						{ "px": [352,48], "src": [64,144], "f": 1, "t": 211, "d": [29,181], "a": 1 },
 						{ "px": [464,48], "src": [48,160], "f": 0, "t": 233, "d": [29,188], "a": 1 },
 						{ "px": [528,48], "src": [48,160], "f": 0, "t": 233, "d": [29,192], "a": 1 },
-						{ "px": [384,64], "src": [64,144], "f": 1, "t": 211, "d": [29,236], "a": 1 },
+						{ "px": [384,64], "src": [48,160], "f": 1, "t": 233, "d": [29,236], "a": 1 },
 						{ "px": [432,64], "src": [48,160], "f": 0, "t": 233, "d": [29,239], "a": 1 },
 						{ "px": [256,112], "src": [64,144], "f": 0, "t": 211, "d": [29,387], "a": 1 },
-						{ "px": [352,224], "src": [64,144], "f": 1, "t": 211, "d": [29,764], "a": 1 },
+						{ "px": [352,224], "src": [48,160], "f": 1, "t": 233, "d": [29,764], "a": 1 },
 						{ "px": [656,240], "src": [48,160], "f": 0, "t": 233, "d": [29,836], "a": 1 },
 						{ "px": [688,240], "src": [64,144], "f": 1, "t": 211, "d": [29,838], "a": 1 },
 						{ "px": [640,256], "src": [64,144], "f": 0, "t": 211, "d": [29,888], "a": 1 },
@@ -3489,13 +3519,13 @@
 						{ "px": [688,272], "src": [144,320], "f": 0, "t": 469, "d": [71,945], "a": 1 },
 						{ "px": [704,256], "src": [160,304], "f": 0, "t": 447, "d": [71,945], "a": 1 },
 						{ "px": [704,272], "src": [160,320], "f": 0, "t": 470, "d": [71,945], "a": 1 },
-						{ "px": [352,48], "src": [176,272], "f": 2, "t": 402, "d": [39,181], "a": 1 },
-						{ "px": [528,48], "src": [144,272], "f": 2, "t": 400, "d": [39,192], "a": 1 },
-						{ "px": [512,64], "src": [192,304], "f": 2, "t": 449, "d": [39,244], "a": 1 },
+						{ "px": [352,48], "src": [160,304], "f": 2, "t": 447, "d": [39,181], "a": 1 },
+						{ "px": [528,48], "src": [176,272], "f": 2, "t": 402, "d": [39,192], "a": 1 },
+						{ "px": [512,64], "src": [144,272], "f": 2, "t": 400, "d": [39,244], "a": 1 },
 						{ "px": [400,80], "src": [160,304], "f": 2, "t": 447, "d": [39,290], "a": 1 },
 						{ "px": [272,112], "src": [144,272], "f": 2, "t": 400, "d": [39,388], "a": 1 },
-						{ "px": [176,144], "src": [160,304], "f": 2, "t": 447, "d": [39,488], "a": 1 },
-						{ "px": [192,144], "src": [176,272], "f": 2, "t": 402, "d": [39,489], "a": 1 },
+						{ "px": [176,144], "src": [176,272], "f": 2, "t": 402, "d": [39,488], "a": 1 },
+						{ "px": [192,144], "src": [160,304], "f": 2, "t": 447, "d": [39,489], "a": 1 },
 						{ "px": [224,144], "src": [160,304], "f": 2, "t": 447, "d": [39,491], "a": 1 },
 						{ "px": [336,144], "src": [144,272], "f": 0, "t": 400, "d": [39,498], "a": 1 },
 						{ "px": [416,144], "src": [144,272], "f": 0, "t": 400, "d": [39,503], "a": 1 },
@@ -3503,19 +3533,19 @@
 						{ "px": [448,144], "src": [144,272], "f": 0, "t": 400, "d": [39,505], "a": 1 },
 						{ "px": [464,144], "src": [160,304], "f": 0, "t": 447, "d": [39,506], "a": 1 },
 						{ "px": [496,144], "src": [176,272], "f": 0, "t": 402, "d": [39,508], "a": 1 },
-						{ "px": [688,240], "src": [176,272], "f": 2, "t": 402, "d": [39,838], "a": 1 },
+						{ "px": [688,240], "src": [144,272], "f": 2, "t": 400, "d": [39,838], "a": 1 },
 						{ "px": [288,272], "src": [160,304], "f": 0, "t": 447, "d": [39,919], "a": 1 },
 						{ "px": [336,272], "src": [176,272], "f": 0, "t": 402, "d": [39,922], "a": 1 },
 						{ "px": [352,272], "src": [160,304], "f": 0, "t": 447, "d": [39,923], "a": 1 },
 						{ "px": [416,272], "src": [176,272], "f": 0, "t": 402, "d": [39,927], "a": 1 },
 						{ "px": [640,272], "src": [176,272], "f": 0, "t": 402, "d": [39,941], "a": 1 },
 						{ "px": [672,272], "src": [144,272], "f": 0, "t": 400, "d": [39,943], "a": 1 },
-						{ "px": [464,48], "src": [144,272], "f": 3, "t": 400, "d": [65,188], "a": 1 },
-						{ "px": [384,64], "src": [128,320], "f": 2, "t": 468, "d": [65,236], "a": 1 },
-						{ "px": [256,112], "src": [144,272], "f": 3, "t": 400, "d": [65,387], "a": 1 },
+						{ "px": [464,48], "src": [128,320], "f": 3, "t": 468, "d": [65,188], "a": 1 },
+						{ "px": [384,64], "src": [144,272], "f": 2, "t": 400, "d": [65,236], "a": 1 },
+						{ "px": [256,112], "src": [144,304], "f": 3, "t": 446, "d": [65,387], "a": 1 },
 						{ "px": [528,144], "src": [144,304], "f": 0, "t": 446, "d": [65,510], "a": 1 },
-						{ "px": [352,224], "src": [144,304], "f": 2, "t": 446, "d": [65,764], "a": 1 },
-						{ "px": [384,240], "src": [144,272], "f": 2, "t": 400, "d": [65,819], "a": 1 },
+						{ "px": [352,224], "src": [128,320], "f": 2, "t": 468, "d": [65,764], "a": 1 },
+						{ "px": [384,240], "src": [144,304], "f": 2, "t": 446, "d": [65,819], "a": 1 },
 						{ "px": [304,272], "src": [144,272], "f": 0, "t": 400, "d": [65,920], "a": 1 },
 						{ "px": [624,48], "src": [208,304], "f": 2, "t": 450, "d": [80,198], "a": 1 },
 						{ "px": [720,48], "src": [208,304], "f": 3, "t": 450, "d": [80,204], "a": 1 },
@@ -3599,6 +3629,8 @@
 							"__tags": [],
 							"__tile": { "tilesetUid": 105, "x": 160, "y": 2720, "w": 32, "h": 32 },
 							"__smartColor": "#FF0000",
+							"__worldX": 808,
+							"__worldY": -112,
 							"iid": "a316bd86-66b0-11ec-9cd7-837d4383ebc8",
 							"width": 20,
 							"height": 20,
@@ -3619,6 +3651,8 @@
 							"__tags": [],
 							"__tile": { "tilesetUid": 105, "x": 160, "y": 2720, "w": 32, "h": 32 },
 							"__smartColor": "#FF0000",
+							"__worldX": 776,
+							"__worldY": -16,
 							"iid": "a316bd87-66b0-11ec-9cd7-df8b07359531",
 							"width": 20,
 							"height": 20,
@@ -3639,6 +3673,8 @@
 							"__tags": [],
 							"__tile": { "tilesetUid": 105, "x": 160, "y": 2720, "w": 32, "h": 32 },
 							"__smartColor": "#FF0000",
+							"__worldX": 552,
+							"__worldY": -128,
 							"iid": "a316bd88-66b0-11ec-9cd7-cbd4e685a38f",
 							"width": 48,
 							"height": 48,
@@ -3662,6 +3698,8 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#B7A87A",
+							"__worldX": 680,
+							"__worldY": -128,
 							"iid": "a316bd89-66b0-11ec-9cd7-69448da578ed",
 							"width": 8,
 							"height": 64,
@@ -3676,6 +3714,8 @@
 							"__tags": [],
 							"__tile": { "tilesetUid": 105, "x": 64, "y": 192, "w": 32, "h": 32 },
 							"__smartColor": "#6ADDEC",
+							"__worldX": 424,
+							"__worldY": -192,
 							"iid": "a316bd8a-66b0-11ec-9cd7-a986f709d9f8",
 							"width": 24,
 							"height": 24,
@@ -3696,6 +3736,8 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#B7A87A",
+							"__worldX": 472,
+							"__worldY": -208,
 							"iid": "a316bd8b-66b0-11ec-9cd7-27e78e24a888",
 							"width": 8,
 							"height": 32,
@@ -4948,6 +4990,8 @@
 							"__tags": [],
 							"__tile": { "tilesetUid": 105, "x": 160, "y": 2720, "w": 32, "h": 32 },
 							"__smartColor": "#FF0000",
+							"__worldX": 392,
+							"__worldY": 512,
 							"iid": "a317cef6-66b0-11ec-9cd7-a5ccf047f66e",
 							"width": 20,
 							"height": 20,

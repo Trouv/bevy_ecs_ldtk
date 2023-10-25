@@ -390,6 +390,8 @@ pub fn worldly_adoption(
             commands
                 .entity(worldly_entity)
                 .set_parent_in_place(world_entity);
+        } else {
+            commands.entity(worldly_entity).remove_parent_in_place();
         }
     }
 }

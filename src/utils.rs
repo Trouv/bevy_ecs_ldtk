@@ -73,7 +73,6 @@ pub fn calculate_transform_from_entity_instance(
     entity_instance: &EntityInstance,
     entity_definition_map: &HashMap<i32, &EntityDefinition>,
     level_height: i32,
-    z_value: f32,
 ) -> Transform {
     let entity_definition = entity_definition_map.get(&entity_instance.def_uid).unwrap();
 
@@ -92,7 +91,7 @@ pub fn calculate_transform_from_entity_instance(
     );
     let scale = size.as_vec2() / def_size.as_vec2();
 
-    Transform::from_translation(translation.extend(z_value)).with_scale(scale.extend(1.))
+    Transform::from_translation(translation.extend(0.)).with_scale(scale.extend(1.))
 }
 
 fn ldtk_coord_conversion(coords: IVec2, height: i32) -> IVec2 {

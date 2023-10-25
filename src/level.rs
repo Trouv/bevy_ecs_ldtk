@@ -272,54 +272,36 @@ pub fn spawn_level(
     for layer_instance in layer_instances.iter().rev() {
         match layer_instance.layer_instance_type {
             Type::Entities => {
-                commands.entity(ldtk_entity).with_children(|commands| {
-                    for entity_instance in &layer_instance.entity_instances {
-                        let transform = calculate_transform_from_entity_instance(
-                            entity_instance,
-                            entity_definition_map,
-                            *level.px_hei(),
-                            layer_z as f32,
-                        );
-                        // Note: entities do not seem to be affected visually by layer offsets in
-                        // the editor, so no layer offset is added to the transform here.
+                let layer_offset = Vec2::new(
+                    layer_instance.px_total_offset_x as f32,
+                    -layer_instance.px_total_offset_y as f32,
+                );
 
-                        let (tileset, tileset_definition) = match &entity_instance.tile {
-                            Some(t) => (
-                                tileset_map.get(&t.tileset_uid),
-                                tileset_definition_map.get(&t.tileset_uid).copied(),
-                            ),
-                            None => (None, None),
-                        };
+                let layer_entity = commands
+                    .spawn(SpatialBundle::from_transform(Transform::from_translation(
+                        layer_offset.extend(layer_z as f32),
+                    )))
+                    .insert(LayerMetadata::from(layer_instance))
+                    .insert(Name::new(layer_instance.identifier.to_owned()))
+                    .with_children(|commands| {
+                        for entity_instance in &layer_instance.entity_instances {
+                            let transform = calculate_transform_from_entity_instance(
+                                entity_instance,
+                                entity_definition_map,
+                                *level.px_hei(),
+                            );
+                            // Note: entities do not seem to be affected visually by layer offsets in
+                            // the editor, so no layer offset is added to the transform here.
 
-                        let predicted_worldly = Worldly::bundle_entity(
-                            entity_instance,
-                            layer_instance,
-                            tileset,
-                            tileset_definition,
-                            asset_server,
-                            texture_atlases,
-                        );
+                            let (tileset, tileset_definition) = match &entity_instance.tile {
+                                Some(t) => (
+                                    tileset_map.get(&t.tileset_uid),
+                                    tileset_definition_map.get(&t.tileset_uid).copied(),
+                                ),
+                                None => (None, None),
+                            };
 
-                        if !worldly_set.contains(&predicted_worldly) {
-                            let default_ldtk_entity: Box<dyn PhantomLdtkEntityTrait> =
-                                Box::new(PhantomLdtkEntity::<EntityInstanceBundle>::new());
-                            let mut entity_commands = commands.spawn_empty();
-
-                            // insert Name before evaluating LdtkEntitys so that user-provided
-                            // names aren't overwritten
-                            entity_commands.insert((
-                                EntityIid::new(entity_instance.iid.to_owned()),
-                                Name::new(entity_instance.identifier.to_owned()),
-                            ));
-
-                            ldtk_map_get_or_default(
-                                layer_instance.identifier.clone(),
-                                entity_instance.identifier.clone(),
-                                &default_ldtk_entity,
-                                ldtk_entity_map,
-                            )
-                            .evaluate(
-                                &mut entity_commands,
+                            let predicted_worldly = Worldly::bundle_entity(
                                 entity_instance,
                                 layer_instance,
                                 tileset,
@@ -328,13 +310,44 @@ pub fn spawn_level(
                                 texture_atlases,
                             );
 
-                            entity_commands.insert(SpatialBundle {
-                                transform,
-                                ..default()
-                            });
+                            if !worldly_set.contains(&predicted_worldly) {
+                                let default_ldtk_entity: Box<dyn PhantomLdtkEntityTrait> =
+                                    Box::new(PhantomLdtkEntity::<EntityInstanceBundle>::new());
+                                let mut entity_commands = commands.spawn_empty();
+
+                                // insert Name before evaluating LdtkEntitys so that user-provided
+                                // names aren't overwritten
+                                entity_commands.insert((
+                                    EntityIid::new(entity_instance.iid.to_owned()),
+                                    Name::new(entity_instance.identifier.to_owned()),
+                                ));
+
+                                ldtk_map_get_or_default(
+                                    layer_instance.identifier.clone(),
+                                    entity_instance.identifier.clone(),
+                                    &default_ldtk_entity,
+                                    ldtk_entity_map,
+                                )
+                                .evaluate(
+                                    &mut entity_commands,
+                                    entity_instance,
+                                    layer_instance,
+                                    tileset,
+                                    tileset_definition,
+                                    asset_server,
+                                    texture_atlases,
+                                );
+
+                                entity_commands.insert(SpatialBundle {
+                                    transform,
+                                    ..default()
+                                });
+                            }
                         }
-                    }
-                });
+                    })
+                    .id();
+
+                commands.entity(ldtk_entity).add_child(layer_entity);
                 layer_z += 1;
             }
             _ => {

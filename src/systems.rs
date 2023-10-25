@@ -379,14 +379,14 @@ pub fn clean_respawn_entities(world: &mut World) {
 pub fn worldly_adoption(
     mut commands: Commands,
     ancestors: Query<&Parent>,
-    mut worldly_query: Query<Entity, Added<Worldly>>,
+    worldly_query: Query<Entity, Added<Worldly>>,
 ) {
-    for worldly_entity in worldly_query.iter_mut() {
+    for worldly_entity in worldly_query.iter() {
         // world entity for this worldly entity is its third ancestor...
         // - first ancestor is the layer entity
         // - second ancestor is the level entity
         // - third ancestor is the world entity
-        if let Some(world_entity) = ancestors.iter_ancestors(worldly_entity).nth(3) {
+        if let Some(world_entity) = ancestors.iter_ancestors(worldly_entity).nth(2) {
             commands
                 .entity(worldly_entity)
                 .set_parent_in_place(world_entity);

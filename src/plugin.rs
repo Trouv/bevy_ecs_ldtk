@@ -52,10 +52,7 @@ impl Plugin for LdtkPlugin {
                 PreUpdate,
                 (systems::process_ldtk_assets, systems::process_ldtk_levels),
             )
-            .add_systems(
-                ProcessLdtkApi,
-                systems::worldly_adoption.in_set(ProcessApiSet::PreClean),
-            )
+            .add_systems(PostUpdate, systems::worldly_adoption)
             .add_systems(
                 ProcessLdtkApi,
                 (systems::apply_level_selection, systems::apply_level_set)

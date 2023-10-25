@@ -458,12 +458,8 @@ mod tests {
             pivot: Vec2::new(0., 0.),
             ..Default::default()
         };
-        let result = calculate_transform_from_entity_instance(
-            &entity_instance,
-            &entity_definition_map,
-            320,
-            0.,
-        );
+        let result =
+            calculate_transform_from_entity_instance(&entity_instance, &entity_definition_map, 320);
         assert_eq!(result, Transform::from_xyz(272., 48., 0.));
 
         // difficult case
@@ -475,15 +471,11 @@ mod tests {
             pivot: Vec2::new(1., 1.),
             ..Default::default()
         };
-        let result = calculate_transform_from_entity_instance(
-            &entity_instance,
-            &entity_definition_map,
-            100,
-            2.,
-        );
+        let result =
+            calculate_transform_from_entity_instance(&entity_instance, &entity_definition_map, 100);
         assert_eq!(
             result,
-            Transform::from_xyz(25., 75., 2.).with_scale(Vec3::new(3., 2., 1.))
+            Transform::from_xyz(25., 75., 0.).with_scale(Vec3::new(3., 2., 1.))
         );
     }
 
@@ -512,15 +504,11 @@ mod tests {
             }),
             ..Default::default()
         };
-        let result = calculate_transform_from_entity_instance(
-            &entity_instance,
-            &entity_definition_map,
-            100,
-            2.,
-        );
+        let result =
+            calculate_transform_from_entity_instance(&entity_instance, &entity_definition_map, 100);
         assert_eq!(
             result,
-            Transform::from_xyz(32., 68., 2.).with_scale(Vec3::new(4., 2., 1.))
+            Transform::from_xyz(32., 68., 0.).with_scale(Vec3::new(4., 2., 1.))
         );
     }
 

@@ -37,9 +37,9 @@ pub struct IntGridCell {
     pub value: i32,
 }
 
-/// [Component] that indicates that an ldtk entity should be a child of the world, not the level.
+/// [Component] that indicates that an ldtk entity should be a child of the world, not their layer.
 ///
-/// By default, [LdtkEntity]s are children of the level they spawn in.
+/// By default, [LdtkEntity]s are children of the layer they spawn in.
 /// This can be a problem if that entity is supposed to travel across multiple levels, since they
 /// will despawn the moment the level they were born in despawns.
 ///
@@ -340,13 +340,13 @@ pub(crate) struct EntityInstanceBundle {
 /// Each level is its own entity, with the [`LdtkWorldBundle`] as its parent.
 /// Each level has a [`LevelIid`] component.
 ///
-/// All non-Entity layers (IntGrid, Tile, and AutoTile) will also spawn as their own entities.
+/// All layers will also spawn as their own entities.
 /// Each layer's parent will be the level entity.
 /// Each layer will have a [`LayerMetadata`] component, and are bevy_ecs_tilemap TileMaps.
 /// Each tile in these layers will have the layer entity as its parent.
 ///
-/// For Entity layers, all LDtk entities in the level are spawned as children to the level entity,
-/// unless marked by a [`Worldly`] component.
+/// For Entity layers, all entities will have the layer entity at its parent by default.
+/// However, this behavior can be changed by marking them with the [`Worldly`] component.
 #[derive(Clone, Default, Bundle)]
 pub struct LdtkWorldBundle {
     pub ldtk_handle: Handle<LdtkProject>,

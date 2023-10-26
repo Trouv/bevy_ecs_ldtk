@@ -64,11 +64,13 @@ pub fn create_layer_definition_map(
     layer_definitions.iter().map(|l| (l.uid, l)).collect()
 }
 
-/// Performs [EntityInstance] to [Transform] conversion
+/// Performs [`EntityInstance`] to [`Transform`] conversion
 ///
-/// The `entity_definition_map` should be a map of [EntityDefinition] uids to [EntityDefinition]s.
+/// The `entity_definition_map` should be a map of [`EntityDefinition`] uids to [`EntityDefinition`]s.
 ///
-/// Internally, this transform is used to place [EntityInstance]s as children of the level.
+/// Internally, this transform is used to place [`EntityInstance`]s as children of their layer.
+///
+/// [`Transform`]: https://docs.rs/bevy/latest/bevy/prelude/struct.Transform.html
 pub fn calculate_transform_from_entity_instance(
     entity_instance: &EntityInstance,
     entity_definition_map: &HashMap<i32, &EntityDefinition>,

@@ -342,10 +342,12 @@ pub(crate) struct EntityInstanceBundle {
 ///
 /// All layers will also spawn as their own entities.
 /// Each layer's parent will be the level entity.
-/// Each layer will have a [`LayerMetadata`] component, and are bevy_ecs_tilemap TileMaps.
+/// Each layer will have a [`LayerMetadata`] component.
+///
+/// AutoTile, Tile, and IntGrid layer entities are bevy_ecs_tilemap TileMaps.
 /// Each tile in these layers will have the layer entity as its parent.
 ///
-/// For Entity layers, all entities will have the layer entity at its parent by default.
+/// For Entity layers, all LDtk entities will have the layer entity as their parent by default.
 /// However, this behavior can be changed by marking them with the [`Worldly`] component.
 #[derive(Clone, Default, Bundle)]
 pub struct LdtkWorldBundle {

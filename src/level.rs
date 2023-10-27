@@ -270,13 +270,13 @@ pub fn spawn_level(
     }
 
     for layer_instance in layer_instances.iter().rev() {
+        let layer_offset = Vec2::new(
+            layer_instance.px_total_offset_x as f32,
+            -layer_instance.px_total_offset_y as f32,
+        );
+
         match layer_instance.layer_instance_type {
             Type::Entities => {
-                let layer_offset = Vec2::new(
-                    layer_instance.px_total_offset_x as f32,
-                    -layer_instance.px_total_offset_y as f32,
-                );
-
                 let layer_entity = commands
                     .spawn(SpatialBundle::from_transform(Transform::from_translation(
                         layer_offset.extend(layer_z as f32),
@@ -684,13 +684,6 @@ pub fn spawn_level(
                     let pivot_adjustment = Vec2::new(
                         grid_tile_size_difference * tile_pivot_x,
                         -grid_tile_size_difference * tile_pivot_y,
-                    );
-
-                    // Layers in LDtk can also have a plain offset value.
-                    // Not much calculation needs to be done here.
-                    let layer_offset = Vec2::new(
-                        layer_instance.px_total_offset_x as f32,
-                        -layer_instance.px_total_offset_y as f32,
                     );
 
                     commands

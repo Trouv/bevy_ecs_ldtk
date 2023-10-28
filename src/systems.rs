@@ -378,15 +378,20 @@ pub fn clean_respawn_entities(world: &mut World) {
 /// Implements the functionality for `Worldly` components.
 pub fn worldly_adoption(
     mut commands: Commands,
-    mut worldly_query: Query<(&mut Transform, &Parent, Entity), Added<Worldly>>,
-    transform_query: Query<(&Transform, &Parent), Without<Worldly>>,
+    ancestors: Query<&Parent>,
+    worldly_query: Query<Entity, Added<Worldly>>,
 ) {
-    for (mut transform, parent, entity) in worldly_query.iter_mut() {
-        if let Ok((level_transform, level_parent)) = transform_query.get(parent.get()) {
-            // Find the entity's world-relative transform, so it doesn't move when its parent changes
-            *transform = level_transform.mul_transform(*transform);
-            // Make it a child of the world
-            commands.entity(level_parent.get()).add_child(entity);
+    for worldly_entity in worldly_query.iter() {
+        // world entity for this worldly entity is its third ancestor...
+        // - first ancestor is the layer entity
+        // - second ancestor is the level entity
+        // - third ancestor is the world entity
+        if let Some(world_entity) = ancestors.iter_ancestors(worldly_entity).nth(2) {
+            commands
+                .entity(worldly_entity)
+                .set_parent_in_place(world_entity);
+        } else {
+            commands.entity(worldly_entity).remove_parent_in_place();
         }
     }
 }

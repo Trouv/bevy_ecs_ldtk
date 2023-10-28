@@ -1,6 +1,8 @@
 //! Provides [LdtkPlugin] and its scheduling-related dependencies.
 use crate::{app, assets, components, resources, systems};
-use bevy::{app::MainScheduleOrder, ecs::schedule::ScheduleLabel, prelude::*};
+use bevy::{
+    app::MainScheduleOrder, ecs::schedule::ScheduleLabel, prelude::*, transform::TransformSystem,
+};
 
 /// Schedule for processing this plugin's ECS API, inserted after [Update].
 ///
@@ -54,10 +56,6 @@ impl Plugin for LdtkPlugin {
             )
             .add_systems(
                 ProcessLdtkApi,
-                systems::worldly_adoption.in_set(ProcessApiSet::PreClean),
-            )
-            .add_systems(
-                ProcessLdtkApi,
                 (systems::apply_level_selection, systems::apply_level_set)
                     .chain()
                     .in_set(ProcessApiSet::PreClean),
@@ -70,7 +68,11 @@ impl Plugin for LdtkPlugin {
             )
             .add_systems(
                 PostUpdate,
-                systems::detect_level_spawned_events.pipe(systems::fire_level_transformed_events),
+                (
+                    systems::detect_level_spawned_events
+                        .pipe(systems::fire_level_transformed_events),
+                    systems::worldly_adoption.after(TransformSystem::TransformPropagate),
+                ),
             )
             .register_type::<components::LevelIid>()
             .register_type::<components::EntityIid>()

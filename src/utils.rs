@@ -64,16 +64,17 @@ pub fn create_layer_definition_map(
     layer_definitions.iter().map(|l| (l.uid, l)).collect()
 }
 
-/// Performs [EntityInstance] to [Transform] conversion
+/// Performs [`EntityInstance`] to [`Transform`] conversion
 ///
-/// The `entity_definition_map` should be a map of [EntityDefinition] uids to [EntityDefinition]s.
+/// The `entity_definition_map` should be a map of [`EntityDefinition`] uids to [`EntityDefinition`]s.
 ///
-/// Internally, this transform is used to place [EntityInstance]s as children of the level.
+/// Internally, this transform is used to place [`EntityInstance`]s as children of their layer.
+///
+/// [`Transform`]: https://docs.rs/bevy/latest/bevy/prelude/struct.Transform.html
 pub fn calculate_transform_from_entity_instance(
     entity_instance: &EntityInstance,
     entity_definition_map: &HashMap<i32, &EntityDefinition>,
     level_height: i32,
-    z_value: f32,
 ) -> Transform {
     let entity_definition = entity_definition_map.get(&entity_instance.def_uid).unwrap();
 
@@ -92,7 +93,7 @@ pub fn calculate_transform_from_entity_instance(
     );
     let scale = size.as_vec2() / def_size.as_vec2();
 
-    Transform::from_translation(translation.extend(z_value)).with_scale(scale.extend(1.))
+    Transform::from_translation(translation.extend(0.)).with_scale(scale.extend(1.))
 }
 
 fn ldtk_coord_conversion(coords: IVec2, height: i32) -> IVec2 {
@@ -459,12 +460,8 @@ mod tests {
             pivot: Vec2::new(0., 0.),
             ..Default::default()
         };
-        let result = calculate_transform_from_entity_instance(
-            &entity_instance,
-            &entity_definition_map,
-            320,
-            0.,
-        );
+        let result =
+            calculate_transform_from_entity_instance(&entity_instance, &entity_definition_map, 320);
         assert_eq!(result, Transform::from_xyz(272., 48., 0.));
 
         // difficult case
@@ -476,15 +473,11 @@ mod tests {
             pivot: Vec2::new(1., 1.),
             ..Default::default()
         };
-        let result = calculate_transform_from_entity_instance(
-            &entity_instance,
-            &entity_definition_map,
-            100,
-            2.,
-        );
+        let result =
+            calculate_transform_from_entity_instance(&entity_instance, &entity_definition_map, 100);
         assert_eq!(
             result,
-            Transform::from_xyz(25., 75., 2.).with_scale(Vec3::new(3., 2., 1.))
+            Transform::from_xyz(25., 75., 0.).with_scale(Vec3::new(3., 2., 1.))
         );
     }
 
@@ -513,15 +506,11 @@ mod tests {
             }),
             ..Default::default()
         };
-        let result = calculate_transform_from_entity_instance(
-            &entity_instance,
-            &entity_definition_map,
-            100,
-            2.,
-        );
+        let result =
+            calculate_transform_from_entity_instance(&entity_instance, &entity_definition_map, 100);
         assert_eq!(
             result,
-            Transform::from_xyz(32., 68., 2.).with_scale(Vec3::new(4., 2., 1.))
+            Transform::from_xyz(32., 68., 0.).with_scale(Vec3::new(4., 2., 1.))
         );
     }
 

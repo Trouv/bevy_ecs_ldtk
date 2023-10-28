@@ -70,7 +70,8 @@
 //! Regardless of your choice, the spawned entities will have an appropriate [Transform].
 //! They will also be spawned and despawned along with the levels they belong to, unless otherwise
 //! specified with a [Worldly] component.
-//! This is because, by default, the entities are spawned as children of the level entities.
+//! This is because, by default, the entities are spawned as children of their layer entities,
+//! which in turn are children of level entities.
 //!
 //! ### Worlds and Levels
 //!

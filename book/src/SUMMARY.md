@@ -4,7 +4,7 @@
 - [Getting Started](getting-started.md)
 - [Compatibility]()
 - [Cargo Features]()
-# Concepts
+# Explanation
 - [Asset Model]()
 - [Hierarchy of the World]()
 - [Spawning Schedule]()

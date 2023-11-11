@@ -5,3 +5,8 @@ multilingual = false
 src = "src"
 title = "bevy_ecs_ldtk Book"
 
+[preprocessor.keeper]
+command = "mdbook-keeper"
+after = ["links"]
+manifest_dir = "."
+externs = ["bevy", "bevy_ecs_ldtk"]

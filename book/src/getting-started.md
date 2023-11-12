@@ -1,6 +1,6 @@
 # Getting Started
 
-The goal of this plugin is to make it as easy as possible to use LDtk with bevy
+The goal of this plugin is to make it as easy as possible to use LDtk with Bevy
 for common use cases, while providing solutions to handle more difficult cases.
 You only need a few things to get started:
 1. Add the `LdtkPlugin` to the `App`

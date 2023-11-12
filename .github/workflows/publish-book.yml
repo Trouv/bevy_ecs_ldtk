@@ -1,0 +1,38 @@
+name: publish book
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  publish-book:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+      - name: Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-mdbook-publish-${{ hashFiles('**/Cargo.toml') }}
+      - name: Install stable toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: Install mdbook
+        uses: peaceiris/actions-mdbook@v1
+        with:
+          mdbook-version: '0.4.35'
+      - name: Install mdbook-keeper
+        run: cargo install mdbook-keeper --git https://github.com/tfpk/mdbook-keeper/ --rev 12f116d0840c69a6786dba3865768af3fde634f3 --force
+      - name: build book
+        run: CARGO_MANIFEST_DIR=. mdbook build book
+      - name: Publish
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./book/book

@@ -10,6 +10,7 @@ jobs:
     steps:
       - uses: google-github-actions/release-please-action@v3
         with:
+          token: ${{ secrets.PAT }}
           release-type: rust
           package-name: bevy_ecs_ldtk
           bump-minor-pre-major: true

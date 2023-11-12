@@ -28,7 +28,7 @@ jobs:
         with:
           mdbook-version: '0.4.35'
       - name: Install mdbook-keeper
-        run: cargo install mdbook-keeper --git https://github.com/tfpk/mdbook-keeper/ --rev 12f116d0840c69a6786dba3865768af3fde634f3
+        run: cargo install mdbook-keeper --git https://github.com/tfpk/mdbook-keeper/ --rev 12f116d0840c69a6786dba3865768af3fde634f3 --force
       - name: build book
         run: CARGO_MANIFEST_DIR=. mdbook build book
       - name: Publish

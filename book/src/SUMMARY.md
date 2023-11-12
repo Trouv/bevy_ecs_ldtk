@@ -1,7 +1,6 @@
 # Summary
 
 [Introduction](README.md)
-- [Getting Started]()
 # Explanation
 - [Asset Model]()
 - [Hierarchy of the World]()
@@ -24,5 +23,6 @@
 - [Migration Guides]()
   - [0.8 to 0.9]()
 # Tutorials
+- [Getting Started]()
 - [Platformer]()
 - [Sokoban]()

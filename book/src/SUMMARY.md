@@ -2,8 +2,6 @@
 
 [Introduction](README.md)
 - [Getting Started]()
-- [Compatibility]()
-- [Cargo Features]()
 # Explanation
 - [Asset Model]()
 - [Hierarchy of the World]()

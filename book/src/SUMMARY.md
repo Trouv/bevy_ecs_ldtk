@@ -28,3 +28,5 @@
 - [Compile Headless]()
 - [Migration Guides]()
   - [Migrate from 0.8 to 0.9]()
+---
+[API Reference](api-reference.md).

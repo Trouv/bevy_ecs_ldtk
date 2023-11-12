@@ -1,6 +1,10 @@
 # Summary
 
 [Introduction](README.md)
+# Tutorials
+- [Getting Started]()
+- [Platformer]()
+- [Sokoban]()
 # Explanation
 - [Asset Model]()
 - [Hierarchy of the World]()
@@ -22,7 +26,3 @@
 - [Compiling Headless]()
 - [Migration Guides]()
   - [0.8 to 0.9]()
-# Tutorials
-- [Getting Started]()
-- [Platformer]()
-- [Sokoban]()

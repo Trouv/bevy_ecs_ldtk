@@ -10,9 +10,9 @@ For less common use cases, strategies that leverage this plugin's ECS constructs
 
 ## This book
 This book is a work in progress, but aims to provide the following pieces of documentation:
+- tutorials: lessons detailing the creation of simple games from start to finish
 - explanation: clarification of concepts and strategies employed by `bevy_ecs_ldtk`, including details about how it works and why
 - how-to guides: recommended solutions to common problems, as well as migration guides
-- tutorials: lessons detailing the creation of simple games from start to finish
 
 This book is not an API reference.
 For that, please refer to `bevy_ecs_ldtk`'s documentation on [docs.rs](https://docs.rs/bevy_ecs_ldtk/).

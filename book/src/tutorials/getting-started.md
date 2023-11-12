@@ -11,7 +11,7 @@ You only need a few things to get started:
    on Entity and IntGrid layers.
 
 ```rust,no_run
-{{ #include ../../examples/basic.rs }}
+{{ #include ../../../examples/basic.rs }}
 ```
 
 There are other attributes available to `#[derive(LdtkEntity)]` and `#[derive(LdtkIntCell)]`, see the documentation for more details.

@@ -25,7 +25,9 @@ Deployment of this book to github pages is also performed by `bevy_ecs_ldtk`'s C
 
 Splitting the documentation up this way means that this book is not necessarily meant to be read in order.
 Some chapters are intended to be read while working on your own project, while others are meant to be more like studying material.
-A good jumping-off point for beginners is the [Getting Started tutorial](getting-started.md).
+The following chapters are good jumping-off points for beginners:
+- [*Getting Started* tutorial](getting-started.md)
+- [*Game Logic Integration* explanation]()
 
 ## Other resources
 This book is not suitable documentation for bevy or LDtk.

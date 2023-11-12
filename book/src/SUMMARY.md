@@ -2,7 +2,7 @@
 
 [Introduction](README.md)
 # Tutorials
-- [Getting Started](getting-started.md)
+- [Getting Started](tutorials/getting-started.md)
 - [Sokoban]()
 - [Platformer]()
 # Explanation

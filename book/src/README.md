@@ -23,6 +23,10 @@ Furthermore, code snippets in this book are automatically tested by `bevy_ecs_ld
 This should help inform maintainers when changes to the plugin have made documentation out-of-date.
 Deployment of this book to github pages is also performed by `bevy_ecs_ldtk`'s CI automatically on new releases.
 
+Splitting the documentation up this way means that this book is not necessarily meant to be read in order.
+Some chapters are intended to be read while working on your own project, while others are meant to be more like studying material.
+A good jumping-off point for beginners is the [Getting Started tutorial](getting-started.md).
+
 ## Other resources
 This book is not suitable documentation for bevy or LDtk.
 Some resources for learning Bevy include those listed on the [Bevy website](https://bevyengine.org/learn), as well as the unofficial [Bevy Cheat Book](https://bevy-cheatbook.github.io/).

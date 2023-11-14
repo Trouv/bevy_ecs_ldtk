@@ -44,7 +44,7 @@ pub trait LdtkIntCellAppExt {
     ///
     /// fn main() {
     ///     App::empty()
-    ///         .add_plugin(LdtkPlugin)
+    ///         .add_plugins(LdtkPlugin)
     ///         .register_ldtk_int_cell_for_layer::<MyBundle>("MyLayerIdentifier", 1)
     ///         // add other systems, plugins, resources...
     ///         .run();

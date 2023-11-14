@@ -5,7 +5,7 @@ use crate::{
     },
     resources::LevelSelection,
 };
-use bevy::reflect::Reflect;
+use bevy::reflect::{Reflect, TypePath};
 use derive_getters::Getters;
 use std::collections::HashMap;
 
@@ -39,6 +39,7 @@ fn expect_level_loaded(level: &Level) -> LoadedLevel {
 pub struct LdtkJsonWithMetadata<L>
 where
     L: LevelLocale,
+    L::Metadata: TypePath,
 {
     /// Raw ldtk json data.
     json_data: LdtkJson,
@@ -49,6 +50,7 @@ where
 impl<L> LdtkJsonWithMetadata<L>
 where
     L: LevelLocale,
+    L::Metadata: TypePath,
 {
     /// Construct a new [`LdtkJsonWithMetadata`].
     ///
@@ -67,6 +69,7 @@ where
 impl<L> RawLevelAccessor for LdtkJsonWithMetadata<L>
 where
     L: LevelLocale,
+    L::Metadata: TypePath,
 {
     fn root_levels(&self) -> &[Level] {
         self.json_data.root_levels()

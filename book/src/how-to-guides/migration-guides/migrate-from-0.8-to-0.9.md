@@ -51,7 +51,7 @@ struct MyBundle {
 }
 ```
 
-## Ancestors of LDtk Entities
+## Hierarchy of LDtk Entities
 Layer entities (with a `LayerMetadata` component) are now spawned for LDtk Entity layers.
 By default, LDtk Entities are now spawned as children to these layer entities instead of as children of the level.
 ```rust,ignore

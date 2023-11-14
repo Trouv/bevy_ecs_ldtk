@@ -315,9 +315,8 @@ impl AssetLoader for LdtkProjectLoader {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use bevy::asset::HandleId;
     use derive_more::Constructor;
-    use fake::{Dummy, Fake};
+    use fake::{Dummy, Fake, Faker};
     use rand::Rng;
 
     #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Constructor)]
@@ -339,13 +338,13 @@ mod tests {
                 .defs
                 .tilesets
                 .iter()
-                .map(|tileset| (tileset.uid, Handle::weak(HandleId::random::<Image>())))
+                .map(|tileset| (tileset.uid, Handle::weak_from_u128(Faker.fake())))
                 .collect();
 
             LdtkProject {
                 data,
                 tileset_map,
-                int_grid_image_handle: Some(Handle::weak(HandleId::random::<Image>())),
+                int_grid_image_handle: Some(Handle::weak_from_u128(Faker.fake())),
             }
         }
     }

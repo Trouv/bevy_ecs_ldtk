@@ -75,3 +75,32 @@ fn get_level_of_entity(
         );
     }
 }
+```
+
+## Asset Type Rework
+
+### Module restructure
+
+### `LdtkAsset` is now `LdtkProject`, and other changes
+
+### internal-levels and external-levels support behind separate features
+
+### `LdtkJson` level accessor methods have been moved
+
+### `LdtkLevel` is now `LdtkExternalLevel`, and other changes
+
+### Level entities now have a `LevelIid` instead of a `Handle<LdtkLevel>`
+
+### Asset loaders are now private
+
+## `LevelIid` everywhere
+
+### `LevelSelection::Iid`
+
+### `LevelSet`
+
+### `LevelEvent`
+
+## `LevelSet::from_iid` replaced with `LevelSet::from_iids`
+
+## `LevelMap` and `TilesetMap` type aliases removed

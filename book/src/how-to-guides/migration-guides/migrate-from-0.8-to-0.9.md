@@ -51,3 +51,27 @@ struct MyBundle {
 }
 ```
 
+## Ancestors of LDtk Entities
+Layer entities (with a `LayerMetadata` component) are now spawned for LDtk Entity layers.
+By default, LDtk Entities are now spawned as children to these layer entities instead of as children of the level.
+```rust,ignore
+fn get_level_of_entity(
+    entities: Query<Entity, With<EntityInstance>>,
+    parent_query: Query<&Parent>,
+) {
+    for entity in &entities {
+        // 0.8
+        println!(
+            "the level that {:?} belongs to is {:?}",
+            entity,
+            parent_query.iter_ancestors(entity).nth(0)
+        );
+
+        // 0.9
+        println!(
+            "the level that {:?} belongs to is {:?}",
+            entity,
+            parent_query.iter_ancestors(entity).nth(1)
+        );
+    }
+}

@@ -26,7 +26,7 @@
 - [Retrieve Loaded Level Data]()
 - [Compile to WASM]()
 - [Compile Headless]()
-- [Migration Guides]()
-  - [Migrate from 0.8 to 0.9]()
+- [Migration Guides](how-to-guides/migration-guides/README.md)
+  - [Migrate from 0.8 to 0.9](how-to-guides/migration-guides/migrate-from-0.8-to-0.9.md)
 ---
 [API Reference](api-reference.md).

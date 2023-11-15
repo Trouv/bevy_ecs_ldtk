@@ -305,12 +305,79 @@ Those that were moved have been moved into the `assets` module, and are still ex
 - `LdtkExternalLevel`
 
 ## `LevelIid` everywhere
+`LevelIid` is a new component on level entities that stores the level's iid as a string.
+It has been reused throughout the API.
 
-### `LevelSelection::Iid`
+### In `LevelSet`
+```rust,ignore
+// 0.8
+let level_set = LevelSet {
+    iids: [
+        "e5eb2d73-60bb-4779-8b33-38a63da8d1db".to_string(),
+        "855fab73-2854-419f-a3c6-4ed8466592f6".to_string(),
+    ].into_iter().collect(),
+}
+```
+```rust,no_run
+# use bevy_ecs_ldtk::prelude::*;
+# fn f() {
+// 0.9
+let level_set = LevelSet::from_iids(
+    [
+        "e5eb2d73-60bb-4779-8b33-38a63da8d1db",
+        "855fab73-2854-419f-a3c6-4ed8466592f6",
+    ]
+);
+# }
+```
 
-### `LevelSet`
+### In `LevelEvent`
+```rust,ignore
+use std::any::{Any, TypeId};
+// 0.8
+fn assert_level_event_type(mut level_events: EventReader<LevelEvent>) {
+    for level_event in level_events.iter() {
+        use LevelEvent::*;
+        let level_iid = match level_event {
+            SpawnTriggered(level_iid) | Spawned(level_iid) | Transformed(level_iid) | Despawned(level_iid) => level_iid,
+        };
 
-### `LevelEvent`
+        assert_eq!(level_iid.type_id(), TypeId::of::<String>());
+    }
+}
+```
+```rust,no_run
+# use bevy_ecs_ldtk::prelude::*;
+# use bevy::prelude::*;
+use std::any::{Any, TypeId};
+// 0.9
+fn assert_level_event_type(mut level_events: EventReader<LevelEvent>) {
+    for level_event in level_events.iter() {
+        use LevelEvent::*;
+        let level_iid = match level_event {
+            SpawnTriggered(level_iid) | Spawned(level_iid) | Transformed(level_iid) | Despawned(level_iid) => level_iid,
+        };
+
+        assert_eq!(level_iid.type_id(), TypeId::of::<LevelIid>());
+    }
+}
+```
+
+### In `LevelSelection::Iid`
+`LevelSelection` uses it, but can still be constructed with a string via the `iid` method:
+```rust,ignore
+// 0.8
+let level_selection = LevelSelection::Iid("e5eb2d73-60bb-4779-8b33-38a63da8d1db".to_string());
+```
+```rust,no_run
+# use bevy_ecs_ldtk::prelude::*;
+# fn f() {
+// 0.9
+let level_selection = LevelSelection::iid("e5eb2d73-60bb-4779-8b33-38a63da8d1db");
+# }
+```
+
+## `LevelSelection` index variant now stores a world index
 
 ## `LevelSet::from_iid` replaced with `LevelSet::from_iids`
 

@@ -43,7 +43,12 @@ You may also need to implement `Default` for `LdtkEntity` types that did not hav
 struct MyBundle {
     component: MyComponentThatImplementsDefault,
 }
-
+```
+```rust,no_run
+# use bevy_ecs_ldtk::prelude::*;
+# use bevy::prelude::*;
+# #[derive(Default, Component)]
+# struct MyComponentThatImplementsDefault;
 // 0.9
 #[derive(Default, Bundle, LdtkEntity)]
 struct MyBundle {
@@ -55,19 +60,27 @@ struct MyBundle {
 Layer entities (with a `LayerMetadata` component) are now spawned for LDtk Entity layers.
 By default, LDtk Entities are now spawned as children to these layer entities instead of as children of the level.
 ```rust,ignore
+// 0.8
 fn get_level_of_entity(
     entities: Query<Entity, With<EntityInstance>>,
     parent_query: Query<&Parent>,
 ) {
     for entity in &entities {
-        // 0.8
         println!(
             "the level that {:?} belongs to is {:?}",
             entity,
             parent_query.iter_ancestors(entity).nth(0)
         );
-
-        // 0.9
+```
+```rust,no_run
+# use bevy_ecs_ldtk::prelude::*;
+# use bevy::prelude::*;
+// 0.9
+fn get_level_of_entity(
+    entities: Query<Entity, With<EntityInstance>>,
+    parent_query: Query<&Parent>,
+) {
+    for entity in &entities {
         println!(
             "the level that {:?} belongs to is {:?}",
             entity,

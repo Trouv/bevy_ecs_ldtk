@@ -91,20 +91,218 @@ fn get_level_of_entity(
 ```
 
 ## Asset Type Rework
-
-### Module restructure
+Most breaking changes in this release are to the asset types, previously `LdtkAsset` and `LdtkLevel`.
+These types have been heavily reworked to improve code quality, correctness, and provide better APIs.
 
 ### `LdtkAsset` is now `LdtkProject`, and other changes
+`LdtkAsset` has now been renamed to `LdtkProject`.
+Any types and systems that depend on this type will need to be updated accordingly:
+```rust,ignore
+// 0.8
+fn do_some_processing_with_ldtk_data(
+    worlds: Query<&Handle<LdtkAsset>>,
+    ldtk_assets: Res<Assets<LdtkAsset>>
+) {
+    // do something
+}
+```
+```rust,no_run
+# use bevy_ecs_ldtk::prelude::*;
+# use bevy::prelude::*;
+// 0.9
+fn do_some_processing_with_ldtk_data(
+    worlds: Query<&Handle<LdtkProject>>,
+    ldtk_assets: Res<Assets<LdtkProject>>
+) {
+    // do something
+}
+```
 
-### internal-levels and external-levels support behind separate features
+Furthermore, all of its fields have been privatized, and are now only available via immutable accessor methods.
+Not all of these methods are the same name as their corresponding field in `0.8`:
+```rust,ignore
+// 0.8
+let ldtk_json = ldtk_project.project;
+let tileset_map = ldtk_project.tileset_map;
+let int_grid_image_handle = ldtk_project.int_grid_image_handle;
+let level_map = ldtk_project.level_map;
+```
+```rust,no_run
+# use bevy_ecs_ldtk::prelude::*;
+# fn foo(ldtk_project: LdtkProject) {
+// 0.9
+let ldtk_json = ldtk_project.json_data();
+let tileset_map = ldtk_project.tileset_map();
+let int_grid_image_handle = ldtk_project.int_grid_image_handle();
+// the level_map is no longer available in the same way
+# }
+```
 
-### `LdtkJson` level accessor methods have been moved
+### `LdtkAsset` and `LdtkJson` level accessor methods have been moved
+Level accessing methods have been completely redefined.
+Analogues to existing methods have been renamed and moved to traits:
+```rust,ignore
+// 0.8
+ldtk_json.iter_levels();
 
-### `LdtkLevel` is now `LdtkExternalLevel`, and other changes
+ldtk_asset.iter_levels();
 
-### Level entities now have a `LevelIid` instead of a `Handle<LdtkLevel>`
+ldtk_asset.get_level(&LevelSelection::Uid(24));
+```
+```rust,no_run
+# use bevy_ecs_ldtk::{prelude::*, ldtk::LdtkJson};
+# fn foo(ldtk_json: LdtkJson, ldtk_project: LdtkProject) {
+// 0.9
+// in `RawLevelAccessor` trait:
+ldtk_json.iter_raw_levels();
 
-### Asset loaders are now private
+ldtk_project.iter_raw_levels();
+
+// in `LevelMetadataAccessor` trait
+ldtk_project.find_raw_level_by_level_selection(&LevelSelection::Uid(24));
+# }
+```
+
+Many new methods have been provided as well.
+
+### Internal-levels and external-levels support now behind separate features
+There are two new cargo features, `internal_levels` and `external_levels`.
+`internal_levels` is enabled by default and allows loading of internal-levels LDtk projects.
+`external_levels` is not enabled by default and allows loading of external-levels LDtk projects.
+Some APIs are unique to the two cases.
+
+If you have an LDtk project with internal levels, but have disabled default features, you will need to enable `internal_levels`:
+```toml
+// 0.8
+bevy_ecs_ldtk = { version = "0.8", default-features = false, features = ["render"] }
+
+// 0.9
+bevy_ecs_ldtk = { version = "0.9", default-features = false, features = ["render", "internal_levels"] }
+```
+
+If you have an LDtk project with external levels, you will need to enable `external_levels`:
+```toml
+// 0.8
+bevy_ecs_ldtk = "0.8"
+
+// 0.9
+bevy_ecs_ldtk = { version = "0.9", features = ["external_levels"] }
+```
+
+These features are **not** mutually exclusive, but at least one of them must be enabled.
+
+### Level Asset Changes
+The level asset type has changed significantly.
+Most importantly, it is no longer the primary mechanism for storing loaded level data.
+In fact, it is only compiled and used within the `external_levels` feature (see previous section).
+
+#### Level entities now have a `LevelIid` instead of a `Handle<LdtkLevel>`
+The level asset it is no longer the main component marking level entities.
+In both internal-levels and external-levels projects, level entities will no longer have a handle to the level asset, but instead will have a `LevelIid` component:
+```rust,ignore
+// 0.8
+fn print_level_entity(levels: Query<Entity, With<Handle<LdtkLevel>>>) {
+    for entity in &levels {
+        println!("level entity {:?} is currently spawned", entity);
+    }
+}
+```
+```rust,no_run
+# use bevy_ecs_ldtk::prelude::*;
+# use bevy::prelude::*;
+// 0.9
+fn print_level_entity(levels: Query<Entity, With<LevelIid>>) {
+    for entity in &levels {
+        println!("level entity {:?} is currently spawned", entity);
+    }
+}
+```
+
+#### Accessing level data from the level entity
+Retrieving level data from the level entity can be done using the `LevelIid` component.
+If the data you need *is not* inside the level's `layer_instances`, you can access it on the `LdtkProject` asset:
+```rust,ignore
+// 0.8
+fn print_level_uid(levels: Query<Handle<LdtkLevel>>, level_assets: Res<Assets<LdtkLevel>>) {
+    for level_handle in &levels {
+        let level_uid = level_assets.get(level_handle).unwrap().uid;
+        println!("level w/ uid {level_uid}, is currently spawned");
+    }
+}
+```
+```rust,no_run
+# use bevy_ecs_ldtk::prelude::*;
+# use bevy::prelude::*;
+// 0.9
+fn print_level_uid(levels: Query<&LevelIid>, project_assets: Res<Assets<LdtkProject>>) {
+    for level_iid in &levels {
+        let only_project = project_assets.iter().next().unwrap().1;
+
+        let level_uid = only_project.get_raw_level_by_iid(level_iid.get()).unwrap().uid;
+        println!("level w/ uid {level_uid}, is currently spawned");
+    }
+}
+```
+
+If the level data you need *is* inside the level's `layer_instances`, you may want to retrieve a `LoadedLevel`.
+A `Level` might not have complete data - in the case that it's the "raw" level inside an external-levels project's `LdtkProject` asset.
+This new `LoadedLevel` type provides type guarantees that the level has complete data.
+For internal-levels (aka "standalone") projects, you can retrieve loaded level data with a `LevelIid` and `LdtkProject` alone:
+```rust,no_run
+# use bevy_ecs_ldtk::prelude::*;
+# use bevy::prelude::*;
+// 0.9, w/ internal_levels enabled
+fn print_layer_count_per_level(levels: Query<&LevelIid>, project_assets: Res<Assets<LdtkProject>>) {
+    for level_iid in &levels {
+        let only_project = project_assets.iter().next().unwrap().1;
+
+        let layer_count = only_project
+            .as_standalone()
+            .get_loaded_level_by_iid(level_iid.get())
+            .unwrap()
+            .layer_instances()
+            .len();
+        println!("level has {layer_count} layers");
+    }
+}
+```
+
+For external-levels (aka "parent") projects, you will need to additionally access the `LdtkExternalLevel` asset store:
+```rust,ignore
+# use bevy_ecs_ldtk::prelude::*;
+# use bevy::prelude::*;
+// 0.9, w/ external_levels enabled
+fn print_layer_count_per_level(
+    levels: Query<&LevelIid>,
+    project_assets: Res<Assets<LdtkProject>>
+    level_assets: Res<Assets<LdtkExternalLevels>>,
+) {
+    for level_iid in &levels {
+        let only_project = project_assets.iter().next().unwrap().1;
+
+        let layer_count = only_project
+            .as_parent()
+            .get_external_level_by_iid(&level_assets, level_iid.get())
+            .unwrap()
+            .layer_instances()
+            .len();
+        println!("level has {layer_count} layers");
+    }
+}
+```
+
+### Module restructure
+Some types related to assets have been removed, or privatized, or moved.
+
+Those that were removed/privatized were generally not intended to be used by users:
+- `LevelMap`
+- `TilesetMap`
+- `LdtkLevelLoader`
+- `LdtkLoader`
+
+Those that were moved have been moved into the `assets` module, and are still exposed in the `prelude`:
+- `LdtkProject`
+- `LdtkExternalLevel`
 
 ## `LevelIid` everywhere
 

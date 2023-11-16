@@ -236,9 +236,13 @@ fn print_level_uid(levels: Query<Handle<LdtkLevel>>, level_assets: Res<Assets<Ld
 # use bevy_ecs_ldtk::prelude::*;
 # use bevy::prelude::*;
 // 0.9
-fn print_level_uid(levels: Query<&LevelIid>, project_assets: Res<Assets<LdtkProject>>) {
+fn print_level_uid(
+    levels: Query<&LevelIid>,
+    projects: Query<&Handle<LdtkProject>>,
+    project_assets: Res<Assets<LdtkProject>>
+) {
     for level_iid in &levels {
-        let only_project = project_assets.iter().next().unwrap().1;
+        let only_project = project_assets.get(projects.single()).unwrap();
 
         let level_uid = only_project.get_raw_level_by_iid(level_iid.get()).unwrap().uid;
         println!("level w/ uid {level_uid}, is currently spawned");
@@ -254,9 +258,13 @@ For internal-levels (aka "standalone") projects, you can retrieve loaded level d
 # use bevy_ecs_ldtk::prelude::*;
 # use bevy::prelude::*;
 // 0.9, w/ internal_levels enabled
-fn print_layer_count_per_level(levels: Query<&LevelIid>, project_assets: Res<Assets<LdtkProject>>) {
+fn print_level_uid(
+    levels: Query<&LevelIid>,
+    projects: Query<&Handle<LdtkProject>>,
+    project_assets: Res<Assets<LdtkProject>>
+) {
     for level_iid in &levels {
-        let only_project = project_assets.iter().next().unwrap().1;
+        let only_project = project_assets.get(projects.single()).unwrap();
 
         let layer_count = only_project
             .as_standalone()
@@ -274,13 +282,14 @@ For external-levels (aka "parent") projects, you will need to additionally acces
 # use bevy_ecs_ldtk::prelude::*;
 # use bevy::prelude::*;
 // 0.9, w/ external_levels enabled
-fn print_layer_count_per_level(
+fn print_level_uid(
     levels: Query<&LevelIid>,
+    projects: Query<&Handle<LdtkProject>>,
     project_assets: Res<Assets<LdtkProject>>
-    level_assets: Res<Assets<LdtkExternalLevels>>,
+    level_assets: Res<Assets<LdtkExternalLevel>>,
 ) {
     for level_iid in &levels {
-        let only_project = project_assets.iter().next().unwrap().1;
+        let only_project = project_assets.get(projects.single()).unwrap();
 
         let layer_count = only_project
             .as_parent()

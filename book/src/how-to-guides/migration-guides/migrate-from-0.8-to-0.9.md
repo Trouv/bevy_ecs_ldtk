@@ -391,7 +391,7 @@ let level_selection = LevelSelection::iid("e5eb2d73-60bb-4779-8b33-38a63da8d1db"
 
 ## `LevelSelection` index variant now stores a world index
 The `LevelSelection::Index` variant has been replaced by `LevelSelection::Indices`.
-Internally, this stores a new `LevelIndices` type, which stores an optional world index in addition to a level index.
+Internally, this contains a new `LevelIndices` type, which stores an optional world index in addition to the level index.
 However, you can still construct a `LevelSelection` from a single level index using the `index` method:
 ```rust,ignore
 // 0.8

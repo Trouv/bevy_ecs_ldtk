@@ -395,5 +395,24 @@ let level_selection = LevelSelection::index(2);
 ```
 
 ## `LevelSet::from_iid` replaced with `LevelSet::from_iids`
+`LevelSet::from_iid` has been replaced by `LevelSet::from_iids`.
+This new method can accept any iterator of strings rather than just one:
+```rust,ignore
+// 0.8
+let level_set = LevelSet::from_iid("e5eb2d73-60bb-4779-8b33-38a63da8d1db");
+```
+```rust,no_run
+# use bevy_ecs_ldtk::prelude::*;
+# fn f() {
+// 0.9
+let level_set = LevelSet::from_iids(["e5eb2d73-60bb-4779-8b33-38a63da8d1db"]);
 
-## `LevelMap` and `TilesetMap` type aliases removed
+// or many..
+let level_set = LevelSet::from_iids(
+    [
+        "e5eb2d73-60bb-4779-8b33-38a63da8d1db",
+        "855fab73-2854-419f-a3c6-4ed8466592f6",
+    ]
+);
+# }
+```

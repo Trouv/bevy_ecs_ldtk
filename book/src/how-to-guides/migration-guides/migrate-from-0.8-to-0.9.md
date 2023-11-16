@@ -175,19 +175,19 @@ Some APIs are unique to the two cases.
 
 If you have an LDtk project with internal levels, but have disabled default features, you will need to enable `internal_levels`:
 ```toml
-// 0.8
+# 0.8
 bevy_ecs_ldtk = { version = "0.8", default-features = false, features = ["render"] }
 
-// 0.9
+# 0.9
 bevy_ecs_ldtk = { version = "0.9", default-features = false, features = ["render", "internal_levels"] }
 ```
 
 If you have an LDtk project with external levels, you will need to enable `external_levels`:
 ```toml
-// 0.8
+# 0.8
 bevy_ecs_ldtk = "0.8"
 
-// 0.9
+# 0.9
 bevy_ecs_ldtk = { version = "0.9", features = ["external_levels"] }
 ```
 

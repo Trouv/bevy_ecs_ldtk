@@ -379,6 +379,20 @@ let level_selection = LevelSelection::iid("e5eb2d73-60bb-4779-8b33-38a63da8d1db"
 ```
 
 ## `LevelSelection` index variant now stores a world index
+The `LevelSelection::Index` variant has been replaced by `LevelSelection::Indices`.
+Internally, this stores a new `LevelIndices` type, which stores an optional world index in addition to a level index.
+However, you can still construct a `LevelSelection` from a single level index using the `index` method:
+```rust,ignore
+// 0.8
+let level_selection = LevelSelection::Index(2);
+```
+```rust,no_run
+# use bevy_ecs_ldtk::prelude::*;
+# fn f() {
+// 0.9
+let level_selection = LevelSelection::index(2);
+# }
+```
 
 ## `LevelSet::from_iid` replaced with `LevelSet::from_iids`
 

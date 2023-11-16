@@ -71,6 +71,8 @@ fn get_level_of_entity(
             entity,
             parent_query.iter_ancestors(entity).nth(0)
         );
+    }
+}
 ```
 ```rust,no_run
 # use bevy_ecs_ldtk::prelude::*;

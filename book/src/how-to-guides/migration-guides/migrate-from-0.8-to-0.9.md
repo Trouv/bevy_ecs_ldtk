@@ -309,6 +309,7 @@ Those that were moved have been moved into the `assets` module, and are still ex
 It has been reused throughout the API.
 
 ### In `LevelSet`
+`LevelSet` uses it, but can still be constructed from strings using `from_iids`:
 ```rust,ignore
 // 0.8
 let level_set = LevelSet {

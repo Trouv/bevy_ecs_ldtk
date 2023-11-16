@@ -93,8 +93,8 @@ fn get_level_of_entity(
 ```
 
 ## Asset Type Rework
-Most breaking changes in this release are to the asset types, previously `LdtkAsset` and `LdtkLevel`.
-These types have been heavily reworked to improve code quality, correctness, and provide better APIs.
+Most breaking changes in this release are related to the asset types, previously `LdtkAsset` and `LdtkLevel`.
+These types have been heavily reworked to improve code quality, correctness, performance, and provide better APIs.
 
 ### `LdtkAsset` is now `LdtkProject`, and other changes
 `LdtkAsset` has now been renamed to `LdtkProject`.

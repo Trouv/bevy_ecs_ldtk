@@ -1,5 +1,9 @@
 # Migrate from 0.8 to 0.9
 
+## Bevy upgrade
+`bevy_ecs_ldtk` has upgraded to Bevy and `bevy_ecs_tilemap` version `0.12`.
+A Bevy `0.12` migration guide is available on [Bevy's website](https://bevyengine.org/learn/migration-guides/0.11-0.12/).
+
 ## LDtk upgrade
 `bevy_ecs_ldtk` now supports LDtk 1.4.1, and is dropping support for previous versions.
 To update your game to LDtk 1.4.1, you should only need to install the new version of LDtk, open your project, and save it.
@@ -366,7 +370,7 @@ fn assert_level_event_type(mut level_events: EventReader<LevelEvent>) {
 use std::any::{Any, TypeId};
 // 0.9
 fn assert_level_event_type(mut level_events: EventReader<LevelEvent>) {
-    for level_event in level_events.iter() {
+    for level_event in level_events.read() {
         use LevelEvent::*;
         let level_iid = match level_event {
             SpawnTriggered(level_iid) | Spawned(level_iid) | Transformed(level_iid) | Despawned(level_iid) => level_iid,

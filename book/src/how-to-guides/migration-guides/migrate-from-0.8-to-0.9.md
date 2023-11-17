@@ -8,7 +8,9 @@ To update your game to LDtk 1.4.1, you should only need to install the new versi
 Fields on an `LdtkEntity`- or `LdtkIntCell`-derived bundle are no longer constructed from the field's `Default` implementation, but the bundle's.
 
 You may observe different behavior in `0.9` if the value for a field in your bundle's `Default` implementation differs from the field type's own `Default` implementation:
-```rust,ignore
+```rust,no_run
+# use bevy::prelude::*;
+# use bevy_ecs_ldtk::prelude::*;
 #[derive(Component)]
 struct MyComponent(usize);
 

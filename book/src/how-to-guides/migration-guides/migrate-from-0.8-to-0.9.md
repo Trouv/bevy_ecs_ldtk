@@ -59,7 +59,7 @@ struct MyBundle {
 ```
 
 ## Hierarchy of LDtk Entities
-Layer entities (with a `LayerMetadata` component) are now spawned for LDtk Entity layers.
+Layer entities (with a `LayerMetadata` component) are now spawned for LDtk Entity layers, just like any other layer.
 By default, LDtk Entities are now spawned as children to these layer entities instead of as children of the level.
 ```rust,ignore
 // 0.8
@@ -123,7 +123,7 @@ fn do_some_processing_with_ldtk_data(
 ```
 
 Furthermore, all of its fields have been privatized, and are now only available via immutable accessor methods.
-Not all of these methods are the same name as their corresponding field in `0.8`:
+Not all of these methods share the same name as their corresponding field in `0.8`:
 ```rust,ignore
 // 0.8
 let ldtk_json = ldtk_project.project;

@@ -71,8 +71,22 @@ An inner corner wall rule - mirrored in the X and Y directions:
 
 Now you can enjoy placing walls in your level and watching LDtk auto-tile them for you!
 
-![auto-tile-walls](auto-tile-walls.gif)
+![auto-tile-walls](auto-tile-walls.png)
 
 ## Add Entity layer
+Add an Entity layer to the project, again, in the Layers tab.
+This will be used to place less tiling-oriented game objects, like the player, or the goal.
+You do not need to make any modifications to the default entity layer for this tutorial, it should be called Entities and match the grid size of the intgrid layer.
 
-## Create Player LDtk Entity
+![entity-layer](entities-layer.png)
+
+Then, in the Entities tab, add a Player entity.
+Be sure to name it "Player" and set its editor visual to use a tile from the Player tileset.
+For the SunnyLand assets - you will need to manually set its size to 16x16 so that it fits in a single tile on the grid.
+
+![player-entity](player-entity.png)
+
+Lastly, add a Goal entity.
+Name it "Goal" and set its editor visual from a tileset as well.
+
+![goal-entity](goal-entity.png)

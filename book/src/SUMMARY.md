@@ -2,8 +2,7 @@
 
 [Introduction](README.md)
 # Tutorials
-- [Getting Started](tutorials/getting-started.md)
-- [Sokoban]()
+- [Tile-based Game](tutorials/tile-based-game/README.md)
 - [Platformer]()
 # Explanation
 - [Game Logic Integration]()

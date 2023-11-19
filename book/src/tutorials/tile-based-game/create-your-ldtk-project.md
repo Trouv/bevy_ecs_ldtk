@@ -94,3 +94,10 @@ Lastly, add a Goal entity.
 Name it "Goal" and set its editor visual from a tileset as well.
 
 ![goal-entity](goal-entity.png)
+
+## Design some levels
+In the following chapters, you will spawn this project in Bevy and implement gameplay code for it.
+The game will be simple - move the player around the grid, navigating the walls, and start the next level once they reach the goal.
+With this in mind, design a few levels for this game using the tools you have set up thus far.
+
+![levels](levels.png)

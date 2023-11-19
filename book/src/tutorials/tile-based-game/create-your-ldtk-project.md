@@ -4,6 +4,10 @@
 Open the LDtk app and create a new project.
 For this tutorial, name the project `tile-based-game.ldtk`, and save it to your Bevy project's `assets` directory.
 
+In the World tab - set the World layout to Horizontal.
+
+![world-layout](world-layout.png)
+
 ## Import tilesets
 Add your environment/player tilesets to the project, in the Tilesets tab.
 Make sure that the source image files for these tilesets are also in your Bevy project's `assets` directory.

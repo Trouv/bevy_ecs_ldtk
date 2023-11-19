@@ -23,3 +23,56 @@ Finally, give it an Auto-layer tileset - pointing to the "Environment" tileset.
 ## Define autotiling for walls and backgrounds
 From here, select "EDIT RULES" next to the wall layer's auto-tile tileset.
 This is where you will define how LDtk should dynamically render the Walls layer of your levels based of the level's intgrid values.
+
+First, define a catch-all rule that will place the background tile if no other rules are matched first.
+1. Select "+ GROUP" to add a new empty rule group, and name it Background.
+2. On the new group, click "+" to define the first rule.
+3. In the top-right of the rule definition - select the tile you want to use as the background.
+4. You can set the rule to be "1x1", but since this is a "catch-all" rule, nothing else should be necessary.
+
+![background-rule](background-rule.png)
+
+Next, define a rule that will catch any wall tile.
+You will be able to define more complex rules on top of this to make walls prettier, but it's good to start with an extremely generic one first.
+1. Create another new group, and name it Walls.
+2. Click "+" on the Walls group to create its first rule.
+3. Select the tile you want to use as a generic wall tile in the top-right.
+4. Set the rule to be 1x1, and left-click the rule-pattern to place a wall tile.
+
+![all-walls-rule](all-walls-rule.png)
+
+Now you will be able to place walls in your level and they will be automatically rendered using this tile.
+
+The following rule is optional, and will define the tile used for the edges of walls - specifically horizontal edges.
+1. Create a new rule in the Walls group.
+2. Select the tile you want to use as the left edges of a wall.
+3. Use a 3x3 pattern, and place a wall tile in the center and a negative wall tile on the left (by right clicking the left-center tile).
+This will match any wall tiles that don't have a wall tile to their left.
+4. On this new rule inside the group, enable the "X" option.
+This mirrors the rule in the x-direction, so that it works for the right edges of walls as well.
+
+![horizontal-wall-edge-rule](horizontal-wall-edge-rule.png)
+
+You are welcome to add more rules to the walls group with more complex patterns for defining the vertical edges or corners.
+This tutorial will not go into painstaking detail about creating these, but their definitions are shown below.
+One general recommendation is to order these rules from most-specific to least-specific, so that the rule matcher will resort to the catch-all rules last.
+
+A vertical wall edge rule - mirrored in the Y direction:
+
+![vertical-wall-edge-rule](vertical-wall-edge-rule.png)
+
+An outer corner wall rule - mirrored in the X and Y directions:
+
+![wall-outer-corner-rule](wall-outer-corner-rule.png)
+
+An inner corner wall rule - mirrored in the X and Y directions:
+
+![wall-inner-corner-rule](wall-inner-corner-rule.png)
+
+Now you can enjoy placing walls in your level and watching LDtk auto-tile them for you!
+
+![auto-tile-walls](auto-tile-walls.gif)
+
+## Add Entity layer
+
+## Create Player LDtk Entity

@@ -7,3 +7,23 @@ You are welcome to bring your own tile-based LDtk project to this tutorial, but 
 - the IntGrid value of walls (1)
 
 For details about the tutorial in general, including prerequisites, please see the parent page.
+
+## Set up minimal Bevy App
+In the `main` function of your game, create a Bevy `App` with `DefaultPlugins` and `LdtkPlugin`.
+This code snippet also sets bevy's texture filtering to "nearest", which is good for pixelated games.
+```rust,no_run
+use bevy::prelude::*;
+use bevy_ecs_ldtk::prelude::*;
+
+fn main() {
+    App::new()
+        .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
+        .add_plugins(LdtkPlugin)
+        .run();
+}
+```
+
+## Spawn the camera and LdtkWorldBundle on startup
+
+
+## Register sprite bundles for the LDtk entities

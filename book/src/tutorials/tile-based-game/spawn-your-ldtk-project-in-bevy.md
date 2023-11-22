@@ -30,20 +30,14 @@ This code snippet also doubles the scale of the camera and adjusts its transform
 ```rust,no_run
 # use bevy::prelude::*;
 # use bevy_ecs_ldtk::prelude::*;
-{{#include ../../../../examples/tile_based_game.rs:26:37}}
-```
-
-Add this as a `StartUp` system to the `App`.
-```rust,no_run
-# use bevy::prelude::*;
-# use bevy_ecs_ldtk::prelude::*;
-# fn setup() {}
 fn main() {
     App::new()
         // other App builders
 {{#include ../../../../examples/tile_based_game.rs:9}}
         .run();
 }
+
+{{#include ../../../../examples/tile_based_game.rs:26:37}}
 ```
 
 Finally, insert the `LevelSelection` resource to tell the plugin to spawn the first level.
@@ -62,6 +56,3 @@ fn main() {
 Now, run the game with `$ cargo run --release` to see your first level spawning in Bevy!
 
 ![bevy-setup](images/bevy-setup.png)
-
-
-## Register sprite bundles for the LDtk entities

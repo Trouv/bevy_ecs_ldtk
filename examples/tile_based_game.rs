@@ -7,17 +7,27 @@ fn main() {
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
         .add_plugins(LdtkPlugin)
         .add_systems(Startup, setup)
-        .add_systems(Update, (move_player, cache_wall_locations, check_goal))
         .insert_resource(LevelSelection::index(0))
-        .init_resource::<WallLocations>()
         .register_ldtk_entity::<PlayerBundle>("Player")
         .register_ldtk_entity::<GoalBundle>("Goal")
+        .add_systems(
+            Update,
+            (
+                move_player_from_input,
+                translate_grid_coords,
+                cache_wall_locations,
+                check_goal,
+            ),
+        )
+        .init_resource::<WallLocations>()
         .run();
 }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     let mut camera = Camera2dBundle::default();
     camera.projection.scale = 0.5;
+    camera.transform.translation.x += 1280.0 / 4.0;
+    camera.transform.translation.y += 720.0 / 4.0;
     commands.spawn(camera);
 
     commands.spawn(LdtkWorldBundle {
@@ -61,7 +71,9 @@ struct WallBundle {
 #[derive(Default, Resource)]
 struct WallLocations(HashSet<GridCoords>);
 
-fn move_player() {}
+fn move_player_from_input() {}
+
+fn translate_grid_coords() {}
 
 fn cache_wall_locations() {}
 

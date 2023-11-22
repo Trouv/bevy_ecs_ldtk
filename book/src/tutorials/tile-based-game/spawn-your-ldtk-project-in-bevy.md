@@ -24,6 +24,44 @@ fn main() {
 ```
 
 ## Spawn the camera and LdtkWorldBundle on startup
+Create a startup system that spawns a camera entity and a `LdtkWorldBundle` entity.
+The latter requires a `Handle<LdtkProject>`, which can be obtained by loading your LDtk project from the Bevy `AssetServer` resource.
+This code snippet also doubles the scale of the camera and adjusts its transform to make the level slightly easier to view in 720p.
+```rust,no_run
+# use bevy::prelude::*;
+# use bevy_ecs_ldtk::prelude::*;
+{{#include ../../../../examples/tile_based_game.rs:26:37}}
+```
+
+Add this as a `StartUp` system to the `App`.
+```rust,no_run
+# use bevy::prelude::*;
+# use bevy_ecs_ldtk::prelude::*;
+# fn setup() {}
+fn main() {
+    App::new()
+        // other App builders
+{{#include ../../../../examples/tile_based_game.rs:9}}
+        .run();
+}
+```
+
+Finally, insert the `LevelSelection` resource to tell the plugin to spawn the first level.
+Construct the `LevelSelection` using its `index` method to select the level at index 0.
+```rust,no_run
+# use bevy::prelude::*;
+# use bevy_ecs_ldtk::prelude::*;
+fn main() {
+    App::new()
+        // other App builders
+{{#include ../../../../examples/tile_based_game.rs:10}}
+        .run();
+}
+```
+
+Now, run the game with `$ cargo run --release` to see your first level spawning in Bevy!
+
+![bevy-setup](images/bevy-setup.png)
 
 
 ## Register sprite bundles for the LDtk entities

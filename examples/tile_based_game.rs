@@ -69,7 +69,21 @@ struct WallBundle {
 }
 
 #[derive(Default, Resource)]
-struct WallLocations(HashSet<GridCoords>);
+struct LevelWalls {
+    wall_locations: HashSet<GridCoords>,
+    level_width: i32,
+    level_height: i32,
+}
+
+impl LevelWalls {
+    fn in_wall(&self, grid_coords: &GridCoords) -> bool {
+        grid_coords.x < 0
+            || grid_coords.y < 0
+            || grid_coords.x >= self.level_width
+            || grid_coords.y >= self.level_height
+            || self.wall_locations.contains(grid_coords)
+    }
+}
 
 fn move_player_from_input() {}
 

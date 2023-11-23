@@ -56,3 +56,71 @@ fn main() {
 Now, run the game with `$ cargo run --release` to see your first level spawning in Bevy!
 
 ![bevy-setup](images/bevy-setup.png)
+
+## Spawn sprites for your LDtk entities
+You may have noticed that the Player and Goal are not rendered here.
+They are there, but they require a little more work to become visible.
+
+Create a `PlayerBundle` and `GoalBundle`, each with a `SpriteSheetBundle` field.
+These will be developed a little bit more in the next chapter, but for now they will be similar.
+```rust,no_run
+# use bevy::prelude::*;
+# use bevy_ecs_ldtk::prelude::*;
+#[derive(Default, Bundle)]
+struct PlayerBundle {
+    sprite_sheet_bundle: SpriteSheetBundle,
+}
+
+#[derive(Default, Bundle)]
+struct GoalBundle {
+    sprite_sheet_bundle: SpriteSheetBundle,
+}
+```
+
+Now, derive `LdtkEntity` for these bundles, and give the field a `#[sprite_sheet_bundle]` attribute.
+This trait implementation defines how these bundles should be spawned by the plugin.
+More specifically - they should be spawned as sprites identical to the entity's editor visual.
+```rust,no_run
+# use bevy::prelude::*;
+# use bevy_ecs_ldtk::prelude::*;
+#[derive(Default, Bundle, LdtkEntity)]
+struct PlayerBundle {
+    #[sprite_sheet_bundle]
+    sprite_sheet_bundle: SpriteSheetBundle,
+}
+
+#[derive(Default, Bundle, LdtkEntity)]
+struct GoalBundle {
+    #[sprite_sheet_bundle]
+    sprite_sheet_bundle: SpriteSheetBundle,
+}
+```
+
+Finally, register these bundles to the app using `register_ldtk_entity`, and provide their LDtk identifier.
+When the plugin spawns entities with these identifiers, it will use the registered bundle.
+```rust,no_run
+# use bevy::prelude::*;
+# use bevy_ecs_ldtk::prelude::*;
+fn main() {
+    App::new()
+        // other App builders
+{{#include ../../../../examples/tile_based_game.rs:11:12}}
+        .run();
+}
+
+#[derive(Default, Bundle, LdtkEntity)]
+struct PlayerBundle {
+    #[sprite_sheet_bundle]
+    sprite_sheet_bundle: SpriteSheetBundle,
+}
+
+#[derive(Default, Bundle, LdtkEntity)]
+struct GoalBundle {
+    #[sprite_sheet_bundle]
+    sprite_sheet_bundle: SpriteSheetBundle,
+}
+```
+
+Now run the game again - the sprites will spawn this time.
+
+![bevy-sprites](images/bevy-sprites.png)

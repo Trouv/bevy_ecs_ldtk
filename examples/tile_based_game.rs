@@ -14,7 +14,7 @@ fn main() {
             Update,
             (
                 move_player_from_input,
-                translate_grid_coords,
+                translate_grid_coords_entities,
                 cache_wall_locations,
                 check_goal,
             ),
@@ -73,7 +73,7 @@ struct WallLocations(HashSet<GridCoords>);
 
 fn move_player_from_input() {}
 
-fn translate_grid_coords() {}
+fn translate_grid_coords_entities() {}
 
 fn cache_wall_locations() {}
 

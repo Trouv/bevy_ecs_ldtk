@@ -19,7 +19,7 @@ fn main() {
                 check_goal,
             ),
         )
-        .init_resource::<WallLocations>()
+        .init_resource::<LevelWalls>()
         .run();
 }
 

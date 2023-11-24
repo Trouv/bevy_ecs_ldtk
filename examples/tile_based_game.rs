@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_ecs_ldtk::{prelude::*, utils::grid_coords_to_translation};
+use bevy_ecs_ldtk::prelude::*;
 use std::collections::HashSet;
 
 fn main() {
@@ -88,6 +88,7 @@ impl LevelWalls {
 fn move_player_from_input(
     mut players: Query<&mut GridCoords, With<Player>>,
     input: Res<Input<KeyCode>>,
+    level_walls: Res<LevelWalls>,
 ) {
     let movement_direction = if input.just_pressed(KeyCode::W) {
         GridCoords::new(0, 1)
@@ -103,7 +104,9 @@ fn move_player_from_input(
 
     for mut player_grid_coords in players.iter_mut() {
         let destination = *player_grid_coords + movement_direction;
-        *player_grid_coords = destination;
+        if !level_walls.in_wall(&destination) {
+            *player_grid_coords = destination;
+        }
     }
 }
 
@@ -111,8 +114,9 @@ fn translate_grid_coords_entities(
     mut grid_coords_entities: Query<(&mut Transform, &GridCoords), Changed<GridCoords>>,
 ) {
     for (mut transform, grid_coords) in grid_coords_entities.iter_mut() {
-        transform.translation = grid_coords_to_translation(*grid_coords, IVec2::splat(16))
-            .extend(transform.translation.z);
+        transform.translation =
+            bevy_ecs_ldtk::utils::grid_coords_to_translation(*grid_coords, IVec2::splat(16))
+                .extend(transform.translation.z);
     }
 }
 

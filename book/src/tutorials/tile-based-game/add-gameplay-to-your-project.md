@@ -22,9 +22,30 @@ Derive default for this component.
 ```
 
 ## Implement tile-based movement
+The player now has the components you will need to implement tile-based movement.
+Write a system that checks for just-pressed WASD input and converts it to a `GridCoords` direction.
+I.e., `(0,1)` for W, `(-1,0)` for A, `(0,-1)` for S, and `(1,0)` for D.
+Then, add the new direction to the player entity's `GridCoords` component.
+```rust,no_run
+# use bevy::prelude::*;
+# use bevy_ecs_ldtk::prelude::*;
+# #[derive(Component)]
+# struct Player;
+fn main() {
+    App::new()
+        // other App builders
+        .add_systems(Update, move_player_from_input)
+        .run();
+}
 
+{{#include ../../../../examples/tile_based_game.rs:88:90}}
+{{#include ../../../../examples/tile_based_game.rs:92:106}}
+        *player_grid_coords = destination;
+    }
+}
+```
 
-## Update translation
+## Update translation from `GridCoords` value
 
 ## Prevent tile-based movement into walls 
 

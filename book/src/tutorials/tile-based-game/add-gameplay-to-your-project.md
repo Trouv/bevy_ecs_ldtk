@@ -67,7 +67,7 @@ fn main() {
         .run();
 }
 
-{{#include ../../../../examples/tile_based_game.rs:114:122}}
+{{#include ../../../../examples/tile_based_game.rs:114:124}}
 ```
 
 ## Prevent tile-based movement into walls 

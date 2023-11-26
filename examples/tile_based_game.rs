@@ -19,6 +19,7 @@ fn main() {
                 check_goal,
             ),
         )
+        .register_ldtk_int_cell::<WallBundle>(1)
         .init_resource::<LevelWalls>()
         .run();
 }

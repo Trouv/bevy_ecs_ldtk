@@ -18,7 +18,7 @@ Derive default for this component.
 ```rust,no_run
 # use bevy::prelude::*;
 # use bevy_ecs_ldtk::prelude::*;
-{{#include ../../../../examples/tile_based_game.rs:39:49}}
+{{#include ../../../../examples/tile_based_game.rs:40:50}}
 ```
 
 ## Implement tile-based movement
@@ -38,8 +38,8 @@ fn main() {
         .run();
 }
 
-{{#include ../../../../examples/tile_based_game.rs:88:90}}
-{{#include ../../../../examples/tile_based_game.rs:92:106}}
+{{#include ../../../../examples/tile_based_game.rs:89:91}}
+{{#include ../../../../examples/tile_based_game.rs:93:107}}
         *player_grid_coords = destination;
     }
 }
@@ -67,7 +67,7 @@ fn main() {
         .run();
 }
 
-{{#include ../../../../examples/tile_based_game.rs:113:121}}
+{{#include ../../../../examples/tile_based_game.rs:114:122}}
 ```
 
 ## Prevent tile-based movement into walls 

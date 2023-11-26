@@ -36,7 +36,7 @@ fn main() {
         .run();
 }
 
-{{#include ../../../../examples/tile_based_game.rs:26:37}}
+{{#include ../../../../examples/tile_based_game.rs:27:38}}
 ```
 
 Finally, insert the `LevelSelection` resource to tell the plugin to spawn the first level.

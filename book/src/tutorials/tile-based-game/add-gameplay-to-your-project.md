@@ -178,4 +178,41 @@ Finally, update the `move_player_from_input` system to access the `LevelWalls` r
 {{#include ../../../../examples/tile_based_game.rs:89:112}}
 ```
 
+With this check in place, the player should now be unable to move into walls!
+
 ## Trigger level transitions on victory
+The final step is to implement the goal functionality.
+When the player reaches the goal, the next level should spawn until there are no levels remaining.
+
+Similar to the `PlayerBundle`, give the `GoalBundle` its own marker component and `GridCoords`.
+```rust,no_run
+# use bevy::prelude::*;
+# use bevy_ecs_ldtk::prelude::*;
+{{#include ../../../../examples/tile_based_game.rs:52:62}}
+```
+
+Then, write a system that checks if the player's `GridCoords` and the goal's `GridCoords` match.
+For a small optimization, filter the player query for `Changed<GridCoords>` so it's only populated if the player moves.
+If they do match, update the `LevelSelection` resource, increasing its level index by 1.
+`bevy_ecs_ldtk` will automatically despawn the current level and spawn the next one when this resource is updated.
+```rust,no_run
+# use bevy::prelude::*;
+# use bevy_ecs_ldtk::prelude::*;
+# #[derive(Component)]
+# struct Player;
+# #[derive(Component)]
+# struct Goal;
+# fn move_player_from_input() {}
+# fn translate_grid_coords_entities() {}
+# fn cache_wall_locations() {}
+fn main() {
+    App::new()
+        // other App builders
+{{#include ../../../../examples/tile_based_game.rs:13:21}}
+        .run();
+}
+
+{{#include ../../../../examples/tile_based_game.rs:158::}}
+```
+
+With this, the simple tile-based game is complete.

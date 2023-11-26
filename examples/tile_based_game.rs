@@ -155,4 +155,21 @@ fn cache_wall_locations(
     }
 }
 
-fn check_goal() {}
+fn check_goal(
+    level_selection: ResMut<LevelSelection>,
+    players: Query<&GridCoords, (With<Player>, Changed<GridCoords>)>,
+    goals: Query<&GridCoords, With<Goal>>,
+) {
+    if players
+        .iter()
+        .zip(goals.iter())
+        .any(|(player_grid_coords, goal_grid_coords)| player_grid_coords == goal_grid_coords)
+    {
+        let indices = match level_selection.into_inner() {
+            LevelSelection::Indices(indices) => indices,
+            _ => panic!("level selection should always be Indices in this game"),
+        };
+
+        indices.level += 1;
+    }
+}

@@ -70,6 +70,112 @@ fn main() {
 {{#include ../../../../examples/tile_based_game.rs:114:124}}
 ```
 
-## Prevent tile-based movement into walls 
+## Prevent tile-based movement into walls
+Movement works logically *and* visually now.
+However, you might notice that you can move *into* the walls of the level.
+To implement tile-based collision, you will need to add components to the walls to identify their locations, and check against these locations when trying to move the player.
+
+Create a new bundle for the wall entities, and give them a marker component.
+Derive `LdtkIntCell` for this bundle, and register it to the app with `register_ldtk_int_cell` and the wall's intgrid value.
+This bundle actually only needs this one marker component - IntGrid entities spawn with a `GridCoords` without requesting it.
+```rust,no_run
+# use bevy::prelude::*;
+# use bevy_ecs_ldtk::prelude::*;
+fn main() {
+    App::new()
+        // other App builders
+{{#include ../../../../examples/tile_based_game.rs:22}}
+        .run();
+}
+
+{{#include ../../../../examples/tile_based_game.rs:64:70}}
+```
+
+There are a lot of ways to go about implementing the collision systems.
+Naively, you could query for all of the `Wall` entities every time the player tries to move and check their `GridCoords` values.
+In this tutorial, you will implement something a little more optimized: caching the wall locations into a resource when levels spawn.
+
+Create a `LevelWalls` resource for storing the current wall locations that can be looked up by-value.
+Give it a `HashSet<GridCoords>` field for the wall locations.
+Give it fields for the level's width and height as well so you can prevent the player from moving out-of-bounds.
+Then, implement a method `fn in_wall(&self, grid_coords: &GridCoords) -> bool` that returns true if the provided `grid_coords` is outside the level bounds or contained in the `HashSet`.
+```rust,no_run
+# use bevy::prelude::*;
+# use bevy_ecs_ldtk::prelude::*;
+use std::collections::HashSet;
+
+fn main() {
+    App::new()
+        // other App builders
+{{#include ../../../../examples/tile_based_game.rs:23}}
+        .run();
+}
+
+{{#include ../../../../examples/tile_based_game.rs:72:87}}
+```
+
+Now, add a system that listens for `LevelEvent::Spawned` and populates this resource.
+It will need access to all of the wall locations to populate the `HashSet` (`Query<&GridCoords, With<Wall>>`).
+It will also need access to the `LdtkProject` data to find the current level's width/height (`Query<&Handle<LdtkProject>>` and `Res<Assets<LdtkProject>>`).
+```rust,no_run
+# use bevy::prelude::*;
+# use bevy_ecs_ldtk::prelude::*;
+# use std::collections::HashSet;
+# const GRID_SIZE: i32 = 16;
+# #[derive(Default, Resource)]
+# struct LevelWalls {
+#     wall_locations: HashSet<GridCoords>,
+#     level_width: i32,
+#     level_height: i32,
+# }
+# impl LevelWalls {
+#     fn in_wall(&self, grid_coords: &GridCoords) -> bool {
+#         grid_coords.x < 0
+#             || grid_coords.y < 0
+#             || grid_coords.x >= self.level_width
+#             || grid_coords.y >= self.level_height
+#             || self.wall_locations.contains(grid_coords)
+#     }
+# }
+# #[derive(Component)]
+# struct Wall;
+# fn move_player_from_input() {}
+# fn translate_grid_coords_entities() {}
+fn main() {
+    App::new()
+        // other App builders
+{{#include ../../../../examples/tile_based_game.rs:13:18}}
+            )
+        )
+        .run();
+}
+
+{{#include ../../../../examples/tile_based_game.rs:126:156}}
+```
+
+Finally, update the `move_player_from_input` system to access the `LevelWalls` resource and check whether or not the player's destination is in a wall.
+```rust,no_run
+# use bevy::prelude::*;
+# use bevy_ecs_ldtk::prelude::*;
+# use std::collections::HashSet;
+# #[derive(Component)]
+# struct Player;
+# #[derive(Default, Resource)]
+# struct LevelWalls {
+#     wall_locations: HashSet<GridCoords>,
+#     level_width: i32,
+#     level_height: i32,
+# }
+# impl LevelWalls {
+#     fn in_wall(&self, grid_coords: &GridCoords) -> bool {
+#         grid_coords.x < 0
+#             || grid_coords.y < 0
+#             || grid_coords.x >= self.level_width
+#             || grid_coords.y >= self.level_height
+#             || self.wall_locations.contains(grid_coords)
+#     }
+# }
+{{#include ../../../../examples/tile_based_game.rs:89:112}}
+```
 
 ## Trigger level transitions on victory

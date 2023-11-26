@@ -18,7 +18,7 @@ Derive default for this component.
 ```rust,no_run
 # use bevy::prelude::*;
 # use bevy_ecs_ldtk::prelude::*;
-{{#include ../../../../examples/tile_based_game.rs:40:50}}
+{{#include ../../../../examples/tile_based_game.rs:42:52}}
 ```
 
 ## Implement tile-based movement
@@ -38,8 +38,8 @@ fn main() {
         .run();
 }
 
-{{#include ../../../../examples/tile_based_game.rs:89:91}}
-{{#include ../../../../examples/tile_based_game.rs:93:107}}
+{{#include ../../../../examples/tile_based_game.rs:91:93}}
+{{#include ../../../../examples/tile_based_game.rs:95:109}}
         *player_grid_coords = destination;
     }
 }
@@ -61,13 +61,13 @@ For the LDtk project set up in this tutorial using the `SunnyLand` tilesets, thi
 fn main() {
     App::new()
         // other App builders
-{{#include ../../../../examples/tile_based_game.rs:13:17}}
+{{#include ../../../../examples/tile_based_game.rs:15:19}}
             ),
         )
         .run();
 }
 
-{{#include ../../../../examples/tile_based_game.rs:114:124}}
+{{#include ../../../../examples/tile_based_game.rs:116:126}}
 ```
 
 ## Prevent tile-based movement into walls
@@ -84,11 +84,11 @@ This bundle actually only needs this one marker component - IntGrid entities spa
 fn main() {
     App::new()
         // other App builders
-{{#include ../../../../examples/tile_based_game.rs:22}}
+{{#include ../../../../examples/tile_based_game.rs:24}}
         .run();
 }
 
-{{#include ../../../../examples/tile_based_game.rs:64:70}}
+{{#include ../../../../examples/tile_based_game.rs:66:72}}
 ```
 
 There are a lot of ways to go about implementing the collision systems.
@@ -107,11 +107,11 @@ use std::collections::HashSet;
 fn main() {
     App::new()
         // other App builders
-{{#include ../../../../examples/tile_based_game.rs:23}}
+{{#include ../../../../examples/tile_based_game.rs:25}}
         .run();
 }
 
-{{#include ../../../../examples/tile_based_game.rs:72:87}}
+{{#include ../../../../examples/tile_based_game.rs:74:89}}
 ```
 
 Now, add a system that listens for `LevelEvent::Spawned` and populates this resource.
@@ -144,13 +144,13 @@ It will also need access to the `LdtkProject` data to find the current level's w
 fn main() {
     App::new()
         // other App builders
-{{#include ../../../../examples/tile_based_game.rs:13:18}}
+{{#include ../../../../examples/tile_based_game.rs:15:20}}
             )
         )
         .run();
 }
 
-{{#include ../../../../examples/tile_based_game.rs:126:156}}
+{{#include ../../../../examples/tile_based_game.rs:128:155}}
 ```
 
 Finally, update the `move_player_from_input` system to access the `LevelWalls` resource and check whether or not the player's destination is in a wall.
@@ -175,7 +175,7 @@ Finally, update the `move_player_from_input` system to access the `LevelWalls` r
 #             || self.wall_locations.contains(grid_coords)
 #     }
 # }
-{{#include ../../../../examples/tile_based_game.rs:89:112}}
+{{#include ../../../../examples/tile_based_game.rs:91:114}}
 ```
 
 With this check in place, the player should now be unable to move into walls!
@@ -188,7 +188,7 @@ Similar to the `PlayerBundle`, give the `GoalBundle` its own marker component an
 ```rust,no_run
 # use bevy::prelude::*;
 # use bevy_ecs_ldtk::prelude::*;
-{{#include ../../../../examples/tile_based_game.rs:52:62}}
+{{#include ../../../../examples/tile_based_game.rs:54:64}}
 ```
 
 Then, write a system that checks if the player's `GridCoords` and the goal's `GridCoords` match.
@@ -208,11 +208,11 @@ If they do match, update the `LevelSelection` resource, increasing its level ind
 fn main() {
     App::new()
         // other App builders
-{{#include ../../../../examples/tile_based_game.rs:13:21}}
+{{#include ../../../../examples/tile_based_game.rs:15:23}}
         .run();
 }
 
-{{#include ../../../../examples/tile_based_game.rs:158::}}
+{{#include ../../../../examples/tile_based_game.rs:157::}}
 ```
 
 With this, the simple tile-based game is complete.

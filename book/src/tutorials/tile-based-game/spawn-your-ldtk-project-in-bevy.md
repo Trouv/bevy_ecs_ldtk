@@ -32,11 +32,11 @@ This code snippet also doubles the scale of the camera and adjusts its transform
 fn main() {
     App::new()
         // other App builders
-{{#include ../../../../examples/tile_based_game.rs:9}}
+{{#include ../../../../examples/tile_based_game.rs:11}}
         .run();
 }
 
-{{#include ../../../../examples/tile_based_game.rs:27:38}}
+{{#include ../../../../examples/tile_based_game.rs:29:40}}
 ```
 
 Finally, insert the `LevelSelection` resource to tell the plugin to spawn the first level.
@@ -47,7 +47,7 @@ Construct the `LevelSelection` using its `index` method to select the level at i
 fn main() {
     App::new()
         // other App builders
-{{#include ../../../../examples/tile_based_game.rs:10}}
+{{#include ../../../../examples/tile_based_game.rs:12}}
         .run();
 }
 ```
@@ -89,7 +89,7 @@ When the plugin spawns entities with these identifiers, it will use the register
 fn main() {
     App::new()
         // other App builders
-{{#include ../../../../examples/tile_based_game.rs:11:12}}
+{{#include ../../../../examples/tile_based_game.rs:13:14}}
         .run();
 }
 # #[derive(Default, Bundle, LdtkEntity)]

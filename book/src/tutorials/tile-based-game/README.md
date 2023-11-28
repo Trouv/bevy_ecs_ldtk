@@ -1,6 +1,6 @@
 # Tile-based Game
 In this tutorial you will make a tile-based game with LDtk levels.
-The game will be tile-based, meaning that the game entities will be locked to a grid of tiles like sokoban.
+Game entities will be locked to a grid of tiles like sokoban, or snake.
 You will go through the process of creating an LDtk project, loading the project into bevy, and adding gameplay.
 
 This tutorial does have an example associated with it in the [`bevy_ecs_ldtk` repository](https://github.com/trouv/bevy_ecs_ldtk):

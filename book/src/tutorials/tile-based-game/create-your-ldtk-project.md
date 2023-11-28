@@ -14,7 +14,9 @@ For details about the tutorial in general, including prerequisites, please see t
 Open the LDtk app and create a new project.
 For this tutorial, name the project `tile-based-game.ldtk`, and save it to your Bevy project's `assets` directory.
 
-In the World tab - set the World layout to Horizontal.
+## Set the World layout
+In the **World** tab - set the **World layout** to Horizontal.
+This will make levels have a clear linear relationship in the editor, rather than a geographical one.
 
 ![world-layout](images/world-layout.png)
 

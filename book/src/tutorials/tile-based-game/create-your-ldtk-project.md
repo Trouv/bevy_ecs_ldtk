@@ -88,7 +88,7 @@ An inner corner wall rule - mirrored in the **X** and **Y** directions:
 
 Now you can enjoy placing walls in your level and watching LDtk auto-tile them for you!
 
-![auto-tile-walls](images/auto-tile-walls.png)
+<div style="width:100%;height:0px;position:relative;padding-bottom:54.449%;"><iframe src="https://streamable.com/e/6v4pou" frameborder="0" width="100%" height="100%" allowfullscreen style="width:100%;height:100%;position:absolute;left:0px;top:0px;overflow:hidden;"></iframe></div>
 
 ## Add Entity layer
 Add an Entity layer to the project, again, in the **Layers** tab.

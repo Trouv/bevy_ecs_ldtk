@@ -1,6 +1,7 @@
 # Create your LDtk project
 In this section, you will create a simple LDtk project suitable for tile-based gameplay.
-This project will have an IntGrid + AutoTile layer of walls, and an Entity layer for placing Player and Goal entities.
+This project will have an IntGrid layer of walls, and an Entity layer for placing Player and Goal entities.
+It will also have AutoTile rules on top of the IntGrid layer defining the visuals of walls and backgrounds.
 If you already have an LDtk project suitable for tile-based gameplay - feel free to skip this section.
 However, note that some of the values specified in here will be used in the tutorial going forward, such as...
 - the name/location of the file (assets/tile-based-game.ldtk)

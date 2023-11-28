@@ -99,12 +99,14 @@ You do not need to make any modifications to the default entity layer for this t
 
 Then, in the **Entities** tab, add a Player entity.
 Be sure to name it "Player" and set its editor visual to use a tile from the Player tileset.
+This will be important in the next section of the tutorial.
 For the SunnyLand assets - you will need to manually set its size to 16x16 so that it fits in a single tile on the grid.
 
 ![player-entity](images/player-entity.png)
 
 Lastly, add a Goal entity.
 Name it "Goal" and set its editor visual from a tileset as well.
+Again, this will be important in the next section of the tutorial.
 
 ![goal-entity](images/goal-entity.png)
 

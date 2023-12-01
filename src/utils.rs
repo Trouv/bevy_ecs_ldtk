@@ -78,7 +78,7 @@ pub fn calculate_transform_from_entity_instance(
 ) -> Transform {
     let entity_definition = entity_definition_map.get(&entity_instance.def_uid).unwrap();
 
-    let def_size = match &entity_instance.tile {
+    let def_size = match &entity_definition.tile_rect {
         Some(tile) => IVec2::new(tile.w, tile.h),
         None => IVec2::new(entity_definition.width, entity_definition.height),
     };

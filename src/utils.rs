@@ -487,6 +487,13 @@ mod tests {
             uid: 0,
             width: 32,
             height: 32,
+            tile_rect: Some(TilesetRectangle {
+                x: 0,
+                y: 0,
+                w: 16,
+                h: 32,
+                ..Default::default()
+            }),
             ..Default::default()
         }];
         let entity_definition_map = create_entity_definition_map(&entity_definitions);
@@ -500,7 +507,7 @@ mod tests {
             tile: Some(TilesetRectangle {
                 x: 0,
                 y: 0,
-                w: 16,
+                w: 32,
                 h: 32,
                 ..Default::default()
             }),

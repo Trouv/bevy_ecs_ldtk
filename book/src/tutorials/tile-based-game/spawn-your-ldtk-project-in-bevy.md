@@ -2,7 +2,7 @@
 In this section, you will load/spawn your LDtk project in Bevy, including spawning sprites for the LDtk entities.
 This tutorial will use the LDtk project created in the previous section.
 You are welcome to bring your own tile-based LDtk project to this tutorial, but some of the values specified in here are specific to the previous section, such as...
-- the name/location of the file (assets/tile-based-game.ldtk)
+- the name/location of the file (`assets/tile-based-game.ldtk`)
 - the identifiers of the Player and Goal entities (Player, Goal)
 
 For details about the tutorial in general, including prerequisites, please see the parent page.
@@ -40,7 +40,7 @@ fn main() {
 ```
 
 Finally, insert the `LevelSelection` resource to tell the plugin to spawn the first level.
-Construct the `LevelSelection` using its `index` method to select the level at index 0.
+Construct the `LevelSelection` using its `index` method to select the first level (0-indexed).
 ```rust,no_run
 # use bevy::prelude::*;
 # use bevy_ecs_ldtk::prelude::*;
@@ -61,7 +61,7 @@ You may have noticed that the Player and Goal are not rendered here.
 They are there, but they require a little more work to become visible.
 
 Create a `PlayerBundle` and `GoalBundle`, each with a `SpriteSheetBundle` field.
-These will be developed a little bit more in the next chapter, but for now they will be similar.
+You will develop these bundles a little bit more in the next chapter, but for now they will be similar.
 Derive `LdtkEntity` for these bundles, and give the field a `#[sprite_sheet_bundle]` attribute.
 This trait implementation defines how these bundles should be spawned by the plugin.
 More specifically - they should be spawned as sprites identical to the entity's editor visual.

@@ -176,7 +176,7 @@
 This tutorial will use the LDtk project created in the previous section.
 You are welcome to bring your own tile-based LDtk project to this tutorial, but some of the values specified in here are specific to the previous section, such as...</p>
 <ul>
-<li>the name/location of the file (assets/tile-based-game.ldtk)</li>
+<li>the name/location of the file (<code>assets/tile-based-game.ldtk</code>)</li>
 <li>the identifiers of the Player and Goal entities (Player, Goal)</li>
 </ul>
 <p>For details about the tutorial in general, including prerequisites, please see the parent page.</p>
@@ -201,10 +201,8 @@ This code snippet also doubles the scale of the camera and adjusts its transform
 </span>fn main() {
     App::new()
         // other App builders
-        .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
+        .add_systems(Startup, setup)
         .run();
-}
-
 }
 
 fn setup(mut commands: Commands, asset_server: Res&lt;AssetServer&gt;) {
@@ -216,15 +214,17 @@ fn setup(mut commands: Commands, asset_server: Res&lt;AssetServer&gt;) {
 
     commands.spawn(LdtkWorldBundle {
         ldtk_handle: asset_server.load(&quot;tile-based-game.ldtk&quot;),
-        ..Default::default()</code></pre></pre>
+        ..Default::default()
+    });
+}</code></pre></pre>
 <p>Finally, insert the <code>LevelSelection</code> resource to tell the plugin to spawn the first level.
-Construct the <code>LevelSelection</code> using its <code>index</code> method to select the level at index 0.</p>
+Construct the <code>LevelSelection</code> using its <code>index</code> method to select the first level (0-indexed).</p>
 <pre><pre class="playground"><code class="language-rust no_run"><span class="boring">use bevy::prelude::*;
 </span><span class="boring">use bevy_ecs_ldtk::prelude::*;
 </span>fn main() {
     App::new()
         // other App builders
-        .add_plugins(LdtkPlugin)
+        .insert_resource(LevelSelection::index(0))
         .run();
 }</code></pre></pre>
 <p>Now, run the game with <code>$ cargo run --release</code> to see your first level spawning in Bevy!</p>
@@ -233,7 +233,7 @@ Construct the <code>LevelSelection</code> using its <code>index</code> method to
 <p>You may have noticed that the Player and Goal are not rendered here.
 They are there, but they require a little more work to become visible.</p>
 <p>Create a <code>PlayerBundle</code> and <code>GoalBundle</code>, each with a <code>SpriteSheetBundle</code> field.
-These will be developed a little bit more in the next chapter, but for now they will be similar.
+You will develop these bundles a little bit more in the next chapter, but for now they will be similar.
 Derive <code>LdtkEntity</code> for these bundles, and give the field a <code>#[sprite_sheet_bundle]</code> attribute.
 This trait implementation defines how these bundles should be spawned by the plugin.
 More specifically - they should be spawned as sprites identical to the entity's editor visual.</p>
@@ -260,8 +260,8 @@ When the plugin spawns entities with these identifiers, it will use the register
 </span>fn main() {
     App::new()
         // other App builders
-        .add_systems(Startup, setup)
-        .insert_resource(LevelSelection::index(0))
+        .register_ldtk_entity::&lt;PlayerBundle&gt;(&quot;Player&quot;)
+        .register_ldtk_entity::&lt;GoalBundle&gt;(&quot;Goal&quot;)
         .run();
 }
 <span class="boring">#[derive(Default, Bundle, LdtkEntity)]

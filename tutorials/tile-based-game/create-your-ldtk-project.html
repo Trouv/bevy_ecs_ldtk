@@ -173,11 +173,12 @@
                     <main>
                         <h1 id="create-your-ldtk-project"><a class="header" href="#create-your-ldtk-project">Create your LDtk project</a></h1>
 <p>In this section, you will create a simple LDtk project suitable for tile-based gameplay.
-This project will have an IntGrid + AutoTile layer of walls, and an Entity layer for placing Player and Goal entities.
+This project will have an IntGrid layer of walls, and an Entity layer for placing Player and Goal entities.
+It will also have AutoTile rules on top of the IntGrid layer defining the visuals of walls and backgrounds.
 If you already have an LDtk project suitable for tile-based gameplay - feel free to skip this section.
 However, note that some of the values specified in here will be used in the tutorial going forward, such as...</p>
 <ul>
-<li>the name/location of the file (assets/tile-based-game.ldtk)</li>
+<li>the name/location of the file (<code>assets/tile-based-game.ldtk</code>)</li>
 <li>the identifiers of the Player and Goal entities (Player, Goal)</li>
 <li>the IntGrid value of walls (1)</li>
 </ul>
@@ -185,36 +186,39 @@ However, note that some of the values specified in here will be used in the tuto
 <h2 id="create-empty-project"><a class="header" href="#create-empty-project">Create empty project</a></h2>
 <p>Open the LDtk app and create a new project.
 For this tutorial, name the project <code>tile-based-game.ldtk</code>, and save it to your Bevy project's <code>assets</code> directory.</p>
-<p>In the World tab - set the World layout to Horizontal.</p>
+<h2 id="set-the-world-layout"><a class="header" href="#set-the-world-layout">Set the World layout</a></h2>
+<p>In the <strong>World</strong> tab - set the <strong>World layout</strong> to Horizontal.
+This will make levels have a clear linear relationship in the editor, rather than a geographical one.</p>
 <p><img src="images/world-layout.png" alt="world-layout" /></p>
 <h2 id="import-tilesets"><a class="header" href="#import-tilesets">Import tilesets</a></h2>
-<p>Add your environment/player tilesets to the project, in the Tilesets tab.
+<p>Add your environment/player tilesets to the project, in the <strong>Tilesets</strong> tab.
 Make sure that the source image files for these tilesets are also in your Bevy project's <code>assets</code> directory.
 Name the tilesets &quot;Environment&quot; and &quot;Player&quot; respectively.
 For the SunnyLand assets - the Player tileset needs to have a tile size of 32 and the environment asset a tile size of 16.</p>
 <p><img src="images/tilesets.png" alt="tilesets" /></p>
 <h2 id="add-intgrid-layer-for-walls"><a class="header" href="#add-intgrid-layer-for-walls">Add IntGrid layer for walls</a></h2>
-<p>Add an IntGrid layer to the project, in the Layers tab.
+<p>Add an IntGrid layer to the project, in the <strong>Layers</strong> tab.
 This layer will be used to define where the collisions are in the level.
-Call this layer &quot;Walls&quot;, make sure its grid size is 16, and optionally name the grid value 1 &quot;Wall&quot;.
-Finally, give it an Auto-layer tileset - pointing to the &quot;Environment&quot; tileset.</p>
+Call this layer &quot;Walls&quot;.
+Make sure its grid size is 16.
+Finally, give it an <strong>Auto-layer tileset</strong> - pointing to the Environment tileset.</p>
 <p><img src="images/wall-layer.png" alt="wall-layer" /></p>
 <h2 id="define-autotiling-for-walls-and-backgrounds"><a class="header" href="#define-autotiling-for-walls-and-backgrounds">Define autotiling for walls and backgrounds</a></h2>
-<p>From here, select &quot;EDIT RULES&quot; next to the wall layer's auto-tile tileset.
-This is where you will define how LDtk should dynamically render the Walls layer of your levels based of the level's intgrid values.</p>
+<p>From the Walls layer definition, select <strong>EDIT RULES</strong> for the Auto-layer tileset.
+This is where you will define how LDtk should dynamically render the Walls layer of your levels based off the level's IntGrid values.</p>
 <p>First, define a catch-all rule that will place the background tile if no other rules are matched first.</p>
 <ol>
-<li>Select &quot;+ GROUP&quot; to add a new empty rule group, and name it Background.</li>
-<li>On the new group, click &quot;+&quot; to define the first rule.</li>
+<li>Select <strong>+ GROUP</strong> to add a new empty rule group, and name it Background.</li>
+<li>On the new group, select <strong>+</strong> to define the first rule.</li>
 <li>In the top-right of the rule definition - select the tile you want to use as the background.</li>
-<li>You can set the rule to be &quot;1x1&quot;, but since this is a &quot;catch-all&quot; rule, nothing else should be necessary.</li>
+<li>Since this is a catch-all rule, no changes to the rule-pattern are necessary.</li>
 </ol>
 <p><img src="images/background-rule.png" alt="background-rule" /></p>
 <p>Next, define a rule that will catch any wall tile.
-You will be able to define more complex rules on top of this to make walls prettier, but it's good to start with an extremely generic one first.</p>
+You will be able to define more complex rules on top of this to make walls prettier, but it's good to start with a generic one first.</p>
 <ol>
 <li>Create another new group, and name it Walls.</li>
-<li>Click &quot;+&quot; on the Walls group to create its first rule.</li>
+<li>Click <strong>+</strong> on the Walls group to create its first rule.</li>
 <li>Select the tile you want to use as a generic wall tile in the top-right.</li>
 <li>Set the rule to be 1x1, and left-click the rule-pattern to place a wall tile.</li>
 </ol>
@@ -226,32 +230,34 @@ You will be able to define more complex rules on top of this to make walls prett
 <li>Select the tile you want to use as the left edges of a wall.</li>
 <li>Use a 3x3 pattern, and place a wall tile in the center and a negative wall tile on the left (by right clicking the left-center tile).
 This will match any wall tiles that don't have a wall tile to their left.</li>
-<li>On this new rule inside the group, enable the &quot;X&quot; option.
+<li>On this new rule inside the group, enable the <strong>X</strong> option.
 This mirrors the rule in the x-direction, so that it works for the right edges of walls as well.</li>
 </ol>
 <p><img src="images/horizontal-wall-edge-rule.png" alt="horizontal-wall-edge-rule" /></p>
-<p>You are welcome to add more rules to the walls group with more complex patterns for defining the vertical edges or corners.
+<p>You are welcome to add more rules to the Walls group with more complex patterns for defining the vertical edges or corners.
 This tutorial will not go into painstaking detail about creating these, but their definitions are shown below.
 One general recommendation is to order these rules from most-specific to least-specific, so that the rule matcher will resort to the catch-all rules last.</p>
-<p>A vertical wall edge rule - mirrored in the Y direction:</p>
+<p>A vertical wall edge rule - mirrored in the <strong>Y</strong> direction:</p>
 <p><img src="images/vertical-wall-edge-rule.png" alt="vertical-wall-edge-rule" /></p>
-<p>An outer corner wall rule - mirrored in the X and Y directions:</p>
+<p>An outer corner wall rule - mirrored in the <strong>X</strong> and <strong>Y</strong> directions:</p>
 <p><img src="images/wall-outer-corner-rule.png" alt="wall-outer-corner-rule" /></p>
-<p>An inner corner wall rule - mirrored in the X and Y directions:</p>
+<p>An inner corner wall rule - mirrored in the <strong>X</strong> and <strong>Y</strong> directions:</p>
 <p><img src="images/wall-inner-corner-rule.png" alt="wall-inner-corner-rule" /></p>
 <p>Now you can enjoy placing walls in your level and watching LDtk auto-tile them for you!</p>
-<p><img src="images/auto-tile-walls.png" alt="auto-tile-walls" /></p>
+<div style="width:100%;height:0px;position:relative;padding-bottom:54.449%;"><iframe src="https://streamable.com/e/6v4pou" frameborder="0" width="100%" height="100%" allowfullscreen style="width:100%;height:100%;position:absolute;left:0px;top:0px;overflow:hidden;"></iframe></div>
 <h2 id="add-entity-layer"><a class="header" href="#add-entity-layer">Add Entity layer</a></h2>
-<p>Add an Entity layer to the project, again, in the Layers tab.
+<p>Add an Entity layer to the project, again, in the <strong>Layers</strong> tab.
 This will be used to place less tiling-oriented game objects, like the player, or the goal.
-You do not need to make any modifications to the default entity layer for this tutorial, it should be called Entities and match the grid size of the intgrid layer.</p>
+You do not need to make any modifications to the default entity layer for this tutorial, it should be called &quot;Entities&quot; and match the grid size of the Walls layer.</p>
 <p><img src="images/entities-layer.png" alt="entity-layer" /></p>
-<p>Then, in the Entities tab, add a Player entity.
+<p>Then, in the <strong>Entities</strong> tab, add a Player entity.
 Be sure to name it &quot;Player&quot; and set its editor visual to use a tile from the Player tileset.
+This will be important in the next section of the tutorial.
 For the SunnyLand assets - you will need to manually set its size to 16x16 so that it fits in a single tile on the grid.</p>
 <p><img src="images/player-entity.png" alt="player-entity" /></p>
 <p>Lastly, add a Goal entity.
-Name it &quot;Goal&quot; and set its editor visual from a tileset as well.</p>
+Name it &quot;Goal&quot; and set its editor visual from a tileset as well.
+Again, this will be important in the next section of the tutorial.</p>
 <p><img src="images/goal-entity.png" alt="goal-entity" /></p>
 <h2 id="design-some-levels"><a class="header" href="#design-some-levels">Design some levels</a></h2>
 <p>In the following chapters, you will spawn this project in Bevy and implement gameplay code for it.

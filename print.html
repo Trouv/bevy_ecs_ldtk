@@ -215,8 +215,11 @@ I.e., this book is dual-licensed under <a href="http://opensource.org/licenses/M
 The plain text of this license is available in the <code>bevy_ecs_ldtk</code> repository's <a href="https://github.com/Trouv/bevy_ecs_ldtk/blob/main/LICENSE">LICENSE file</a>.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="tile-based-game"><a class="header" href="#tile-based-game">Tile-based Game</a></h1>
 <p>In this tutorial you will make a tile-based game with LDtk levels.
-The game will be tile-based, meaning that the game entities will be locked to a grid of tiles like sokoban.
+Game entities will be locked to a grid of tiles like sokoban, or snake.
 You will go through the process of creating an LDtk project, loading the project into bevy, and adding gameplay.</p>
+<p>This tutorial does have an example associated with it in the <a href="https://github.com/trouv/bevy_ecs_ldtk"><code>bevy_ecs_ldtk</code> repository</a>:</p>
+<pre><code class="language-bash">$ cargo run --example tile_based_game --release
+</code></pre>
 <h2 id="prerequisites"><a class="header" href="#prerequisites">Prerequisites</a></h2>
 <p>You will need to perform the following setup/installations:</p>
 <ul>
@@ -232,11 +235,12 @@ You will go through the process of creating an LDtk project, loading the project
 However, you will be able to follow this tutorial using any tilesets, so long as they have tiles appropriate for the above purposes.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="create-your-ldtk-project"><a class="header" href="#create-your-ldtk-project">Create your LDtk project</a></h1>
 <p>In this section, you will create a simple LDtk project suitable for tile-based gameplay.
-This project will have an IntGrid + AutoTile layer of walls, and an Entity layer for placing Player and Goal entities.
+This project will have an IntGrid layer of walls, and an Entity layer for placing Player and Goal entities.
+It will also have AutoTile rules on top of the IntGrid layer defining the visuals of walls and backgrounds.
 If you already have an LDtk project suitable for tile-based gameplay - feel free to skip this section.
 However, note that some of the values specified in here will be used in the tutorial going forward, such as...</p>
 <ul>
-<li>the name/location of the file (assets/tile-based-game.ldtk)</li>
+<li>the name/location of the file (<code>assets/tile-based-game.ldtk</code>)</li>
 <li>the identifiers of the Player and Goal entities (Player, Goal)</li>
 <li>the IntGrid value of walls (1)</li>
 </ul>
@@ -244,36 +248,39 @@ However, note that some of the values specified in here will be used in the tuto
 <h2 id="create-empty-project"><a class="header" href="#create-empty-project">Create empty project</a></h2>
 <p>Open the LDtk app and create a new project.
 For this tutorial, name the project <code>tile-based-game.ldtk</code>, and save it to your Bevy project's <code>assets</code> directory.</p>
-<p>In the World tab - set the World layout to Horizontal.</p>
+<h2 id="set-the-world-layout"><a class="header" href="#set-the-world-layout">Set the World layout</a></h2>
+<p>In the <strong>World</strong> tab - set the <strong>World layout</strong> to Horizontal.
+This will make levels have a clear linear relationship in the editor, rather than a geographical one.</p>
 <p><img src="tutorials/tile-based-game/images/world-layout.png" alt="world-layout" /></p>
 <h2 id="import-tilesets"><a class="header" href="#import-tilesets">Import tilesets</a></h2>
-<p>Add your environment/player tilesets to the project, in the Tilesets tab.
+<p>Add your environment/player tilesets to the project, in the <strong>Tilesets</strong> tab.
 Make sure that the source image files for these tilesets are also in your Bevy project's <code>assets</code> directory.
 Name the tilesets &quot;Environment&quot; and &quot;Player&quot; respectively.
 For the SunnyLand assets - the Player tileset needs to have a tile size of 32 and the environment asset a tile size of 16.</p>
 <p><img src="tutorials/tile-based-game/images/tilesets.png" alt="tilesets" /></p>
 <h2 id="add-intgrid-layer-for-walls"><a class="header" href="#add-intgrid-layer-for-walls">Add IntGrid layer for walls</a></h2>
-<p>Add an IntGrid layer to the project, in the Layers tab.
+<p>Add an IntGrid layer to the project, in the <strong>Layers</strong> tab.
 This layer will be used to define where the collisions are in the level.
-Call this layer &quot;Walls&quot;, make sure its grid size is 16, and optionally name the grid value 1 &quot;Wall&quot;.
-Finally, give it an Auto-layer tileset - pointing to the &quot;Environment&quot; tileset.</p>
+Call this layer &quot;Walls&quot;.
+Make sure its grid size is 16.
+Finally, give it an <strong>Auto-layer tileset</strong> - pointing to the Environment tileset.</p>
 <p><img src="tutorials/tile-based-game/images/wall-layer.png" alt="wall-layer" /></p>
 <h2 id="define-autotiling-for-walls-and-backgrounds"><a class="header" href="#define-autotiling-for-walls-and-backgrounds">Define autotiling for walls and backgrounds</a></h2>
-<p>From here, select &quot;EDIT RULES&quot; next to the wall layer's auto-tile tileset.
-This is where you will define how LDtk should dynamically render the Walls layer of your levels based of the level's intgrid values.</p>
+<p>From the Walls layer definition, select <strong>EDIT RULES</strong> for the Auto-layer tileset.
+This is where you will define how LDtk should dynamically render the Walls layer of your levels based off the level's IntGrid values.</p>
 <p>First, define a catch-all rule that will place the background tile if no other rules are matched first.</p>
 <ol>
-<li>Select &quot;+ GROUP&quot; to add a new empty rule group, and name it Background.</li>
-<li>On the new group, click &quot;+&quot; to define the first rule.</li>
+<li>Select <strong>+ GROUP</strong> to add a new empty rule group, and name it Background.</li>
+<li>On the new group, select <strong>+</strong> to define the first rule.</li>
 <li>In the top-right of the rule definition - select the tile you want to use as the background.</li>
-<li>You can set the rule to be &quot;1x1&quot;, but since this is a &quot;catch-all&quot; rule, nothing else should be necessary.</li>
+<li>Since this is a catch-all rule, no changes to the rule-pattern are necessary.</li>
 </ol>
 <p><img src="tutorials/tile-based-game/images/background-rule.png" alt="background-rule" /></p>
 <p>Next, define a rule that will catch any wall tile.
-You will be able to define more complex rules on top of this to make walls prettier, but it's good to start with an extremely generic one first.</p>
+You will be able to define more complex rules on top of this to make walls prettier, but it's good to start with a generic one first.</p>
 <ol>
 <li>Create another new group, and name it Walls.</li>
-<li>Click &quot;+&quot; on the Walls group to create its first rule.</li>
+<li>Click <strong>+</strong> on the Walls group to create its first rule.</li>
 <li>Select the tile you want to use as a generic wall tile in the top-right.</li>
 <li>Set the rule to be 1x1, and left-click the rule-pattern to place a wall tile.</li>
 </ol>
@@ -285,32 +292,34 @@ You will be able to define more complex rules on top of this to make walls prett
 <li>Select the tile you want to use as the left edges of a wall.</li>
 <li>Use a 3x3 pattern, and place a wall tile in the center and a negative wall tile on the left (by right clicking the left-center tile).
 This will match any wall tiles that don't have a wall tile to their left.</li>
-<li>On this new rule inside the group, enable the &quot;X&quot; option.
+<li>On this new rule inside the group, enable the <strong>X</strong> option.
 This mirrors the rule in the x-direction, so that it works for the right edges of walls as well.</li>
 </ol>
 <p><img src="tutorials/tile-based-game/images/horizontal-wall-edge-rule.png" alt="horizontal-wall-edge-rule" /></p>
-<p>You are welcome to add more rules to the walls group with more complex patterns for defining the vertical edges or corners.
+<p>You are welcome to add more rules to the Walls group with more complex patterns for defining the vertical edges or corners.
 This tutorial will not go into painstaking detail about creating these, but their definitions are shown below.
 One general recommendation is to order these rules from most-specific to least-specific, so that the rule matcher will resort to the catch-all rules last.</p>
-<p>A vertical wall edge rule - mirrored in the Y direction:</p>
+<p>A vertical wall edge rule - mirrored in the <strong>Y</strong> direction:</p>
 <p><img src="tutorials/tile-based-game/images/vertical-wall-edge-rule.png" alt="vertical-wall-edge-rule" /></p>
-<p>An outer corner wall rule - mirrored in the X and Y directions:</p>
+<p>An outer corner wall rule - mirrored in the <strong>X</strong> and <strong>Y</strong> directions:</p>
 <p><img src="tutorials/tile-based-game/images/wall-outer-corner-rule.png" alt="wall-outer-corner-rule" /></p>
-<p>An inner corner wall rule - mirrored in the X and Y directions:</p>
+<p>An inner corner wall rule - mirrored in the <strong>X</strong> and <strong>Y</strong> directions:</p>
 <p><img src="tutorials/tile-based-game/images/wall-inner-corner-rule.png" alt="wall-inner-corner-rule" /></p>
 <p>Now you can enjoy placing walls in your level and watching LDtk auto-tile them for you!</p>
-<p><img src="tutorials/tile-based-game/images/auto-tile-walls.png" alt="auto-tile-walls" /></p>
+<div style="width:100%;height:0px;position:relative;padding-bottom:54.449%;"><iframe src="https://streamable.com/e/6v4pou" frameborder="0" width="100%" height="100%" allowfullscreen style="width:100%;height:100%;position:absolute;left:0px;top:0px;overflow:hidden;"></iframe></div>
 <h2 id="add-entity-layer"><a class="header" href="#add-entity-layer">Add Entity layer</a></h2>
-<p>Add an Entity layer to the project, again, in the Layers tab.
+<p>Add an Entity layer to the project, again, in the <strong>Layers</strong> tab.
 This will be used to place less tiling-oriented game objects, like the player, or the goal.
-You do not need to make any modifications to the default entity layer for this tutorial, it should be called Entities and match the grid size of the intgrid layer.</p>
+You do not need to make any modifications to the default entity layer for this tutorial, it should be called &quot;Entities&quot; and match the grid size of the Walls layer.</p>
 <p><img src="tutorials/tile-based-game/images/entities-layer.png" alt="entity-layer" /></p>
-<p>Then, in the Entities tab, add a Player entity.
+<p>Then, in the <strong>Entities</strong> tab, add a Player entity.
 Be sure to name it &quot;Player&quot; and set its editor visual to use a tile from the Player tileset.
+This will be important in the next section of the tutorial.
 For the SunnyLand assets - you will need to manually set its size to 16x16 so that it fits in a single tile on the grid.</p>
 <p><img src="tutorials/tile-based-game/images/player-entity.png" alt="player-entity" /></p>
 <p>Lastly, add a Goal entity.
-Name it &quot;Goal&quot; and set its editor visual from a tileset as well.</p>
+Name it &quot;Goal&quot; and set its editor visual from a tileset as well.
+Again, this will be important in the next section of the tutorial.</p>
 <p><img src="tutorials/tile-based-game/images/goal-entity.png" alt="goal-entity" /></p>
 <h2 id="design-some-levels"><a class="header" href="#design-some-levels">Design some levels</a></h2>
 <p>In the following chapters, you will spawn this project in Bevy and implement gameplay code for it.
@@ -322,7 +331,7 @@ With this in mind, design a few levels for this game using the tools you have se
 This tutorial will use the LDtk project created in the previous section.
 You are welcome to bring your own tile-based LDtk project to this tutorial, but some of the values specified in here are specific to the previous section, such as...</p>
 <ul>
-<li>the name/location of the file (assets/tile-based-game.ldtk)</li>
+<li>the name/location of the file (<code>assets/tile-based-game.ldtk</code>)</li>
 <li>the identifiers of the Player and Goal entities (Player, Goal)</li>
 </ul>
 <p>For details about the tutorial in general, including prerequisites, please see the parent page.</p>
@@ -347,10 +356,8 @@ This code snippet also doubles the scale of the camera and adjusts its transform
 </span>fn main() {
     App::new()
         // other App builders
-        .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
+        .add_systems(Startup, setup)
         .run();
-}
-
 }
 
 fn setup(mut commands: Commands, asset_server: Res&lt;AssetServer&gt;) {
@@ -362,15 +369,17 @@ fn setup(mut commands: Commands, asset_server: Res&lt;AssetServer&gt;) {
 
     commands.spawn(LdtkWorldBundle {
         ldtk_handle: asset_server.load(&quot;tile-based-game.ldtk&quot;),
-        ..Default::default()</code></pre></pre>
+        ..Default::default()
+    });
+}</code></pre></pre>
 <p>Finally, insert the <code>LevelSelection</code> resource to tell the plugin to spawn the first level.
-Construct the <code>LevelSelection</code> using its <code>index</code> method to select the level at index 0.</p>
+Construct the <code>LevelSelection</code> using its <code>index</code> method to select the first level (0-indexed).</p>
 <pre><pre class="playground"><code class="language-rust no_run"><span class="boring">use bevy::prelude::*;
 </span><span class="boring">use bevy_ecs_ldtk::prelude::*;
 </span>fn main() {
     App::new()
         // other App builders
-        .add_plugins(LdtkPlugin)
+        .insert_resource(LevelSelection::index(0))
         .run();
 }</code></pre></pre>
 <p>Now, run the game with <code>$ cargo run --release</code> to see your first level spawning in Bevy!</p>
@@ -379,7 +388,7 @@ Construct the <code>LevelSelection</code> using its <code>index</code> method to
 <p>You may have noticed that the Player and Goal are not rendered here.
 They are there, but they require a little more work to become visible.</p>
 <p>Create a <code>PlayerBundle</code> and <code>GoalBundle</code>, each with a <code>SpriteSheetBundle</code> field.
-These will be developed a little bit more in the next chapter, but for now they will be similar.
+You will develop these bundles a little bit more in the next chapter, but for now they will be similar.
 Derive <code>LdtkEntity</code> for these bundles, and give the field a <code>#[sprite_sheet_bundle]</code> attribute.
 This trait implementation defines how these bundles should be spawned by the plugin.
 More specifically - they should be spawned as sprites identical to the entity's editor visual.</p>
@@ -406,8 +415,8 @@ When the plugin spawns entities with these identifiers, it will use the register
 </span>fn main() {
     App::new()
         // other App builders
-        .add_systems(Startup, setup)
-        .insert_resource(LevelSelection::index(0))
+        .register_ldtk_entity::&lt;PlayerBundle&gt;(&quot;Player&quot;)
+        .register_ldtk_entity::&lt;GoalBundle&gt;(&quot;Goal&quot;)
         .run();
 }
 <span class="boring">#[derive(Default, Bundle, LdtkEntity)]
@@ -425,7 +434,7 @@ When the plugin spawns entities with these identifiers, it will use the register
 <div style="break-before: page; page-break-before: always;"></div><h1 id="add-gameplay-to-your-project"><a class="header" href="#add-gameplay-to-your-project">Add gameplay to your project</a></h1>
 <p>In this section, you will integrate gameplay to the Bevy/LDtk project created in the previous sections.
 This includes tile-based movement, collision, and level transitions.
-You are welcome to bring your own tile-based LDtk project to this tutorial, but some of the values specified in here are specific to the previous section, such as...</p>
+You are welcome to bring your own tile-based LDtk project to this tutorial, but some of the values specified in here are specific to the LDtk project created in this tutorial, such as...</p>
 <ul>
 <li>the IntGrid value of walls (1)</li>
 </ul>
@@ -433,18 +442,16 @@ You are welcome to bring your own tile-based LDtk project to this tutorial, but 
 <h2 id="add-marker-component-and-gridcoords-to-the-player"><a class="header" href="#add-marker-component-and-gridcoords-to-the-player">Add marker component and <code>GridCoords</code> to the player</a></h2>
 <p>In order to implement tile-based movement and tile-based mechanics, you'll need to deal with an entity's position in tile-space rather than just Bevy world translation.
 <code>bevy_ecs_ldtk</code> provides a component that is suitable for this, and it has integration with the <code>LdtkEntity</code> derive.
-Add the <code>GridCoords</code> component to the player bundle and give it the <code>#[grid_coords]</code> attribute.
+Add the <code>GridCoords</code> component to the <code>PlayerBundle</code>, and give it the <code>#[grid_coords]</code> attribute.
 The player entity will then be spawned with a <code>GridCoords</code> component whose value matches the entity's position in grid-space.</p>
 <p>Also give it a <code>Player</code> marker component so that you can query for it more easily in future systems.
-Derive default for this component.
+Derive <code>Default</code> for this component.
 <code>bevy_ecs_ldtk</code> will use this default implementation when spawning the component unless otherwise specified.</p>
 <pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span><span class="boring">use bevy::prelude::*;
 </span><span class="boring">use bevy_ecs_ldtk::prelude::*;
-</span>}
-
-#[derive(Default, Component)]
+</span>#[derive(Default, Component)]
 struct Player;
 
 #[derive(Default, Bundle, LdtkEntity)]
@@ -453,6 +460,8 @@ struct PlayerBundle {
     #[sprite_sheet_bundle]
     sprite_bundle: SpriteSheetBundle,
     #[grid_coords]
+    grid_coords: GridCoords,
+}
 <span class="boring">}</span></code></pre></pre>
 <h2 id="implement-tile-based-movement"><a class="header" href="#implement-tile-based-movement">Implement tile-based movement</a></h2>
 <p>The player now has the components you will need to implement tile-based movement.
@@ -470,11 +479,9 @@ Then, add the new direction to the player entity's <code>GridCoords</code> compo
         .run();
 }
 
-}
-
 fn move_player_from_input(
+    mut players: Query&lt;&amp;mut GridCoords, With&lt;Player&gt;&gt;,
     input: Res&lt;Input&lt;KeyCode&gt;&gt;,
-    level_walls: Res&lt;LevelWalls&gt;,
 ) {
     let movement_direction = if input.just_pressed(KeyCode::W) {
         GridCoords::new(0, 1)
@@ -488,6 +495,8 @@ fn move_player_from_input(
         return;
     };
 
+    for mut player_grid_coords in players.iter_mut() {
+        let destination = *player_grid_coords + movement_direction;
         *player_grid_coords = destination;
     }
 }</code></pre></pre>
@@ -495,9 +504,9 @@ fn move_player_from_input(
 <p>If you play the game at this point, you'll notice that the player entity doesn't appear to be moving at all.
 The <code>GridCoords</code> component may be updating correctly, but the entity's <code>Transform</code> is what determines where it is rendered.
 <code>bevy_ecs_ldtk</code> does not maintain the <code>Transform</code> of <code>GridCoords</code> entities automatically.
-This is left up to the user, which allows you to implement custom lerping or animation of the transform as you please.</p>
+This is left up to the user, which allows you to implement custom tweening or animation of the transform as you please.</p>
 <p>Write a system that updates the <code>Transform</code> of <code>GridCoords</code> entities when their <code>GridCoords</code> value changes.
-<code>bevy_ecs_ldtk</code> does provide a utility function to help calculate the resulting translation - providing you know the size of the cells of the grid.
+<code>bevy_ecs_ldtk</code> does provide a utility function to help calculate the resulting translation - provided you know the size of the cells of the grid.
 For the LDtk project set up in this tutorial using the <code>SunnyLand</code> tilesets, this grid size is 16.</p>
 <pre><pre class="playground"><code class="language-rust no_run"><span class="boring">use bevy::prelude::*;
 </span><span class="boring">use bevy_ecs_ldtk::prelude::*;
@@ -505,16 +514,14 @@ For the LDtk project set up in this tutorial using the <code>SunnyLand</code> ti
 </span>fn main() {
     App::new()
         // other App builders
-        .register_ldtk_entity::&lt;PlayerBundle&gt;(&quot;Player&quot;)
-        .register_ldtk_entity::&lt;GoalBundle&gt;(&quot;Goal&quot;)
         .add_systems(
             Update,
             (
+                move_player_from_input,
+                translate_grid_coords_entities,
             ),
         )
         .run();
-}
-
 }
 
 const GRID_SIZE: i32 = 16;
@@ -525,7 +532,9 @@ fn translate_grid_coords_entities(
     for (mut transform, grid_coords) in grid_coords_entities.iter_mut() {
         transform.translation =
             bevy_ecs_ldtk::utils::grid_coords_to_translation(*grid_coords, IVec2::splat(GRID_SIZE))
-                .extend(transform.translation.z);</code></pre></pre>
+                .extend(transform.translation.z);
+    }
+}</code></pre></pre>
 <h2 id="prevent-tile-based-movement-into-walls"><a class="header" href="#prevent-tile-based-movement-into-walls">Prevent tile-based movement into walls</a></h2>
 <p>Movement works logically <em>and</em> visually now.
 However, you might notice that you can move <em>into</em> the walls of the level.
@@ -538,17 +547,17 @@ This bundle actually only needs this one marker component - IntGrid entities spa
 </span>fn main() {
     App::new()
         // other App builders
-            ),
+        .register_ldtk_int_cell::&lt;WallBundle&gt;(1)
         .run();
-}
-
 }
 
 #[derive(Default, Component)]
 struct Wall;
 
 #[derive(Default, Bundle, LdtkIntCell)]
-struct WallBundle {</code></pre></pre>
+struct WallBundle {
+    wall: Wall,
+}</code></pre></pre>
 <p>There are a lot of ways to go about implementing the collision systems.
 Naively, you could query for all of the <code>Wall</code> entities every time the player tries to move and check their <code>GridCoords</code> values.
 In this tutorial, you will implement something a little more optimized: caching the wall locations into a resource when levels spawn.</p>
@@ -563,10 +572,8 @@ Then, implement a method <code>fn in_wall(&amp;self, grid_coords: &amp;GridCoord
 fn main() {
     App::new()
         // other App builders
-        )
+        .init_resource::&lt;LevelWalls&gt;()
         .run();
-}
-
 }
 
 #[derive(Default, Resource)]
@@ -582,7 +589,9 @@ impl LevelWalls {
             || grid_coords.y &lt; 0
             || grid_coords.x &gt;= self.level_width
             || grid_coords.y &gt;= self.level_height
-            || self.wall_locations.contains(grid_coords)</code></pre></pre>
+            || self.wall_locations.contains(grid_coords)
+    }
+}</code></pre></pre>
 <p>Now, add a system that listens for <code>LevelEvent::Spawned</code> and populates this resource.
 It will need access to all of the wall locations to populate the <code>HashSet</code> (<code>Query&lt;&amp;GridCoords, With&lt;Wall&gt;&gt;</code>).
 It will also need access to the <code>LdtkProject</code> data to find the current level's width/height (<code>Query&lt;&amp;Handle&lt;LdtkProject&gt;&gt;</code> and <code>Res&lt;Assets&lt;LdtkProject&gt;&gt;</code>).</p>
@@ -612,17 +621,15 @@ It will also need access to the <code>LdtkProject</code> data to find the curren
 </span>fn main() {
     App::new()
         // other App builders
-        .register_ldtk_entity::&lt;PlayerBundle&gt;(&quot;Player&quot;)
-        .register_ldtk_entity::&lt;GoalBundle&gt;(&quot;Goal&quot;)
         .add_systems(
             Update,
             (
                 move_player_from_input,
+                translate_grid_coords_entities,
+                cache_wall_locations,
             )
         )
         .run();
-}
-
 }
 
 fn cache_wall_locations(
@@ -633,27 +640,26 @@ fn cache_wall_locations(
     ldtk_project_assets: Res&lt;Assets&lt;LdtkProject&gt;&gt;,
 ) {
     for level_event in level_events.iter() {
-        match level_event {
-            LevelEvent::Spawned(level_iid) =&gt; {
-                let ldtk_project = ldtk_project_assets
-                    .get(&amp;ldtk_project_entities.single())
-                    .expect(&quot;LdtkProject should be loaded when level is spawned&quot;);
-                let level = ldtk_project
-                    .get_raw_level_by_iid(level_iid.get())
-                    .expect(&quot;spawned level should exist in project&quot;);
+        if let LevelEvent::Spawned(level_iid) = level_event {
+            let ldtk_project = ldtk_project_assets
+                .get(ldtk_project_entities.single())
+                .expect(&quot;LdtkProject should be loaded when level is spawned&quot;);
+            let level = ldtk_project
+                .get_raw_level_by_iid(level_iid.get())
+                .expect(&quot;spawned level should exist in project&quot;);
 
-                let wall_locations = walls.iter().copied().collect();
+            let wall_locations = walls.iter().copied().collect();
 
-                let new_level_walls = LevelWalls {
-                    wall_locations,
-                    level_width: level.px_wid / GRID_SIZE,
-                    level_height: level.px_hei / GRID_SIZE,
-                };
+            let new_level_walls = LevelWalls {
+                wall_locations,
+                level_width: level.px_wid / GRID_SIZE,
+                level_height: level.px_hei / GRID_SIZE,
+            };
 
-                *level_walls = new_level_walls;
-            }
-            _ =&gt; (),
-        }</code></pre></pre>
+            *level_walls = new_level_walls;
+        }
+    }
+}</code></pre></pre>
 <p>Finally, update the <code>move_player_from_input</code> system to access the <code>LevelWalls</code> resource and check whether or not the player's destination is in a wall.</p>
 <pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -677,9 +683,7 @@ fn cache_wall_locations(
 </span><span class="boring">            || self.wall_locations.contains(grid_coords)
 </span><span class="boring">    }
 </span><span class="boring">}
-</span>}
-
-fn move_player_from_input(
+</span>fn move_player_from_input(
     mut players: Query&lt;&amp;mut GridCoords, With&lt;Player&gt;&gt;,
     input: Res&lt;Input&lt;KeyCode&gt;&gt;,
     level_walls: Res&lt;LevelWalls&gt;,
@@ -701,6 +705,8 @@ fn move_player_from_input(
         if !level_walls.in_wall(&amp;destination) {
             *player_grid_coords = destination;
         }
+    }
+}
 <span class="boring">}</span></code></pre></pre>
 <p>With this check in place, the player should now be unable to move into walls!</p>
 <h2 id="trigger-level-transitions-on-victory"><a class="header" href="#trigger-level-transitions-on-victory">Trigger level transitions on victory</a></h2>
@@ -711,9 +717,7 @@ When the player reaches the goal, the next level should spawn until there are no
 </span><span class="boring">fn main() {
 </span><span class="boring">use bevy::prelude::*;
 </span><span class="boring">use bevy_ecs_ldtk::prelude::*;
-</span>}
-
-#[derive(Default, Component)]
+</span>#[derive(Default, Component)]
 struct Goal;
 
 #[derive(Default, Bundle, LdtkEntity)]
@@ -722,6 +726,8 @@ struct GoalBundle {
     #[sprite_sheet_bundle]
     sprite_bundle: SpriteSheetBundle,
     #[grid_coords]
+    grid_coords: GridCoords,
+}
 <span class="boring">}</span></code></pre></pre>
 <p>Then, write a system that checks if the player's <code>GridCoords</code> and the goal's <code>GridCoords</code> match.
 For a small optimization, filter the player query for <code>Changed&lt;GridCoords&gt;</code> so it's only populated if the player moves.
@@ -739,8 +745,6 @@ If they do match, update the <code>LevelSelection</code> resource, increasing it
 </span>fn main() {
     App::new()
         // other App builders
-        .register_ldtk_entity::&lt;PlayerBundle&gt;(&quot;Player&quot;)
-        .register_ldtk_entity::&lt;GoalBundle&gt;(&quot;Goal&quot;)
         .add_systems(
             Update,
             (
@@ -748,9 +752,9 @@ If they do match, update the <code>LevelSelection</code> resource, increasing it
                 translate_grid_coords_entities,
                 cache_wall_locations,
                 check_goal,
+            ),
+        )
         .run();
-}
-
 }
 
 fn check_goal(

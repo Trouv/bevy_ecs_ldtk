@@ -174,7 +174,7 @@
                         <h1 id="add-gameplay-to-your-project"><a class="header" href="#add-gameplay-to-your-project">Add gameplay to your project</a></h1>
 <p>In this section, you will integrate gameplay to the Bevy/LDtk project created in the previous sections.
 This includes tile-based movement, collision, and level transitions.
-You are welcome to bring your own tile-based LDtk project to this tutorial, but some of the values specified in here are specific to the previous section, such as...</p>
+You are welcome to bring your own tile-based LDtk project to this tutorial, but some of the values specified in here are specific to the LDtk project created in this tutorial, such as...</p>
 <ul>
 <li>the IntGrid value of walls (1)</li>
 </ul>
@@ -182,18 +182,16 @@ You are welcome to bring your own tile-based LDtk project to this tutorial, but 
 <h2 id="add-marker-component-and-gridcoords-to-the-player"><a class="header" href="#add-marker-component-and-gridcoords-to-the-player">Add marker component and <code>GridCoords</code> to the player</a></h2>
 <p>In order to implement tile-based movement and tile-based mechanics, you'll need to deal with an entity's position in tile-space rather than just Bevy world translation.
 <code>bevy_ecs_ldtk</code> provides a component that is suitable for this, and it has integration with the <code>LdtkEntity</code> derive.
-Add the <code>GridCoords</code> component to the player bundle and give it the <code>#[grid_coords]</code> attribute.
+Add the <code>GridCoords</code> component to the <code>PlayerBundle</code>, and give it the <code>#[grid_coords]</code> attribute.
 The player entity will then be spawned with a <code>GridCoords</code> component whose value matches the entity's position in grid-space.</p>
 <p>Also give it a <code>Player</code> marker component so that you can query for it more easily in future systems.
-Derive default for this component.
+Derive <code>Default</code> for this component.
 <code>bevy_ecs_ldtk</code> will use this default implementation when spawning the component unless otherwise specified.</p>
 <pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span><span class="boring">use bevy::prelude::*;
 </span><span class="boring">use bevy_ecs_ldtk::prelude::*;
-</span>}
-
-#[derive(Default, Component)]
+</span>#[derive(Default, Component)]
 struct Player;
 
 #[derive(Default, Bundle, LdtkEntity)]
@@ -202,6 +200,8 @@ struct PlayerBundle {
     #[sprite_sheet_bundle]
     sprite_bundle: SpriteSheetBundle,
     #[grid_coords]
+    grid_coords: GridCoords,
+}
 <span class="boring">}</span></code></pre></pre>
 <h2 id="implement-tile-based-movement"><a class="header" href="#implement-tile-based-movement">Implement tile-based movement</a></h2>
 <p>The player now has the components you will need to implement tile-based movement.
@@ -219,11 +219,9 @@ Then, add the new direction to the player entity's <code>GridCoords</code> compo
         .run();
 }
 
-}
-
 fn move_player_from_input(
+    mut players: Query&lt;&amp;mut GridCoords, With&lt;Player&gt;&gt;,
     input: Res&lt;Input&lt;KeyCode&gt;&gt;,
-    level_walls: Res&lt;LevelWalls&gt;,
 ) {
     let movement_direction = if input.just_pressed(KeyCode::W) {
         GridCoords::new(0, 1)
@@ -237,6 +235,8 @@ fn move_player_from_input(
         return;
     };
 
+    for mut player_grid_coords in players.iter_mut() {
+        let destination = *player_grid_coords + movement_direction;
         *player_grid_coords = destination;
     }
 }</code></pre></pre>
@@ -244,9 +244,9 @@ fn move_player_from_input(
 <p>If you play the game at this point, you'll notice that the player entity doesn't appear to be moving at all.
 The <code>GridCoords</code> component may be updating correctly, but the entity's <code>Transform</code> is what determines where it is rendered.
 <code>bevy_ecs_ldtk</code> does not maintain the <code>Transform</code> of <code>GridCoords</code> entities automatically.
-This is left up to the user, which allows you to implement custom lerping or animation of the transform as you please.</p>
+This is left up to the user, which allows you to implement custom tweening or animation of the transform as you please.</p>
 <p>Write a system that updates the <code>Transform</code> of <code>GridCoords</code> entities when their <code>GridCoords</code> value changes.
-<code>bevy_ecs_ldtk</code> does provide a utility function to help calculate the resulting translation - providing you know the size of the cells of the grid.
+<code>bevy_ecs_ldtk</code> does provide a utility function to help calculate the resulting translation - provided you know the size of the cells of the grid.
 For the LDtk project set up in this tutorial using the <code>SunnyLand</code> tilesets, this grid size is 16.</p>
 <pre><pre class="playground"><code class="language-rust no_run"><span class="boring">use bevy::prelude::*;
 </span><span class="boring">use bevy_ecs_ldtk::prelude::*;
@@ -254,16 +254,14 @@ For the LDtk project set up in this tutorial using the <code>SunnyLand</code> ti
 </span>fn main() {
     App::new()
         // other App builders
-        .register_ldtk_entity::&lt;PlayerBundle&gt;(&quot;Player&quot;)
-        .register_ldtk_entity::&lt;GoalBundle&gt;(&quot;Goal&quot;)
         .add_systems(
             Update,
             (
+                move_player_from_input,
+                translate_grid_coords_entities,
             ),
         )
         .run();
-}
-
 }
 
 const GRID_SIZE: i32 = 16;
@@ -274,7 +272,9 @@ fn translate_grid_coords_entities(
     for (mut transform, grid_coords) in grid_coords_entities.iter_mut() {
         transform.translation =
             bevy_ecs_ldtk::utils::grid_coords_to_translation(*grid_coords, IVec2::splat(GRID_SIZE))
-                .extend(transform.translation.z);</code></pre></pre>
+                .extend(transform.translation.z);
+    }
+}</code></pre></pre>
 <h2 id="prevent-tile-based-movement-into-walls"><a class="header" href="#prevent-tile-based-movement-into-walls">Prevent tile-based movement into walls</a></h2>
 <p>Movement works logically <em>and</em> visually now.
 However, you might notice that you can move <em>into</em> the walls of the level.
@@ -287,17 +287,17 @@ This bundle actually only needs this one marker component - IntGrid entities spa
 </span>fn main() {
     App::new()
         // other App builders
-            ),
+        .register_ldtk_int_cell::&lt;WallBundle&gt;(1)
         .run();
-}
-
 }
 
 #[derive(Default, Component)]
 struct Wall;
 
 #[derive(Default, Bundle, LdtkIntCell)]
-struct WallBundle {</code></pre></pre>
+struct WallBundle {
+    wall: Wall,
+}</code></pre></pre>
 <p>There are a lot of ways to go about implementing the collision systems.
 Naively, you could query for all of the <code>Wall</code> entities every time the player tries to move and check their <code>GridCoords</code> values.
 In this tutorial, you will implement something a little more optimized: caching the wall locations into a resource when levels spawn.</p>
@@ -312,10 +312,8 @@ Then, implement a method <code>fn in_wall(&amp;self, grid_coords: &amp;GridCoord
 fn main() {
     App::new()
         // other App builders
-        )
+        .init_resource::&lt;LevelWalls&gt;()
         .run();
-}
-
 }
 
 #[derive(Default, Resource)]
@@ -331,7 +329,9 @@ impl LevelWalls {
             || grid_coords.y &lt; 0
             || grid_coords.x &gt;= self.level_width
             || grid_coords.y &gt;= self.level_height
-            || self.wall_locations.contains(grid_coords)</code></pre></pre>
+            || self.wall_locations.contains(grid_coords)
+    }
+}</code></pre></pre>
 <p>Now, add a system that listens for <code>LevelEvent::Spawned</code> and populates this resource.
 It will need access to all of the wall locations to populate the <code>HashSet</code> (<code>Query&lt;&amp;GridCoords, With&lt;Wall&gt;&gt;</code>).
 It will also need access to the <code>LdtkProject</code> data to find the current level's width/height (<code>Query&lt;&amp;Handle&lt;LdtkProject&gt;&gt;</code> and <code>Res&lt;Assets&lt;LdtkProject&gt;&gt;</code>).</p>
@@ -361,17 +361,15 @@ It will also need access to the <code>LdtkProject</code> data to find the curren
 </span>fn main() {
     App::new()
         // other App builders
-        .register_ldtk_entity::&lt;PlayerBundle&gt;(&quot;Player&quot;)
-        .register_ldtk_entity::&lt;GoalBundle&gt;(&quot;Goal&quot;)
         .add_systems(
             Update,
             (
                 move_player_from_input,
+                translate_grid_coords_entities,
+                cache_wall_locations,
             )
         )
         .run();
-}
-
 }
 
 fn cache_wall_locations(
@@ -382,27 +380,26 @@ fn cache_wall_locations(
     ldtk_project_assets: Res&lt;Assets&lt;LdtkProject&gt;&gt;,
 ) {
     for level_event in level_events.iter() {
-        match level_event {
-            LevelEvent::Spawned(level_iid) =&gt; {
-                let ldtk_project = ldtk_project_assets
-                    .get(&amp;ldtk_project_entities.single())
-                    .expect(&quot;LdtkProject should be loaded when level is spawned&quot;);
-                let level = ldtk_project
-                    .get_raw_level_by_iid(level_iid.get())
-                    .expect(&quot;spawned level should exist in project&quot;);
+        if let LevelEvent::Spawned(level_iid) = level_event {
+            let ldtk_project = ldtk_project_assets
+                .get(ldtk_project_entities.single())
+                .expect(&quot;LdtkProject should be loaded when level is spawned&quot;);
+            let level = ldtk_project
+                .get_raw_level_by_iid(level_iid.get())
+                .expect(&quot;spawned level should exist in project&quot;);
 
-                let wall_locations = walls.iter().copied().collect();
+            let wall_locations = walls.iter().copied().collect();
 
-                let new_level_walls = LevelWalls {
-                    wall_locations,
-                    level_width: level.px_wid / GRID_SIZE,
-                    level_height: level.px_hei / GRID_SIZE,
-                };
+            let new_level_walls = LevelWalls {
+                wall_locations,
+                level_width: level.px_wid / GRID_SIZE,
+                level_height: level.px_hei / GRID_SIZE,
+            };
 
-                *level_walls = new_level_walls;
-            }
-            _ =&gt; (),
-        }</code></pre></pre>
+            *level_walls = new_level_walls;
+        }
+    }
+}</code></pre></pre>
 <p>Finally, update the <code>move_player_from_input</code> system to access the <code>LevelWalls</code> resource and check whether or not the player's destination is in a wall.</p>
 <pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -426,9 +423,7 @@ fn cache_wall_locations(
 </span><span class="boring">            || self.wall_locations.contains(grid_coords)
 </span><span class="boring">    }
 </span><span class="boring">}
-</span>}
-
-fn move_player_from_input(
+</span>fn move_player_from_input(
     mut players: Query&lt;&amp;mut GridCoords, With&lt;Player&gt;&gt;,
     input: Res&lt;Input&lt;KeyCode&gt;&gt;,
     level_walls: Res&lt;LevelWalls&gt;,
@@ -450,6 +445,8 @@ fn move_player_from_input(
         if !level_walls.in_wall(&amp;destination) {
             *player_grid_coords = destination;
         }
+    }
+}
 <span class="boring">}</span></code></pre></pre>
 <p>With this check in place, the player should now be unable to move into walls!</p>
 <h2 id="trigger-level-transitions-on-victory"><a class="header" href="#trigger-level-transitions-on-victory">Trigger level transitions on victory</a></h2>
@@ -460,9 +457,7 @@ When the player reaches the goal, the next level should spawn until there are no
 </span><span class="boring">fn main() {
 </span><span class="boring">use bevy::prelude::*;
 </span><span class="boring">use bevy_ecs_ldtk::prelude::*;
-</span>}
-
-#[derive(Default, Component)]
+</span>#[derive(Default, Component)]
 struct Goal;
 
 #[derive(Default, Bundle, LdtkEntity)]
@@ -471,6 +466,8 @@ struct GoalBundle {
     #[sprite_sheet_bundle]
     sprite_bundle: SpriteSheetBundle,
     #[grid_coords]
+    grid_coords: GridCoords,
+}
 <span class="boring">}</span></code></pre></pre>
 <p>Then, write a system that checks if the player's <code>GridCoords</code> and the goal's <code>GridCoords</code> match.
 For a small optimization, filter the player query for <code>Changed&lt;GridCoords&gt;</code> so it's only populated if the player moves.
@@ -488,8 +485,6 @@ If they do match, update the <code>LevelSelection</code> resource, increasing it
 </span>fn main() {
     App::new()
         // other App builders
-        .register_ldtk_entity::&lt;PlayerBundle&gt;(&quot;Player&quot;)
-        .register_ldtk_entity::&lt;GoalBundle&gt;(&quot;Goal&quot;)
         .add_systems(
             Update,
             (
@@ -497,9 +492,9 @@ If they do match, update the <code>LevelSelection</code> resource, increasing it
                 translate_grid_coords_entities,
                 cache_wall_locations,
                 check_goal,
+            ),
+        )
         .run();
-}
-
 }
 
 fn check_goal(

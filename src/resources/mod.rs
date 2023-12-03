@@ -2,6 +2,8 @@
 use bevy::prelude::*;
 
 #[allow(unused_imports)]
+use crate::assets::LdtkProject;
+#[allow(unused_imports)]
 use crate::components::LdtkWorldBundle;
 
 mod level_selection;
@@ -67,12 +69,21 @@ pub enum LevelBackground {
     Nonexistent,
 }
 
+/// Specifies data that should be ignored completely when spawning levels. Excluded items will still
+/// be present in the [`LdtkProject`] but will not cause any entities to be spawned in the world.
+#[derive(Clone, Eq, PartialEq, Debug, Default)]
+pub struct LdtkExclusions {
+    /// List of layer `Identifier` names (not UIDs) to skip spawning as tilemaps.
+    pub layer_identifiers: Vec<String>,
+}
+
 /// Settings resource for the plugin.
 /// Check out the documentation for each field type to learn more.
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Resource)]
+#[derive(Clone, Eq, PartialEq, Debug, Default, Resource)]
 pub struct LdtkSettings {
     pub level_spawn_behavior: LevelSpawnBehavior,
     pub set_clear_color: SetClearColor,
     pub int_grid_rendering: IntGridRendering,
     pub level_background: LevelBackground,
+    pub exclusions: LdtkExclusions,
 }

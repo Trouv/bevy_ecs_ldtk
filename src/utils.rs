@@ -78,7 +78,7 @@ pub fn calculate_transform_from_entity_instance(
 ) -> Transform {
     let entity_definition = entity_definition_map.get(&entity_instance.def_uid).unwrap();
 
-    let def_size = match &entity_instance.tile {
+    let def_size = match &entity_definition.tile_rect {
         Some(tile) => IVec2::new(tile.w, tile.h),
         None => IVec2::new(entity_definition.width, entity_definition.height),
     };
@@ -487,6 +487,13 @@ mod tests {
             uid: 0,
             width: 32,
             height: 32,
+            tile_rect: Some(TilesetRectangle {
+                x: 0,
+                y: 0,
+                w: 16,
+                h: 32,
+                ..Default::default()
+            }),
             ..Default::default()
         }];
         let entity_definition_map = create_entity_definition_map(&entity_definitions);
@@ -500,7 +507,7 @@ mod tests {
             tile: Some(TilesetRectangle {
                 x: 0,
                 y: 0,
-                w: 16,
+                w: 32,
                 h: 32,
                 ..Default::default()
             }),

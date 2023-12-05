@@ -72,7 +72,7 @@ pub enum LevelBackground {
 /// Specifies data that should be ignored completely when spawning levels. Excluded items will still
 /// be present in the [`LdtkProject`] but will not cause any entities to be spawned in the world.
 #[derive(Clone, Eq, PartialEq, Debug, Default)]
-pub struct LdtkExclusions {
+pub struct SpawnExclusions {
     /// List of layer `Identifier` names (not UIDs) to skip spawning as tilemaps.
     pub layer_identifiers: Vec<String>,
 }
@@ -85,5 +85,5 @@ pub struct LdtkSettings {
     pub set_clear_color: SetClearColor,
     pub int_grid_rendering: IntGridRendering,
     pub level_background: LevelBackground,
-    pub exclusions: LdtkExclusions,
+    pub exclusions: SpawnExclusions,
 }

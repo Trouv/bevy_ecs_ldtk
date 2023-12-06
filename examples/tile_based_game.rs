@@ -132,7 +132,7 @@ fn cache_wall_locations(
     ldtk_project_entities: Query<&Handle<LdtkProject>>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
 ) {
-    for level_event in level_events.iter() {
+    for level_event in level_events.read() {
         if let LevelEvent::Spawned(level_iid) = level_event {
             let ldtk_project = ldtk_project_assets
                 .get(ldtk_project_entities.single())

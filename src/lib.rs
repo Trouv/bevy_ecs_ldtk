@@ -156,7 +156,7 @@ pub mod prelude {
         plugin::{LdtkPlugin, ProcessLdtkApi},
         resources::{
             IntGridRendering, LdtkSettings, LevelBackground, LevelEvent, LevelSelection,
-            LevelSpawnBehavior, SetClearColor,
+            LevelSpawnBehavior, SetClearColor, SpawnExclusions,
         },
     };
 

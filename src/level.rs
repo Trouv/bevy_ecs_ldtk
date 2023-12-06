@@ -269,7 +269,16 @@ pub fn spawn_level(
         }
     }
 
-    for layer_instance in layer_instances.iter().rev() {
+    for layer_instance in layer_instances
+        .iter()
+        .filter(|layer| {
+            !ldtk_settings
+                .exclusions
+                .layer_identifiers
+                .contains(&layer.identifier)
+        })
+        .rev()
+    {
         let layer_offset = Vec2::new(
             layer_instance.px_total_offset_x as f32,
             -layer_instance.px_total_offset_y as f32,
@@ -550,10 +559,10 @@ pub fn spawn_level(
                                 .filter(|(_, v)| **v != 0)
                             {
                                 let grid_coords = int_grid_index_to_grid_coords(
-                                        i,
-                                        layer_instance.c_wid as u32,
-                                        layer_instance.c_hei as u32,
-                                    ).expect("int_grid_csv indices should be within the bounds of 0..(layer_width * layer_height)");
+                                    i,
+                                    layer_instance.c_wid as u32,
+                                    layer_instance.c_hei as u32,
+                                ).expect("int_grid_csv indices should be within the bounds of 0..(layer_width * layer_height)");
 
                                 if let Some(tile_entity) = storage.get(&grid_coords.into()) {
                                     let mut entity_commands = commands.entity(tile_entity);

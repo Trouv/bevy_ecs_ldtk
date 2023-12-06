@@ -26,7 +26,7 @@ Deployment of this book to github pages is also performed by `bevy_ecs_ldtk`'s C
 Splitting the documentation up this way means that this book is not necessarily meant to be read in order.
 Some chapters are intended to be read while working on your own project, while others are meant to be more like studying material.
 The following chapters are good jumping-off points for beginners:
-- [*Getting Started* tutorial](getting-started.md)
+- [*Tile-based Game* tutorial](tutorials/tile-based-game/index.html)
 - [*Game Logic Integration* explanation]()
 
 ## Other resources

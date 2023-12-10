@@ -44,7 +44,55 @@ This approach is suitable for many common, simple use cases.
 There's also room for more granular, component-level customization within some of the attributes, like `#[with(...)]` or `#[from_entity_instance]`.
 Of course, the traits can also be manually implemented for the even-more custom cases.
 
-## Post-processing plugin-added entities
+## Post-processing plugin-spawned entities
+There are still many cases where `LdtkEntity`/`LdtkIntCell` registration is insufficient.
+Perhaps you need to spawn children of the entity, or need access to more resources in the `World`.
+For these more demanding cases, post-processing plugin-spawned entities in a custom system is always an option.
+
+If an LDtk entity does not have a matching `LdtkEntity` registration, it will be spawned with an `EntityInstance` component by default.
+This component contains the raw LDtk data for that entity.
+Querying for newly-spawned `EntityInstance` entities can be a good starting point for implementing your own custom spawning logic.
+Intgrid tiles have similar behavior, except their default component is `IntGridCell`, which simply contains the IntGrid value for that tile.
+
+```rust,no_run
+# use bevy::prelude::*;
+# use bevy_ecs_ldtk::prelude::*;
+#[derive(Default, Component)]
+struct PlayerChild;
+
+#[derive(Default, Component)]
+struct Player;
+
+fn process_player(
+    mut commands: Commands,
+    new_entity_instances: Query<(Entity, &EntityInstance, &Transform), Added<EntityInstance>>,
+    assets: Res<AssetServer>,
+)
+{
+    for (entity, entity_instance, transform) in new_entity_instances.iter() {
+        if entity_instance.identifier == "Player".to_string() {
+            commands
+                .entity(entity)
+                .insert(Player)
+                .insert(SpriteBundle {
+                    texture: assets.load("player.png"),
+                    transform: *transform,
+                    ..default()
+                })
+                .with_children(|commands| {
+                    commands.spawn(PlayerChild);
+                });
+        }
+    }
+}
+```
+
+This approach makes spawning entities from LDtk just as powerful and customizable as a Bevy system, because that's all it is.
+`LdtkEntity` and `LdtkIntCell` ultimately make some assumptions about what data from the LDtk asset and the Bevy world you will need to spawn your entity, which post-processing avoids.
+However, there are some pretty obvious ergonomics issues to this strategy compared to using registration:
+- You need to manually filter `EntityInstance`s for the desired LDtk entity identifier.
+- You need to manually perform the iteration of the query.
+- If you need the associated layer data, or tileset image, or tileset definition, you need to manually access these assets.
+- You need to be careful not to overwrite the plugin-provided `Transform` component.
 
 ## A combined approach - the blueprint pattern
-

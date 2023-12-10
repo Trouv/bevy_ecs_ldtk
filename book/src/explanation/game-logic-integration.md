@@ -7,7 +7,7 @@ It is fundamental to associate the LDtk entities and IntGrid tiles with Bevy ent
 `bevy_ecs_ldtk` is designed around a couple core strategies for doing so, which will be discussed here.
 
 ## `LdtkEntity` and `LdtkIntCell` registration
-The `LdtkEntity`/`LdtkIntCell` registration API allows you to hook custom bevy Bundles into the level spawning process.
+The `LdtkEntity`/`LdtkIntCell` registration API allows you to hook custom bevy `Bundle`s into the level spawning process.
 You define what components you want on the entity with a bundle, define how they should be constructed with the `LdtkEntity` or `LdtkIntCell` derive, and register the bundle to the `App` for a given LDtk entity identifier, or IntGrid value.
 
 ```rust,no_run

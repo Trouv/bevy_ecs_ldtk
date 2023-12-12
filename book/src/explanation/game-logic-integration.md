@@ -17,25 +17,25 @@ use bevy_ecs_ldtk::prelude::*;
 fn main() {
     App::new()
         // other App builders
-        .register_ldtk_entity::<MyBundle>("My Entity Identifier")
+        .register_ldtk_entity::<PlayerBundle>("Player")
         .run();
 }
 
 #[derive(Default, Component)]
-struct MyComponent;
+struct Player;
 
 #[derive(Default, Bundle, LdtkEntity)]
-struct MyBundle {
-    my_component: MyComponent,
-    #[sprite_sheet_bundle]
-    sprite_sheet_bundle: SpriteSheetBundle,
+struct PlayerBundle {
+    player: Player,
+    #[sprite_bundle]
+    sprite_bundle: SpriteBundle,
 }
 ```
 
 How does `LdtkEntity`/`LdtkIntCell` construct the bundle when derived?
 Without any intervention, the bundle's fields are constructed using the bundle's `Default` implementation.
-However, various attributes are available to override this behavior, like `#[sprite_sheet_bundle]` in the above example.
-This attribute gives the entity a sprite sheet based on its LDtk editor visual.
+However, various attributes are available to override this behavior, like `#[sprite_bundle]` in the above example.
+This attribute gives the entity a sprite using the tileset in its LDtk editor visual.
 For documentation about all the available attributes, check out the API reference for these traits:
 - [`LdtkEntity`](https://docs.rs/bevy_ecs_ldtk/0.8.0/bevy_ecs_ldtk/app/trait.LdtkEntity.html) <!-- x-release-please-version -->
 - [`LdtkIntCell`](https://docs.rs/bevy_ecs_ldtk/0.8.0/bevy_ecs_ldtk/app/trait.LdtkIntCell.html) <!-- x-release-please-version -->

@@ -42,7 +42,7 @@ For documentation about all the available attributes, check out the API referenc
 
 This approach is suitable for many common, simple use cases.
 There's also room for more granular, component-level customization within some of the attributes, like `#[with(...)]` or `#[from_entity_instance]`.
-Of course, the traits can also be manually implemented for the even-more custom cases.
+Of course, the traits can also be manually implemented for the even-more-custom cases.
 
 ## Post-processing plugin-spawned entities
 There are still many cases where `LdtkEntity`/`LdtkIntCell` registration is insufficient.
@@ -92,12 +92,13 @@ This approach makes spawning entities from LDtk just as powerful and customizabl
 However, there are some pretty obvious ergonomics issues to this strategy compared to using registration:
 - You need to manually filter `EntityInstance`s for the desired LDtk entity identifier.
 - You need to manually perform the iteration of the query.
-- If you need the associated layer data, or tileset image, or tileset definition, you need to manually access these assets.
+- You may need to manually find the associated layer data, or tileset image, or tileset definition (if necessary).
 - You need to be careful not to overwrite the plugin-provided `Transform` component.
 
 ## A combined approach - the blueprint pattern
 At least one of these ergonomics issues can be alleviated with a combined approach.
-If you register an `LdtkEntity`/`LdtkIntCell` with a unique component, even a marker component, querying for it later won't require filtering for a particular entity instance identifier.
+If you register an `LdtkEntity`/`LdtkIntCell` with a marker component, querying for it later won't require filtering for a particular entity instance identifier.
+The plugin does that for you when giving the entity your bundle, then you can write queries that filter for the marker component instead of `EntityInstance` or `IntGridCell`.
 Furthermore, if you can add the transform-overwriting bundles within the `LdtkEntity` bundle, you won't need to tiptoe around the `Transform` in your post-processing system.
 
 ```rust,no_run
@@ -138,6 +139,6 @@ fn process_player(
 }
 ```
 
-Using a simple component or a marker component for the initial spawn of an entity, and processing it further in another system is called the "blueprint pattern".
+Using a simple component or a marker component for the initial spawn of an entity and processing it further in another system is called the "blueprint pattern".
 You may find it desirable to use the `LdtkEntity`/`LdtkIntCell` derives to construct most of the components, but need post-processing for the more demanding ones.
 This approach is recommended over filtering for `Added<EntityInstance>` or `Added<IntGridCell>`.

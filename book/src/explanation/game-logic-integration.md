@@ -96,3 +96,48 @@ However, there are some pretty obvious ergonomics issues to this strategy compar
 - You need to be careful not to overwrite the plugin-provided `Transform` component.
 
 ## A combined approach - the blueprint pattern
+At least one of these ergonomics issues can be alleviated with a combined approach.
+If you register an `LdtkEntity`/`LdtkIntCell` with a unique component, even a marker component, querying for it later won't require filtering for a particular entity instance identifier.
+Furthermore, if you can add the transform-overwriting bundles within the `LdtkEntity` bundle, you won't need to tiptoe around the `Transform` in your post-processing system.
+
+```rust,no_run
+# use bevy::prelude::*;
+# use bevy_ecs_ldtk::prelude::*;
+fn main() {
+    App::new()
+        // other App builders
+        .register_ldtk_entity::<PlayerBundle>("Player")
+        .add_systems(Update, process_player)
+        .run();
+}
+
+#[derive(Default, Component)]
+struct PlayerChild;
+
+#[derive(Default, Component)]
+struct Player;
+
+#[derive(Default, Bundle, LdtkEntity)]
+struct PlayerBundle {
+    player: Player,
+    #[sprite_bundle]
+    sprite_bundle: SpriteBundle,
+}
+
+fn process_player(
+    mut commands: Commands,
+    new_players: Query<Entity, Added<Player>>,
+    assets: Res<AssetServer>,
+)
+{
+    for player_entity in new_players.iter() {
+        commands
+            .spawn(PlayerChild)
+            .set_parent(player_entity);
+    }
+}
+```
+
+Using a simple component or a marker component for the initial spawn of an entity, and processing it further in another system is called the "blueprint pattern".
+You may find it desirable to use the `LdtkEntity`/`LdtkIntCell` derives to construct most of the components, but need post-processing for the more demanding ones.
+This approach is recommended over filtering for `Added<EntityInstance>` or `Added<IntGridCell>`.

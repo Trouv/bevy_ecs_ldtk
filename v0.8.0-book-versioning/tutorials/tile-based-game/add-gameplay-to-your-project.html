@@ -1,0 +1,572 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Add gameplay to your project - bevy_ecs_ldtk Book</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../../index.html">Introduction</a></li><li class="chapter-item expanded affix "><li class="part-title">Tutorials</li><li class="chapter-item expanded "><a href="../../tutorials/tile-based-game/index.html"><strong aria-hidden="true">1.</strong> Tile-based Game</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../tutorials/tile-based-game/create-your-ldtk-project.html"><strong aria-hidden="true">1.1.</strong> Create your LDtk project</a></li><li class="chapter-item expanded "><a href="../../tutorials/tile-based-game/spawn-your-ldtk-project-in-bevy.html"><strong aria-hidden="true">1.2.</strong> Spawn your LDtk project in Bevy</a></li><li class="chapter-item expanded "><a href="../../tutorials/tile-based-game/add-gameplay-to-your-project.html" class="active"><strong aria-hidden="true">1.3.</strong> Add gameplay to your project</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">2.</strong> Platformer</div></li><li class="chapter-item expanded affix "><li class="part-title">Explanation</li><li class="chapter-item expanded "><a href="../../explanation/game-logic-integration.html"><strong aria-hidden="true">3.</strong> Game Logic Integration</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Hierarchy of the World</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">5.</strong> Level Selection</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">6.</strong> Plugin Schedule</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">7.</strong> Asset Model</div></li><li class="chapter-item expanded affix "><li class="part-title">How-To Guides</li><li class="chapter-item expanded "><div><strong aria-hidden="true">8.</strong> Register Bundles for Intgrid Tiles and LDtk Entities</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">9.</strong> Process Entities Further with Blueprints</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">10.</strong> Combine Tiles into Larger Entities</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">11.</strong> Create Bevy Relations from LDtk Entity References</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">12.</strong> Respawn Levels and Worlds</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">13.</strong> Animate Tiles</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">14.</strong> Camera Logic</div></li><li><ol class="section"><li class="chapter-item expanded "><div><strong aria-hidden="true">14.1.</strong> Implement Fit-Inside Camera</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">14.2.</strong> Implement Fit-Around Camera</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">14.3.</strong> Implement Parallax</div></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">15.</strong> Retrieve Field Instance Data</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">16.</strong> Retrieve Loaded Level Data</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">17.</strong> Compile to WASM</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">18.</strong> Compile Headless</div></li><li class="chapter-item expanded "><a href="../../how-to-guides/migration-guides/index.html"><strong aria-hidden="true">19.</strong> Migration Guides</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../how-to-guides/migration-guides/migrate-from-0.8-to-0.9.html"><strong aria-hidden="true">19.1.</strong> Migrate from 0.8 to 0.9</a></li><li class="spacer"></li></ol></li><li class="chapter-item expanded "><a href="../../api-reference.html">API Reference</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">bevy_ecs_ldtk Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="add-gameplay-to-your-project"><a class="header" href="#add-gameplay-to-your-project">Add gameplay to your project</a></h1>
+<p>In this section, you will integrate gameplay to the Bevy/LDtk project created in the previous sections.
+This includes tile-based movement, collision, and level transitions.
+You are welcome to bring your own tile-based LDtk project to this tutorial, but some of the values specified in here are specific to the LDtk project created in this tutorial, such as...</p>
+<ul>
+<li>the IntGrid value of walls (1)</li>
+</ul>
+<p>For details about the tutorial in general, including prerequisites, please see the parent page.</p>
+<h2 id="add-marker-component-and-gridcoords-to-the-player"><a class="header" href="#add-marker-component-and-gridcoords-to-the-player">Add marker component and <code>GridCoords</code> to the player</a></h2>
+<p>In order to implement tile-based movement and tile-based mechanics, you'll need to deal with an entity's position in tile-space rather than just Bevy world translation.
+<code>bevy_ecs_ldtk</code> provides a component that is suitable for this, and it has integration with the <code>LdtkEntity</code> derive.
+Add the <code>GridCoords</code> component to the <code>PlayerBundle</code>, and give it the <code>#[grid_coords]</code> attribute.
+The player entity will then be spawned with a <code>GridCoords</code> component whose value matches the entity's position in grid-space.</p>
+<p>Also give it a <code>Player</code> marker component so that you can query for it more easily in future systems.
+Derive <code>Default</code> for this component.
+<code>bevy_ecs_ldtk</code> will use this default implementation when spawning the component unless otherwise specified.</p>
+<pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span><span class="boring">use bevy::prelude::*;
+</span><span class="boring">use bevy_ecs_ldtk::prelude::*;
+</span>#[derive(Default, Component)]
+struct Player;
+
+#[derive(Default, Bundle, LdtkEntity)]
+struct PlayerBundle {
+    player: Player,
+    #[sprite_sheet_bundle]
+    sprite_bundle: SpriteSheetBundle,
+    #[grid_coords]
+    grid_coords: GridCoords,
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="implement-tile-based-movement"><a class="header" href="#implement-tile-based-movement">Implement tile-based movement</a></h2>
+<p>The player now has the components you will need to implement tile-based movement.
+Write a system that checks for just-pressed WASD input and converts it to a <code>GridCoords</code> direction.
+I.e., <code>(0,1)</code> for W, <code>(-1,0)</code> for A, <code>(0,-1)</code> for S, and <code>(1,0)</code> for D.
+Then, add the new direction to the player entity's <code>GridCoords</code> component.</p>
+<pre><pre class="playground"><code class="language-rust no_run"><span class="boring">use bevy::prelude::*;
+</span><span class="boring">use bevy_ecs_ldtk::prelude::*;
+</span><span class="boring">#[derive(Component)]
+</span><span class="boring">struct Player;
+</span>fn main() {
+    App::new()
+        // other App builders
+        .add_systems(Update, move_player_from_input)
+        .run();
+}
+
+fn move_player_from_input(
+    mut players: Query&lt;&amp;mut GridCoords, With&lt;Player&gt;&gt;,
+    input: Res&lt;Input&lt;KeyCode&gt;&gt;,
+) {
+    let movement_direction = if input.just_pressed(KeyCode::W) {
+        GridCoords::new(0, 1)
+    } else if input.just_pressed(KeyCode::A) {
+        GridCoords::new(-1, 0)
+    } else if input.just_pressed(KeyCode::S) {
+        GridCoords::new(0, -1)
+    } else if input.just_pressed(KeyCode::D) {
+        GridCoords::new(1, 0)
+    } else {
+        return;
+    };
+
+    for mut player_grid_coords in players.iter_mut() {
+        let destination = *player_grid_coords + movement_direction;
+        *player_grid_coords = destination;
+    }
+}</code></pre></pre>
+<h2 id="update-translation-from-gridcoords-value"><a class="header" href="#update-translation-from-gridcoords-value">Update translation from <code>GridCoords</code> value</a></h2>
+<p>If you play the game at this point, you'll notice that the player entity doesn't appear to be moving at all.
+The <code>GridCoords</code> component may be updating correctly, but the entity's <code>Transform</code> is what determines where it is rendered.
+<code>bevy_ecs_ldtk</code> does not maintain the <code>Transform</code> of <code>GridCoords</code> entities automatically.
+This is left up to the user, which allows you to implement custom tweening or animation of the transform as you please.</p>
+<p>Write a system that updates the <code>Transform</code> of <code>GridCoords</code> entities when their <code>GridCoords</code> value changes.
+<code>bevy_ecs_ldtk</code> does provide a utility function to help calculate the resulting translation - provided you know the size of the cells of the grid.
+For the LDtk project set up in this tutorial using the <code>SunnyLand</code> tilesets, this grid size is 16.</p>
+<pre><pre class="playground"><code class="language-rust no_run"><span class="boring">use bevy::prelude::*;
+</span><span class="boring">use bevy_ecs_ldtk::prelude::*;
+</span><span class="boring">fn move_player_from_input() {}
+</span>fn main() {
+    App::new()
+        // other App builders
+        .add_systems(
+            Update,
+            (
+                move_player_from_input,
+                translate_grid_coords_entities,
+            ),
+        )
+        .run();
+}
+
+const GRID_SIZE: i32 = 16;
+
+fn translate_grid_coords_entities(
+    mut grid_coords_entities: Query&lt;(&amp;mut Transform, &amp;GridCoords), Changed&lt;GridCoords&gt;&gt;,
+) {
+    for (mut transform, grid_coords) in grid_coords_entities.iter_mut() {
+        transform.translation =
+            bevy_ecs_ldtk::utils::grid_coords_to_translation(*grid_coords, IVec2::splat(GRID_SIZE))
+                .extend(transform.translation.z);
+    }
+}</code></pre></pre>
+<h2 id="prevent-tile-based-movement-into-walls"><a class="header" href="#prevent-tile-based-movement-into-walls">Prevent tile-based movement into walls</a></h2>
+<p>Movement works logically <em>and</em> visually now.
+However, you might notice that you can move <em>into</em> the walls of the level.
+To implement tile-based collision, you will need to add components to the walls to identify their locations, and check against these locations when trying to move the player.</p>
+<p>Create a new bundle for the wall entities, and give them a marker component.
+Derive <code>LdtkIntCell</code> for this bundle, and register it to the app with <code>register_ldtk_int_cell</code> and the wall's intgrid value.
+This bundle actually only needs this one marker component - IntGrid entities spawn with a <code>GridCoords</code> without requesting it.</p>
+<pre><pre class="playground"><code class="language-rust no_run"><span class="boring">use bevy::prelude::*;
+</span><span class="boring">use bevy_ecs_ldtk::prelude::*;
+</span>fn main() {
+    App::new()
+        // other App builders
+        .register_ldtk_int_cell::&lt;WallBundle&gt;(1)
+        .run();
+}
+
+#[derive(Default, Component)]
+struct Wall;
+
+#[derive(Default, Bundle, LdtkIntCell)]
+struct WallBundle {
+    wall: Wall,
+}</code></pre></pre>
+<p>There are a lot of ways to go about implementing the collision systems.
+Naively, you could query for all of the <code>Wall</code> entities every time the player tries to move and check their <code>GridCoords</code> values.
+In this tutorial, you will implement something a little more optimized: caching the wall locations into a resource when levels spawn.</p>
+<p>Create a <code>LevelWalls</code> resource for storing the current wall locations that can be looked up by-value.
+Give it a <code>HashSet&lt;GridCoords&gt;</code> field for the wall locations.
+Give it fields for the level's width and height as well so you can prevent the player from moving out-of-bounds.
+Then, implement a method <code>fn in_wall(&amp;self, grid_coords: &amp;GridCoords) -&gt; bool</code> that returns true if the provided <code>grid_coords</code> is outside the level bounds or contained in the <code>HashSet</code>.</p>
+<pre><pre class="playground"><code class="language-rust no_run"><span class="boring">use bevy::prelude::*;
+</span><span class="boring">use bevy_ecs_ldtk::prelude::*;
+</span>use std::collections::HashSet;
+
+fn main() {
+    App::new()
+        // other App builders
+        .init_resource::&lt;LevelWalls&gt;()
+        .run();
+}
+
+#[derive(Default, Resource)]
+struct LevelWalls {
+    wall_locations: HashSet&lt;GridCoords&gt;,
+    level_width: i32,
+    level_height: i32,
+}
+
+impl LevelWalls {
+    fn in_wall(&amp;self, grid_coords: &amp;GridCoords) -&gt; bool {
+        grid_coords.x &lt; 0
+            || grid_coords.y &lt; 0
+            || grid_coords.x &gt;= self.level_width
+            || grid_coords.y &gt;= self.level_height
+            || self.wall_locations.contains(grid_coords)
+    }
+}</code></pre></pre>
+<p>Now, add a system that listens for <code>LevelEvent::Spawned</code> and populates this resource.
+It will need access to all of the wall locations to populate the <code>HashSet</code> (<code>Query&lt;&amp;GridCoords, With&lt;Wall&gt;&gt;</code>).
+It will also need access to the <code>LdtkProject</code> data to find the current level's width/height (<code>Query&lt;&amp;Handle&lt;LdtkProject&gt;&gt;</code> and <code>Res&lt;Assets&lt;LdtkProject&gt;&gt;</code>).</p>
+<pre><pre class="playground"><code class="language-rust no_run"><span class="boring">use bevy::prelude::*;
+</span><span class="boring">use bevy_ecs_ldtk::prelude::*;
+</span><span class="boring">use std::collections::HashSet;
+</span><span class="boring">const GRID_SIZE: i32 = 16;
+</span><span class="boring">#[derive(Default, Resource)]
+</span><span class="boring">struct LevelWalls {
+</span><span class="boring">    wall_locations: HashSet&lt;GridCoords&gt;,
+</span><span class="boring">    level_width: i32,
+</span><span class="boring">    level_height: i32,
+</span><span class="boring">}
+</span><span class="boring">impl LevelWalls {
+</span><span class="boring">    fn in_wall(&amp;self, grid_coords: &amp;GridCoords) -&gt; bool {
+</span><span class="boring">        grid_coords.x &lt; 0
+</span><span class="boring">            || grid_coords.y &lt; 0
+</span><span class="boring">            || grid_coords.x &gt;= self.level_width
+</span><span class="boring">            || grid_coords.y &gt;= self.level_height
+</span><span class="boring">            || self.wall_locations.contains(grid_coords)
+</span><span class="boring">    }
+</span><span class="boring">}
+</span><span class="boring">#[derive(Component)]
+</span><span class="boring">struct Wall;
+</span><span class="boring">fn move_player_from_input() {}
+</span><span class="boring">fn translate_grid_coords_entities() {}
+</span>fn main() {
+    App::new()
+        // other App builders
+        .add_systems(
+            Update,
+            (
+                move_player_from_input,
+                translate_grid_coords_entities,
+                cache_wall_locations,
+            )
+        )
+        .run();
+}
+
+fn cache_wall_locations(
+    mut level_walls: ResMut&lt;LevelWalls&gt;,
+    mut level_events: EventReader&lt;LevelEvent&gt;,
+    walls: Query&lt;&amp;GridCoords, With&lt;Wall&gt;&gt;,
+    ldtk_project_entities: Query&lt;&amp;Handle&lt;LdtkProject&gt;&gt;,
+    ldtk_project_assets: Res&lt;Assets&lt;LdtkProject&gt;&gt;,
+) {
+    for level_event in level_events.iter() {
+        if let LevelEvent::Spawned(level_iid) = level_event {
+            let ldtk_project = ldtk_project_assets
+                .get(ldtk_project_entities.single())
+                .expect(&quot;LdtkProject should be loaded when level is spawned&quot;);
+            let level = ldtk_project
+                .get_raw_level_by_iid(level_iid.get())
+                .expect(&quot;spawned level should exist in project&quot;);
+
+            let wall_locations = walls.iter().copied().collect();
+
+            let new_level_walls = LevelWalls {
+                wall_locations,
+                level_width: level.px_wid / GRID_SIZE,
+                level_height: level.px_hei / GRID_SIZE,
+            };
+
+            *level_walls = new_level_walls;
+        }
+    }
+}</code></pre></pre>
+<p>Finally, update the <code>move_player_from_input</code> system to access the <code>LevelWalls</code> resource and check whether or not the player's destination is in a wall.</p>
+<pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span><span class="boring">use bevy::prelude::*;
+</span><span class="boring">use bevy_ecs_ldtk::prelude::*;
+</span><span class="boring">use std::collections::HashSet;
+</span><span class="boring">#[derive(Component)]
+</span><span class="boring">struct Player;
+</span><span class="boring">#[derive(Default, Resource)]
+</span><span class="boring">struct LevelWalls {
+</span><span class="boring">    wall_locations: HashSet&lt;GridCoords&gt;,
+</span><span class="boring">    level_width: i32,
+</span><span class="boring">    level_height: i32,
+</span><span class="boring">}
+</span><span class="boring">impl LevelWalls {
+</span><span class="boring">    fn in_wall(&amp;self, grid_coords: &amp;GridCoords) -&gt; bool {
+</span><span class="boring">        grid_coords.x &lt; 0
+</span><span class="boring">            || grid_coords.y &lt; 0
+</span><span class="boring">            || grid_coords.x &gt;= self.level_width
+</span><span class="boring">            || grid_coords.y &gt;= self.level_height
+</span><span class="boring">            || self.wall_locations.contains(grid_coords)
+</span><span class="boring">    }
+</span><span class="boring">}
+</span>fn move_player_from_input(
+    mut players: Query&lt;&amp;mut GridCoords, With&lt;Player&gt;&gt;,
+    input: Res&lt;Input&lt;KeyCode&gt;&gt;,
+    level_walls: Res&lt;LevelWalls&gt;,
+) {
+    let movement_direction = if input.just_pressed(KeyCode::W) {
+        GridCoords::new(0, 1)
+    } else if input.just_pressed(KeyCode::A) {
+        GridCoords::new(-1, 0)
+    } else if input.just_pressed(KeyCode::S) {
+        GridCoords::new(0, -1)
+    } else if input.just_pressed(KeyCode::D) {
+        GridCoords::new(1, 0)
+    } else {
+        return;
+    };
+
+    for mut player_grid_coords in players.iter_mut() {
+        let destination = *player_grid_coords + movement_direction;
+        if !level_walls.in_wall(&amp;destination) {
+            *player_grid_coords = destination;
+        }
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>With this check in place, the player should now be unable to move into walls!</p>
+<h2 id="trigger-level-transitions-on-victory"><a class="header" href="#trigger-level-transitions-on-victory">Trigger level transitions on victory</a></h2>
+<p>The final step is to implement the goal functionality.
+When the player reaches the goal, the next level should spawn until there are no levels remaining.</p>
+<p>Similar to the <code>PlayerBundle</code>, give the <code>GoalBundle</code> its own marker component and <code>GridCoords</code>.</p>
+<pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span><span class="boring">use bevy::prelude::*;
+</span><span class="boring">use bevy_ecs_ldtk::prelude::*;
+</span>#[derive(Default, Component)]
+struct Goal;
+
+#[derive(Default, Bundle, LdtkEntity)]
+struct GoalBundle {
+    goal: Goal,
+    #[sprite_sheet_bundle]
+    sprite_bundle: SpriteSheetBundle,
+    #[grid_coords]
+    grid_coords: GridCoords,
+}
+<span class="boring">}</span></code></pre></pre>
+<p>Then, write a system that checks if the player's <code>GridCoords</code> and the goal's <code>GridCoords</code> match.
+For a small optimization, filter the player query for <code>Changed&lt;GridCoords&gt;</code> so it's only populated if the player moves.
+If they do match, update the <code>LevelSelection</code> resource, increasing its level index by 1.
+<code>bevy_ecs_ldtk</code> will automatically despawn the current level and spawn the next one when this resource is updated.</p>
+<pre><pre class="playground"><code class="language-rust no_run"><span class="boring">use bevy::prelude::*;
+</span><span class="boring">use bevy_ecs_ldtk::prelude::*;
+</span><span class="boring">#[derive(Component)]
+</span><span class="boring">struct Player;
+</span><span class="boring">#[derive(Component)]
+</span><span class="boring">struct Goal;
+</span><span class="boring">fn move_player_from_input() {}
+</span><span class="boring">fn translate_grid_coords_entities() {}
+</span><span class="boring">fn cache_wall_locations() {}
+</span>fn main() {
+    App::new()
+        // other App builders
+        .add_systems(
+            Update,
+            (
+                move_player_from_input,
+                translate_grid_coords_entities,
+                cache_wall_locations,
+                check_goal,
+            ),
+        )
+        .run();
+}
+
+fn check_goal(
+    level_selection: ResMut&lt;LevelSelection&gt;,
+    players: Query&lt;&amp;GridCoords, (With&lt;Player&gt;, Changed&lt;GridCoords&gt;)&gt;,
+    goals: Query&lt;&amp;GridCoords, With&lt;Goal&gt;&gt;,
+) {
+    if players
+        .iter()
+        .zip(goals.iter())
+        .any(|(player_grid_coords, goal_grid_coords)| player_grid_coords == goal_grid_coords)
+    {
+        let indices = match level_selection.into_inner() {
+            LevelSelection::Indices(indices) =&gt; indices,
+            _ =&gt; panic!(&quot;level selection should always be Indices in this game&quot;),
+        };
+
+        indices.level += 1;
+    }
+}</code></pre></pre>
+<p>With this, the simple tile-based game is complete.
+When you navigate the player to the goal, the next level will begin until there are no levels remaining.</p>
+<div style="width:100%;height:0px;position:relative;padding-bottom:56.250%;"><iframe src="https://streamable.com/e/i342f8" frameborder="0" width="100%" height="100%" allowfullscreen style="width:100%;height:100%;position:absolute;left:0px;top:0px;overflow:hidden;"></iframe></div>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../tutorials/tile-based-game/spawn-your-ldtk-project-in-bevy.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../explanation/game-logic-integration.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../tutorials/tile-based-game/spawn-your-ldtk-project-in-bevy.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../explanation/game-logic-integration.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

@@ -2,6 +2,8 @@ name: publish book
 
 on:
   push:
+    branches:
+      - main
     tags:
       - 'v*.*.*'
 

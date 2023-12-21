@@ -10,6 +10,9 @@
 //! - [*Tile-based Game* tutorial](https://trouv.github.io/bevy_ecs_ldtk/v0.8.0/tutorials/tile-based-game/index.html) <!-- x-release-please-version -->
 //! - [*Game Logic Integration* explanation](https://trouv.github.io/bevy_ecs_ldtk/v0.8.0/tutorials/tile-based-game/index.html) <!-- x-release-please-version -->
 //!
+//! Cargo examples are also available in this plugin's
+//! [github repository](https://github.com/Trouv/bevy_ecs_ldtk/tree/v0.8.0/examples). <!-- x-release-please-version -->
+//!
 //! ## Worlds and Levels
 //!
 //! When you spawn an [LdtkWorldBundle], level entities are automatically spawned as children to

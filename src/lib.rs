@@ -1,6 +1,5 @@
-//! An ECS-friendly [LDtk](https://ldtk.io/) plugin for
-//! [bevy](https://github.com/bevyengine/bevy). Uses
-//! [bevy_ecs_tilemap](https://github.com/StarArawn/bevy_ecs_tilemap) as a base.
+//! # `bevy_ecs_ldtk`
+#![doc = include_str!("../book/src/blurb.md")]
 //!
 //! ### Getting Started
 //! The goal of this plugin is to make it as easy as possible to use LDtk with bevy

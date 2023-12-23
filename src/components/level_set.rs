@@ -8,6 +8,9 @@ use crate::LevelIid;
 /// For more explanation and comparison of options for selecting levels to spawn, see the
 /// [*Level Selection*](https://trouv.github.io/bevy_ecs_ldtk/v0.8.0/explanation/level-selection.html) <!-- x-release-please-version -->
 /// chapter of the `bevy_ecs_ldtk` book.
+///
+/// [`Component`]: https://docs.rs/bevy/latest/bevy/ecs/prelude/trait.Component.html
+/// [`LdtkWorldBundle`]: crate::prelude::LdtkWorldBundle
 #[derive(Clone, Eq, PartialEq, Debug, Default, Component)]
 pub struct LevelSet {
     pub iids: HashSet<LevelIid>,

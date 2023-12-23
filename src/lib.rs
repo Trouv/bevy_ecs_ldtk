@@ -8,6 +8,7 @@
 //!
 //! The following chapters are good jumping-off points for beginners:
 //! - [*Tile-based Game* tutorial](https://trouv.github.io/bevy_ecs_ldtk/v0.8.0/tutorials/tile-based-game/index.html) <!-- x-release-please-version -->
+//! - [*Level Selection* explanation](https://trouv.github.io/bevy_ecs_ldtk/v0.8.0/explanation/level-selection.html) <!-- x-release-please-version -->
 //! - [*Game Logic Integration* explanation](https://trouv.github.io/bevy_ecs_ldtk/v0.8.0/explanation/game-logic-integration.html) <!-- x-release-please-version -->
 //!
 //! Cargo examples are also available in this plugin's

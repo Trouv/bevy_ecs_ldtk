@@ -3,16 +3,10 @@ use bevy::prelude::*;
 
 /// [`Resource`] for choosing which level(s) to spawn.
 ///
-/// Updating this will despawn the current level and spawn the new one (unless they are the same).
-/// You can also load the selected level's neighbors using the [`LevelSpawnBehavior`] option.
+/// For more explanation and comparison of options for selecting levels to spawn, see the
+/// [*Level Selection*](https://trouv.github.io/bevy_ecs_ldtk/v0.8.0/explanation/level-selection.html) <!-- x-release-please-version -->
+/// chapter of the `bevy_ecs_ldtk` book.
 ///
-/// This resource works by updating the [`LdtkWorldBundle`]'s [`LevelSet`] component.
-/// If you need more control over the spawned levels than this resource provides,
-/// you can choose not to insert this resource and interface with [`LevelSet`] directly instead.
-///
-/// [`LevelSpawnBehavior`]: crate::prelude::LevelSpawnBehavior
-/// [`LdtkWorldBundle`]: crate::prelude::LdtkWorldBundle
-/// [`LevelSet`]: crate::prelude::LevelSet
 /// [`Resource`]: https://docs.rs/bevy/latest/bevy/ecs/prelude/trait.Resource.html
 #[derive(Clone, Eq, PartialEq, Debug, Resource)]
 pub enum LevelSelection {

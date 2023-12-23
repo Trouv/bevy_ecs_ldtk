@@ -36,6 +36,13 @@ Note: this *only* works if you are using the `LevelSelection` resource.
 One component in the `LdtkWorldBundle` is [`LevelSet`](https://docs.rs/bevy_ecs_ldtk/0.8.0/bevy_ecs_ldtk/prelude/struct.LevelSet.html). <!-- x-release-please-version -->
 This component can be used for lower-level level selection.
 Instead of selecting one level globally with a `LevelSelection` resource, you can select a specific set of levels by their iids.
+From the `level_set` cargo example:
+```rust,no_run
+# use bevy::prelude::*;
+# use bevy_ecs_ldtk::prelude::*;
+{{#include ../../../examples/level_set.rs:28:50}}
+# fn main() {}
+```
 
 This component is actually used by `LevelSelection` under the hood.
 So, in order for this workflow to work properly, no `LevelSelection` resource can exist in the world.

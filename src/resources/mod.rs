@@ -18,7 +18,7 @@ pub enum SetClearColor {
     /// Don't update the clear color at all
     No,
     /// Update the clear color to use the background color of the current level
-    /// (determined by [LevelSelection])
+    /// (determined by [`LevelSelection`])
     FromLevelBackground,
     /// Update the clear color to use the entire editor's background color
     FromEditorBackground,
@@ -42,8 +42,8 @@ pub enum LevelSpawnBehavior {
     ///
     /// Useful for "2d free map" and "GridVania" layouts.
     UseWorldTranslation {
-        /// When used with the [LevelSelection] resource, levels in the `__level_neighbors` list of
-        /// the selected level will be spawned in addition to the selected level.
+        /// When used with the [`LevelSelection`] resource, levels in the `__level_neighbors` list
+        /// of the selected level will be spawned in addition to the selected level.
         load_level_neighbors: bool,
     },
 }

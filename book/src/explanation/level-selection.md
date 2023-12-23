@@ -39,6 +39,7 @@ Instead of selecting one level globally with a `LevelSelection` resource, you ca
 
 This component is actually used by `LevelSelection` under the hood.
 So, in order for this workflow to work properly, no `LevelSelection` resource can exist in the world.
+This also implies, as mentioned in the previous section, that `load_level_neighbors` cannot be used with the `LevelSet` workflow.
 
 `LevelSet` is ideal for more complex level-spawning needs.
 It is an option if you need any level-spawning behavior that `LevelSelection`/`load_level_neighbors` are not capable of.

@@ -9,8 +9,8 @@
 - [Platformer]()
 # Explanation
 - [Game Logic Integration](explanation/game-logic-integration.md)
-- [Hierarchy of the World]()
 - [Level Selection](explanation/level-selection.md)
+- [Hierarchy of the World]()
 - [Plugin Schedule]()
 - [Asset Model]()
 # How-To Guides

@@ -13,30 +13,6 @@
 //! Cargo examples are also available in this plugin's
 //! [github repository](https://github.com/Trouv/bevy_ecs_ldtk/tree/v0.8.0/examples). <!-- x-release-please-version -->
 //!
-//! ## Worlds and Levels
-//!
-//! When you spawn an [LdtkWorldBundle], level entities are automatically spawned as children to
-//! the world based off your level selection.
-//! The documentation for [LdtkWorldBundle] goes into a little more detail about the spawning
-//! process.
-//!
-//! You can select what levels to spawn via the [LevelSelection] resource, or via the [LevelSet]
-//! component in the [LdtkWorldBundle].
-//! The [LevelSelection] resource is a convenient abstraction over the [LevelSet] component, and
-//! updates the [LevelSet] component automatically when used.
-//! It also responds to [LevelSpawnBehavior::UseWorldTranslation::load_level_neighbors], while
-//! [LevelSet] does not.
-//!
-//! To spawn a new level, you can just update the [LevelSelection] resource.
-//! The current level will be automatically despawned, unless it's still selected due to loading
-//! level neighbors.
-//! Updating the [LevelSet] component will have similar results.
-//!
-//! By default, the levels will be spawned so their bottom left corner is at the origin of the
-//! world.
-//! You can make them spawn according to their world location in LDtk by setting
-//! [LevelSpawnBehavior::UseWorldTranslation].
-//!
 //! ## Feature flags
 //!
 //! This crate uses the following set of [feature flags]:

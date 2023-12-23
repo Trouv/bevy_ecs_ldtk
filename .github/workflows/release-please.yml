@@ -22,3 +22,4 @@ jobs:
             book/src/explanation/level-selection.md
             src/lib.rs
             src/components/level_set.rs
+            src/resources/level_selection.rs

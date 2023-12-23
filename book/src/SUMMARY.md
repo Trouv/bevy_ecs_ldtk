@@ -10,7 +10,7 @@
 # Explanation
 - [Game Logic Integration](explanation/game-logic-integration.md)
 - [Hierarchy of the World]()
-- [Level Selection]()
+- [Level Selection](explanation/level-selection.md)
 - [Plugin Schedule]()
 - [Asset Model]()
 # How-To Guides

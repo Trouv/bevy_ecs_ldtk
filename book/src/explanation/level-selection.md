@@ -47,4 +47,4 @@ Furthermore, if you have more than one `LdtkWorldBundle` spawned, it can be used
 
 When the set of levels in the `LevelSet` is updated, an extra layer of change-detection is employed to make these changes idempotent/declarative.
 In other words, the plugin will observe what levels are already spawned before trying to respond to the changes in `LevelSet`.
-Only levels in the level set that weren't previously spawned will be spawned - and only levels not in the level set that are currently spawned will be despawned.
+Only levels *in* the level set that *aren't* currently spawned will be spawned - and only levels *not in* the level set that *are* currently spawned will be despawned.

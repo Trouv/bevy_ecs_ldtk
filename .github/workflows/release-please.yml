@@ -20,3 +20,4 @@ jobs:
             README.md
             src/lib.rs
             book/src/explanation/game-logic-integration.md
+            book/src/explanation/level-selection.md

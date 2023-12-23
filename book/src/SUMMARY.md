@@ -8,8 +8,8 @@
   - [Add gameplay to your project](tutorials/tile-based-game/add-gameplay-to-your-project.md)
 - [Platformer]()
 # Explanation
-- [Game Logic Integration](explanation/game-logic-integration.md)
 - [Level Selection](explanation/level-selection.md)
+- [Game Logic Integration](explanation/game-logic-integration.md)
 - [Hierarchy of the World]()
 - [Plugin Schedule]()
 - [Asset Model]()

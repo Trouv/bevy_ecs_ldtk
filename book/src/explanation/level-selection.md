@@ -1,6 +1,6 @@
 # Level Selection
 Once you have spawned an [`LdtkWorldBundle`](https://docs.rs/bevy_ecs_ldtk/0.8.0/bevy_ecs_ldtk/prelude/struct.LdtkWorldBundle.html) with a handle pointing to your LDtk project file, the levels you have selected will spawn as children of the world bundle. <!-- x-release-please-version -->
-You have a couple options for selecting levels, which will be explained and discussed in this chapter.
+You have a couple options for selecting levels, which will be discussed in this chapter.
 
 ## `LevelSelection` resource
 The highest-level option for selecting a level to spawn is using the [`LevelSelection`](https://docs.rs/bevy_ecs_ldtk/0.8.0/bevy_ecs_ldtk/prelude/enum.LevelSelection.html) resource. <!-- x-release-please-version -->

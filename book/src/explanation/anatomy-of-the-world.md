@@ -17,6 +17,12 @@ Each bullet indent indicates a parent/child relationship.
       - For Tile/AutoTile layers (or IntGrid layers with AutoTile functionality) - `bevy_ecs_tilemap` tile entities, with a [`TileBundle`](https://docs.rs/bevy_ecs_tilemap/latest/bevy_ecs_tilemap/tiles/struct.TileBundle.html) bundle.
 
 ## Worldly Entities
+The [`LdtkEntity` derive macro](game-logic-integration.html#ldtkentity-and-ldtkintcell-registration) allows you to define entities as ["worldly"](https://docs.rs/bevy_ecs_ldtk/0.8.0/bevy_ecs_ldtk/app/trait.LdtkEntity.html#worldly). <!-- x-release-please-version -->
+The intention of this feature is to support entities that are allowed to persist and traverse between levels, like a player in a GridVania layout.
+
+One consequence of an entity being worldly is a change in it's placement in the above hierarchy.
+Instead of being spawned as a child of the Entity layer entity, worldly entities will be children of the world entity.
+This makes the worldly entity independent of their origin level, so that if the origin level is unloaded, the worldly entity can still persist.
 
 ## Tile metadata components
 

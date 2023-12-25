@@ -6,7 +6,7 @@ To assist with this, this chapter will explain the anatomy of a `bevy_ecs_ldtk` 
 
 ## Hierarchy
 The basic hierarchy of spawned entities and their identifying components/bundles are as follows.
-The does exclude some special cases which are explained in more detail below.
+This does exclude some special cases which are explained in more detail below.
 Each bullet indent indicates a parent/child relationship.
 - The world entity, with an [`LdtkWorldBundle`](https://docs.rs/bevy_ecs_ldtk/0.8.0/bevy_ecs_ldtk/prelude/struct.LdtkWorldBundle.html) bundle. <!-- x-release-please-version -->
   - The level entities, with a [`LevelIid`](https://docs.rs/bevy_ecs_ldtk/0.8.0/bevy_ecs_ldtk/prelude/struct.LevelIid.html) component. <!-- x-release-please-version -->

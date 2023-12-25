@@ -1,8 +1,8 @@
-# Hierarchy of the World
+# Anatomy of the World
 Once an [`LdtkWorldBundle`](https://docs.rs/bevy_ecs_ldtk/0.8.0/bevy_ecs_ldtk/prelude/struct.LdtkWorldBundle.html) is spawned, the associated assets are loaded, and [levels are selected](level-selection.md), the level spawning process begins. <!-- x-release-please-version -->
-The result is a deeply nested hierarchy of entities that can be difficult to navigate, but it is predictable.
+The result is a deeply nested hierarchy of entities which can be difficult to navigate, but predictable.
 It can be useful to write code that makes assumptions about the relationships between `bevy_ecs_ldtk` entities.
-To assist with this, this chapter will explain this hierarchy.
+To assist with this, this chapter will explain the anatomy of a `bevy_ecs_ldtk` world.
 
 ## Hierarchy
 The basic hierarchy of spawned entities and their identifying components/bundles are as follows.

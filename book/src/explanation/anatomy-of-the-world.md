@@ -25,7 +25,15 @@ Instead of being spawned as a child of the Entity layer entity, worldly entities
 This makes the worldly entity independent of their origin level, so that if the origin level is unloaded, the worldly entity can still persist.
 
 ## Tile metadata components
+LDtk allows you to associate metadata with particular tiles in a tileset.
+`bevy_ecs_ldtk` responds to this by adding additional components to tiles that have metadata *in addition to* those described in the [hierarchy](#hierarchy):
+
+- [`TileMetadata`](https://docs.rs/bevy_ecs_ldtk/0.8.0/bevy_ecs_ldtk/prelude/struct.TileMetadata.html) <!-- x-release-please-version -->
+- [`TileEnumTags`](https://docs.rs/bevy_ecs_ldtk/0.8.0/bevy_ecs_ldtk/prelude/struct.TileEnumTags.html) <!-- x-release-please-version -->
+
+This can naturally only occur in Tile/AutoTile layers (or IntGrid layers with AutoTile functionality), since the metadata is defined on tilesets.
 
 ## Sublayers
+
 
 ## Z order

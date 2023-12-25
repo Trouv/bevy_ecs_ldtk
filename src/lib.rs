@@ -30,9 +30,6 @@
 //! The `derive`, `render`, and `internal_levels` features are enabled by default.
 //! Furthermore, one or both of `internal_levels` and `external_levels` must be enabled.
 //!
-//! [App]: bevy::prelude::App
-//! [Commands]: bevy::prelude::Commands
-//! [Transform]: bevy::prelude::Transform
 //! [feature flags]: https://doc.rust-lang.org/cargo/reference/features.html#the-features-section
 //! [LdtkEntity]: app::LdtkEntity
 //! [LdtkIntCell]: app::LdtkEntity

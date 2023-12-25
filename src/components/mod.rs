@@ -335,20 +335,9 @@ pub(crate) struct EntityInstanceBundle {
 
 /// `Bundle` for spawning LDtk worlds and their levels. The main bundle for using this plugin.
 ///
-/// After the ldtk file is done loading, the levels you've chosen with [`LevelSelection`] or
-/// [`LevelSet`] will begin to spawn.
-/// Each level is its own entity, with the [`LdtkWorldBundle`] as its parent.
-/// Each level has a [`LevelIid`] component.
-///
-/// All layers will also spawn as their own entities.
-/// Each layer's parent will be the level entity.
-/// Each layer will have a [`LayerMetadata`] component.
-///
-/// AutoTile, Tile, and IntGrid layer entities are bevy_ecs_tilemap TileMaps.
-/// Each tile in these layers will have the layer entity as its parent.
-///
-/// For Entity layers, all LDtk entities will have the layer entity as their parent by default.
-/// However, this behavior can be changed by marking them with the [`Worldly`] component.
+/// For a more detailed explanation of the resulting world, please see the
+/// [*Anatomy of the World*](https://trouv.github.io/bevy_ecs_ldtk/v0.8.0/explanation/anatomy-of-the-world.html) <!-- x-release-please-version -->
+/// chapter of the `bevy_ecs_ldtk` book.
 #[derive(Clone, Default, Bundle)]
 pub struct LdtkWorldBundle {
     pub ldtk_handle: Handle<LdtkProject>,

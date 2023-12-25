@@ -21,5 +21,6 @@ jobs:
             book/src/explanation/game-logic-integration.md
             book/src/explanation/level-selection.md
             src/lib.rs
+            src/components/mod.rs
             src/components/level_set.rs
             src/resources/level_selection.rs

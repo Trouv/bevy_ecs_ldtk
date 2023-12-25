@@ -37,21 +37,15 @@ pub struct IntGridCell {
     pub value: i32,
 }
 
-/// [Component] that indicates that an ldtk entity should be a child of the world, not their layer.
+/// [`Component`] that indicates that an ldtk entity should be a child of the world, not their layer.
 ///
-/// By default, [LdtkEntity]s are children of the layer they spawn in.
-/// This can be a problem if that entity is supposed to travel across multiple levels, since they
-/// will despawn the moment the level they were born in despawns.
+/// For a more detailed explanation, please see the
+/// [*Worldly Entities*](https://trouv.github.io/bevy_ecs_ldtk/v0.8.0/explanation/anatomy-of-the-world.html#worldly-entities) <!-- x-release-please-version -->
+/// section of the `bevy_ecs_ldtk` book.
 ///
-/// This component makes them children of the [LdtkWorldBundle] (after one update),
-/// so they can traverse levels without despawning.
-/// Furthermore, this component prevents respawns of the same entity if the level they were born in
-/// despawns/respawns.
-/// For this purpose, it uses the `iid` stored in this component to uniquely identify ldtk
-/// entities.
-///
-/// Implements [LdtkEntity], and can be added to an [LdtkEntity] bundle with the `#[worldly]` field
-/// attribute. See [LdtkEntity#worldly] for more details.
+/// Implements [`LdtkEntity`], and can be added to an [`LdtkEntity`] bundle with the `#[worldly]`
+/// field attribute.
+/// See [`LdtkEntity#worldly`] for attribute macro usage.
 #[derive(Clone, Eq, PartialEq, Debug, Default, Hash, Component, Reflect)]
 #[reflect(Component)]
 pub struct Worldly {

@@ -21,8 +21,12 @@ The [`LdtkEntity` derive macro](game-logic-integration.html#ldtkentity-and-ldtki
 The intention of this feature is to support entities that are allowed to persist and traverse between levels, like a player in a GridVania layout.
 
 One consequence of an entity being worldly is a change in it's placement in the above hierarchy.
-Instead of being spawned as a child of the Entity layer entity, worldly entities will be children of the world entity.
+Instead of being spawned as a child of the Entity layer entity, worldly entities will be children of the world entity (after one update).
 This makes the worldly entity independent of their origin level, so that if the origin level is unloaded, the worldly entity can still persist.
+
+Furthermore, a worldly entity will *not* be spawned if it already exists.
+This prevents two of the same worldly entity existing if the origin level is despawned and respawned.
+For example, if the worldly player entity traverses far enough away that their origin level is unloaded, then returns to it, there won't suddenly be two players.
 
 ## Tile metadata components
 LDtk allows you to associate metadata with particular tiles in a tileset.

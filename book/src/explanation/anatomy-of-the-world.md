@@ -33,7 +33,13 @@ LDtk allows you to associate metadata with particular tiles in a tileset.
 
 This can naturally only occur in Tile/AutoTile layers (or IntGrid layers with AutoTile functionality), since the metadata is defined on tilesets.
 
-## Sublayers
+## Layers with colliding tiles
+It is possible for LDtk Tile/AutoTile layers to have colliding tiles.
+In other words, a single layer can have more than one tile in the same location.
 
+`bevy_ecs_tilemap` tilemaps only allow one tile per position.
+So, `bevy_ecs_ldtk` supports layers with colliding tiles by spawning multiple tilemaps.
+Each of them will have the same [`LayerMetadata`](https://docs.rs/bevy_ecs_ldtk/0.8.0/bevy_ecs_ldtk/prelude/struct.LayerMetadata.html) component. <!-- x-release-please-version -->
+This means that users cannot assume that there will be only one `LayerMetadata` entity per layer.
 
 ## Z order

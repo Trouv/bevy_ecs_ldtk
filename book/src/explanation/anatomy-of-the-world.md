@@ -64,4 +64,21 @@ So, `bevy_ecs_ldtk` supports layers with colliding tiles by spawning multiple ti
 Each of them will have the same [`LayerMetadata`](https://docs.rs/bevy_ecs_ldtk/0.8.0/bevy_ecs_ldtk/prelude/struct.LayerMetadata.html) component. <!-- x-release-please-version -->
 This means that users cannot assume that there will be only one `LayerMetadata` entity per layer.
 
+
 ## Z order
+To correctly define the render order of the tiles and entities in a level, `bevy_ecs_ldtk` uses the `z` value of their `Transform` components.
+Z order is only applied to [level backgrounds](#level-backgrounds), [layer entities](#layers-with-colliding-tiles), and [worldly entities](#worldly-entities).
+Tiles and non-worldly entities will simply inherit the z-ordering in their `GlobalTransform`.
+
+`bevy_ecs_ldtk` begins with a `z` value of 0 for the background-most entities, and increments this by 1 for each layer above that.
+This sounds simple, but can actually be pretty difficult to predict thanks to some special cases mentioned above.
+
+[Background colors and background images](#level-backgrounds) will usually get the `z` values of 0 and 1 respectively.
+However, if the background image does not exist, the `z` value of 1 will be freed for the next layer instead.
+If level backgrounds are disabled entirely, both 0 and 1 will be freed for the next layer.
+
+From here, each layer generally increments the `z` value by 1.
+However, note that [there can be multiple layer entities for a single LDtk layer](#layers-with-colliding-tiles).
+Each of these additional layer entities will also increment the `z` value by 1.
+
+Since this can be difficult to predict, it is generally recommended to avoid making assumptions about the `z` value of a layer.

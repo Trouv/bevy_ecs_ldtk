@@ -1,5 +1,5 @@
 # Anatomy of the World
-Once an [`LdtkWorldBundle`](https://docs.rs/bevy_ecs_ldtk/0.8.0/bevy_ecs_ldtk/prelude/struct.LdtkWorldBundle.html) is spawned, the associated assets are loaded, and [levels are selected](level-selection.md), the level spawning process begins. <!-- x-release-please-version -->
+Once an [`LdtkWorldBundle`](https://docs.rs/bevy_ecs_ldtk/0.8.0/bevy_ecs_ldtk/prelude/struct.LdtkWorldBundle.html) is spawned, [levels are selected](level-selection.md), and the associated assets finish loading, the level spawning process begins. <!-- x-release-please-version -->
 The result is a deeply nested hierarchy of entities which can be difficult to navigate, but predictable.
 It can be useful to write code that makes assumptions about the relationships between `bevy_ecs_ldtk` entities.
 To assist with this, this chapter will explain the anatomy of a `bevy_ecs_ldtk` world.

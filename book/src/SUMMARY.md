@@ -17,7 +17,7 @@
 - [Register Bundles for Intgrid Tiles and LDtk Entities]()
 - [Process Entities Further with Blueprints]()
 - [Combine Tiles into Larger Entities]()
-- [Create Bevy Relations from LDtk Entity References]()
+- [Create Bevy Relations from LDtk Entity References](how-to-guides/create-bevy-relations-from-ldtk-entity-references.md)
 - [Respawn Levels and Worlds]()
 - [Animate Tiles]()
 - [Camera Logic]()

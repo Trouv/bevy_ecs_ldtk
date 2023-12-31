@@ -1,5 +1,5 @@
 # Create Bevy Relations from LDtk Entity References
-LDtk allows entities to point to other entities within a field instance.
+LDtk allows entities to point to other entities using a field.
 This is analogous to a bevy "relation" - a component on one entity that stores the `Entity` identifier of another entity.
 
 This chapter goes through one possible method for resolving LDtk entity references as such.

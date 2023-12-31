@@ -43,7 +43,7 @@ Create a second relational component that stores the actual bevy `Entity` that t
 {{ #include ../../../examples/field_instances/mother.rs:26:27 }}
 ```
 
-Finally, create a ["post-processing"](../explanation/game-logic-integration.html#post-processing-plugin-spawned-entities) system that takes entities with the `Unresolved` component, and replaces it with the relational component.
+Finally, create a ["post-processing"](../explanation/game-logic-integration.html#post-processing-plugin-spawned-entities) system that takes entities with the `Unresolved` component, finds the entity with the matching `EntityIid`, and replaces the `Unresolved` component with the relational component.
 ```rust,no_run
 # use bevy::prelude::*;
 # use bevy_ecs_ldtk::prelude::*;

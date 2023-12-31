@@ -8,14 +8,14 @@ This code is used in the `field_instances` cargo example, and facilitates "enemy
 ## Register unresolved reference
 First, create a component representing an "unresolved" entity reference, storing the target entity's LDtk iid rather than a bevy `Entity`:
 ```rust,no_run
-use bevy::prelude::*;
-use bevy_ecs_ldtk::prelude::*;
-
+# use bevy::prelude::*;
+# use bevy_ecs_ldtk::prelude::*;
 {{ #include ../../../examples/field_instances/mother.rs:10:11 }}
 ```
 
 Create a method for constructing this component from an `&EntityInstance`.
-This should get the entity reference field instance value on the LDtk entity, most likely using a hard-coded field identifier to find it:
+This should retrieve the value of the entity reference field instance on the LDtk entity.
+Most likely, you'll use a hard-coded field identifier ("mother" in this example) to find it:
 ```rust,no_run
 # use bevy::prelude::*;
 # use bevy_ecs_ldtk::prelude::*;

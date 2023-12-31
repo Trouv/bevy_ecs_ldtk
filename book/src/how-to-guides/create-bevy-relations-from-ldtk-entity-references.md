@@ -36,3 +36,20 @@ This guide assumes that you've already registered this bundle to the app.
 ```
 
 ## Resolve reference in post-processing
+Create a second relational component that stores the actual bevy `Entity` that this `Unresolved` reference should "resolve" to.
+```rust,no_run
+# use bevy::prelude::*;
+# use bevy_ecs_ldtk::prelude::*;
+{{ #include ../../../examples/field_instances/mother.rs:26:27 }}
+```
+
+Finally, create a ["post-processing"](../explanation/game-logic-integration.html#post-processing-plugin-spawned-entities) system that takes entities with the `Unresolved` component, and replaces it with the relational component.
+```rust,no_run
+# use bevy::prelude::*;
+# use bevy_ecs_ldtk::prelude::*;
+# {{ #include ../../../examples/field_instances/mother.rs:10 }}
+# {{ #include ../../../examples/field_instances/mother.rs:11 }}
+# {{ #include ../../../examples/field_instances/mother.rs:26 }}
+# {{ #include ../../../examples/field_instances/mother.rs:27 }}
+{{ #include ../../../examples/field_instances/mother.rs:29:51 }}
+```

@@ -5,7 +5,7 @@ pub struct RespawnPlugin;
 
 impl Plugin for RespawnPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, respawn_level);
+        app.add_systems(Update, (respawn_level, respawn_world));
     }
 }
 
@@ -26,5 +26,15 @@ fn respawn_level(
                 commands.entity(level_entity).insert(Respawn);
             }
         }
+    }
+}
+
+fn respawn_world(
+    mut commands: Commands,
+    ldtk_projects: Query<Entity, With<Handle<LdtkProject>>>,
+    input: Res<Input<KeyCode>>,
+) {
+    if input.just_pressed(KeyCode::R) {
+        commands.entity(ldtk_projects.single()).insert(Respawn);
     }
 }

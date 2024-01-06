@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 
 mod coin;
+mod player;
 
 fn main() {
     App::new()
@@ -15,7 +16,7 @@ fn main() {
             ..default()
         })
         .add_systems(Startup, setup)
-        .add_plugins(coin::CoinPlugin)
+        .add_plugins((coin::CoinPlugin, player::PlayerPlugin))
         .run();
 }
 

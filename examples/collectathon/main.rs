@@ -3,6 +3,7 @@ use bevy_ecs_ldtk::prelude::*;
 
 mod coin;
 mod player;
+mod respawn;
 
 fn main() {
     App::new()
@@ -16,7 +17,11 @@ fn main() {
             ..default()
         })
         .add_systems(Startup, setup)
-        .add_plugins((coin::CoinPlugin, player::PlayerPlugin))
+        .add_plugins((
+            coin::CoinPlugin,
+            player::PlayerPlugin,
+            respawn::RespawnPlugin,
+        ))
         .run();
 }
 

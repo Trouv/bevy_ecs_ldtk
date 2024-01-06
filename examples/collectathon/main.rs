@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 
+mod coin;
+
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
@@ -12,7 +14,8 @@ fn main() {
             },
             ..default()
         })
-        .add_system(setup)
+        .add_systems(Startup, setup)
+        .add_plugins(coin::CoinPlugin)
         .run();
 }
 

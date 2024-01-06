@@ -25,7 +25,7 @@ pub struct Wallet {
     coins: u32,
 }
 
-const COLLECT_DISTANCE: f32 = 10.;
+const COLLECT_DISTANCE: f32 = 12.;
 
 fn collect(
     mut commands: Commands,

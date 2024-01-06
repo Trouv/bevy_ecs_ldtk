@@ -18,6 +18,8 @@ struct Player;
 struct PlayerBundle {
     player: Player,
     wallet: Wallet,
+    #[worldly]
+    worldly: Worldly,
     #[sprite_sheet_bundle]
     sprite_sheet: SpriteSheetBundle,
 }

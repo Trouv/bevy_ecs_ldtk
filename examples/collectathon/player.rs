@@ -6,7 +6,7 @@ pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, move_player)
+        app.add_systems(Update, (move_player, level_selection_follow_player))
             .register_ldtk_entity::<PlayerBundle>("Player");
     }
 }
@@ -50,6 +50,39 @@ fn move_player(
         if movement != Vec2::ZERO {
             player_transform.translation +=
                 movement.extend(0.) * MOVEMENT_SPEED * time.delta_seconds();
+        }
+    }
+}
+
+fn level_selection_follow_player(
+    players: Query<&GlobalTransform, With<Player>>,
+    levels: Query<(&LevelIid, &GlobalTransform)>,
+    ldtk_projects: Query<&Handle<LdtkProject>>,
+    ldtk_project_assets: Res<Assets<LdtkProject>>,
+    mut level_selection: ResMut<LevelSelection>,
+) {
+    for player_transform in players.iter() {
+        if let Some(ldtk_project) = ldtk_project_assets.get(ldtk_projects.single()) {
+            for (level_iid, level_transform) in levels.iter() {
+                let level = ldtk_project
+                    .get_raw_level_by_iid(level_iid.get())
+                    .expect("level should exist in only project");
+
+                let level_bounds = Rect {
+                    min: Vec2::new(
+                        level_transform.translation().x,
+                        level_transform.translation().y,
+                    ),
+                    max: Vec2::new(
+                        level_transform.translation().x + level.px_wid as f32,
+                        level_transform.translation().y + level.px_hei as f32,
+                    ),
+                };
+
+                if level_bounds.contains(player_transform.translation().truncate()) {
+                    *level_selection = LevelSelection::Iid(level_iid.clone());
+                }
+            }
         }
     }
 }

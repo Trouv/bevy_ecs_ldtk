@@ -34,11 +34,15 @@ fn collect(
 ) {
     for (mut wallet, wallet_transform) in wallets.iter_mut() {
         for (coin_entity, coin_transform) in coins.iter() {
+            if coin_transform.translation() == Vec3::ZERO {
+                continue;
+            }
+
             let distance = wallet_transform
                 .translation()
                 .distance(coin_transform.translation());
 
-            if distance > 0. && distance <= COLLECT_DISTANCE {
+            if distance <= COLLECT_DISTANCE {
                 wallet.coins += 1;
                 println!("Coins: {}", wallet.coins);
 

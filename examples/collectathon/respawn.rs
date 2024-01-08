@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 
+/// Plugin for respawning levels and worlds.
 pub struct RespawnPlugin;
 
 impl Plugin for RespawnPlugin {

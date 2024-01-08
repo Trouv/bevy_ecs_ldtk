@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 
+/// Plugin for spawning coins and collecting them.
 pub struct CoinPlugin;
 
 impl Plugin for CoinPlugin {
@@ -10,6 +11,7 @@ impl Plugin for CoinPlugin {
     }
 }
 
+/// Component marking coin entities.
 #[derive(Default, Component)]
 struct Coin;
 
@@ -20,6 +22,8 @@ struct CoinBundle {
     sprite_sheet: SpriteSheetBundle,
 }
 
+/// Component for entities that can collect coins.
+/// Stores the number of coins they have collected.
 #[derive(Default, Component)]
 pub struct Wallet {
     coins: u32,
@@ -34,6 +38,8 @@ fn collect(
 ) {
     for (mut wallet, wallet_transform) in wallets.iter_mut() {
         for (coin_entity, coin_transform) in coins.iter() {
+            // Global translations of new entities will always be 0 for one update.
+            // This check prevents wallets near 0 collecting newly-spawned coins.
             if coin_transform.translation() == Vec3::ZERO {
                 continue;
             }

@@ -18,7 +18,7 @@
 - [Process Entities Further with Blueprints]()
 - [Combine Tiles into Larger Entities]()
 - [Create Bevy Relations from LDtk Entity References](how-to-guides/create-bevy-relations-from-ldtk-entity-references.md)
-- [Respawn Levels and Worlds]()
+- [Respawn Levels and Worlds](how-to-guides/respawn-levels-and-worlds.md)
 - [Animate Tiles]()
 - [Camera Logic]()
   - [Implement Fit-Inside Camera]()

@@ -2,6 +2,7 @@ use crate::coin::Wallet;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 
+/// Plugin for spawning the player and controlling them.
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
@@ -11,6 +12,7 @@ impl Plugin for PlayerPlugin {
     }
 }
 
+/// Component marking the player entity.
 #[derive(Default, Component)]
 struct Player;
 
@@ -38,10 +40,10 @@ fn move_player(
             movement += Vec2::Y;
         }
         if input.pressed(KeyCode::A) || input.pressed(KeyCode::Left) {
-            movement += Vec2::NEG_X;
+            movement -= Vec2::X;
         }
         if input.pressed(KeyCode::S) || input.pressed(KeyCode::Down) {
-            movement += Vec2::NEG_Y;
+            movement -= Vec2::Y;
         }
         if input.pressed(KeyCode::D) || input.pressed(KeyCode::Right) {
             movement += Vec2::X;

@@ -8,4 +8,4 @@ $ cargo run --example collectathon --release
 ## Controls
 - WASD: movement
 - L: respawn level
-- W: respawn world
+- R: respawn world

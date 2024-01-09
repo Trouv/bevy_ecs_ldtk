@@ -1,5 +1,5 @@
 // This example has a tutorial in the bevy_ecs_ldtk book associated with it:
-// <https://trouv.github.io/bevy_ecs_ldtk/tutorials/tile-based-game/index.html>
+// <https://trouv.github.io/bevy_ecs_ldtk/latest/tutorials/tile-based-game/index.html>
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 use std::collections::HashSet;

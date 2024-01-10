@@ -21,6 +21,7 @@ jobs:
             book/src/explanation/game-logic-integration.md
             book/src/explanation/level-selection.md
             book/src/explanation/anatomy-of-the-world.md
+            book/src/how-to-guides/respawn-levels-and-worlds.md
             src/lib.rs
             src/components/mod.rs
             src/components/level_set.rs

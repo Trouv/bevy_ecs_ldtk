@@ -10,5 +10,56 @@ This code is from the `collectathon` cargo example.
 Similarly, to respawn a level, all you need to do is get the level entity and insert the `Respawn` component to it.
 
 The optimal strategy for finding the level entity can differ depending on the game.
-If the game only spawns one level at a time, then it's a simple of matter of querying for the only `LevelIid` entity.
+For example, if the game should only spawn one level at a time, then it's a simple of matter of querying for the only `LevelIid` entity.
+```rust,no_run
+# use bevy::prelude::*;
+# use bevy_ecs_ldtk::prelude::*;
+fn respawn_only_level(
+    mut commands: Commands,
+    levels: Query<Entity, With<LevelIid>>,
+    input: Res<Input<KeyCode>>
+) {
+    if input.just_pressed(KeyCode::L) {
+        commands.entity(levels.single()).insert(Respawn);
+    }
+}
+```
+
 If the game spawns multiple levels and you want the one specified in the `LevelSelection`, you may need a more complex strategy.
+In the `collectathon` cargo example, the `LevelSelection` is always assumed to be of the `Iid` variety.
+With this assumption, get the `LevelIid` from the `LevelSelection` and then search for the matching level entity.
+```rust,no_run
+# use bevy::prelude::*;
+# use bevy_ecs_ldtk::prelude::*;
+{{ #include ../../../examples/collectathon/respawn.rs:13:31 }}
+```
+
+However, if you cannot make the same assumption, access the `LdtkProject` asset data and search for the level matching your `LevelSelection`.
+There is a method on `LdtkProject` to perform this search.
+```rust,no_run
+# use bevy::prelude::*;
+# use bevy_ecs_ldtk::prelude::*;
+{{ #include ../../../examples/collectathon/respawn.rs:13:17 }}
+    ldtk_projects: Query<&Handle<LdtkProject>>,
+    ldtk_project_assets: Res<Assets<LdtkProject>>,
+) {
+    if input.just_pressed(KeyCode::L) {
+        if let Some(only_project) = ldtk_project_assets.get(ldtk_projects.single()) {
+            let level_selection_iid = LevelIid::new(
+                only_project
+                    .find_raw_level_by_level_selection(&level_selection)
+                    .expect("spawned level should exist in project")
+                    .iid
+                    .clone(),
+            );
+
+            for (level_entity, level_iid) in levels.iter() {
+                if level_selection_iid == *level_iid {
+                    commands.entity(level_entity).insert(Respawn);
+                }
+            }
+
+        }
+    }
+}
+```

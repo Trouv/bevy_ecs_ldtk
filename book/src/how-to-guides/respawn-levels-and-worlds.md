@@ -5,9 +5,16 @@ This can be leveraged by users to implement a simple level restart feature, or a
 This code is from the `collectathon` cargo example.
 
 ## Respawn the world
+To respawn the world, get the world's `Entity` and insert the `Respawn` component to it.
+This is especially easy if, like most users, you only have one world in your game.
+```rust,no_run
+# use bevy::prelude::*;
+# use bevy_ecs_ldtk::prelude::*;
+{{ #include ../../../examples/collectathon/respawn.rs:33:41 }}
+```
 
 ## Respawn the currently-selected level
-Similarly, to respawn a level, all you need to do is get the level entity and insert the `Respawn` component to it.
+Similarly, to respawn a level, get the level's `Entity` and insert the `Respawn` component to it.
 
 The optimal strategy for finding the level entity can differ depending on the game.
 For example, if the game should only spawn one level at a time, then it's a simple of matter of querying for the only `LevelIid` entity.

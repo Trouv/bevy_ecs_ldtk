@@ -13,6 +13,8 @@ This is especially easy if, like most users, you only have one world in your gam
 {{ #include ../../../examples/collectathon/respawn.rs:33:41 }}
 ```
 
+Note that this *will* respawn [worldly](../explanation/anatomy-of-the-world.html#worldly-entities) entities too.
+
 ## Respawn the currently-selected level
 Similarly, to respawn a level, get the level's `Entity` and insert the `Respawn` component to it.
 
@@ -70,3 +72,5 @@ There is a method on `LdtkProject` to perform this search.
     }
 }
 ```
+
+Note that, unlike respawning the world, respawning the level will not respawn any [worldly](../explanation/anatomy-of-the-world.html#worldly-entities) entities.

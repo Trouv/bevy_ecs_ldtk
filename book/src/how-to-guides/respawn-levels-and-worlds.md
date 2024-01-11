@@ -16,10 +16,11 @@ This is especially easy if, like most users, you only have one world in your gam
 Note that this *will* respawn [worldly](../explanation/anatomy-of-the-world.html#worldly-entities) entities too.
 
 ## Respawn the currently-selected level
-Similarly, to respawn a level, get the level's `Entity` and insert the `Respawn` component to it.
+Respawning a level works similarly to respawning the world.
+Get the level's `Entity` and insert the `Respawn` component to it.
 
 The optimal strategy for finding the level entity can differ depending on the game.
-For example, if the game should only spawn one level at a time, then it's a simple of matter of querying for the only `LevelIid` entity.
+For example, if the game should only spawn one level at a time, operate under that assumption and query for the only `LevelIid` entity.
 ```rust,no_run
 # use bevy::prelude::*;
 # use bevy_ecs_ldtk::prelude::*;
@@ -35,8 +36,9 @@ fn respawn_only_level(
 ```
 
 If the game spawns multiple levels and you want the one specified in the `LevelSelection`, you may need a more complex strategy.
+
 In the `collectathon` cargo example, the `LevelSelection` is always assumed to be of the `Iid` variety.
-With this assumption, get the `LevelIid` from the `LevelSelection` and then search for the matching level entity.
+If you share this assumption, get the `LevelIid` from the `LevelSelection` and then search for the matching level entity.
 ```rust,no_run
 # use bevy::prelude::*;
 # use bevy_ecs_ldtk::prelude::*;
@@ -73,4 +75,4 @@ There is a method on `LdtkProject` to perform this search.
 }
 ```
 
-Note that, unlike respawning the world, respawning the level will not respawn any [worldly](../explanation/anatomy-of-the-world.html#worldly-entities) entities.
+Note that, unlike respawning the world, respawning the level will *not* respawn any [worldly](../explanation/anatomy-of-the-world.html#worldly-entities) entities.

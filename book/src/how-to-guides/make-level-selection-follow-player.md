@@ -18,3 +18,21 @@ fn main() {
         .run();
 }
 ```
+
+## Determine bounds of spawned levels and update level selection
+One benefit of loading level neighbors is that, presumably, all levels that it is possible for the player to traverse to are already spawned.
+Use their transforms to determine the lower-left bound of levels in bevy's coordinate space.
+To get their upper-right bounds, get the width and height values of the level from the project asset.
+
+Assuming you only have one project, query for the only `Handle<LdtkProject>` entity and look up its asset data in the `LdtkProject` asset store.
+Then, get the raw level data for every spawned level using the level entity's `LevelIid` component (there is a provided method for this).
+The raw level's `px_wid` and `pix_hei` values are what we need.
+
+After creating a `Rect` of the level bounds, check if the player is inside those bounds and update the `LevelSelection` resource accordingly.
+```rust,no_run
+# use bevy::prelude::*;
+# use bevy_ecs_ldtk::prelude::*;
+# #[derive(Component)]
+# struct Player;
+{{ #include ../../../examples/collectathon/player.rs:59:92 }}
+```

@@ -7,7 +7,7 @@ This code comes from the `collectathon` cargo example.
 
 ## Use world translation for levels and load level neighbors
 Rather than spawning a level the moment the player travels to them, this guide instead loads levels *before* they reach them.
-This is accomplished using the ["load level neighbors"](../explanation/level-selection.html#levelselection-resource) feature, spawning not just the currently selected level, but its neighbors too.
+Use the ["load level neighbors"](../explanation/level-selection.html#levelselection-resource) feature, so the plugin spawns not just the currently selected level, but its neighbors too.
 ```rust,no_run
 # use bevy::prelude::*;
 # use bevy_ecs_ldtk::prelude::*;

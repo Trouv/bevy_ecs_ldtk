@@ -463,14 +463,14 @@ mod tests {
         };
         let result =
             calculate_transform_from_entity_instance(&entity_instance, &entity_definition_map, 320);
-        assert_eq!(result, Transform::from_xyz(272., 48., 0.));
+        assert_eq!(result, Transform::from_xyz(256., 64., 0.));
 
         // difficult case
         let entity_instance = EntityInstance {
             px: IVec2::new(40, 50),
-            def_uid: 2,
-            width: 30,
-            height: 50,
+            def_uid: 2, // default size: (10, 25)
+            width: 30, // spawned with triple size on X
+            height: 50, // double size on Y
             pivot: Vec2::new(1., 1.),
             ..Default::default()
         };
@@ -478,7 +478,7 @@ mod tests {
             calculate_transform_from_entity_instance(&entity_instance, &entity_definition_map, 100);
         assert_eq!(
             result,
-            Transform::from_xyz(25., 75., 0.).with_scale(Vec3::new(3., 2., 1.))
+            Transform::from_xyz(40., 50., 0.).with_scale(Vec3::new(3., 2., 1.))
         );
     }
 
@@ -518,7 +518,7 @@ mod tests {
             calculate_transform_from_entity_instance(&entity_instance, &entity_definition_map, 100);
         assert_eq!(
             result,
-            Transform::from_xyz(32., 68., 0.).with_scale(Vec3::new(4., 2., 1.))
+            Transform::from_xyz(64., 36., 0.).with_scale(Vec3::new(4., 2., 1.))
         );
     }
 

@@ -225,13 +225,16 @@ pub fn ldtk_pixel_coords_to_translation_pivoted(
     entity_size: IVec2,
     pivot: Vec2,
 ) -> Vec2 {
-    let pivot_point = ldtk_coord_conversion(ldtk_coords, ldtk_pixel_height).as_vec2();
+	// Find entity's LDtk-defined position.
+    let translation = ldtk_coord_conversion(ldtk_coords, ldtk_pixel_height).as_vec2();
 
+	// Adjust entity pivot so that 0.5 is the center.
     let adjusted_pivot = Vec2::new(0.5 - pivot.x, pivot.y - 0.5);
 
+	// Find the spot on the entity which the pivot corresponds to.
     let offset = entity_size.as_vec2() * adjusted_pivot;
 
-    pivot_point + offset
+    translation + offset
 }
 
 /// Similar to [LayerBuilder::new_batch], except it doesn't consume the [LayerBuilder]

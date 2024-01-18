@@ -5,8 +5,8 @@
 A Bevy `0.12` migration guide is available on [Bevy's website](https://bevyengine.org/learn/migration-guides/0.11-0.12/).
 
 ## LDtk upgrade
-`bevy_ecs_ldtk` now supports LDtk 1.4.1, and is dropping support for previous versions.
-To update your game to LDtk 1.4.1, you should only need to install the new version of LDtk, open your project, and save it.
+`bevy_ecs_ldtk` now supports LDtk 1.5.3, and is dropping support for previous versions.
+To update your game to LDtk 1.5.3, you should only need to install the new version of LDtk, open your project, and save it.
 
 ## `Default` behavior for `LdtkEntity` and `LdtkIntCell` derive macros
 Fields on an `LdtkEntity`- or `LdtkIntCell`-derived bundle are no longer constructed from the field's `Default` implementation, but the bundle's.

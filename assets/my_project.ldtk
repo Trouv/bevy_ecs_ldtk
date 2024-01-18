@@ -5,12 +5,12 @@
 		"doc": "https://ldtk.io/json",
 		"schema": "https://ldtk.io/files/JSON_SCHEMA.json",
 		"appAuthor": "Sebastien 'deepnight' Benard",
-		"appVersion": "1.4.1",
+		"appVersion": "1.5.3",
 		"url": "https://ldtk.io"
 	},
 	"iid": "369ed9c0-c640-11ed-bac6-cfa00fd378d5",
-	"jsonVersion": "1.4.1",
-	"appBuildId": 471698,
+	"jsonVersion": "1.5.3",
+	"appBuildId": 473738,
 	"nextUid": 6,
 	"identifierStyle": "Capitalize",
 	"toc": [],
@@ -39,7 +39,7 @@
 	"levelNamePattern": "%world_Level_%idx",
 	"tutorialDesc": null,
 	"customCommands": [],
-	"flags": ["PrependIndexToLevelFileNames"],
+	"flags": [ "ExportOldTableOfContentData", "PrependIndexToLevelFileNames" ],
 	"defs": { "layers": [
 		{
 			"__type": "Entities",
@@ -64,13 +64,17 @@
 			"parallaxScaling": true,
 			"requiredTags": [],
 			"excludedTags": [],
+			"autoTilesKilledByOtherLayerUid": null,
+			"uiFilterTags": [],
+			"useAsyncRender": false,
 			"intGridValues": [],
 			"intGridValuesGroups": [],
 			"autoRuleGroups": [],
 			"autoSourceLayerDefUid": null,
 			"tilesetDefUid": null,
 			"tilePivotX": 0,
-			"tilePivotY": 0
+			"tilePivotY": 0,
+			"biomeFieldUid": null
 		},
 		{
 			"__type": "Tiles",
@@ -95,13 +99,17 @@
 			"parallaxScaling": true,
 			"requiredTags": [],
 			"excludedTags": [],
+			"autoTilesKilledByOtherLayerUid": null,
+			"uiFilterTags": [],
+			"useAsyncRender": false,
 			"intGridValues": [],
 			"intGridValuesGroups": [],
 			"autoRuleGroups": [],
 			"autoSourceLayerDefUid": null,
 			"tilesetDefUid": 1,
 			"tilePivotX": 0,
-			"tilePivotY": 0
+			"tilePivotY": 0,
+			"biomeFieldUid": null
 		}
 	], "entities": [
 		{
@@ -109,6 +117,7 @@
 			"uid": 4,
 			"tags": [],
 			"exportToToc": false,
+			"allowOutOfBounds": false,
 			"doc": null,
 			"width": 32,
 			"height": 32,
@@ -237,14 +246,14 @@
 							"__tags": [],
 							"__tile": { "tilesetUid": 5, "x": 160, "y": 192, "w": 32, "h": 32 },
 							"__smartColor": "#94D9B3",
-							"__worldX": 128,
-							"__worldY": 112,
 							"iid": "cbcc78c0-8dc0-11ec-9045-d14d83e99362",
 							"width": 64,
 							"height": 64,
 							"defUid": 4,
 							"px": [128,112],
-							"fieldInstances": []
+							"fieldInstances": [],
+							"__worldX": 128,
+							"__worldY": 112
 						},
 						{
 							"__identifier": "MyEntityIdentifier",
@@ -253,14 +262,14 @@
 							"__tags": [],
 							"__tile": { "tilesetUid": 5, "x": 160, "y": 192, "w": 32, "h": 32 },
 							"__smartColor": "#94D9B3",
-							"__worldX": 80,
-							"__worldY": 128,
 							"iid": "cbcc78c1-8dc0-11ec-9045-3f386f00e6d6",
 							"width": 32,
 							"height": 32,
 							"defUid": 4,
 							"px": [80,128],
-							"fieldInstances": []
+							"fieldInstances": [],
+							"__worldX": 80,
+							"__worldY": 128
 						}
 					]
 				},

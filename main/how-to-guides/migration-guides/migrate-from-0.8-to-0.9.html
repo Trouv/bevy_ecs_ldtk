@@ -173,8 +173,8 @@
                     <main>
                         <h1 id="migrate-from-08-to-09"><a class="header" href="#migrate-from-08-to-09">Migrate from 0.8 to 0.9</a></h1>
 <h2 id="ldtk-upgrade"><a class="header" href="#ldtk-upgrade">LDtk upgrade</a></h2>
-<p><code>bevy_ecs_ldtk</code> now supports LDtk 1.4.1, and is dropping support for previous versions.
-To update your game to LDtk 1.4.1, you should only need to install the new version of LDtk, open your project, and save it.</p>
+<p><code>bevy_ecs_ldtk</code> now supports LDtk 1.5.3, and is dropping support for previous versions.
+To update your game to LDtk 1.5.3, you should only need to install the new version of LDtk, open your project, and save it.</p>
 <h2 id="default-behavior-for-ldtkentity-and-ldtkintcell-derive-macros"><a class="header" href="#default-behavior-for-ldtkentity-and-ldtkintcell-derive-macros"><code>Default</code> behavior for <code>LdtkEntity</code> and <code>LdtkIntCell</code> derive macros</a></h2>
 <p>Fields on an <code>LdtkEntity</code>- or <code>LdtkIntCell</code>-derived bundle are no longer constructed from the field's <code>Default</code> implementation, but the bundle's.</p>
 <p>You may observe different behavior in <code>0.9</code> if the value for a field in your bundle's <code>Default</code> implementation differs from the field type's own <code>Default</code> implementation:</p>

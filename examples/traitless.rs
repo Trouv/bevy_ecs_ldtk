@@ -51,6 +51,10 @@ fn process_my_entity(
 
                 let sprite = TextureAtlasSprite {
                     index: (tile.y / tile.h) as usize * 16 + (tile.x / tile.w) as usize,
+					anchor: bevy::sprite::Anchor::Custom(Vec2::new(
+						entity_instance.pivot.x - 0.5,
+						0.5 - entity_instance.pivot.x,
+					)),
                     ..Default::default()
                 };
 

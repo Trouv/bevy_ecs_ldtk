@@ -54,4 +54,4 @@ name = "field_instances"
 path = "examples/field_instances/main.rs"
 
 [patch.crates-io]
-bevy_ecs_tilemap = { git = "https://github.com/divark/bevy_ecs_tilemap", branch = "0.12-fixes" }
+bevy_ecs_tilemap = { git = "https://github.com/StarArawn/bevy_ecs_tilemap", branch = "main" }

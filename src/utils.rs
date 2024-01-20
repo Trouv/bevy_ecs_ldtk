@@ -319,6 +319,13 @@ pub fn sprite_sheet_bundle_from_entity_info(
     grid: bool,
 ) -> SpriteSheetBundle {
     if let (Some(tileset), Some(tile), Some(tileset_definition)) = (tileset, &entity_instance.tile, tileset_definition) {
+		// Anchor is calculated the same way for gridded and non-gridded
+		// atlases, so only calculate it once (for DRYness).
+		let anchor = bevy::sprite::Anchor::Custom(Vec2::new(
+			entity_instance.pivot.x - 0.5,
+			0.5 - entity_instance.pivot.y
+		));
+
         SpriteSheetBundle {
             texture_atlas: if grid {
                 texture_atlases.add(TextureAtlas::from_grid(
@@ -350,11 +357,13 @@ pub fn sprite_sheet_bundle_from_entity_info(
                     index: (tile.y / (tile.h + tileset_definition.spacing)) as usize
                         * tileset_definition.c_wid as usize
                         + (tile.x / (tile.w + tileset_definition.spacing)) as usize,
+					anchor,
                     ..Default::default()
                 }
             } else {
                 TextureAtlasSprite {
                     index: 0,
+					anchor,
                     ..Default::default()
                 }
             },

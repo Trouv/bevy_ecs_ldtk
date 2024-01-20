@@ -15,7 +15,7 @@ use crate::{
 #[cfg(feature = "external_levels")]
 use crate::assets::LdtkExternalLevel;
 
-use bevy::{ecs::system::SystemState, prelude::*};
+use bevy::{ecs::system::SystemState, prelude::*, asset::RecursiveDependencyLoadState};
 use std::collections::{HashMap, HashSet};
 
 /// Detects [LdtkProject] events and spawns levels as children of the [LdtkWorldBundle].
@@ -74,27 +74,12 @@ pub fn apply_level_selection(
     ldtk_settings: Res<LdtkSettings>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
     mut level_set_query: Query<(&Handle<LdtkProject>, &mut LevelSet)>,
-    #[cfg(feature = "external_levels")] level_assets: Res<Assets<LdtkExternalLevel>>,
     #[cfg(feature = "render")] mut clear_color: ResMut<ClearColor>,
 ) {
     if let Some(level_selection) = level_selection {
         for (ldtk_handle, mut level_set) in level_set_query.iter_mut() {
             if let Some(project) = &ldtk_project_assets.get(ldtk_handle) {
                 if let Some(level) = project.find_raw_level_by_level_selection(&level_selection) {
-                    #[cfg(feature = "external_levels")]
-                    if let LdtkProjectData::Parent(project_data) = project.data() {
-                        if let Some(level_metadata) = project.get_level_metadata_by_iid(&level.iid)
-                        {
-                            let loaded_level = project_data.get_external_level_at_indices(
-                                &level_assets,
-                                level_metadata.indices(),
-                            );
-
-                            if loaded_level.is_none(){
-                                return;
-                            }
-                        }
-                    }
                     let new_level_set = {
                         let mut iids = HashSet::new();
                         iids.insert(LevelIid::new(level.iid.clone()));
@@ -144,11 +129,17 @@ pub fn apply_level_set(
     ldtk_level_query: Query<(&LevelIid, Entity)>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
     ldtk_settings: Res<LdtkSettings>,
+    asset_server: Res<AssetServer>,
     mut level_events: EventWriter<LevelEvent>,
 ) {
     for (world_entity, level_set, children, ldtk_asset_handle, respawn) in ldtk_world_query.iter() {
         // Only apply level set if the asset has finished loading
         if let Some(project) = ldtk_project_assets.get(ldtk_asset_handle) {
+            if let Some(load_state) = asset_server.get_recursive_dependency_load_state(ldtk_asset_handle) {
+                if load_state != RecursiveDependencyLoadState::Loaded {
+                    continue;
+                }
+            }
             // Determine what levels are currently spawned
             let previous_level_maps = children
                 .into_iter()

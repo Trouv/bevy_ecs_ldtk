@@ -237,6 +237,20 @@ pub fn ldtk_pixel_coords_to_translation_pivoted(
     translation + offset
 }
 
+pub fn entity_center(
+	translation: Vec3,
+	entity_size: IVec2,
+	pivot: Vec2
+) -> Vec3 {
+	// Adjust entity pivot so that 0.5 is the center.
+    let adjusted_pivot = Vec2::new(0.5 - pivot.x, pivot.y - 0.5);
+
+	// Find the spot on the entity which the pivot corresponds to.
+    let offset = entity_size.as_vec2() * adjusted_pivot;
+
+	translation + offset.extend(0.0)
+}
+
 /// Similar to [LayerBuilder::new_batch], except it doesn't consume the [LayerBuilder]
 ///
 /// This allows for more methods to be performed on the [LayerBuilder] before building it.

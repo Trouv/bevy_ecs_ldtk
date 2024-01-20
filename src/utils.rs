@@ -318,8 +318,8 @@ pub fn sprite_sheet_bundle_from_entity_info(
     texture_atlases: &mut Assets<TextureAtlas>,
     grid: bool,
 ) -> SpriteSheetBundle {
-    match (tileset, &entity_instance.tile, tileset_definition) {
-        (Some(tileset), Some(tile), Some(tileset_definition)) => SpriteSheetBundle {
+    if let (Some(tileset), Some(tile), Some(tileset_definition)) = (tileset, &entity_instance.tile, tileset_definition) {
+        SpriteSheetBundle {
             texture_atlas: if grid {
                 texture_atlases.add(TextureAtlas::from_grid(
                     tileset.clone(),
@@ -359,12 +359,11 @@ pub fn sprite_sheet_bundle_from_entity_info(
                 }
             },
             ..Default::default()
-        },
-        _ => {
-            warn!("EntityInstance needs a tile, an associated tileset, and an associated tileset definition to be bundled as a SpriteSheetBundle");
-            SpriteSheetBundle::default()
         }
-    }
+	} else {
+		warn!("EntityInstance needs a tile, an associated tileset, and an associated tileset definition to be bundled as a SpriteSheetBundle");
+		SpriteSheetBundle::default()
+	}
 }
 
 /// Creates a [SpriteBundle] from the entity information available to the

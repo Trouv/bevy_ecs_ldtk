@@ -429,3 +429,43 @@ let level_set = LevelSet::from_iids(
 );
 # }
 ```
+
+## Entity translations now respect pivot
+Entities now spawn with a translation matching their pivot, rather than their center point.
+```rust,ignore
+// How do I demonstrate that positions differ between old and new?
+// Must define pivot first.
+// Demonstrate loading an entity in 0.8, assert the position.
+// Then, do the same in 0.9, demonstrating that it's not the same.
+```
+The entities' sprites calculate their `Anchor` from the pivot, so they should appear the same,
+but some gameplay logic will need to be updated. The quickest way to update is using the
+`utils::entity_center` function:
+```rust,ignore
+//0.8
+fn do_something_with_transform (
+	mut query: Query<&mut Transform, With<EntityInstance>>
+) {
+	for (instance, mut transform) in &mut query {
+		let center = transform.translation();
+
+		//do something with the center
+	}
+}
+```
+```rust,ignore
+//0.9
+fn do_something_with_transform (
+	mut query: Query<(&EntityInstance, &mut Transform)>
+) {
+	for (instance, mut transform) in &mut query {
+		let object_center = crate::utils::entity_center(
+			transform.translation(),
+			IVec2::new(entity.width, entity.height),
+			entity.pivot
+		);
+
+		//do something with the center
+	}
+}
+```

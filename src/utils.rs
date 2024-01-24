@@ -85,10 +85,7 @@ pub fn calculate_transform_from_entity_instance(
 
     let size = IVec2::new(entity_instance.width, entity_instance.height);
 
-    let translation = ldtk_pixel_coords_to_translation(
-        entity_instance.px,
-        level_height,
-    );
+    let translation = ldtk_pixel_coords_to_translation(entity_instance.px, level_height);
     let scale = size.as_vec2() / def_size.as_vec2();
 
     Transform::from_translation(translation.extend(0.)).with_scale(scale.extend(1.))
@@ -225,30 +222,26 @@ pub fn ldtk_pixel_coords_to_translation_pivoted(
     entity_size: IVec2,
     pivot: Vec2,
 ) -> Vec2 {
-	// Find entity's LDtk-defined position.
+    // Find entity's LDtk-defined position.
     let translation = ldtk_coord_conversion(ldtk_coords, ldtk_pixel_height).as_vec2();
 
-	// Adjust entity pivot so that 0.5 is the center.
+    // Adjust entity pivot so that 0.5 is the center.
     let adjusted_pivot = Vec2::new(0.5 - pivot.x, pivot.y - 0.5);
 
-	// Find the spot on the entity which the pivot corresponds to.
+    // Find the spot on the entity which the pivot corresponds to.
     let offset = entity_size.as_vec2() * adjusted_pivot;
 
     translation + offset
 }
 
-pub fn entity_center(
-	translation: Vec3,
-	entity_size: IVec2,
-	pivot: Vec2
-) -> Vec3 {
-	// Adjust entity pivot so that 0.5 is the center.
+pub fn entity_center(translation: Vec3, entity_size: IVec2, pivot: Vec2) -> Vec3 {
+    // Adjust entity pivot so that 0.5 is the center.
     let adjusted_pivot = Vec2::new(0.5 - pivot.x, pivot.y - 0.5);
 
-	// Find the spot on the entity which the pivot corresponds to.
+    // Find the spot on the entity which the pivot corresponds to.
     let offset = entity_size.as_vec2() * adjusted_pivot;
 
-	translation + offset.extend(0.0)
+    translation + offset.extend(0.0)
 }
 
 /// Similar to [LayerBuilder::new_batch], except it doesn't consume the [LayerBuilder]
@@ -332,13 +325,15 @@ pub fn sprite_sheet_bundle_from_entity_info(
     texture_atlases: &mut Assets<TextureAtlas>,
     grid: bool,
 ) -> SpriteSheetBundle {
-    if let (Some(tileset), Some(tile), Some(tileset_definition)) = (tileset, &entity_instance.tile, tileset_definition) {
-		// Anchor is calculated the same way for gridded and non-gridded
-		// atlases, so only calculate it once (for DRYness).
-		let anchor = bevy::sprite::Anchor::Custom(Vec2::new(
-			entity_instance.pivot.x - 0.5,
-			0.5 - entity_instance.pivot.y
-		));
+    if let (Some(tileset), Some(tile), Some(tileset_definition)) =
+        (tileset, &entity_instance.tile, tileset_definition)
+    {
+        // Anchor is calculated the same way for gridded and non-gridded
+        // atlases, so only calculate it once (for DRYness).
+        let anchor = bevy::sprite::Anchor::Custom(Vec2::new(
+            entity_instance.pivot.x - 0.5,
+            0.5 - entity_instance.pivot.y,
+        ));
 
         SpriteSheetBundle {
             texture_atlas: if grid {
@@ -371,22 +366,22 @@ pub fn sprite_sheet_bundle_from_entity_info(
                     index: (tile.y / (tile.h + tileset_definition.spacing)) as usize
                         * tileset_definition.c_wid as usize
                         + (tile.x / (tile.w + tileset_definition.spacing)) as usize,
-					anchor,
+                    anchor,
                     ..Default::default()
                 }
             } else {
                 TextureAtlasSprite {
                     index: 0,
-					anchor,
+                    anchor,
                     ..Default::default()
                 }
             },
             ..Default::default()
         }
-	} else {
-		warn!("EntityInstance needs a tile, an associated tileset, and an associated tileset definition to be bundled as a SpriteSheetBundle");
-		SpriteSheetBundle::default()
-	}
+    } else {
+        warn!("EntityInstance needs a tile, an associated tileset, and an associated tileset definition to be bundled as a SpriteSheetBundle");
+        SpriteSheetBundle::default()
+    }
 }
 
 /// Creates a [SpriteBundle] from the entity information available to the
@@ -491,7 +486,7 @@ mod tests {
         let entity_instance = EntityInstance {
             px: IVec2::new(40, 50),
             def_uid: 2, // default size: (10, 25)
-            width: 30, // spawned with triple size on X
+            width: 30,  // spawned with triple size on X
             height: 50, // double size on Y
             pivot: Vec2::new(1., 1.),
             ..Default::default()

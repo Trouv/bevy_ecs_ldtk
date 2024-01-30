@@ -397,7 +397,7 @@ pub fn sprite_sheet_bundle_from_entity_info(
 ///
 /// Used for the `#[sprite_bundle]` attribute macro for `#[derive(LdtkEntity)]`.
 /// See [LdtkEntity#sprite_bundle] for more info.
-pub fn sprite_bundle_from_entity_info(tileset: Option<&Handle<Image>>) -> SpriteBundle {
+pub fn sprite_bundle_from_entity_info(entity_instance: &EntityInstance, tileset: Option<&Handle<Image>>) -> SpriteBundle {
     let tileset = match tileset {
         Some(tileset) => tileset.clone(),
         None => {
@@ -408,6 +408,10 @@ pub fn sprite_bundle_from_entity_info(tileset: Option<&Handle<Image>>) -> Sprite
 
     SpriteBundle {
         texture: tileset,
+		sprite: Sprite {
+			anchor: ldtk_pivot_to_anchor(entity_instance.pivot),
+			..Default::default()
+		},
         ..Default::default()
     }
 }

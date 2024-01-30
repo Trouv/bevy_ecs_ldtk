@@ -443,7 +443,7 @@ but gameplay logic will need to be rewritten to account for the differences,
 as will systems that add sprite bundles manually. In the latter case,
 `utils::ldtk_pivot_to_anchor` can be used to find the correct `Anchor`.
 
-If the entity's center point is still wanted, it can be found using `utils::entity_center`:
+If the entity's center point is still wanted, it can be found using `utils::ldtk_entity_visual_center`:
 ```rust,ignore
 //0.8
 fn shoot_laser_from_center (
@@ -462,7 +462,7 @@ fn shoot_laser_from_center (
 	mut query: Query<(&EntityInstance, &mut Transform, &FiringLaser)>
 ) {
 	for (instance, mut transform, laser) in &mut query {
-		let object_center = bevy_ecs_ldtk::utils::entity_center(
+		let object_center = bevy_ecs_ldtk::utils::ldtk_entity_visual_center(
 			transform.translation(),
 			IVec2::new(entity.width, entity.height),
 			entity.pivot

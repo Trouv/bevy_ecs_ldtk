@@ -438,34 +438,35 @@ Entities now spawn with a translation matching their actual location, rather tha
 // Demonstrate loading an entity in 0.8, assert the position.
 // Then, do the same in 0.9, demonstrating that it's not the same.
 ```
-The entities' sprites calculate their `Anchor` from the pivot, so they should appear the same,
-but some gameplay logic will need to be updated. The quickest way to update is using the
-`utils::entity_center` function:
+For `LdtkEntity` bundles with a `#[sprite_sheet_bundle(...)]`, the macro calculates the sprite's `Anchor` from the pivot, so they should appear the same,
+but gameplay logic will need to be rewritten to account for the differences.
+
+If the entity's center point is still wanted, it can be found using `utils::entity_center`:
 ```rust,ignore
 //0.8
-fn do_something_with_transform (
-	mut query: Query<&mut Transform, With<EntityInstance>>
+fn shoot_laser_from_center (
+	mut query: Query<(&mut Transform, &FiringLaser), With<EntityInstance>>
 ) {
-	for (instance, mut transform) in &mut query {
+	for (mut transform, laser) in &mut query {
 		let center = transform.translation();
 
-		//do something with the center
+		//do laser shooting stuff
 	}
 }
 ```
 ```rust,ignore
 //0.9
-fn do_something_with_transform (
-	mut query: Query<(&EntityInstance, &mut Transform)>
+fn shoot_laser_from_center (
+	mut query: Query<(&EntityInstance, &mut Transform, &FiringLaser)>
 ) {
-	for (instance, mut transform) in &mut query {
-		let object_center = crate::utils::entity_center(
+	for (instance, mut transform, laser) in &mut query {
+		let object_center = bevy_ecs_ldtk::utils::entity_center(
 			transform.translation(),
 			IVec2::new(entity.width, entity.height),
 			entity.pivot
 		);
 
-		//do something with the center
+		//do laser shooting stuff
 	}
 }
 ```

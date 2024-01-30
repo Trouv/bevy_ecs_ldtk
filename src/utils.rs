@@ -7,7 +7,7 @@ use crate::{
 };
 
 use crate::{components::TileGridBundle, ldtk::*};
-use bevy::prelude::*;
+use bevy::{prelude::*, sprite::Anchor};
 use bevy_ecs_tilemap::{
     map::{TilemapId, TilemapSize},
     tiles::{TilePos, TileStorage},
@@ -313,6 +313,16 @@ where
     try_each_optional_permutation(a, b, |x, y| map.get(&(x, y))).unwrap_or(default)
 }
 
+/// Converts an [EntityInstance]'s pivot into a [bevy::sprite::Anchor].
+///
+/// Used when adding sprite bundles to spawned entity instances.
+pub fn ldtk_pivot_to_anchor(pivot: Vec2) -> Anchor {
+	Anchor::Custom(Vec2::new(
+		pivot.x - 0.5,
+		0.5 - pivot.y,
+	))
+}
+
 /// Creates a [SpriteSheetBundle] from the entity information available to the
 /// [LdtkEntity::bundle_entity] method.
 ///
@@ -330,10 +340,7 @@ pub fn sprite_sheet_bundle_from_entity_info(
     {
         // Anchor is calculated the same way for gridded and non-gridded
         // atlases, so only calculate it once (for DRYness).
-        let anchor = bevy::sprite::Anchor::Custom(Vec2::new(
-            entity_instance.pivot.x - 0.5,
-            0.5 - entity_instance.pivot.y,
-        ));
+        let anchor = ldtk_pivot_to_anchor(entity_instance.pivot);
 
         SpriteSheetBundle {
             texture_atlas: if grid {

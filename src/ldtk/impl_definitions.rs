@@ -104,7 +104,7 @@ mod tests {
 
         let image = definitions.create_int_grid_image().unwrap();
 
-        assert_eq!(image.size(), Vec2::splat(32.));
+        assert_eq!(image.size(), UVec2::splat(32));
     }
 
     #[test]

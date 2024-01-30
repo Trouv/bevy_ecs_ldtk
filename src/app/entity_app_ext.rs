@@ -44,7 +44,7 @@ pub trait LdtkEntityAppExt {
     ///
     /// fn main() {
     ///     App::empty()
-    ///         .add_plugin(LdtkPlugin)
+    ///         .add_plugins(LdtkPlugin)
     ///         .register_ldtk_entity_for_layer::<MyBundle>("MyLayerIdentifier", "my_entity_identifier")
     ///         // add other systems, plugins, resources...
     ///         .run();

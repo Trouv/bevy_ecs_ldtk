@@ -1,8 +1,9 @@
+use std::io;
+
 use crate::ldtk::{loaded_level::LoadedLevel, Level};
 use bevy::{
-    asset::{AssetLoader, LoadContext, LoadedAsset},
+    asset::{io::Reader, AssetLoader, AsyncReadExt, LoadContext},
     prelude::*,
-    reflect::TypeUuid,
     utils::BoxedFuture,
 };
 use thiserror::Error;
@@ -14,8 +15,7 @@ use thiserror::Error;
 /// Requires the `external_levels` feature to be enabled.
 ///
 /// [`LdtkProject`]: crate::assets::LdtkProject
-#[derive(Clone, Debug, PartialEq, TypeUuid, Reflect)]
-#[uuid = "5448469b-2134-44f5-a86c-a7b829f70a0c"]
+#[derive(Clone, Debug, PartialEq, Reflect, Asset)]
 pub struct LdtkExternalLevel {
     /// Raw LDtk level data.
     data: Level,
@@ -41,6 +41,12 @@ impl LdtkExternalLevel {
 /// Errors that can occur when loading an [`LdtkExternalLevel`] asset.
 #[derive(Debug, Error)]
 pub enum LdtkExternalLevelLoaderError {
+    /// Encountered IO error reading LDtk project
+    #[error("encountered IO error reading LDtk level: {0}")]
+    Io(#[from] io::Error),
+    /// Unable to deserialize LDtk level
+    #[error("unable to deserialize LDtk level: {0}")]
+    Deserialize(#[from] serde_json::Error),
     /// External LDtk level should contain all level data, but some level has null layers.
     #[error("external LDtk level should contain all level data, but some level has null layers")]
     NullLayers,
@@ -51,13 +57,20 @@ pub enum LdtkExternalLevelLoaderError {
 pub struct LdtkExternalLevelLoader;
 
 impl AssetLoader for LdtkExternalLevelLoader {
+    type Asset = LdtkExternalLevel;
+    type Settings = ();
+    type Error = LdtkExternalLevelLoaderError;
+
     fn load<'a>(
         &'a self,
-        bytes: &'a [u8],
-        load_context: &'a mut LoadContext,
-    ) -> BoxedFuture<'a, anyhow::Result<()>> {
+        reader: &'a mut Reader,
+        _settings: &'a Self::Settings,
+        _load_context: &'a mut LoadContext,
+    ) -> BoxedFuture<'a, Result<Self::Asset, Self::Error>> {
         Box::pin(async move {
-            let data: Level = serde_json::from_slice(bytes)?;
+            let mut bytes = Vec::new();
+            reader.read_to_end(&mut bytes).await?;
+            let data: Level = serde_json::from_slice(&bytes)?;
 
             if data.layer_instances.is_none() {
                 Err(LdtkExternalLevelLoaderError::NullLayers)?;
@@ -65,10 +78,7 @@ impl AssetLoader for LdtkExternalLevelLoader {
 
             let ldtk_level = LdtkExternalLevel { data };
 
-            let loaded_asset = LoadedAsset::new(ldtk_level);
-
-            load_context.set_default_asset(loaded_asset);
-            Ok(())
+            Ok(ldtk_level)
         })
     }
 

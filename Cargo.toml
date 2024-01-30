@@ -15,25 +15,24 @@ members = ["macros"]
 
 [dependencies]
 bevy_ecs_ldtk_macros = { version = "0.8.0", optional = true, path = "macros" }
-bevy_ecs_tilemap = { version = "0.11", default-features = false }
-bevy = { version = "0.11", default-features = false, features = ["bevy_sprite"] }
+bevy_ecs_tilemap = { version = "0.12", default-features = false }
+bevy = { version = "0.12", default-features = false, features = ["bevy_sprite"] }
 derive-getters = "0.3.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 regex = "1"
 hex = "0.4"
-anyhow = "1.0"
 thiserror = "1.0"
 paste = "1.0"
 derive_more = "0.99.17"
 path-clean = "1.0.1"
 
 [dev-dependencies]
-bevy = "0.11"
-bevy_rapier2d = "0.22.0"
+bevy = "0.12"
+bevy_rapier2d = "0.23.0"
 fake = { version = "2.8.0", features = ["uuid"] }
 rand = "0.8"
-bevy-inspector-egui = "0.19.0"
+bevy-inspector-egui = "0.21.0"
 
 [features]
 default = ["derive", "render", "internal_levels"]
@@ -53,3 +52,6 @@ path = "examples/platformer/main.rs"
 [[example]]
 name = "field_instances"
 path = "examples/field_instances/main.rs"
+
+[patch.crates-io]
+bevy_ecs_tilemap = { git = "https://github.com/StarArawn/bevy_ecs_tilemap", branch = "main" }

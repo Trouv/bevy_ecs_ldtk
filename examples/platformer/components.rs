@@ -5,7 +5,7 @@ use std::collections::HashSet;
 
 use bevy_rapier2d::prelude::*;
 
-#[derive(Clone, Debug, Default, Bundle, LdtkIntCell)]
+#[derive(Clone, Default, Bundle, LdtkIntCell)]
 pub struct ColliderBundle {
     pub collider: Collider,
     pub rigid_body: RigidBody,
@@ -16,7 +16,7 @@ pub struct ColliderBundle {
     pub density: ColliderMassProperties,
 }
 
-#[derive(Clone, Debug, Default, Bundle, LdtkIntCell)]
+#[derive(Clone, Default, Bundle, LdtkIntCell)]
 pub struct SensorBundle {
     pub collider: Collider,
     pub sensor: Sensor,
@@ -133,7 +133,7 @@ pub struct WallBundle {
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Component)]
 pub struct Climbable;
 
-#[derive(Clone, Debug, Default, Bundle, LdtkIntCell)]
+#[derive(Clone, Default, Bundle, LdtkIntCell)]
 pub struct LadderBundle {
     #[from_int_grid_cell]
     pub sensor_bundle: SensorBundle,

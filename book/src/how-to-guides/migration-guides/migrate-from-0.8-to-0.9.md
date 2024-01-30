@@ -439,7 +439,9 @@ Entities now spawn with a translation matching their actual location, rather tha
 // Then, do the same in 0.9, demonstrating that it's not the same.
 ```
 For `LdtkEntity` bundles with a `#[sprite_sheet_bundle(...)]`, the macro calculates the sprite's `Anchor` from the pivot, so they should appear the same,
-but gameplay logic will need to be rewritten to account for the differences.
+but gameplay logic will need to be rewritten to account for the differences,
+as will systems that add sprite bundles manually. In the latter case,
+`utils::ldtk_pivot_to_anchor` can be used to find the correct `Anchor`.
 
 If the entity's center point is still wanted, it can be found using `utils::entity_center`:
 ```rust,ignore

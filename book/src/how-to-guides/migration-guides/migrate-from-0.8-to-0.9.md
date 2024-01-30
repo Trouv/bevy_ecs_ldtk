@@ -431,7 +431,7 @@ let level_set = LevelSet::from_iids(
 ```
 
 ## Entity translations now respect pivot
-Entities now spawn with a translation matching their pivot, rather than their center point.
+Entities now spawn with a translation matching their actual location, rather than their "visual center".
 ```rust,ignore
 // How do I demonstrate that positions differ between old and new?
 // Must define pivot first.

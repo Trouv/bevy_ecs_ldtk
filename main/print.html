@@ -639,7 +639,7 @@ fn cache_wall_locations(
     ldtk_project_entities: Query&lt;&amp;Handle&lt;LdtkProject&gt;&gt;,
     ldtk_project_assets: Res&lt;Assets&lt;LdtkProject&gt;&gt;,
 ) {
-    for level_event in level_events.iter() {
+    for level_event in level_events.read() {
         if let LevelEvent::Spawned(level_iid) = level_event {
             let ldtk_project = ldtk_project_assets
                 .get(ldtk_project_entities.single())
@@ -916,6 +916,9 @@ This approach is recommended over filtering for <code>Added&lt;EntityInstance&gt
 For these, migration guides are provided to help users migrate their existing games to the new version.
 If you're contributing a breaking change to <code>bevy_ecs_ldtk</code>, you may be asked to describe it in the appropriate migration guide.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="migrate-from-08-to-09"><a class="header" href="#migrate-from-08-to-09">Migrate from 0.8 to 0.9</a></h1>
+<h2 id="bevy-upgrade"><a class="header" href="#bevy-upgrade">Bevy upgrade</a></h2>
+<p><code>bevy_ecs_ldtk</code> has upgraded to Bevy and <code>bevy_ecs_tilemap</code> version <code>0.12</code>.
+A Bevy <code>0.12</code> migration guide is available on <a href="https://bevyengine.org/learn/migration-guides/0.11-0.12/">Bevy's website</a>.</p>
 <h2 id="ldtk-upgrade"><a class="header" href="#ldtk-upgrade">LDtk upgrade</a></h2>
 <p><code>bevy_ecs_ldtk</code> now supports LDtk 1.5.3, and is dropping support for previous versions.
 To update your game to LDtk 1.5.3, you should only need to install the new version of LDtk, open your project, and save it.</p>
@@ -1251,7 +1254,7 @@ fn assert_level_event_type(mut level_events: EventReader&lt;LevelEvent&gt;) {
 </span>use std::any::{Any, TypeId};
 // 0.9
 fn assert_level_event_type(mut level_events: EventReader&lt;LevelEvent&gt;) {
-    for level_event in level_events.iter() {
+    for level_event in level_events.read() {
         use LevelEvent::*;
         let level_iid = match level_event {
             SpawnTriggered(level_iid) | Spawned(level_iid) | Transformed(level_iid) | Despawned(level_iid) =&gt; level_iid,

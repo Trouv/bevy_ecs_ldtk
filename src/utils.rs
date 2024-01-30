@@ -318,10 +318,7 @@ where
 ///
 /// Used when adding sprite bundles to spawned entity instances.
 pub fn ldtk_pivot_to_anchor(pivot: Vec2) -> Anchor {
-	Anchor::Custom(Vec2::new(
-		pivot.x - 0.5,
-		0.5 - pivot.y,
-	))
+    Anchor::Custom(Vec2::new(pivot.x - 0.5, 0.5 - pivot.y))
 }
 
 /// Creates a [SpriteSheetBundle] from the entity information available to the
@@ -397,7 +394,10 @@ pub fn sprite_sheet_bundle_from_entity_info(
 ///
 /// Used for the `#[sprite_bundle]` attribute macro for `#[derive(LdtkEntity)]`.
 /// See [LdtkEntity#sprite_bundle] for more info.
-pub fn sprite_bundle_from_entity_info(entity_instance: &EntityInstance, tileset: Option<&Handle<Image>>) -> SpriteBundle {
+pub fn sprite_bundle_from_entity_info(
+    entity_instance: &EntityInstance,
+    tileset: Option<&Handle<Image>>,
+) -> SpriteBundle {
     let tileset = match tileset {
         Some(tileset) => tileset.clone(),
         None => {
@@ -408,10 +408,10 @@ pub fn sprite_bundle_from_entity_info(entity_instance: &EntityInstance, tileset:
 
     SpriteBundle {
         texture: tileset,
-		sprite: Sprite {
-			anchor: ldtk_pivot_to_anchor(entity_instance.pivot),
-			..Default::default()
-		},
+        sprite: Sprite {
+            anchor: ldtk_pivot_to_anchor(entity_instance.pivot),
+            ..Default::default()
+        },
         ..Default::default()
     }
 }

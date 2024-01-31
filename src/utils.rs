@@ -699,6 +699,33 @@ mod tests {
     }
 
     #[test]
+    fn test_pivot_to_anchor() {
+        //Center
+        assert_eq!(
+            ldtk_pivot_to_anchor(Vec2::new(0.5, 0.5)).as_vec(),
+            Vec2::ZERO
+        );
+
+        //Top-left
+        assert_eq!(
+            ldtk_pivot_to_anchor(Vec2::new(0.0, 0.0)).as_vec(),
+            Vec2::new(-0.5, 0.5)
+        );
+        
+        //Bottom-right
+        assert_eq!(
+            ldtk_pivot_to_anchor(Vec2::new(1.0, 1.0)).as_vec(),
+            Vec2::new(0.5, -0.5)
+        );
+
+        //Fractional
+        assert_eq!(
+            ldtk_pivot_to_anchor(Vec2::new(0.75, 0.75)).as_vec(),
+            Vec2::new(0.25, -0.25)
+        );
+    }
+
+    #[test]
     fn test_try_each_optional_permutation() {
         fn test_func(a: Option<i32>, b: Option<i32>) -> Option<i32> {
             match (a, b) {

@@ -711,7 +711,7 @@ mod tests {
             ldtk_pivot_to_anchor(Vec2::new(0.0, 0.0)).as_vec(),
             Vec2::new(-0.5, 0.5)
         );
-        
+
         //Bottom-right
         assert_eq!(
             ldtk_pivot_to_anchor(Vec2::new(1.0, 1.0)).as_vec(),

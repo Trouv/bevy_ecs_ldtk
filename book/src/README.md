@@ -23,6 +23,7 @@ Splitting the documentation up this way means that this book is not necessarily 
 Some chapters are intended to be read while working on your own project, while others are meant to be more like studying material.
 The following chapters are good jumping-off points for beginners:
 - [*Tile-based Game* tutorial](tutorials/tile-based-game/index.html)
+- [*Level Selection* explanation](explanation/level-selection.md)
 - [*Game Logic Integration* explanation](explanation/game-logic-integration.md)
 
 ## Other resources

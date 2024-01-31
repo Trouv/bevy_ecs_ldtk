@@ -1,7 +1,7 @@
 // This example uses the LevelSet component instead of the LevelSelection resource.
 // The setup system puts several level iids in the LevelSet, so an entire LDtk world layer is
 // spawned.
-
+// See <https://trouv.github.io/bevy_ecs_ldtk/latest/explanation/level-selection.html>.
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 

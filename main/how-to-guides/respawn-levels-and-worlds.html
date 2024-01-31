@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Create Bevy Relations from LDtk Entity References - bevy_ecs_ldtk Book</title>
+        <title>Respawn Levels and Worlds - bevy_ecs_ldtk Book</title>
 
 
         <!-- Custom HTML head -->
@@ -88,7 +88,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../index.html">Introduction</a></li><li class="chapter-item expanded affix "><li class="part-title">Tutorials</li><li class="chapter-item expanded "><a href="../tutorials/tile-based-game/index.html"><strong aria-hidden="true">1.</strong> Tile-based Game</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../tutorials/tile-based-game/create-your-ldtk-project.html"><strong aria-hidden="true">1.1.</strong> Create your LDtk project</a></li><li class="chapter-item expanded "><a href="../tutorials/tile-based-game/spawn-your-ldtk-project-in-bevy.html"><strong aria-hidden="true">1.2.</strong> Spawn your LDtk project in Bevy</a></li><li class="chapter-item expanded "><a href="../tutorials/tile-based-game/add-gameplay-to-your-project.html"><strong aria-hidden="true">1.3.</strong> Add gameplay to your project</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">2.</strong> Platformer</div></li><li class="chapter-item expanded affix "><li class="part-title">Explanation</li><li class="chapter-item expanded "><a href="../explanation/level-selection.html"><strong aria-hidden="true">3.</strong> Level Selection</a></li><li class="chapter-item expanded "><a href="../explanation/game-logic-integration.html"><strong aria-hidden="true">4.</strong> Game Logic Integration</a></li><li class="chapter-item expanded "><a href="../explanation/anatomy-of-the-world.html"><strong aria-hidden="true">5.</strong> Anatomy of the World</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">6.</strong> Plugin Schedule</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">7.</strong> Asset Model</div></li><li class="chapter-item expanded affix "><li class="part-title">How-To Guides</li><li class="chapter-item expanded "><div><strong aria-hidden="true">8.</strong> Register Bundles for Intgrid Tiles and LDtk Entities</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">9.</strong> Process Entities Further with Blueprints</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">10.</strong> Combine Tiles into Larger Entities</div></li><li class="chapter-item expanded "><a href="../how-to-guides/create-bevy-relations-from-ldtk-entity-references.html" class="active"><strong aria-hidden="true">11.</strong> Create Bevy Relations from LDtk Entity References</a></li><li class="chapter-item expanded "><a href="../how-to-guides/respawn-levels-and-worlds.html"><strong aria-hidden="true">12.</strong> Respawn Levels and Worlds</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">13.</strong> Animate Tiles</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">14.</strong> Camera Logic</div></li><li><ol class="section"><li class="chapter-item expanded "><div><strong aria-hidden="true">14.1.</strong> Implement Fit-Inside Camera</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">14.2.</strong> Implement Fit-Around Camera</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">14.3.</strong> Implement Parallax</div></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">15.</strong> Retrieve Field Instance Data</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">16.</strong> Retrieve Loaded Level Data</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">17.</strong> Compile to WASM</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">18.</strong> Compile Headless</div></li><li class="chapter-item expanded "><a href="../how-to-guides/migration-guides/index.html"><strong aria-hidden="true">19.</strong> Migration Guides</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../how-to-guides/migration-guides/migrate-from-0.8-to-0.9.html"><strong aria-hidden="true">19.1.</strong> Migrate from 0.8 to 0.9</a></li><li class="spacer"></li></ol></li><li class="chapter-item expanded "><a href="../api-reference.html">API Reference</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../index.html">Introduction</a></li><li class="chapter-item expanded affix "><li class="part-title">Tutorials</li><li class="chapter-item expanded "><a href="../tutorials/tile-based-game/index.html"><strong aria-hidden="true">1.</strong> Tile-based Game</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../tutorials/tile-based-game/create-your-ldtk-project.html"><strong aria-hidden="true">1.1.</strong> Create your LDtk project</a></li><li class="chapter-item expanded "><a href="../tutorials/tile-based-game/spawn-your-ldtk-project-in-bevy.html"><strong aria-hidden="true">1.2.</strong> Spawn your LDtk project in Bevy</a></li><li class="chapter-item expanded "><a href="../tutorials/tile-based-game/add-gameplay-to-your-project.html"><strong aria-hidden="true">1.3.</strong> Add gameplay to your project</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">2.</strong> Platformer</div></li><li class="chapter-item expanded affix "><li class="part-title">Explanation</li><li class="chapter-item expanded "><a href="../explanation/level-selection.html"><strong aria-hidden="true">3.</strong> Level Selection</a></li><li class="chapter-item expanded "><a href="../explanation/game-logic-integration.html"><strong aria-hidden="true">4.</strong> Game Logic Integration</a></li><li class="chapter-item expanded "><a href="../explanation/anatomy-of-the-world.html"><strong aria-hidden="true">5.</strong> Anatomy of the World</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">6.</strong> Plugin Schedule</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">7.</strong> Asset Model</div></li><li class="chapter-item expanded affix "><li class="part-title">How-To Guides</li><li class="chapter-item expanded "><div><strong aria-hidden="true">8.</strong> Register Bundles for Intgrid Tiles and LDtk Entities</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">9.</strong> Process Entities Further with Blueprints</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">10.</strong> Combine Tiles into Larger Entities</div></li><li class="chapter-item expanded "><a href="../how-to-guides/create-bevy-relations-from-ldtk-entity-references.html"><strong aria-hidden="true">11.</strong> Create Bevy Relations from LDtk Entity References</a></li><li class="chapter-item expanded "><a href="../how-to-guides/respawn-levels-and-worlds.html" class="active"><strong aria-hidden="true">12.</strong> Respawn Levels and Worlds</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">13.</strong> Animate Tiles</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">14.</strong> Camera Logic</div></li><li><ol class="section"><li class="chapter-item expanded "><div><strong aria-hidden="true">14.1.</strong> Implement Fit-Inside Camera</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">14.2.</strong> Implement Fit-Around Camera</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">14.3.</strong> Implement Parallax</div></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">15.</strong> Retrieve Field Instance Data</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">16.</strong> Retrieve Loaded Level Data</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">17.</strong> Compile to WASM</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">18.</strong> Compile Headless</div></li><li class="chapter-item expanded "><a href="../how-to-guides/migration-guides/index.html"><strong aria-hidden="true">19.</strong> Migration Guides</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../how-to-guides/migration-guides/migrate-from-0.8-to-0.9.html"><strong aria-hidden="true">19.1.</strong> Migrate from 0.8 to 0.9</a></li><li class="spacer"></li></ol></li><li class="chapter-item expanded "><a href="../api-reference.html">API Reference</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -171,109 +171,119 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="create-bevy-relations-from-ldtk-entity-references"><a class="header" href="#create-bevy-relations-from-ldtk-entity-references">Create Bevy Relations from LDtk Entity References</a></h1>
-<p>LDtk allows entities to point to other entities using a field.
-This is analogous to a bevy &quot;relation&quot; - a component on one entity that stores the <code>Entity</code> identifier of another entity.</p>
-<p>This chapter goes through one possible method for resolving LDtk entity references as such.
-This code is used in the <code>field_instances</code> cargo example, and facilitates &quot;enemy&quot; entities pointing to another &quot;enemy&quot; entity as their &quot;mother&quot;.</p>
-<h2 id="register-unresolved-reference"><a class="header" href="#register-unresolved-reference">Register unresolved reference</a></h2>
-<p>First, create a component representing an &quot;unresolved&quot; entity reference, storing the target entity's LDtk iid rather than a bevy <code>Entity</code>:</p>
+                        <h1 id="respawn-levels-and-worlds"><a class="header" href="#respawn-levels-and-worlds">Respawn Levels and Worlds</a></h1>
+<p>Internally, <code>bevy_ecs_ldtk</code> uses a <a href="https://docs.rs/bevy_ecs_ldtk/0.8.0/bevy_ecs_ldtk/prelude/struct.Respawn.html"><code>Respawn</code></a> component on worlds and levels to assist in the spawning process. <!-- x-release-please-version -->
+This can be leveraged by users to implement a simple level restart feature, or an even more heavy-handed world restart feature.</p>
+<p>This code is from the <code>collectathon</code> cargo example.</p>
+<h2 id="respawn-the-world"><a class="header" href="#respawn-the-world">Respawn the world</a></h2>
+<p>To respawn the world, get the world's <code>Entity</code> and insert the <code>Respawn</code> component to it.
+This is especially easy if, like most users, you only have one world in your game.</p>
 <pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span><span class="boring">use bevy::prelude::*;
 </span><span class="boring">use bevy_ecs_ldtk::prelude::*;
-</span>#[derive(Debug, Default, Deref, DerefMut, Component)]
-pub struct UnresolvedMotherRef(Option&lt;EntityIid&gt;);
-<span class="boring">}</span></code></pre></pre>
-<p>Create a method for constructing this component from an <code>&amp;EntityInstance</code>.
-This should retrieve the value of the entity reference field instance on the LDtk entity.
-Most likely, you'll use a hard-coded field identifier (&quot;mother&quot; in this example) to find it:</p>
-<pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span><span class="boring">use bevy::prelude::*;
-</span><span class="boring">use bevy_ecs_ldtk::prelude::*;
-</span><span class="boring">pub struct UnresolvedMotherRef(Option&lt;EntityIid&gt;);
-</span>impl UnresolvedMotherRef {
-    pub fn from_mother_field(entity_instance: &amp;EntityInstance) -&gt; UnresolvedMotherRef {
-        UnresolvedMotherRef(
-            entity_instance
-                .get_maybe_entity_ref_field(&quot;mother&quot;)
-                .expect(&quot;expected entity to have mother entity ref field&quot;)
-                .as_ref()
-                .map(|entity_ref| EntityIid::new(entity_ref.entity_iid.clone())),
-        )
+</span>fn respawn_world(
+    mut commands: Commands,
+    ldtk_projects: Query&lt;Entity, With&lt;Handle&lt;LdtkProject&gt;&gt;&gt;,
+    input: Res&lt;Input&lt;KeyCode&gt;&gt;,
+) {
+    if input.just_pressed(KeyCode::R) {
+        commands.entity(ldtk_projects.single()).insert(Respawn);
     }
 }
 <span class="boring">}</span></code></pre></pre>
-<p>Add this component to the <code>LdtkEntity</code> and configure it to be constructed using this method.
-This guide assumes that you've already registered this bundle to the app.</p>
+<p>Note that this <em>will</em> respawn <a href="../explanation/anatomy-of-the-world.html#worldly-entities">worldly</a> entities too.</p>
+<h2 id="respawn-the-currently-selected-level"><a class="header" href="#respawn-the-currently-selected-level">Respawn the currently-selected level</a></h2>
+<p>Respawning a level works similarly to respawning the world.
+Get the level's <code>Entity</code> and insert the <code>Respawn</code> component to it.</p>
+<p>The optimal strategy for finding the level entity can differ depending on the game.
+For example, if the game should only spawn one level at a time, operate under that assumption and query for the only <code>LevelIid</code> entity.</p>
 <pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span><span class="boring">use bevy::prelude::*;
 </span><span class="boring">use bevy_ecs_ldtk::prelude::*;
-</span><span class="boring">#[derive(Debug, Default, Deref, DerefMut, Component)]
-</span><span class="boring">pub struct UnresolvedMotherRef(Option&lt;EntityIid&gt;);
-</span><span class="boring">impl UnresolvedMotherRef { fn from_mother_field(_: &amp;EntityInstance) -&gt; UnresolvedMotherRef { todo!() } }
-</span>#[derive(Default, Bundle, LdtkEntity)]
-pub struct EnemyBundle {
-    #[with(UnresolvedMotherRef::from_mother_field)]
-    unresolved_mother: UnresolvedMotherRef,
-    #[sprite_sheet_bundle]
-    sprite_sheet_bundle: SpriteSheetBundle,
+</span>fn respawn_only_level(
+    mut commands: Commands,
+    levels: Query&lt;Entity, With&lt;LevelIid&gt;&gt;,
+    input: Res&lt;Input&lt;KeyCode&gt;&gt;
+) {
+    if input.just_pressed(KeyCode::L) {
+        commands.entity(levels.single()).insert(Respawn);
+    }
 }
 <span class="boring">}</span></code></pre></pre>
-<h2 id="resolve-reference-in-post-processing"><a class="header" href="#resolve-reference-in-post-processing">Resolve reference in post-processing</a></h2>
-<p>Create a second relational component that stores the actual bevy <code>Entity</code> that this <code>Unresolved</code> reference should &quot;resolve&quot; to.</p>
+<p>If the game spawns multiple levels and you want the one specified in the <code>LevelSelection</code>, you may need a more complex strategy.</p>
+<p>In the <code>collectathon</code> cargo example, the <code>LevelSelection</code> is always assumed to be of the <code>Iid</code> variety.
+If you share this assumption, get the <code>LevelIid</code> from the <code>LevelSelection</code> and then search for the matching level entity.</p>
 <pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span><span class="boring">use bevy::prelude::*;
 </span><span class="boring">use bevy_ecs_ldtk::prelude::*;
-</span>#[derive(Debug, Deref, DerefMut, Component, Reflect)]
-pub struct Mother(Entity);
-<span class="boring">}</span></code></pre></pre>
-<p>Finally, create a <a href="../explanation/game-logic-integration.html#post-processing-plugin-spawned-entities">&quot;post-processing&quot;</a> system that takes entities with the <code>Unresolved</code> component, finds the entity with the matching <code>EntityIid</code>, and replaces the <code>Unresolved</code> component with the relational component.</p>
-<pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span><span class="boring">use bevy::prelude::*;
-</span><span class="boring">use bevy_ecs_ldtk::prelude::*;
-</span><span class="boring">#[derive(Debug, Default, Deref, DerefMut, Component)]
-</span><span class="boring">pub struct UnresolvedMotherRef(Option&lt;EntityIid&gt;);
-</span><span class="boring">#[derive(Debug, Deref, DerefMut, Component, Reflect)]
-</span><span class="boring">pub struct Mother(Entity);
-</span>pub fn resolve_mother_references(
+</span>fn respawn_level(
     mut commands: Commands,
-    unresolved_mothers: Query&lt;(Entity, &amp;UnresolvedMotherRef), Added&lt;UnresolvedMotherRef&gt;&gt;,
-    ldtk_entities: Query&lt;(Entity, &amp;EntityIid)&gt;,
+    level_selection: Res&lt;LevelSelection&gt;,
+    levels: Query&lt;(Entity, &amp;LevelIid)&gt;,
+    input: Res&lt;Input&lt;KeyCode&gt;&gt;,
 ) {
-    for (child_entity, unresolved_mother_ref) in unresolved_mothers.iter() {
-        if let Some(mother_iid) = unresolved_mother_ref.0.as_ref() {
-            let (mother_entity, _) = ldtk_entities
-                .iter()
-                .find(|(_, iid)| *iid == mother_iid)
-                .expect(&quot;enemy's mother entity should exist&quot;);
+    if input.just_pressed(KeyCode::L) {
+        let level_selection_iid = match level_selection.as_ref() {
+            LevelSelection::Iid(iid) =&gt; iid,
+            _ =&gt; panic!(&quot;level should always be selected by iid in this example&quot;),
+        };
 
-            commands
-                .entity(child_entity)
-                .remove::&lt;UnresolvedMotherRef&gt;()
-                .insert(Mother(mother_entity));
-        } else {
-            commands
-                .entity(child_entity)
-                .remove::&lt;UnresolvedMotherRef&gt;();
+        for (level_entity, level_iid) in levels.iter() {
+            if level_iid == level_selection_iid {
+                commands.entity(level_entity).insert(Respawn);
+            }
         }
     }
 }
 <span class="boring">}</span></code></pre></pre>
+<p>However, if you cannot make the same assumption, access the <code>LdtkProject</code> asset data and search for the level matching your <code>LevelSelection</code>.
+There is a method on <code>LdtkProject</code> to perform this search.</p>
+<pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span><span class="boring">use bevy::prelude::*;
+</span><span class="boring">use bevy_ecs_ldtk::prelude::*;
+</span>fn respawn_level(
+    mut commands: Commands,
+    level_selection: Res&lt;LevelSelection&gt;,
+    levels: Query&lt;(Entity, &amp;LevelIid)&gt;,
+    input: Res&lt;Input&lt;KeyCode&gt;&gt;,
+    ldtk_projects: Query&lt;&amp;Handle&lt;LdtkProject&gt;&gt;,
+    ldtk_project_assets: Res&lt;Assets&lt;LdtkProject&gt;&gt;,
+) {
+    if input.just_pressed(KeyCode::L) {
+        if let Some(only_project) = ldtk_project_assets.get(ldtk_projects.single()) {
+            let level_selection_iid = LevelIid::new(
+                only_project
+                    .find_raw_level_by_level_selection(&amp;level_selection)
+                    .expect(&quot;spawned level should exist in project&quot;)
+                    .iid
+                    .clone(),
+            );
+
+            for (level_entity, level_iid) in levels.iter() {
+                if level_selection_iid == *level_iid {
+                    commands.entity(level_entity).insert(Respawn);
+                }
+            }
+
+        }
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>Note that, unlike respawning the world, respawning the level will <em>not</em> respawn any <a href="../explanation/anatomy-of-the-world.html#worldly-entities">worldly</a> entities.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../explanation/anatomy-of-the-world.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../how-to-guides/create-bevy-relations-from-ldtk-entity-references.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../how-to-guides/respawn-levels-and-worlds.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../how-to-guides/migration-guides/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -283,11 +293,11 @@ pub struct Mother(Entity);
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../explanation/anatomy-of-the-world.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../how-to-guides/create-bevy-relations-from-ldtk-entity-references.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../how-to-guides/respawn-levels-and-worlds.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../how-to-guides/migration-guides/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

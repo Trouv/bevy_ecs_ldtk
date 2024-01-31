@@ -6,15 +6,17 @@
 [![Bevy tracking](https://img.shields.io/badge/Bevy%20tracking-released%20version-lightblue)](https://github.com/bevyengine/bevy/blob/main/docs/plugins_guidelines.md#main-branch-tracking)
 [![CI](https://github.com/Trouv/bevy_ecs_ldtk/actions/workflows/ci.yml/badge.svg)](https://github.com/Trouv/bevy_ecs_ldtk/actions/workflows/ci.yml)
 
-An ECS-friendly [LDtk](https://ldtk.io/) plugin for [bevy](https://github.com/bevyengine/bevy).
-Uses [bevy_ecs_tilemap](https://github.com/StarArawn/bevy_ecs_tilemap) as a
-base.
+[`bevy_ecs_ldtk`](https://crates.io/crates/bevy_ecs_ldtk) is an ECS-friendly [LDtk](https://ldtk.io/) plugin for [Bevy](https://bevyengine.org/).
+It allows you to use LDtk projects as an asset, spawn levels, and insert bevy components/bundles on LDtk entities/tiles.
+This plugin is ECS-friendly, partly for its internal usage of ECS that provides extra functionality to users, and partly for its usage of [`bevy_ecs_tilemap`](https://crates.io/crates/bevy_ecs_tilemap) for rendering tilemaps.
+This is all behind an ergonomic API, providing low-boilerplate solutions to common use cases.
+For less common use cases, strategies that leverage this plugin's ECS constructs are also available.
 
 ![platformer-example](repo/platformer-example.gif)
 
 `cargo run --example platformer --release`
 
-### Features
+## Features
 - Support for all layer types
 - Support for loading external levels
 - Hot reloading
@@ -26,63 +28,21 @@ base.
   improvements
 - Support for Wasm (and tile spacing) through "atlas" feature
 
-### Getting Started
-The goal of this plugin is to make it as easy as possible to use LDtk with bevy
-for common use cases, while providing solutions to handle more difficult cases.
-You only need a few things to get started:
-1. Add the `LdtkPlugin` to the `App`
-2. Insert the `LevelSelection` resource into the `App` to pick your level
-3. Spawn an `LdtkWorldBundle`
-4. Optionally, use `#[derive(LdtkEntity)]` and `#[derive(LdtkIntCell)]` on
-   bundles and register them to the `App` to automatically spawn those bundles
-   on Entity and IntGrid layers.
+## Documentation
+Documentation for this plugin is available in two main places.
+- API reference on [docs.rs](https://docs.rs/bevy_ecs_ldtk/0.8.0/bevy_ecs_ldtk/) <!-- x-release-please-version -->
+- Tutorials, Explanation, and Guides in the [`bevy_ecs_ldtk` book](https://trouv.github.io/bevy_ecs_ldtk/main/index.html) <!-- x-release-please-version -->
 
-```rust
-use bevy::prelude::*;
-use bevy_ecs_ldtk::prelude::*;
+In the book, the following chapters are good jumping-off points for beginners:
+- [*Tile-based Game* tutorial](https://trouv.github.io/bevy_ecs_ldtk/main/tutorials/tile-based-game/index.html) <!-- x-release-please-version -->
+- [*Game Logic Integration* explanation](https://trouv.github.io/bevy_ecs_ldtk/main/explanation/game-logic-integration.html) <!-- x-release-please-version -->
 
-fn main() {
-    App::new()
-        .add_plugins(DefaultPlugins)
-        .add_plugins(LdtkPlugin)
-        .add_system(Startup, setup)
-        .insert_resource(LevelSelection::index(0))
-        .register_ldtk_entity::<MyBundle>("MyEntityIdentifier")
-        .run();
-}
-
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn(Camera2dBundle::default());
-
-    commands.spawn(LdtkWorldBundle {
-        ldtk_handle: asset_server.load("my_project.ldtk"),
-        ..Default::default()
-    });
-}
-
-#[derive(Default, Bundle, LdtkEntity)]
-pub struct MyBundle {
-    a: ComponentA,
-    b: ComponentB,
-    #[sprite_sheet_bundle]
-    sprite_bundle: SpriteSheetBundle,
-}
+Cargo examples are also available in this repository:
+```sh
+$ cargo run --example example-name
 ```
 
-There are other attributes available to `#[derive(LdtkEntity)]` and `#[derive(LdtkIntCell)]`, see the documentation for more details.
-
-By default, LDtk Entities and IntGrid tiles get spawned with `EntityInstance`
-and `IntGridCell` components respectfully.
-So, you can flesh out these entities in a system that queries for
-`Added<EntityInstance>` or `Added<IntGridCell>` if you need more access to the
-world, or if you just don't want to use the `LdtkEntity` and `LdtkIntCell`
-traits.
-
-To load a new level, you can just update the `LevelSelection` resource.
-Be sure to check out the `LdtkSettings` resource and the `LevelSet` component
-for additional level-loading options.
-
-### Compatibility
+## Compatibility
 | bevy | bevy_ecs_tilemap | LDtk | bevy_ecs_ldtk |
 | --- | --- | --- | --- |
 | 0.12 | main | 1.5.3 | main |
@@ -95,7 +55,7 @@ for additional level-loading options.
 | 0.6 | 0.5 | 0.9 | 0.2 |
 | 0.6 | 0.5 | 0.9 | 0.1 |
 
-### Asset Credits
+## Asset Credits
 - [SunnyLand](https://ansimuz.itch.io/sunny-land-pixel-game-art), a texture pack by Ansimuz, licensed under [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)
 - [PIXEL FANTASY RPG ICONS](https://cazwolf.itch.io/caz-pixel-free), an icon pack by Caz, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 - [Nuclear Blaze](https://github.com/deepnight/ldtk/blob/master/app/extraFiles/samples/atlas/NuclearBlaze_by_deepnight.aseprite), a tileset by Deepnight, licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Tileset was exported from aseprite to png, but no other modifications were made.

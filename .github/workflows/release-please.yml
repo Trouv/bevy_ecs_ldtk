@@ -17,3 +17,6 @@ jobs:
           changelog-types: '[{"type":"feat","section":"Features","hidden":false},{"type":"fix","section":"Bug Fixes","hidden":false},{"type":"docs","section":"Documentation Changes","hidden":false},{"type":"example","section":"Example Changes","hidden":false},{"type":"refactor","section":"Code Refactors","hidden":true},{"type":"ci","section":"CI Changes","hidden":true}]'
           extra-files: |
             book/src/README.md
+            README.md
+            src/lib.rs
+            book/src/explanation/game-logic-integration.md

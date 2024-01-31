@@ -63,27 +63,29 @@ fn level_selection_follow_player(
     ldtk_project_assets: Res<Assets<LdtkProject>>,
     mut level_selection: ResMut<LevelSelection>,
 ) {
-    for player_transform in players.iter() {
-        if let Some(ldtk_project) = ldtk_project_assets.get(ldtk_projects.single()) {
-            for (level_iid, level_transform) in levels.iter() {
-                let level = ldtk_project
-                    .get_raw_level_by_iid(level_iid.get())
-                    .expect("level should exist in only project");
+    if let Ok(player_transform) = players.get_single() {
+        let ldtk_project = ldtk_project_assets
+            .get(ldtk_projects.single())
+            .expect("ldtk project should be loaded before player is spawned");
 
-                let level_bounds = Rect {
-                    min: Vec2::new(
-                        level_transform.translation().x,
-                        level_transform.translation().y,
-                    ),
-                    max: Vec2::new(
-                        level_transform.translation().x + level.px_wid as f32,
-                        level_transform.translation().y + level.px_hei as f32,
-                    ),
-                };
+        for (level_iid, level_transform) in levels.iter() {
+            let level = ldtk_project
+                .get_raw_level_by_iid(level_iid.get())
+                .expect("level should exist in only project");
 
-                if level_bounds.contains(player_transform.translation().truncate()) {
-                    *level_selection = LevelSelection::Iid(level_iid.clone());
-                }
+            let level_bounds = Rect {
+                min: Vec2::new(
+                    level_transform.translation().x,
+                    level_transform.translation().y,
+                ),
+                max: Vec2::new(
+                    level_transform.translation().x + level.px_wid as f32,
+                    level_transform.translation().y + level.px_hei as f32,
+                ),
+            };
+
+            if level_bounds.contains(player_transform.translation().truncate()) {
+                *level_selection = LevelSelection::Iid(level_iid.clone());
             }
         }
     }

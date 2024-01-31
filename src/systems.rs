@@ -15,7 +15,7 @@ use crate::{
 #[cfg(feature = "external_levels")]
 use crate::assets::LdtkExternalLevel;
 
-use bevy::{ecs::system::SystemState, prelude::*};
+use bevy::{ecs::system::SystemState, prelude::*, asset::RecursiveDependencyLoadState};
 use std::collections::{HashMap, HashSet};
 
 /// Detects [LdtkProject] events and spawns levels as children of the [LdtkWorldBundle].
@@ -31,37 +31,38 @@ pub fn process_ldtk_assets(
     let mut ldtk_handles_to_respawn = HashSet::new();
     let mut ldtk_handles_for_clear_color = HashSet::new();
 
-    for event in ldtk_project_events.iter() {
+    for event in ldtk_project_events.read() {
         match event {
-            AssetEvent::Created { handle } => {
+            AssetEvent::LoadedWithDependencies { id } => {
                 debug!("LDtk asset creation detected.");
-                ldtk_handles_for_clear_color.insert(handle);
+                ldtk_handles_for_clear_color.insert(id);
             }
-            AssetEvent::Modified { handle } => {
+            AssetEvent::Modified { id } => {
                 info!("LDtk asset modification detected.");
-                ldtk_handles_to_respawn.insert(handle);
-                ldtk_handles_for_clear_color.insert(handle);
+                ldtk_handles_to_respawn.insert(id);
+                ldtk_handles_for_clear_color.insert(id);
             }
-            AssetEvent::Removed { handle } => {
+            AssetEvent::Removed { id } => {
                 info!("LDtk asset removal detected.");
                 // if mesh was modified and removed in the same update, ignore the modification
                 // events are ordered so future modification events are ok
-                ldtk_handles_to_respawn.retain(|changed_handle| *changed_handle != handle);
+                ldtk_handles_to_respawn.retain(|changed_id| *changed_id != id);
             }
+            _ => (),
         }
     }
 
     #[cfg(feature = "render")]
     if ldtk_settings.set_clear_color == SetClearColor::FromEditorBackground {
         for handle in ldtk_handles_for_clear_color.iter() {
-            if let Some(project) = &ldtk_project_assets.get(handle) {
+            if let Some(project) = &ldtk_project_assets.get(**handle) {
                 clear_color.0 = project.json_data().bg_color;
             }
         }
     }
 
     for (entity, handle) in ldtk_world_query.iter() {
-        if ldtk_handles_to_respawn.contains(handle) {
+        if ldtk_handles_to_respawn.contains(&handle.id()) {
             commands.entity(entity).insert(Respawn);
         }
     }
@@ -128,11 +129,17 @@ pub fn apply_level_set(
     ldtk_level_query: Query<(&LevelIid, Entity)>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
     ldtk_settings: Res<LdtkSettings>,
+    asset_server: Res<AssetServer>,
     mut level_events: EventWriter<LevelEvent>,
 ) {
     for (world_entity, level_set, children, ldtk_asset_handle, respawn) in ldtk_world_query.iter() {
         // Only apply level set if the asset has finished loading
         if let Some(project) = ldtk_project_assets.get(ldtk_asset_handle) {
+            if let Some(load_state) = asset_server.get_recursive_dependency_load_state(ldtk_asset_handle) {
+                if load_state != RecursiveDependencyLoadState::Loaded {
+                    continue;
+                }
+            }
             // Determine what levels are currently spawned
             let previous_level_maps = children
                 .into_iter()
@@ -401,7 +408,7 @@ pub fn worldly_adoption(
 /// Mean to be used in a chain with [fire_level_transformed_events].
 pub fn detect_level_spawned_events(mut reader: EventReader<LevelEvent>) -> Vec<LevelIid> {
     let mut spawned_ids = Vec::new();
-    for event in reader.iter() {
+    for event in reader.read() {
         if let LevelEvent::Spawned(id) = event {
             spawned_ids.push(id.clone());
         }

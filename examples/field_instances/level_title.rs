@@ -16,7 +16,7 @@ pub fn set_level_title_to_current_level(
     project_assets: Res<Assets<LdtkProject>>,
     mut current_level_title: ResMut<LevelTitle>,
 ) {
-    for level_event in level_events.iter() {
+    for level_event in level_events.read() {
         if matches!(level_event, LevelEvent::Transformed(_)) {
             let level_iid = levels
                 .get_single()

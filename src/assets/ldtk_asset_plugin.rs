@@ -9,12 +9,12 @@ pub struct LdtkAssetPlugin;
 
 impl Plugin for LdtkAssetPlugin {
     fn build(&self, app: &mut App) {
-        app.add_asset::<LdtkProject>()
+        app.init_asset::<LdtkProject>()
             .init_asset_loader::<LdtkProjectLoader>();
 
         #[cfg(feature = "external_levels")]
         {
-            app.add_asset::<LdtkExternalLevel>()
+            app.init_asset::<LdtkExternalLevel>()
                 .init_asset_loader::<LdtkExternalLevelLoader>()
                 .register_asset_reflect::<LdtkExternalLevel>();
         }

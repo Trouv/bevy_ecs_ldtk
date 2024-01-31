@@ -20,6 +20,9 @@ jobs:
             book/src/README.md
             book/src/explanation/game-logic-integration.md
             book/src/explanation/level-selection.md
+            book/src/explanation/anatomy-of-the-world.md
             src/lib.rs
+            src/components/mod.rs
             src/components/level_set.rs
             src/resources/level_selection.rs
+            src/app/ldtk_entity.rs

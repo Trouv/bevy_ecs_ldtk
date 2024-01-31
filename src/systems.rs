@@ -15,7 +15,7 @@ use crate::{
 #[cfg(feature = "external_levels")]
 use crate::assets::LdtkExternalLevel;
 
-use bevy::{ecs::system::SystemState, prelude::*, asset::RecursiveDependencyLoadState};
+use bevy::{ecs::system::SystemState, prelude::*};
 use std::collections::{HashMap, HashSet};
 
 /// Detects [LdtkProject] events and spawns levels as children of the [LdtkWorldBundle].
@@ -129,17 +129,11 @@ pub fn apply_level_set(
     ldtk_level_query: Query<(&LevelIid, Entity)>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
     ldtk_settings: Res<LdtkSettings>,
-    asset_server: Res<AssetServer>,
     mut level_events: EventWriter<LevelEvent>,
 ) {
     for (world_entity, level_set, children, ldtk_asset_handle, respawn) in ldtk_world_query.iter() {
         // Only apply level set if the asset has finished loading
         if let Some(project) = ldtk_project_assets.get(ldtk_asset_handle) {
-            if let Some(load_state) = asset_server.get_recursive_dependency_load_state(ldtk_asset_handle) {
-                if load_state != RecursiveDependencyLoadState::Loaded {
-                    continue;
-                }
-            }
             // Determine what levels are currently spawned
             let previous_level_maps = children
                 .into_iter()

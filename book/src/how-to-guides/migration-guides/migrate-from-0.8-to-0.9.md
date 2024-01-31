@@ -433,7 +433,7 @@ let level_set = LevelSet::from_iids(
 ## Entity translations now respect pivot
 Entities now spawn with a translation matching their actual location, rather than their "visual center".
 
-![Diagram showing an entity with a dot representing its location in three cases: in the LDtk editor; loaded in version 0.8; and loaded in 0.9. In LDtk, the dot is at the upper-left corner. Loaded in 0.9, the dot is at the same place, but in 0.8, the dot is instead at the entity's center.](repo/pivot-0-8-to-0-9.png)
+![Diagram showing an entity with a dot representing its location in three cases: in the LDtk editor; loaded in version 0.8; and loaded in 0.9. In LDtk, the dot is at the upper-left corner. Loaded in 0.9, the dot is at the same place, but in 0.8, the dot is instead at the entity's center.](images/pivot-0-8-to-0-9.png)
 
 For `LdtkEntity` bundles with a `#[sprite_sheet_bundle(...)]`, the macro calculates the sprite's `Anchor` from the pivot, so they should appear the same,
 but gameplay logic will need to be rewritten to account for the differences,

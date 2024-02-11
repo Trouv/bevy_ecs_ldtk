@@ -1,5 +1,5 @@
 # Anatomy of the World
-Once an [`LdtkWorldBundle`](https://docs.rs/bevy_ecs_ldtk/0.8.0/bevy_ecs_ldtk/prelude/struct.LdtkWorldBundle.html) is spawned, [levels are selected](level-selection.md), and the associated assets finish loading, the level spawning process begins. <!-- x-release-please-version -->
+Once an [`LdtkWorldBundle`](https://docs.rs/bevy_ecs_ldtk/0.9.0/bevy_ecs_ldtk/prelude/struct.LdtkWorldBundle.html) is spawned, [levels are selected](level-selection.md), and the associated assets finish loading, the level spawning process begins. <!-- x-release-please-version -->
 The result is a deeply nested hierarchy of entities which can be difficult to navigate, but predictable.
 It can be useful to write code that makes assumptions about the relationships between `bevy_ecs_ldtk` entities.
 To assist with this, this chapter will explain the anatomy of a `bevy_ecs_ldtk` world.
@@ -8,16 +8,16 @@ To assist with this, this chapter will explain the anatomy of a `bevy_ecs_ldtk` 
 The basic hierarchy of spawned entities and their identifying components/bundles are as follows.
 This does exclude some special cases which are explained in more detail below.
 Each bullet indent indicates a parent/child relationship.
-- The world entity, with an [`LdtkWorldBundle`](https://docs.rs/bevy_ecs_ldtk/0.8.0/bevy_ecs_ldtk/prelude/struct.LdtkWorldBundle.html) bundle. <!-- x-release-please-version -->
-  - The level entities, with a [`LevelIid`](https://docs.rs/bevy_ecs_ldtk/0.8.0/bevy_ecs_ldtk/prelude/struct.LevelIid.html) component. <!-- x-release-please-version -->
-    - For Entity layers - a layer entity with just a [`LayerMetadata`](https://docs.rs/bevy_ecs_ldtk/0.8.0/bevy_ecs_ldtk/prelude/struct.LayerMetadata.html) component. <!-- x-release-please-version -->
-      - LDtk Entity entities, with an [`EntityInstance`](https://docs.rs/bevy_ecs_ldtk/0.8.0/bevy_ecs_ldtk/ldtk/struct.EntityInstance.html) component, or possibly others if you're using [`LdtkEntity` registration](game-logic-integration.html#ldtkentity-and-ldtkintcell-registration). <!-- x-release-please-version --> 
-    - For Tile/AutoTile/IntGrid layers: `bevy_ecs_tilemap` tilemap entities, with a [`TilemapBundle`](https://docs.rs/bevy_ecs_tilemap/latest/bevy_ecs_tilemap/type.TilemapBundle.html) **and** a [`LayerMetadata`](https://docs.rs/bevy_ecs_ldtk/0.8.0/bevy_ecs_ldtk/prelude/struct.LayerMetadata.html) component. <!-- x-release-please-version -->
-      - For IntGrid layers - tile entities with an [`IntGridCell`](https://docs.rs/bevy_ecs_ldtk/0.8.0/bevy_ecs_ldtk/prelude/struct.IntGridCell.html) component, or possibly others if you're using [`LdtkIntCell` registration](game-logic-integration.html#ldtkentity-and-ldtkintcell-registration). <!-- x-release-please-version -->
+- The world entity, with an [`LdtkWorldBundle`](https://docs.rs/bevy_ecs_ldtk/0.9.0/bevy_ecs_ldtk/prelude/struct.LdtkWorldBundle.html) bundle. <!-- x-release-please-version -->
+  - The level entities, with a [`LevelIid`](https://docs.rs/bevy_ecs_ldtk/0.9.0/bevy_ecs_ldtk/prelude/struct.LevelIid.html) component. <!-- x-release-please-version -->
+    - For Entity layers - a layer entity with just a [`LayerMetadata`](https://docs.rs/bevy_ecs_ldtk/0.9.0/bevy_ecs_ldtk/prelude/struct.LayerMetadata.html) component. <!-- x-release-please-version -->
+      - LDtk Entity entities, with an [`EntityInstance`](https://docs.rs/bevy_ecs_ldtk/0.9.0/bevy_ecs_ldtk/ldtk/struct.EntityInstance.html) component, or possibly others if you're using [`LdtkEntity` registration](game-logic-integration.html#ldtkentity-and-ldtkintcell-registration). <!-- x-release-please-version --> 
+    - For Tile/AutoTile/IntGrid layers: `bevy_ecs_tilemap` tilemap entities, with a [`TilemapBundle`](https://docs.rs/bevy_ecs_tilemap/latest/bevy_ecs_tilemap/type.TilemapBundle.html) **and** a [`LayerMetadata`](https://docs.rs/bevy_ecs_ldtk/0.9.0/bevy_ecs_ldtk/prelude/struct.LayerMetadata.html) component. <!-- x-release-please-version -->
+      - For IntGrid layers - tile entities with an [`IntGridCell`](https://docs.rs/bevy_ecs_ldtk/0.9.0/bevy_ecs_ldtk/prelude/struct.IntGridCell.html) component, or possibly others if you're using [`LdtkIntCell` registration](game-logic-integration.html#ldtkentity-and-ldtkintcell-registration). <!-- x-release-please-version -->
       - For Tile/AutoTile layers (or IntGrid layers with AutoTile functionality) - `bevy_ecs_tilemap` tile entities, with a [`TileBundle`](https://docs.rs/bevy_ecs_tilemap/latest/bevy_ecs_tilemap/tiles/struct.TileBundle.html) bundle.
 
 ## Worldly Entities
-The [`LdtkEntity` derive macro](game-logic-integration.html#ldtkentity-and-ldtkintcell-registration) allows you to define entities as ["worldly"](https://docs.rs/bevy_ecs_ldtk/0.8.0/bevy_ecs_ldtk/app/trait.LdtkEntity.html#worldly). <!-- x-release-please-version -->
+The [`LdtkEntity` derive macro](game-logic-integration.html#ldtkentity-and-ldtkintcell-registration) allows you to define entities as ["worldly"](https://docs.rs/bevy_ecs_ldtk/0.9.0/bevy_ecs_ldtk/app/trait.LdtkEntity.html#worldly). <!-- x-release-please-version -->
 The intention of this feature is to support entities that are allowed to persist and traverse between levels, like a player in a GridVania layout.
 
 One consequence of an entity being worldly is a change in its placement in the above hierarchy.
@@ -32,8 +32,8 @@ For example, if the worldly player entity traverses far enough away that their o
 LDtk allows you to associate metadata with particular tiles in a tileset.
 `bevy_ecs_ldtk` responds to this by adding additional components to tiles that have metadata *in addition to* those described in the [hierarchy](#hierarchy):
 
-- [`TileMetadata`](https://docs.rs/bevy_ecs_ldtk/0.8.0/bevy_ecs_ldtk/prelude/struct.TileMetadata.html) <!-- x-release-please-version -->
-- [`TileEnumTags`](https://docs.rs/bevy_ecs_ldtk/0.8.0/bevy_ecs_ldtk/prelude/struct.TileEnumTags.html) <!-- x-release-please-version -->
+- [`TileMetadata`](https://docs.rs/bevy_ecs_ldtk/0.9.0/bevy_ecs_ldtk/prelude/struct.TileMetadata.html) <!-- x-release-please-version -->
+- [`TileEnumTags`](https://docs.rs/bevy_ecs_ldtk/0.9.0/bevy_ecs_ldtk/prelude/struct.TileEnumTags.html) <!-- x-release-please-version -->
 
 Naturally, this can only occur in Tile/AutoTile layers (or IntGrid layers with AutoTile functionality), since the metadata is defined on tilesets.
 
@@ -43,7 +43,7 @@ LDtk allows you to supply a background color and a background image for individu
 The background color is spawned as a normal bevy [`SpriteBundle`](https://docs.rs/bevy/latest/bevy/prelude/struct.SpriteBundle.html), as a child of the level entity.
 The background image, if it exists, is also spawned as a `SpriteBundle`.
 
-These background sprites can be disabled (not spawned) using the settings resource [`LdtkSettings`](https://docs.rs/bevy_ecs_ldtk/0.8.0/bevy_ecs_ldtk/prelude/struct.LdtkSettings.html): <!-- x-release-please-version -->
+These background sprites can be disabled (not spawned) using the settings resource [`LdtkSettings`](https://docs.rs/bevy_ecs_ldtk/0.9.0/bevy_ecs_ldtk/prelude/struct.LdtkSettings.html): <!-- x-release-please-version -->
 ```rust,no_run
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
@@ -65,7 +65,7 @@ In other words, a single layer can have more than one tile in the same location.
 
 `bevy_ecs_tilemap` tilemaps only allow one tile per position.
 So, `bevy_ecs_ldtk` supports layers with colliding tiles by spawning multiple tilemaps.
-Each of them will have the same [`LayerMetadata`](https://docs.rs/bevy_ecs_ldtk/0.8.0/bevy_ecs_ldtk/prelude/struct.LayerMetadata.html) component. <!-- x-release-please-version -->
+Each of them will have the same [`LayerMetadata`](https://docs.rs/bevy_ecs_ldtk/0.9.0/bevy_ecs_ldtk/prelude/struct.LayerMetadata.html) component. <!-- x-release-please-version -->
 This means that users cannot assume that there will be only one `LayerMetadata` entity per layer.
 
 

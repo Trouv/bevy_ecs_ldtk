@@ -1,5 +1,92 @@
 # Changelog
 
+## [0.9.0](https://github.com/Trouv/bevy_ecs_ldtk/compare/v0.8.0...v0.9.0) (2024-02-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* upgrade to bevy 0.12 ([#265](https://github.com/Trouv/bevy_ecs_ldtk/issues/265))
+* upgrade to LDtk 1.5.3, dropping support for previous versions ([#295](https://github.com/Trouv/bevy_ecs_ldtk/issues/295))
+* add `SpawnExclusions` to `LdtkSettings` for skipping layers by identifier ([#275](https://github.com/Trouv/bevy_ecs_ldtk/issues/275))
+* add layer entity for Entity layers, changing the hierarchy ([#257](https://github.com/Trouv/bevy_ecs_ldtk/issues/257))
+* upgrade to LDtk types and examples to 1.4.1 (drop support for <1.4.1) ([#256](https://github.com/Trouv/bevy_ecs_ldtk/issues/256))
+* LdtkLevel renamed to LdtkExternalLevel and is no longer used as a component ([#244](https://github.com/Trouv/bevy_ecs_ldtk/issues/244))
+* redesign LdtkProject with better level data accessors and correct modeling of internal/external levels ([#244](https://github.com/Trouv/bevy_ecs_ldtk/issues/244))
+* use the bundle's `Default` implementation rather than the field's in `LdtkEntity` and `LdtkIntCell` derive macros ([#222](https://github.com/Trouv/bevy_ecs_ldtk/issues/222))
+* add `RawLevelAccessor` trait for `LdtkJson` level borrowing/iteration, replacing existing methods ([#225](https://github.com/Trouv/bevy_ecs_ldtk/issues/225))
+* add `LevelIndices` type defining a level's location in a project and use it in `LevelSelection::Indices` ([#221](https://github.com/Trouv/bevy_ecs_ldtk/issues/221))
+* change `LevelEvent` inner types from `String` to `LevelIid` ([#219](https://github.com/Trouv/bevy_ecs_ldtk/issues/219))
+* change `LevelSet` inner type from `String` to `LevelIid` ([#219](https://github.com/Trouv/bevy_ecs_ldtk/issues/219))
+* change `LevelSelection::Iid` inner type from `String` to `LevelIid` ([#219](https://github.com/Trouv/bevy_ecs_ldtk/issues/219))
+* replace `LevelSet::from_iid` with `LevelSet::from_iids`, which can convert from any collection of strings. ([#219](https://github.com/Trouv/bevy_ecs_ldtk/issues/219))
+* use new LevelIid type in LevelEvent, LevelSet, and LevelSelection, plus other improvements ([#219](https://github.com/Trouv/bevy_ecs_ldtk/issues/219))
+* `LdtkProject::project` and `LdtkLevel::level` fields have both been renamed to `data` ([#206](https://github.com/Trouv/bevy_ecs_ldtk/issues/206))
+* All fields of `LdtkProject` and `LdtkLevel` are now privatized, and have immutable getter methods ([#206](https://github.com/Trouv/bevy_ecs_ldtk/issues/206))
+* `LevelMap` and `TilesetMap` type aliases have been removed ([#206](https://github.com/Trouv/bevy_ecs_ldtk/issues/206))
+* `LdtkAsset` and `LdtkProject` are now exported in new `assets` module instead of `lib.rs` ([#206](https://github.com/Trouv/bevy_ecs_ldtk/issues/206))
+* asset `Loader` types are now private ([#206](https://github.com/Trouv/bevy_ecs_ldtk/issues/206))
+* `LdtkAsset` renamed to `LdtkProject` ([#206](https://github.com/Trouv/bevy_ecs_ldtk/issues/206))
+
+### Features
+
+* add `LevelIndices` type defining a level's location in a project and use it in `LevelSelection::Indices` ([#221](https://github.com/Trouv/bevy_ecs_ldtk/issues/221)) ([59618fe](https://github.com/Trouv/bevy_ecs_ldtk/commit/59618fe2f406caddd433ec435cff0a2156775c5c))
+* add `RawLevelAccessor` trait for `LdtkJson` level borrowing/iteration, replacing existing methods ([#225](https://github.com/Trouv/bevy_ecs_ldtk/issues/225)) ([d3de2d9](https://github.com/Trouv/bevy_ecs_ldtk/commit/d3de2d9d4079865d110af57016258f67ac3f3de8))
+* add `SpawnExclusions` to `LdtkSettings` for skipping layers by identifier ([#275](https://github.com/Trouv/bevy_ecs_ldtk/issues/275)) ([282404d](https://github.com/Trouv/bevy_ecs_ldtk/commit/282404d1f472ce2d31fef52d2943525fe1e045b0)), closes [#272](https://github.com/Trouv/bevy_ecs_ldtk/issues/272)
+* add layer entity for Entity layers, changing the hierarchy ([#257](https://github.com/Trouv/bevy_ecs_ldtk/issues/257)) ([ee20a53](https://github.com/Trouv/bevy_ecs_ldtk/commit/ee20a53d39aafc282008ed03fb1cf3355f62dd5a))
+* add LdtkJsonWithMetadata type for representing internal- and external-level project data with generics ([#242](https://github.com/Trouv/bevy_ecs_ldtk/issues/242)) ([630434a](https://github.com/Trouv/bevy_ecs_ldtk/commit/630434a417eec89bed2dc1c5076a62e8ca46ca96))
+* add LdtkProjectData for representing either internal- or external-level project data concretely ([#243](https://github.com/Trouv/bevy_ecs_ldtk/issues/243)) ([c530bc9](https://github.com/Trouv/bevy_ecs_ldtk/commit/c530bc975dc055eff3df0f799d12d50c132a9945))
+* add level locale types and begin splitting internal_levels and external_levels features ([#237](https://github.com/Trouv/bevy_ecs_ldtk/issues/237)) ([8129e55](https://github.com/Trouv/bevy_ecs_ldtk/commit/8129e5564e52cbe971efe36e0d33fdb5a2b316fa))
+* add LevelIid component and spawn it on every level ([#215](https://github.com/Trouv/bevy_ecs_ldtk/issues/215)) ([ad83455](https://github.com/Trouv/bevy_ecs_ldtk/commit/ad834552400ae5b21ff51ae2e4d9f4651e2c82c1))
+* add LoadedLevel type that wraps around levels with complete data ([#214](https://github.com/Trouv/bevy_ecs_ldtk/issues/214)) ([3d40c15](https://github.com/Trouv/bevy_ecs_ldtk/commit/3d40c158584f68ea65dbfd36744b07fc5b656163))
+* add types and traits around LevelMetadata ([#229](https://github.com/Trouv/bevy_ecs_ldtk/issues/229)) ([382dea2](https://github.com/Trouv/bevy_ecs_ldtk/commit/382dea23407b9ebeffd9eacbc76db6018076cd3a))
+* change `LevelEvent` inner types from `String` to `LevelIid` ([#219](https://github.com/Trouv/bevy_ecs_ldtk/issues/219)) ([0039ed7](https://github.com/Trouv/bevy_ecs_ldtk/commit/0039ed757bf6a54c74d912bc43fa4165ada17bbb))
+* change `LevelSelection::Iid` inner type from `String` to `LevelIid` ([#219](https://github.com/Trouv/bevy_ecs_ldtk/issues/219)) ([0039ed7](https://github.com/Trouv/bevy_ecs_ldtk/commit/0039ed757bf6a54c74d912bc43fa4165ada17bbb))
+* change `LevelSet` inner type from `String` to `LevelIid` ([#219](https://github.com/Trouv/bevy_ecs_ldtk/issues/219)) ([0039ed7](https://github.com/Trouv/bevy_ecs_ldtk/commit/0039ed757bf6a54c74d912bc43fa4165ada17bbb))
+* LdtkLevel renamed to LdtkExternalLevel and is no longer used as a component ([#244](https://github.com/Trouv/bevy_ecs_ldtk/issues/244)) ([670cd4e](https://github.com/Trouv/bevy_ecs_ldtk/commit/670cd4e6b704a4748ab41070742733004f1686f9))
+* redesign LdtkProject with better level data accessors and correct modeling of internal/external levels ([#244](https://github.com/Trouv/bevy_ecs_ldtk/issues/244)) ([670cd4e](https://github.com/Trouv/bevy_ecs_ldtk/commit/670cd4e6b704a4748ab41070742733004f1686f9))
+* replace `LevelSet::from_iid` with `LevelSet::from_iids`, which can convert from any collection of strings. ([#219](https://github.com/Trouv/bevy_ecs_ldtk/issues/219)) ([0039ed7](https://github.com/Trouv/bevy_ecs_ldtk/commit/0039ed757bf6a54c74d912bc43fa4165ada17bbb))
+* upgrade to bevy 0.12 ([#265](https://github.com/Trouv/bevy_ecs_ldtk/issues/265)) ([194731e](https://github.com/Trouv/bevy_ecs_ldtk/commit/194731e681727ef8344e7973ade3809ad36d8e8b))
+* upgrade to LDtk 1.5.3, dropping support for previous versions ([#295](https://github.com/Trouv/bevy_ecs_ldtk/issues/295)) ([4926a50](https://github.com/Trouv/bevy_ecs_ldtk/commit/4926a50ec0eb37ac3e2ab57a83a5aebcf59d3bf3))
+* upgrade to LDtk types and examples to 1.4.1 (drop support for &lt;1.4.1) ([#256](https://github.com/Trouv/bevy_ecs_ldtk/issues/256)) ([ab21e2c](https://github.com/Trouv/bevy_ecs_ldtk/commit/ab21e2c35e0851d06e1881dc8027d30dd891992e))
+* use new LevelIid type in LevelEvent, LevelSet, and LevelSelection, plus other improvements ([#219](https://github.com/Trouv/bevy_ecs_ldtk/issues/219)) ([0039ed7](https://github.com/Trouv/bevy_ecs_ldtk/commit/0039ed757bf6a54c74d912bc43fa4165ada17bbb))
+* use the bundle's `Default` implementation rather than the field's in `LdtkEntity` and `LdtkIntCell` derive macros ([#222](https://github.com/Trouv/bevy_ecs_ldtk/issues/222)) ([f003127](https://github.com/Trouv/bevy_ecs_ldtk/commit/f003127901c9bb724e8c4f079e54861c1f667ff5))
+
+
+### Bug Fixes
+
+* don't apply level set until project and dependencies are completely loaded ([#296](https://github.com/Trouv/bevy_ecs_ldtk/issues/296)) ([dbfe1c6](https://github.com/Trouv/bevy_ecs_ldtk/commit/dbfe1c691035f5cc983bf189b44a53cbf6705389))
+* normalize resolved asset paths using `path_clean` ([#255](https://github.com/Trouv/bevy_ecs_ldtk/issues/255)) ([33a8998](https://github.com/Trouv/bevy_ecs_ldtk/commit/33a89982545199342875c4f4e11fa53e497686b6)), closes [#240](https://github.com/Trouv/bevy_ecs_ldtk/issues/240)
+* only spawn invisible tiles on first sub-layer of AutoTile+IntGrid layers ([#231](https://github.com/Trouv/bevy_ecs_ldtk/issues/231)) ([d2873e3](https://github.com/Trouv/bevy_ecs_ldtk/commit/d2873e35cce8e91a24c3800b84d57d2de0978874))
+* recalculate layer offset to adjust for tileset sizes ([#254](https://github.com/Trouv/bevy_ecs_ldtk/issues/254)) ([c00085d](https://github.com/Trouv/bevy_ecs_ldtk/commit/c00085db89c524a6c77f1ee6525d9c6678406631))
+* use entity definition tile size instead of entity instance tile size as basis when calculating ldtk entity scale ([#271](https://github.com/Trouv/bevy_ecs_ldtk/issues/271)) ([833af01](https://github.com/Trouv/bevy_ecs_ldtk/commit/833af011adb583ce379c3cd1479adabf2c9dfcce))
+
+
+### Documentation Changes
+
+* add 0.8 to 0.9 migration guide ([#266](https://github.com/Trouv/bevy_ecs_ldtk/issues/266)) ([bb91660](https://github.com/Trouv/bevy_ecs_ldtk/commit/bb9166036ca0e21d5afbdf0b7df64b014a77f514))
+* add collectathon cargo example ([#288](https://github.com/Trouv/bevy_ecs_ldtk/issues/288)) ([32dfb85](https://github.com/Trouv/bevy_ecs_ldtk/commit/32dfb85e095fa16d450d96bab2af622738e0ea63))
+* add mdbook with outline and introduction ([#261](https://github.com/Trouv/bevy_ecs_ldtk/issues/261)) ([810b25a](https://github.com/Trouv/bevy_ecs_ldtk/commit/810b25aa7b3782467adcbe25225fc9f33ec2936d))
+* add tile-based game example w/ a tutorial in the book, replacing getting-started guide ([#269](https://github.com/Trouv/bevy_ecs_ldtk/issues/269)) ([2d43efa](https://github.com/Trouv/bevy_ecs_ldtk/commit/2d43efa28814cf25e012d7a4e5f9aea17008aaa5))
+* document all-features in docs.rs ([#252](https://github.com/Trouv/bevy_ecs_ldtk/issues/252)) ([321bb07](https://github.com/Trouv/bevy_ecs_ldtk/commit/321bb07caeaba5cca1d98e81695eecd0292a9f7a))
+* reference book in API ref and README.md, replacing redundant sections ([#282](https://github.com/Trouv/bevy_ecs_ldtk/issues/282)) ([e7afdad](https://github.com/Trouv/bevy_ecs_ldtk/commit/e7afdad79d4526b892fd457a596084ce805369c5))
+* remove README.md caveat for hot reloading external levels ([#253](https://github.com/Trouv/bevy_ecs_ldtk/issues/253)) ([59eb6b3](https://github.com/Trouv/bevy_ecs_ldtk/commit/59eb6b3e4404060ce354a754b1392809742ba0e2))
+* write *Anatomy of the World* chapter of book ([#285](https://github.com/Trouv/bevy_ecs_ldtk/issues/285)) ([29d5e33](https://github.com/Trouv/bevy_ecs_ldtk/commit/29d5e33e95c692f35b0413adafd0ce20d830bdc1))
+* write *Create bevy relations from ldtk entity references* chapter of book ([#287](https://github.com/Trouv/bevy_ecs_ldtk/issues/287)) ([8080f24](https://github.com/Trouv/bevy_ecs_ldtk/commit/8080f24b401df200dccf4c7840905b36b84f10b8))
+* write *Game Logic Integration* chapter of the book ([#279](https://github.com/Trouv/bevy_ecs_ldtk/issues/279)) ([a62a556](https://github.com/Trouv/bevy_ecs_ldtk/commit/a62a556c2f84d7eafe3ab541725347879b34ecdc))
+* write *Level Selection* chapter of book ([#284](https://github.com/Trouv/bevy_ecs_ldtk/issues/284)) ([226c60c](https://github.com/Trouv/bevy_ecs_ldtk/commit/226c60c1e7e27fb32ea6cc9de6f68432b867f537))
+* write *Make level selection follow player* chapter of book ([#293](https://github.com/Trouv/bevy_ecs_ldtk/issues/293)) ([201d908](https://github.com/Trouv/bevy_ecs_ldtk/commit/201d908ae3e4f3deeb40de228f234c414c6b3141))
+* write *Respawn levels and worlds* chapter of book ([#289](https://github.com/Trouv/bevy_ecs_ldtk/issues/289)) ([55ed30f](https://github.com/Trouv/bevy_ecs_ldtk/commit/55ed30f203a1cffeccc562f54ae797e23b299c89))
+
+
+### Code Refactors
+
+* `LdtkAsset` and `LdtkProject` are now exported in new `assets` module instead of `lib.rs` ([#206](https://github.com/Trouv/bevy_ecs_ldtk/issues/206)) ([fe44774](https://github.com/Trouv/bevy_ecs_ldtk/commit/fe44774c69cc639ecdb710af593a748744a1810d))
+* `LdtkAsset` renamed to `LdtkProject` ([#206](https://github.com/Trouv/bevy_ecs_ldtk/issues/206)) ([fe44774](https://github.com/Trouv/bevy_ecs_ldtk/commit/fe44774c69cc639ecdb710af593a748744a1810d))
+* `LdtkProject::project` and `LdtkLevel::level` fields have both been renamed to `data` ([#206](https://github.com/Trouv/bevy_ecs_ldtk/issues/206)) ([fe44774](https://github.com/Trouv/bevy_ecs_ldtk/commit/fe44774c69cc639ecdb710af593a748744a1810d))
+* `LevelMap` and `TilesetMap` type aliases have been removed ([#206](https://github.com/Trouv/bevy_ecs_ldtk/issues/206)) ([fe44774](https://github.com/Trouv/bevy_ecs_ldtk/commit/fe44774c69cc639ecdb710af593a748744a1810d))
+* All fields of `LdtkProject` and `LdtkLevel` are now privatized, and have immutable getter methods ([#206](https://github.com/Trouv/bevy_ecs_ldtk/issues/206)) ([fe44774](https://github.com/Trouv/bevy_ecs_ldtk/commit/fe44774c69cc639ecdb710af593a748744a1810d))
+* asset `Loader` types are now private ([#206](https://github.com/Trouv/bevy_ecs_ldtk/issues/206)) ([fe44774](https://github.com/Trouv/bevy_ecs_ldtk/commit/fe44774c69cc639ecdb710af593a748744a1810d))
+
 ## [0.8.0](https://github.com/Trouv/bevy_ecs_ldtk/compare/v0.7.0...v0.8.0) (2023-07-31)
 
 

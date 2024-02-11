@@ -40,7 +40,7 @@ pub struct IntGridCell {
 /// [`Component`] that indicates that an ldtk entity should be a child of the world, not their layer.
 ///
 /// For a more detailed explanation, please see the
-/// [*Worldly Entities*](https://trouv.github.io/bevy_ecs_ldtk/v0.8.0/explanation/anatomy-of-the-world.html#worldly-entities) <!-- x-release-please-version -->
+/// [*Worldly Entities*](https://trouv.github.io/bevy_ecs_ldtk/v0.9.0/explanation/anatomy-of-the-world.html#worldly-entities) <!-- x-release-please-version -->
 /// section of the `bevy_ecs_ldtk` book.
 ///
 /// Implements [`LdtkEntity`], and can be added to an [`LdtkEntity`] bundle with the `#[worldly]`
@@ -302,7 +302,7 @@ impl From<&LayerInstance> for LayerMetadata {
 /// [Component] that indicates that an LDtk level or world should respawn.
 ///
 /// For more details and example usage, please see the
-/// [*Respawn Levels and Worlds*](https://trouv.github.io/bevy_ecs_ldtk/v0.8.0/how-to-guides/respawn-levels-and-worlds.html) <!-- x-release-please-version -->
+/// [*Respawn Levels and Worlds*](https://trouv.github.io/bevy_ecs_ldtk/v0.9.0/how-to-guides/respawn-levels-and-worlds.html) <!-- x-release-please-version -->
 /// chapter of the `bevy_ecs_ldtk` book.
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Hash, Component, Reflect)]
 #[reflect(Component)]
@@ -327,7 +327,7 @@ pub(crate) struct EntityInstanceBundle {
 /// `Bundle` for spawning LDtk worlds and their levels. The main bundle for using this plugin.
 ///
 /// For a more detailed explanation of the resulting world, please see the
-/// [*Anatomy of the World*](https://trouv.github.io/bevy_ecs_ldtk/v0.8.0/explanation/anatomy-of-the-world.html) <!-- x-release-please-version -->
+/// [*Anatomy of the World*](https://trouv.github.io/bevy_ecs_ldtk/v0.9.0/explanation/anatomy-of-the-world.html) <!-- x-release-please-version -->
 /// chapter of the `bevy_ecs_ldtk` book.
 #[derive(Clone, Default, Bundle)]
 pub struct LdtkWorldBundle {

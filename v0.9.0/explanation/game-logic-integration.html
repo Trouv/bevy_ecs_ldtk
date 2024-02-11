@@ -1,0 +1,358 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Game Logic Integration - bevy_ecs_ldtk Book</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../index.html">Introduction</a></li><li class="chapter-item expanded affix "><li class="part-title">Tutorials</li><li class="chapter-item expanded "><a href="../tutorials/tile-based-game/index.html"><strong aria-hidden="true">1.</strong> Tile-based Game</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../tutorials/tile-based-game/create-your-ldtk-project.html"><strong aria-hidden="true">1.1.</strong> Create your LDtk project</a></li><li class="chapter-item expanded "><a href="../tutorials/tile-based-game/spawn-your-ldtk-project-in-bevy.html"><strong aria-hidden="true">1.2.</strong> Spawn your LDtk project in Bevy</a></li><li class="chapter-item expanded "><a href="../tutorials/tile-based-game/add-gameplay-to-your-project.html"><strong aria-hidden="true">1.3.</strong> Add gameplay to your project</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">2.</strong> Platformer</div></li><li class="chapter-item expanded affix "><li class="part-title">Explanation</li><li class="chapter-item expanded "><a href="../explanation/level-selection.html"><strong aria-hidden="true">3.</strong> Level Selection</a></li><li class="chapter-item expanded "><a href="../explanation/game-logic-integration.html" class="active"><strong aria-hidden="true">4.</strong> Game Logic Integration</a></li><li class="chapter-item expanded "><a href="../explanation/anatomy-of-the-world.html"><strong aria-hidden="true">5.</strong> Anatomy of the World</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">6.</strong> Plugin Schedule</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">7.</strong> Asset Model</div></li><li class="chapter-item expanded affix "><li class="part-title">How-To Guides</li><li class="chapter-item expanded "><div><strong aria-hidden="true">8.</strong> Register Bundles for Intgrid Tiles and LDtk Entities</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">9.</strong> Process Entities Further with Blueprints</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">10.</strong> Combine Tiles into Larger Entities</div></li><li class="chapter-item expanded "><a href="../how-to-guides/create-bevy-relations-from-ldtk-entity-references.html"><strong aria-hidden="true">11.</strong> Create Bevy Relations from LDtk Entity References</a></li><li class="chapter-item expanded "><a href="../how-to-guides/respawn-levels-and-worlds.html"><strong aria-hidden="true">12.</strong> Respawn Levels and Worlds</a></li><li class="chapter-item expanded "><a href="../how-to-guides/make-level-selection-follow-player.html"><strong aria-hidden="true">13.</strong> Make LevelSelection Follow Player</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">14.</strong> Animate Tiles</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">15.</strong> Camera Logic</div></li><li><ol class="section"><li class="chapter-item expanded "><div><strong aria-hidden="true">15.1.</strong> Implement Fit-Inside Camera</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">15.2.</strong> Implement Fit-Around Camera</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">15.3.</strong> Implement Parallax</div></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">16.</strong> Retrieve Field Instance Data</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">17.</strong> Retrieve Loaded Level Data</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">18.</strong> Compile to WASM</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">19.</strong> Compile Headless</div></li><li class="chapter-item expanded "><a href="../how-to-guides/migration-guides/index.html"><strong aria-hidden="true">20.</strong> Migration Guides</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../how-to-guides/migration-guides/migrate-from-0.8-to-0.9.html"><strong aria-hidden="true">20.1.</strong> Migrate from 0.8 to 0.9</a></li><li class="spacer"></li></ol></li><li class="chapter-item expanded "><a href="../api-reference.html">API Reference</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">bevy_ecs_ldtk Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="game-logic-integration"><a class="header" href="#game-logic-integration">Game Logic Integration</a></h1>
+<p>Loading LDtk levels into Bevy doesn't get you very far if you cannot play them.</p>
+<p>Aside from rendering tilemaps, LDtk has features for placing gameplay objects on Entity layers.
+Even within tilemaps, IntGrid layers imply a categorization of tiles, and perhaps a game designerly meaning.
+It is fundamental to associate the LDtk entities and IntGrid tiles with Bevy entities/components.
+<code>bevy_ecs_ldtk</code> is designed around a couple core strategies for doing so, which will be discussed here.</p>
+<h2 id="ldtkentity-and-ldtkintcell-registration"><a class="header" href="#ldtkentity-and-ldtkintcell-registration"><code>LdtkEntity</code> and <code>LdtkIntCell</code> registration</a></h2>
+<p>The <code>LdtkEntity</code>/<code>LdtkIntCell</code> registration API allows you to hook custom bevy <code>Bundle</code>s into the level spawning process.
+You define what components you want on the entity with a bundle, define how they should be constructed with the <code>LdtkEntity</code> or <code>LdtkIntCell</code> derive, and register the bundle to the <code>App</code> for a given LDtk entity identifier, or IntGrid value.</p>
+<pre><pre class="playground"><code class="language-rust no_run">use bevy::prelude::*;
+use bevy_ecs_ldtk::prelude::*;
+
+fn main() {
+    App::new()
+        // other App builders
+        .register_ldtk_entity::&lt;PlayerBundle&gt;(&quot;Player&quot;)
+        .run();
+}
+
+#[derive(Default, Component)]
+struct Player;
+
+#[derive(Default, Bundle, LdtkEntity)]
+struct PlayerBundle {
+    player: Player,
+    #[sprite_bundle]
+    sprite_bundle: SpriteBundle,
+}</code></pre></pre>
+<p>How does <code>LdtkEntity</code>/<code>LdtkIntCell</code> construct the bundle when derived?
+Without any intervention, the bundle's fields are constructed using the bundle's <code>Default</code> implementation.
+However, various attributes are available to override this behavior, like <code>#[sprite_bundle]</code> in the above example.
+This attribute gives the entity a sprite using the tileset in its LDtk editor visual.
+For documentation about all the available attributes, check out the API reference for these traits:</p>
+<ul>
+<li><a href="https://docs.rs/bevy_ecs_ldtk/0.9.0/bevy_ecs_ldtk/app/trait.LdtkEntity.html"><code>LdtkEntity</code></a> <!-- x-release-please-version --></li>
+<li><a href="https://docs.rs/bevy_ecs_ldtk/0.9.0/bevy_ecs_ldtk/app/trait.LdtkIntCell.html"><code>LdtkIntCell</code></a> <!-- x-release-please-version --></li>
+</ul>
+<p>This approach is suitable for many common, simple use cases.
+There's also room for more granular, component-level customization within some of the attributes, like <code>#[with(...)]</code> or <code>#[from_entity_instance]</code>.
+Of course, the traits can also be manually implemented for the even-more-custom cases.</p>
+<h2 id="post-processing-plugin-spawned-entities"><a class="header" href="#post-processing-plugin-spawned-entities">Post-processing plugin-spawned entities</a></h2>
+<p>There are still many cases where <code>LdtkEntity</code>/<code>LdtkIntCell</code> registration is insufficient.
+Perhaps you need to spawn children of the entity, or need access to more resources in the <code>World</code>.
+For these more demanding cases, post-processing plugin-spawned entities in a custom system is always an option.</p>
+<p>If an LDtk entity does not have a matching <code>LdtkEntity</code> registration, it will be spawned with an <code>EntityInstance</code> component by default.
+This component contains the raw LDtk data for that entity.
+Querying for newly-spawned <code>EntityInstance</code> entities can be a good starting point for implementing your own custom spawning logic.
+Intgrid tiles have similar behavior, except their default component is <code>IntGridCell</code>, which simply contains the IntGrid value for that tile.</p>
+<pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span><span class="boring">use bevy::prelude::*;
+</span><span class="boring">use bevy_ecs_ldtk::prelude::*;
+</span>#[derive(Default, Component)]
+struct PlayerChild;
+
+#[derive(Default, Component)]
+struct Player;
+
+fn process_player(
+    mut commands: Commands,
+    new_entity_instances: Query&lt;(Entity, &amp;EntityInstance, &amp;Transform), Added&lt;EntityInstance&gt;&gt;,
+    assets: Res&lt;AssetServer&gt;,
+)
+{
+    for (entity, entity_instance, transform) in new_entity_instances.iter() {
+        if entity_instance.identifier == &quot;Player&quot;.to_string() {
+            commands
+                .entity(entity)
+                .insert(Player)
+                .insert(SpriteBundle {
+                    texture: assets.load(&quot;player.png&quot;),
+                    transform: *transform,
+                    ..default()
+                })
+                .with_children(|commands| {
+                    commands.spawn(PlayerChild);
+                });
+        }
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>This approach makes spawning entities from LDtk just as powerful and customizable as a Bevy system, because that's all it is.
+<code>LdtkEntity</code> and <code>LdtkIntCell</code> ultimately make some assumptions about what data from the LDtk asset and the Bevy world you will need to spawn your entity, which post-processing avoids.
+However, there are some pretty obvious ergonomics issues to this strategy compared to using registration:</p>
+<ul>
+<li>You need to manually filter <code>EntityInstance</code>s for the desired LDtk entity identifier.</li>
+<li>You need to manually perform the iteration of the query.</li>
+<li>You may need to manually find the associated layer data, or tileset image, or tileset definition (if necessary).</li>
+<li>You need to be careful not to overwrite the plugin-provided <code>Transform</code> component.</li>
+</ul>
+<h2 id="a-combined-approach---the-blueprint-pattern"><a class="header" href="#a-combined-approach---the-blueprint-pattern">A combined approach - the blueprint pattern</a></h2>
+<p>At least one of these ergonomics issues can be alleviated with a combined approach.
+If you register an <code>LdtkEntity</code>/<code>LdtkIntCell</code> with a marker component, querying for it later won't require filtering for a particular entity instance identifier.
+The plugin does that for you when giving the entity your bundle, then you can write queries that filter for the marker component instead of <code>EntityInstance</code> or <code>IntGridCell</code>.
+Furthermore, if you can add the transform-overwriting bundles within the <code>LdtkEntity</code> bundle, you won't need to tiptoe around the <code>Transform</code> in your post-processing system.</p>
+<pre><pre class="playground"><code class="language-rust no_run"><span class="boring">use bevy::prelude::*;
+</span><span class="boring">use bevy_ecs_ldtk::prelude::*;
+</span>fn main() {
+    App::new()
+        // other App builders
+        .register_ldtk_entity::&lt;PlayerBundle&gt;(&quot;Player&quot;)
+        .add_systems(Update, process_player)
+        .run();
+}
+
+#[derive(Default, Component)]
+struct PlayerChild;
+
+#[derive(Default, Component)]
+struct Player;
+
+#[derive(Default, Bundle, LdtkEntity)]
+struct PlayerBundle {
+    player: Player,
+    #[sprite_bundle]
+    sprite_bundle: SpriteBundle,
+}
+
+fn process_player(
+    mut commands: Commands,
+    new_players: Query&lt;Entity, Added&lt;Player&gt;&gt;,
+    assets: Res&lt;AssetServer&gt;,
+)
+{
+    for player_entity in new_players.iter() {
+        commands
+            .spawn(PlayerChild)
+            .set_parent(player_entity);
+    }
+}</code></pre></pre>
+<p>Using a simple component or a marker component for the initial spawn of an entity and processing it further in another system is called the &quot;blueprint pattern&quot;.
+You may find it desirable to use the <code>LdtkEntity</code>/<code>LdtkIntCell</code> derives to construct most of the components, but need post-processing for the more demanding ones.
+This approach is recommended over filtering for <code>Added&lt;EntityInstance&gt;</code> or <code>Added&lt;IntGridCell&gt;</code>.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../explanation/level-selection.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../explanation/anatomy-of-the-world.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../explanation/level-selection.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../explanation/anatomy-of-the-world.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

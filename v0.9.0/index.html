@@ -1,0 +1,261 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Introduction - bevy_ecs_ldtk Book</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="index.html" class="active">Introduction</a></li><li class="chapter-item expanded affix "><li class="part-title">Tutorials</li><li class="chapter-item expanded "><a href="tutorials/tile-based-game/index.html"><strong aria-hidden="true">1.</strong> Tile-based Game</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="tutorials/tile-based-game/create-your-ldtk-project.html"><strong aria-hidden="true">1.1.</strong> Create your LDtk project</a></li><li class="chapter-item expanded "><a href="tutorials/tile-based-game/spawn-your-ldtk-project-in-bevy.html"><strong aria-hidden="true">1.2.</strong> Spawn your LDtk project in Bevy</a></li><li class="chapter-item expanded "><a href="tutorials/tile-based-game/add-gameplay-to-your-project.html"><strong aria-hidden="true">1.3.</strong> Add gameplay to your project</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">2.</strong> Platformer</div></li><li class="chapter-item expanded affix "><li class="part-title">Explanation</li><li class="chapter-item expanded "><a href="explanation/level-selection.html"><strong aria-hidden="true">3.</strong> Level Selection</a></li><li class="chapter-item expanded "><a href="explanation/game-logic-integration.html"><strong aria-hidden="true">4.</strong> Game Logic Integration</a></li><li class="chapter-item expanded "><a href="explanation/anatomy-of-the-world.html"><strong aria-hidden="true">5.</strong> Anatomy of the World</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">6.</strong> Plugin Schedule</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">7.</strong> Asset Model</div></li><li class="chapter-item expanded affix "><li class="part-title">How-To Guides</li><li class="chapter-item expanded "><div><strong aria-hidden="true">8.</strong> Register Bundles for Intgrid Tiles and LDtk Entities</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">9.</strong> Process Entities Further with Blueprints</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">10.</strong> Combine Tiles into Larger Entities</div></li><li class="chapter-item expanded "><a href="how-to-guides/create-bevy-relations-from-ldtk-entity-references.html"><strong aria-hidden="true">11.</strong> Create Bevy Relations from LDtk Entity References</a></li><li class="chapter-item expanded "><a href="how-to-guides/respawn-levels-and-worlds.html"><strong aria-hidden="true">12.</strong> Respawn Levels and Worlds</a></li><li class="chapter-item expanded "><a href="how-to-guides/make-level-selection-follow-player.html"><strong aria-hidden="true">13.</strong> Make LevelSelection Follow Player</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">14.</strong> Animate Tiles</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">15.</strong> Camera Logic</div></li><li><ol class="section"><li class="chapter-item expanded "><div><strong aria-hidden="true">15.1.</strong> Implement Fit-Inside Camera</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">15.2.</strong> Implement Fit-Around Camera</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">15.3.</strong> Implement Parallax</div></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">16.</strong> Retrieve Field Instance Data</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">17.</strong> Retrieve Loaded Level Data</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">18.</strong> Compile to WASM</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">19.</strong> Compile Headless</div></li><li class="chapter-item expanded "><a href="how-to-guides/migration-guides/index.html"><strong aria-hidden="true">20.</strong> Migration Guides</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="how-to-guides/migration-guides/migrate-from-0.8-to-0.9.html"><strong aria-hidden="true">20.1.</strong> Migrate from 0.8 to 0.9</a></li><li class="spacer"></li></ol></li><li class="chapter-item expanded "><a href="api-reference.html">API Reference</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">bevy_ecs_ldtk Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="introduction"><a class="header" href="#introduction">Introduction</a></h1>
+<h2 id="bevy_ecs_ldtk"><a class="header" href="#bevy_ecs_ldtk"><code>bevy_ecs_ldtk</code></a></h2>
+<p><a href="https://crates.io/crates/bevy_ecs_ldtk"><code>bevy_ecs_ldtk</code></a> is an ECS-friendly <a href="https://ldtk.io/">LDtk</a> plugin for <a href="https://bevyengine.org/">Bevy</a>.
+It allows you to use LDtk projects as an asset, spawn levels, and insert bevy components/bundles on LDtk entities/tiles.
+This plugin is ECS-friendly, partly for its internal usage of ECS that provides extra functionality to users, and partly for its usage of <a href="https://crates.io/crates/bevy_ecs_tilemap"><code>bevy_ecs_tilemap</code></a> for rendering tilemaps.
+This is all behind an ergonomic API, providing low-boilerplate solutions to common use cases.
+For less common use cases, strategies that leverage this plugin's ECS constructs are also available.</p>
+<h2 id="this-book"><a class="header" href="#this-book">This book</a></h2>
+<p>This book is a work in progress, but aims to provide the following pieces of documentation:</p>
+<ul>
+<li>tutorials: lessons detailing the creation of simple games from start to finish</li>
+<li>explanation: clarification of concepts and strategies employed by <code>bevy_ecs_ldtk</code>, including details about how it works and why</li>
+<li>how-to guides: recommended solutions to common problems, as well as migration guides</li>
+</ul>
+<p>This book is not an API reference.
+For that, please refer to <code>bevy_ecs_ldtk</code>'s documentation on <a href="https://docs.rs/bevy_ecs_ldtk/">docs.rs</a>.</p>
+<p>While this book aims to be comprehensive, it should also be easy to maintain and up-to-date.
+This is why, in consort with the API reference, documentation for <code>bevy_ecs_ldtk</code> aims to satisfy <a href="https://documentation.divio.com/">The Grand Unified Theory of Documentation</a>.
+Furthermore, code snippets in this book are automatically tested by <code>bevy_ecs_ldtk</code>'s CI wherever possible with the help of <a href="https://github.com/tfpk/mdbook-keeper/">mdBook-Keeper</a>.
+This should help inform maintainers when changes to the plugin have made documentation out-of-date.
+Deployment of this book to github pages is also performed by <code>bevy_ecs_ldtk</code>'s CI automatically on new releases.</p>
+<p>Splitting the documentation up this way means that this book is not necessarily meant to be read in order.
+Some chapters are intended to be read while working on your own project, while others are meant to be more like studying material.
+The following chapters are good jumping-off points for beginners:</p>
+<ul>
+<li><a href="tutorials/tile-based-game/index.html"><em>Tile-based Game</em> tutorial</a></li>
+<li><a href="explanation/level-selection.html"><em>Level Selection</em> explanation</a></li>
+<li><a href="explanation/game-logic-integration.html"><em>Game Logic Integration</em> explanation</a></li>
+</ul>
+<h2 id="other-resources"><a class="header" href="#other-resources">Other resources</a></h2>
+<p>This book is not suitable documentation for bevy or LDtk.
+Some resources for learning Bevy include those listed on the <a href="https://bevyengine.org/learn">Bevy website</a>, as well as the unofficial <a href="https://bevy-cheatbook.github.io/">Bevy Cheat Book</a>.
+LDtk also provides documentation on <a href="https://ldtk.io/docs/">its website</a>.</p>
+<p><code>bevy_ecs_ldtk</code>'s <a href="https://github.com/Trouv/bevy_ecs_ldtk">source code</a> is available on github.
+This repository also contains <a href="https://github.com/Trouv/bevy_ecs_ldtk/tree/v0.9.0/examples">cargo examples</a>, which can be run after cloning the repository using <code>$ cargo run --example example-name</code>. <!-- x-release-please-version -->
+These examples may be difficult to follow on their own, and many of their strategies are described in this book.
+When viewing these examples, be careful to checkout the correct git tag for the version of the plugin you are using.
+Some changes may have been made to the plugin or to the examples on the <code>main</code> branch that are not released yet, and trying to apply these to the version of the plugin you are using can lead to errors.</p>
+<h2 id="license"><a class="header" href="#license">License</a></h2>
+<p>The pages of this book fall under the same license as the rest of the <code>bevy_ecs_ldtk</code> repository.
+I.e., this book is dual-licensed under <a href="http://opensource.org/licenses/MIT">MIT</a> and <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a> at your option.
+The plain text of this license is available in the <code>bevy_ecs_ldtk</code> repository's <a href="https://github.com/Trouv/bevy_ecs_ldtk/blob/main/LICENSE">LICENSE file</a>.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+
+                            <a rel="next prefetch" href="tutorials/tile-based-game/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+
+                    <a rel="next prefetch" href="tutorials/tile-based-game/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

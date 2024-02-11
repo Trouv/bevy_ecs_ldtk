@@ -1,0 +1,621 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Migrate from 0.8 to 0.9 - bevy_ecs_ldtk Book</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../../index.html">Introduction</a></li><li class="chapter-item expanded affix "><li class="part-title">Tutorials</li><li class="chapter-item expanded "><a href="../../tutorials/tile-based-game/index.html"><strong aria-hidden="true">1.</strong> Tile-based Game</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../tutorials/tile-based-game/create-your-ldtk-project.html"><strong aria-hidden="true">1.1.</strong> Create your LDtk project</a></li><li class="chapter-item expanded "><a href="../../tutorials/tile-based-game/spawn-your-ldtk-project-in-bevy.html"><strong aria-hidden="true">1.2.</strong> Spawn your LDtk project in Bevy</a></li><li class="chapter-item expanded "><a href="../../tutorials/tile-based-game/add-gameplay-to-your-project.html"><strong aria-hidden="true">1.3.</strong> Add gameplay to your project</a></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">2.</strong> Platformer</div></li><li class="chapter-item expanded affix "><li class="part-title">Explanation</li><li class="chapter-item expanded "><a href="../../explanation/level-selection.html"><strong aria-hidden="true">3.</strong> Level Selection</a></li><li class="chapter-item expanded "><a href="../../explanation/game-logic-integration.html"><strong aria-hidden="true">4.</strong> Game Logic Integration</a></li><li class="chapter-item expanded "><a href="../../explanation/anatomy-of-the-world.html"><strong aria-hidden="true">5.</strong> Anatomy of the World</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">6.</strong> Plugin Schedule</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">7.</strong> Asset Model</div></li><li class="chapter-item expanded affix "><li class="part-title">How-To Guides</li><li class="chapter-item expanded "><div><strong aria-hidden="true">8.</strong> Register Bundles for Intgrid Tiles and LDtk Entities</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">9.</strong> Process Entities Further with Blueprints</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">10.</strong> Combine Tiles into Larger Entities</div></li><li class="chapter-item expanded "><a href="../../how-to-guides/create-bevy-relations-from-ldtk-entity-references.html"><strong aria-hidden="true">11.</strong> Create Bevy Relations from LDtk Entity References</a></li><li class="chapter-item expanded "><a href="../../how-to-guides/respawn-levels-and-worlds.html"><strong aria-hidden="true">12.</strong> Respawn Levels and Worlds</a></li><li class="chapter-item expanded "><a href="../../how-to-guides/make-level-selection-follow-player.html"><strong aria-hidden="true">13.</strong> Make LevelSelection Follow Player</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">14.</strong> Animate Tiles</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">15.</strong> Camera Logic</div></li><li><ol class="section"><li class="chapter-item expanded "><div><strong aria-hidden="true">15.1.</strong> Implement Fit-Inside Camera</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">15.2.</strong> Implement Fit-Around Camera</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">15.3.</strong> Implement Parallax</div></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">16.</strong> Retrieve Field Instance Data</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">17.</strong> Retrieve Loaded Level Data</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">18.</strong> Compile to WASM</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">19.</strong> Compile Headless</div></li><li class="chapter-item expanded "><a href="../../how-to-guides/migration-guides/index.html"><strong aria-hidden="true">20.</strong> Migration Guides</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../how-to-guides/migration-guides/migrate-from-0.8-to-0.9.html" class="active"><strong aria-hidden="true">20.1.</strong> Migrate from 0.8 to 0.9</a></li><li class="spacer"></li></ol></li><li class="chapter-item expanded "><a href="../../api-reference.html">API Reference</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">bevy_ecs_ldtk Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="migrate-from-08-to-09"><a class="header" href="#migrate-from-08-to-09">Migrate from 0.8 to 0.9</a></h1>
+<h2 id="bevy-upgrade"><a class="header" href="#bevy-upgrade">Bevy upgrade</a></h2>
+<p><code>bevy_ecs_ldtk</code> has upgraded to Bevy and <code>bevy_ecs_tilemap</code> version <code>0.12</code>.
+A Bevy <code>0.12</code> migration guide is available on <a href="https://bevyengine.org/learn/migration-guides/0.11-0.12/">Bevy's website</a>.</p>
+<h2 id="ldtk-upgrade"><a class="header" href="#ldtk-upgrade">LDtk upgrade</a></h2>
+<p><code>bevy_ecs_ldtk</code> now supports LDtk 1.5.3, and is dropping support for previous versions.
+To update your game to LDtk 1.5.3, you should only need to install the new version of LDtk, open your project, and save it.</p>
+<h2 id="default-behavior-for-ldtkentity-and-ldtkintcell-derive-macros"><a class="header" href="#default-behavior-for-ldtkentity-and-ldtkintcell-derive-macros"><code>Default</code> behavior for <code>LdtkEntity</code> and <code>LdtkIntCell</code> derive macros</a></h2>
+<p>Fields on an <code>LdtkEntity</code>- or <code>LdtkIntCell</code>-derived bundle are no longer constructed from the field's <code>Default</code> implementation, but the bundle's.</p>
+<p>You may observe different behavior in <code>0.9</code> if the value for a field in your bundle's <code>Default</code> implementation differs from the field type's own <code>Default</code> implementation:</p>
+<pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span><span class="boring">use bevy::prelude::*;
+</span><span class="boring">use bevy_ecs_ldtk::prelude::*;
+</span>#[derive(Component)]
+struct MyComponent(usize);
+
+impl Default for MyComponent {
+    fn default() -&gt; MyComponent {
+        MyComponent(1)
+    }
+}
+
+#[derive(Bundle, LdtkEntity)]
+struct MyBundle {
+    component: MyComponent,
+}
+
+impl Default for MyBundle {
+    fn default() -&gt; MyBundle {
+        MyBundle {
+            component: MyComponent(2),
+        }
+    }
+}
+
+// In bevy_ecs_ldtk 0.8, the plugin would spawn an entity w/ MyComponent(1)
+
+// In bevy_ecs_ldtk 0.9, the plugin now spawns the entity w/ MyComponent(2)
+<span class="boring">}</span></code></pre></pre>
+<p>You may also need to implement <code>Default</code> for <code>LdtkEntity</code> types that did not have that implementation before:</p>
+<pre><code class="language-rust ignore">// 0.8
+#[derive(Bundle, LdtkEntity)]
+struct MyBundle {
+    component: MyComponentThatImplementsDefault,
+}</code></pre>
+<pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span><span class="boring">use bevy_ecs_ldtk::prelude::*;
+</span><span class="boring">use bevy::prelude::*;
+</span><span class="boring">#[derive(Default, Component)]
+</span><span class="boring">struct MyComponentThatImplementsDefault;
+</span>// 0.9
+#[derive(Default, Bundle, LdtkEntity)]
+struct MyBundle {
+    component: MyComponentThatImplementsDefault,
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="hierarchy-of-ldtk-entities"><a class="header" href="#hierarchy-of-ldtk-entities">Hierarchy of LDtk Entities</a></h2>
+<p>Layer entities (with a <code>LayerMetadata</code> component) are now spawned for LDtk Entity layers, just like any other layer.
+By default, LDtk Entities are now spawned as children to these layer entities instead of as children of the level.</p>
+<pre><code class="language-rust ignore">// 0.8
+fn get_level_of_entity(
+    entities: Query&lt;Entity, With&lt;EntityInstance&gt;&gt;,
+    parent_query: Query&lt;&amp;Parent&gt;,
+) {
+    for entity in &amp;entities {
+        println!(
+            &quot;the level that {:?} belongs to is {:?}&quot;,
+            entity,
+            parent_query.iter_ancestors(entity).nth(0)
+        );
+    }
+}</code></pre>
+<pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span><span class="boring">use bevy_ecs_ldtk::prelude::*;
+</span><span class="boring">use bevy::prelude::*;
+</span>// 0.9
+fn get_level_of_entity(
+    entities: Query&lt;Entity, With&lt;EntityInstance&gt;&gt;,
+    parent_query: Query&lt;&amp;Parent&gt;,
+) {
+    for entity in &amp;entities {
+        println!(
+            &quot;the level that {:?} belongs to is {:?}&quot;,
+            entity,
+            parent_query.iter_ancestors(entity).nth(1)
+        );
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="asset-type-rework"><a class="header" href="#asset-type-rework">Asset Type Rework</a></h2>
+<p>Most breaking changes in this release are related to the asset types, previously <code>LdtkAsset</code> and <code>LdtkLevel</code>.
+These types have been heavily reworked to improve code quality, correctness, performance, and provide better APIs.</p>
+<h3 id="ldtkasset-is-now-ldtkproject-and-other-changes"><a class="header" href="#ldtkasset-is-now-ldtkproject-and-other-changes"><code>LdtkAsset</code> is now <code>LdtkProject</code>, and other changes</a></h3>
+<p><code>LdtkAsset</code> has now been renamed to <code>LdtkProject</code>.
+Any types and systems that depend on this type will need to be updated accordingly:</p>
+<pre><code class="language-rust ignore">// 0.8
+fn do_some_processing_with_ldtk_data(
+    worlds: Query&lt;&amp;Handle&lt;LdtkAsset&gt;&gt;,
+    ldtk_assets: Res&lt;Assets&lt;LdtkAsset&gt;&gt;
+) {
+    // do something
+}</code></pre>
+<pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span><span class="boring">use bevy_ecs_ldtk::prelude::*;
+</span><span class="boring">use bevy::prelude::*;
+</span>// 0.9
+fn do_some_processing_with_ldtk_data(
+    worlds: Query&lt;&amp;Handle&lt;LdtkProject&gt;&gt;,
+    ldtk_assets: Res&lt;Assets&lt;LdtkProject&gt;&gt;
+) {
+    // do something
+}
+<span class="boring">}</span></code></pre></pre>
+<p>Furthermore, all of its fields have been privatized, and are now only available via immutable accessor methods.
+Not all of these methods share the same name as their corresponding field in <code>0.8</code>:</p>
+<pre><code class="language-rust ignore">// 0.8
+let ldtk_json = ldtk_project.project;
+let tileset_map = ldtk_project.tileset_map;
+let int_grid_image_handle = ldtk_project.int_grid_image_handle;
+let level_map = ldtk_project.level_map;</code></pre>
+<pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span><span class="boring">use bevy_ecs_ldtk::prelude::*;
+</span><span class="boring">fn foo(ldtk_project: LdtkProject) {
+</span>// 0.9
+let ldtk_json = ldtk_project.json_data();
+let tileset_map = ldtk_project.tileset_map();
+let int_grid_image_handle = ldtk_project.int_grid_image_handle();
+// the level_map is no longer available in the same way
+<span class="boring">}
+</span><span class="boring">}</span></code></pre></pre>
+<h3 id="ldtkasset-and-ldtkjson-level-accessor-methods-have-been-moved"><a class="header" href="#ldtkasset-and-ldtkjson-level-accessor-methods-have-been-moved"><code>LdtkAsset</code> and <code>LdtkJson</code> level accessor methods have been moved</a></h3>
+<p>Level accessing methods have been completely redefined.
+Analogues to existing methods have been renamed and moved to traits:</p>
+<pre><code class="language-rust ignore">// 0.8
+ldtk_json.iter_levels();
+
+ldtk_asset.iter_levels();
+
+ldtk_asset.get_level(&amp;LevelSelection::Uid(24));</code></pre>
+<pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span><span class="boring">use bevy_ecs_ldtk::{prelude::*, ldtk::LdtkJson};
+</span><span class="boring">fn foo(ldtk_json: LdtkJson, ldtk_project: LdtkProject) {
+</span>// 0.9
+// in `RawLevelAccessor` trait:
+ldtk_json.iter_raw_levels();
+
+ldtk_project.iter_raw_levels();
+
+// in `LevelMetadataAccessor` trait
+ldtk_project.find_raw_level_by_level_selection(&amp;LevelSelection::Uid(24));
+<span class="boring">}
+</span><span class="boring">}</span></code></pre></pre>
+<p>Many new methods have been provided as well.</p>
+<h3 id="internal-levels-and-external-levels-support-now-behind-separate-features"><a class="header" href="#internal-levels-and-external-levels-support-now-behind-separate-features">Internal-levels and external-levels support now behind separate features</a></h3>
+<p>There are two new cargo features, <code>internal_levels</code> and <code>external_levels</code>.
+<code>internal_levels</code> is enabled by default and allows loading of internal-levels LDtk projects.
+<code>external_levels</code> is not enabled by default and allows loading of external-levels LDtk projects.
+Some APIs are unique to the two cases.</p>
+<p>If you have an LDtk project with internal levels, but have disabled default features, you will need to enable <code>internal_levels</code>:</p>
+<pre><code class="language-toml"># 0.8
+bevy_ecs_ldtk = { version = &quot;0.8&quot;, default-features = false, features = [&quot;render&quot;] }
+
+# 0.9
+bevy_ecs_ldtk = { version = &quot;0.9&quot;, default-features = false, features = [&quot;render&quot;, &quot;internal_levels&quot;] }
+</code></pre>
+<p>If you have an LDtk project with external levels, you will need to enable <code>external_levels</code>:</p>
+<pre><code class="language-toml"># 0.8
+bevy_ecs_ldtk = &quot;0.8&quot;
+
+# 0.9
+bevy_ecs_ldtk = { version = &quot;0.9&quot;, features = [&quot;external_levels&quot;] }
+</code></pre>
+<p>These features are <strong>not</strong> mutually exclusive, but at least one of them must be enabled.</p>
+<h3 id="level-asset-changes"><a class="header" href="#level-asset-changes">Level Asset Changes</a></h3>
+<p>The level asset type has changed significantly.
+Most importantly, it is no longer the primary mechanism for storing loaded level data.
+In fact, it is only compiled and used within the <code>external_levels</code> feature (see previous section).</p>
+<h4 id="level-entities-now-have-a-leveliid-instead-of-a-handleldtklevel"><a class="header" href="#level-entities-now-have-a-leveliid-instead-of-a-handleldtklevel">Level entities now have a <code>LevelIid</code> instead of a <code>Handle&lt;LdtkLevel&gt;</code></a></h4>
+<p>The level asset it is no longer the main component marking level entities.
+In both internal-levels and external-levels projects, level entities will no longer have a handle to the level asset, but instead will have a <code>LevelIid</code> component:</p>
+<pre><code class="language-rust ignore">// 0.8
+fn print_level_entity(levels: Query&lt;Entity, With&lt;Handle&lt;LdtkLevel&gt;&gt;&gt;) {
+    for entity in &amp;levels {
+        println!(&quot;level entity {:?} is currently spawned&quot;, entity);
+    }
+}</code></pre>
+<pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span><span class="boring">use bevy_ecs_ldtk::prelude::*;
+</span><span class="boring">use bevy::prelude::*;
+</span>// 0.9
+fn print_level_entity(levels: Query&lt;Entity, With&lt;LevelIid&gt;&gt;) {
+    for entity in &amp;levels {
+        println!(&quot;level entity {:?} is currently spawned&quot;, entity);
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<h4 id="accessing-level-data-from-the-level-entity"><a class="header" href="#accessing-level-data-from-the-level-entity">Accessing level data from the level entity</a></h4>
+<p>Retrieving level data from the level entity can be done using the <code>LevelIid</code> component.
+If the data you need <em>is not</em> inside the level's <code>layer_instances</code>, you can access it on the <code>LdtkProject</code> asset:</p>
+<pre><code class="language-rust ignore">// 0.8
+fn print_level_uid(levels: Query&lt;Handle&lt;LdtkLevel&gt;&gt;, level_assets: Res&lt;Assets&lt;LdtkLevel&gt;&gt;) {
+    for level_handle in &amp;levels {
+        let level_uid = level_assets.get(level_handle).unwrap().uid;
+        println!(&quot;level w/ uid {level_uid}, is currently spawned&quot;);
+    }
+}</code></pre>
+<pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span><span class="boring">use bevy_ecs_ldtk::prelude::*;
+</span><span class="boring">use bevy::prelude::*;
+</span>// 0.9
+fn print_level_uid(
+    levels: Query&lt;&amp;LevelIid&gt;,
+    projects: Query&lt;&amp;Handle&lt;LdtkProject&gt;&gt;,
+    project_assets: Res&lt;Assets&lt;LdtkProject&gt;&gt;
+) {
+    for level_iid in &amp;levels {
+        let only_project = project_assets.get(projects.single()).unwrap();
+
+        let level_uid = only_project.get_raw_level_by_iid(level_iid.get()).unwrap().uid;
+        println!(&quot;level w/ uid {level_uid}, is currently spawned&quot;);
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>If the level data you need <em>is</em> inside the level's <code>layer_instances</code>, you may want to retrieve a <code>LoadedLevel</code>.
+A <code>Level</code> might not have complete data - in the case that it's the &quot;raw&quot; level inside an external-levels project's <code>LdtkProject</code> asset.
+This new <code>LoadedLevel</code> type provides type guarantees that the level has complete data.
+For internal-levels (aka &quot;standalone&quot;) projects, you can retrieve loaded level data with a <code>LevelIid</code> and <code>LdtkProject</code> alone:</p>
+<pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span><span class="boring">use bevy_ecs_ldtk::prelude::*;
+</span><span class="boring">use bevy::prelude::*;
+</span>// 0.9, w/ internal_levels enabled
+fn print_level_uid(
+    levels: Query&lt;&amp;LevelIid&gt;,
+    projects: Query&lt;&amp;Handle&lt;LdtkProject&gt;&gt;,
+    project_assets: Res&lt;Assets&lt;LdtkProject&gt;&gt;
+) {
+    for level_iid in &amp;levels {
+        let only_project = project_assets.get(projects.single()).unwrap();
+
+        let layer_count = only_project
+            .as_standalone()
+            .get_loaded_level_by_iid(level_iid.get())
+            .unwrap()
+            .layer_instances()
+            .len();
+        println!(&quot;level has {layer_count} layers&quot;);
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>For external-levels (aka &quot;parent&quot;) projects, you will need to additionally access the <code>LdtkExternalLevel</code> asset store:</p>
+<pre><code class="language-rust ignore"><span class="boring">use bevy_ecs_ldtk::prelude::*;
+</span><span class="boring">use bevy::prelude::*;
+</span>// 0.9, w/ external_levels enabled
+fn print_level_uid(
+    levels: Query&lt;&amp;LevelIid&gt;,
+    projects: Query&lt;&amp;Handle&lt;LdtkProject&gt;&gt;,
+    project_assets: Res&lt;Assets&lt;LdtkProject&gt;&gt;
+    level_assets: Res&lt;Assets&lt;LdtkExternalLevel&gt;&gt;,
+) {
+    for level_iid in &amp;levels {
+        let only_project = project_assets.get(projects.single()).unwrap();
+
+        let layer_count = only_project
+            .as_parent()
+            .get_external_level_by_iid(&amp;level_assets, level_iid.get())
+            .unwrap()
+            .layer_instances()
+            .len();
+        println!(&quot;level has {layer_count} layers&quot;);
+    }
+}</code></pre>
+<h3 id="module-restructure"><a class="header" href="#module-restructure">Module restructure</a></h3>
+<p>Some types related to assets have been removed, or privatized, or moved.</p>
+<p>Those that were removed/privatized were generally not intended to be used by users:</p>
+<ul>
+<li><code>LevelMap</code></li>
+<li><code>TilesetMap</code></li>
+<li><code>LdtkLevelLoader</code></li>
+<li><code>LdtkLoader</code></li>
+</ul>
+<p>Those that were moved have been moved into the <code>assets</code> module, and are still exposed in the <code>prelude</code>:</p>
+<ul>
+<li><code>LdtkProject</code></li>
+<li><code>LdtkExternalLevel</code></li>
+</ul>
+<h2 id="leveliid-everywhere"><a class="header" href="#leveliid-everywhere"><code>LevelIid</code> everywhere</a></h2>
+<p><code>LevelIid</code> is a new component on level entities that stores the level's iid as a string.
+It has been reused throughout the API.</p>
+<h3 id="in-levelset"><a class="header" href="#in-levelset">In <code>LevelSet</code></a></h3>
+<p><code>LevelSet</code> uses it, but can still be constructed from strings using <code>from_iids</code>:</p>
+<pre><code class="language-rust ignore">// 0.8
+let level_set = LevelSet {
+    iids: [
+        &quot;e5eb2d73-60bb-4779-8b33-38a63da8d1db&quot;.to_string(),
+        &quot;855fab73-2854-419f-a3c6-4ed8466592f6&quot;.to_string(),
+    ].into_iter().collect(),
+}</code></pre>
+<pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span><span class="boring">use bevy_ecs_ldtk::prelude::*;
+</span><span class="boring">fn f() {
+</span>// 0.9
+let level_set = LevelSet::from_iids(
+    [
+        &quot;e5eb2d73-60bb-4779-8b33-38a63da8d1db&quot;,
+        &quot;855fab73-2854-419f-a3c6-4ed8466592f6&quot;,
+    ]
+);
+<span class="boring">}
+</span><span class="boring">}</span></code></pre></pre>
+<h3 id="in-levelevent"><a class="header" href="#in-levelevent">In <code>LevelEvent</code></a></h3>
+<pre><code class="language-rust ignore">use std::any::{Any, TypeId};
+// 0.8
+fn assert_level_event_type(mut level_events: EventReader&lt;LevelEvent&gt;) {
+    for level_event in level_events.iter() {
+        use LevelEvent::*;
+        let level_iid = match level_event {
+            SpawnTriggered(level_iid) | Spawned(level_iid) | Transformed(level_iid) | Despawned(level_iid) =&gt; level_iid,
+        };
+
+        assert_eq!(level_iid.type_id(), TypeId::of::&lt;String&gt;());
+    }
+}</code></pre>
+<pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span><span class="boring">use bevy_ecs_ldtk::prelude::*;
+</span><span class="boring">use bevy::prelude::*;
+</span>use std::any::{Any, TypeId};
+// 0.9
+fn assert_level_event_type(mut level_events: EventReader&lt;LevelEvent&gt;) {
+    for level_event in level_events.read() {
+        use LevelEvent::*;
+        let level_iid = match level_event {
+            SpawnTriggered(level_iid) | Spawned(level_iid) | Transformed(level_iid) | Despawned(level_iid) =&gt; level_iid,
+        };
+
+        assert_eq!(level_iid.type_id(), TypeId::of::&lt;LevelIid&gt;());
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="in-levelselectioniid"><a class="header" href="#in-levelselectioniid">In <code>LevelSelection::Iid</code></a></h3>
+<p><code>LevelSelection</code> uses it, but can still be constructed with a string via the <code>iid</code> method:</p>
+<pre><code class="language-rust ignore">// 0.8
+let level_selection = LevelSelection::Iid(&quot;e5eb2d73-60bb-4779-8b33-38a63da8d1db&quot;.to_string());</code></pre>
+<pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span><span class="boring">use bevy_ecs_ldtk::prelude::*;
+</span><span class="boring">fn f() {
+</span>// 0.9
+let level_selection = LevelSelection::iid(&quot;e5eb2d73-60bb-4779-8b33-38a63da8d1db&quot;);
+<span class="boring">}
+</span><span class="boring">}</span></code></pre></pre>
+<h2 id="levelselection-index-variant-now-stores-a-world-index"><a class="header" href="#levelselection-index-variant-now-stores-a-world-index"><code>LevelSelection</code> index variant now stores a world index</a></h2>
+<p>The <code>LevelSelection::Index</code> variant has been replaced by <code>LevelSelection::Indices</code>.
+Internally, this contains a new <code>LevelIndices</code> type, which stores an optional world index in addition to the level index.
+However, you can still construct a <code>LevelSelection</code> from a single level index using the <code>index</code> method:</p>
+<pre><code class="language-rust ignore">// 0.8
+let level_selection = LevelSelection::Index(2);</code></pre>
+<pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span><span class="boring">use bevy_ecs_ldtk::prelude::*;
+</span><span class="boring">fn f() {
+</span>// 0.9
+let level_selection = LevelSelection::index(2);
+<span class="boring">}
+</span><span class="boring">}</span></code></pre></pre>
+<h2 id="levelsetfrom_iid-replaced-with-levelsetfrom_iids"><a class="header" href="#levelsetfrom_iid-replaced-with-levelsetfrom_iids"><code>LevelSet::from_iid</code> replaced with <code>LevelSet::from_iids</code></a></h2>
+<p><code>LevelSet::from_iid</code> has been replaced by <code>LevelSet::from_iids</code>.
+This new method can accept any iterator of strings rather than just one:</p>
+<pre><code class="language-rust ignore">// 0.8
+let level_set = LevelSet::from_iid(&quot;e5eb2d73-60bb-4779-8b33-38a63da8d1db&quot;);</code></pre>
+<pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span><span class="boring">use bevy_ecs_ldtk::prelude::*;
+</span><span class="boring">fn f() {
+</span>// 0.9
+let level_set = LevelSet::from_iids([&quot;e5eb2d73-60bb-4779-8b33-38a63da8d1db&quot;]);
+
+// or many..
+let level_set = LevelSet::from_iids(
+    [
+        &quot;e5eb2d73-60bb-4779-8b33-38a63da8d1db&quot;,
+        &quot;855fab73-2854-419f-a3c6-4ed8466592f6&quot;,
+    ]
+);
+<span class="boring">}
+</span><span class="boring">}</span></code></pre></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../how-to-guides/migration-guides/index.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../api-reference.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../how-to-guides/migration-guides/index.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../api-reference.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

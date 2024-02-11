@@ -31,12 +31,12 @@ For less common use cases, strategies that leverage this plugin's ECS constructs
 ## Documentation
 Documentation for this plugin is available in two main places.
 - API reference on [docs.rs](https://docs.rs/bevy_ecs_ldtk/0.8.0/bevy_ecs_ldtk/) <!-- x-release-please-version -->
-- Tutorials, Explanation, and Guides in the [`bevy_ecs_ldtk` book](https://trouv.github.io/bevy_ecs_ldtk/main/index.html) <!-- x-release-please-version -->
+- Tutorials, Explanation, and Guides in the [`bevy_ecs_ldtk` book](https://trouv.github.io/bevy_ecs_ldtk/v0.8.0/index.html) <!-- x-release-please-version -->
 
 In the book, the following chapters are good jumping-off points for beginners:
-- [*Tile-based Game* tutorial](https://trouv.github.io/bevy_ecs_ldtk/main/tutorials/tile-based-game/index.html) <!-- x-release-please-version -->
-- [*Level Selection* explanation](https://trouv.github.io/bevy_ecs_ldtk/main/explanation/level-selection.html) <!-- x-release-please-version -->
-- [*Game Logic Integration* explanation](https://trouv.github.io/bevy_ecs_ldtk/main/explanation/game-logic-integration.html) <!-- x-release-please-version -->
+- [*Tile-based Game* tutorial](https://trouv.github.io/bevy_ecs_ldtk/v0.8.0/tutorials/tile-based-game/index.html) <!-- x-release-please-version -->
+- [*Level Selection* explanation](https://trouv.github.io/bevy_ecs_ldtk/v0.8.0/explanation/level-selection.html) <!-- x-release-please-version -->
+- [*Game Logic Integration* explanation](https://trouv.github.io/bevy_ecs_ldtk/v0.8.0/explanation/game-logic-integration.html) <!-- x-release-please-version -->
 
 Cargo examples are also available in this repository:
 ```sh
@@ -46,7 +46,7 @@ $ cargo run --example example-name
 ## Compatibility
 | bevy | bevy_ecs_tilemap | LDtk | bevy_ecs_ldtk |
 | --- | --- | --- | --- |
-| 0.12 | main | 1.5.3 | main |
+| 0.12 | 0.12 | 1.5.3 | 0.9 |
 | 0.11 | 0.11 | 1.3.3 | 0.8 |
 | 0.10 | 0.10 | 1.1 | 0.7 |
 | 0.10 | 0.10 | 1.1 | 0.6 |

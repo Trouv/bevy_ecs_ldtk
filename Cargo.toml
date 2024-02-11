@@ -56,6 +56,3 @@ path = "examples/field_instances/main.rs"
 [[example]]
 name = "collectathon"
 path = "examples/collectathon/main.rs"
-
-[patch.crates-io]
-bevy_ecs_tilemap = { git = "https://github.com/StarArawn/bevy_ecs_tilemap", branch = "main" }

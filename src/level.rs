@@ -40,7 +40,7 @@ enum BackgroundImageError {
 
 fn background_image_sprite_sheet_bundle(
     images: &Assets<Image>,
-    texture_atlases: &mut Assets<TextureAtlas>,
+    texture_atlases: &mut Assets<TextureAtlasLayout>,
     background_image_handle: &Handle<Image>,
     background_position: &LevelBackgroundPosition,
     level_height: i32,
@@ -52,7 +52,7 @@ fn background_image_sprite_sheet_bundle(
             background_image.texture_descriptor.size.width as f32,
             background_image.texture_descriptor.size.height as f32,
         );
-        let mut texture_atlas = TextureAtlas::new_empty(background_image_handle.clone(), tile_size);
+        let mut texture_atlas_layout = TextureAtlasLayout::new_empty(tile_size);
 
         let min = Vec2::new(
             background_position.crop_rect[0],
@@ -68,9 +68,7 @@ fn background_image_sprite_sheet_bundle(
 
         let crop_rect = Rect { min, max };
 
-        texture_atlas.textures.push(crop_rect);
-
-        let texture_atlas_handle = texture_atlases.add(texture_atlas);
+        let index = texture_atlas_layout.add_texture(crop_rect);
 
         let scale = background_position.scale;
 
@@ -83,7 +81,11 @@ fn background_image_sprite_sheet_bundle(
             top_left_translation + (Vec2::new(scaled_size.x, -scaled_size.y) / 2.);
 
         Ok(SpriteSheetBundle {
-            texture_atlas: texture_atlas_handle,
+            atlas: TextureAtlas {
+                index,
+                layout: texture_atlases.add(texture_atlas_layout),
+            },
+            texture: background_image_handle.clone(),
             transform: Transform::from_translation(center_translation.extend(transform_z))
                 .with_scale(scale.extend(1.)),
             ..Default::default()
@@ -210,7 +212,7 @@ pub fn spawn_level(
     commands: &mut Commands,
     asset_server: &AssetServer,
     images: &Assets<Image>,
-    texture_atlases: &mut Assets<TextureAtlas>,
+    texture_atlases: &mut Assets<TextureAtlasLayout>,
     ldtk_entity_map: &LdtkEntityMap,
     ldtk_int_cell_map: &LdtkIntCellMap,
     entity_definition_map: &HashMap<i32, &EntityDefinition>,

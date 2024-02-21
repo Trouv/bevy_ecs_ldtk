@@ -18,11 +18,11 @@ pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 }
 
 pub fn dbg_player_items(
-    input: Res<Input<KeyCode>>,
+    input: Res<ButtonInput<KeyCode>>,
     mut query: Query<(&Items, &EntityInstance), With<Player>>,
 ) {
     for (items, entity_instance) in &mut query {
-        if input.just_pressed(KeyCode::P) {
+        if input.just_pressed(KeyCode::KeyP) {
             dbg!(&items);
             dbg!(&entity_instance);
         }
@@ -30,24 +30,24 @@ pub fn dbg_player_items(
 }
 
 pub fn movement(
-    input: Res<Input<KeyCode>>,
+    input: Res<ButtonInput<KeyCode>>,
     mut query: Query<(&mut Velocity, &mut Climber, &GroundDetection), With<Player>>,
 ) {
     for (mut velocity, mut climber, ground_detection) in &mut query {
-        let right = if input.pressed(KeyCode::D) { 1. } else { 0. };
-        let left = if input.pressed(KeyCode::A) { 1. } else { 0. };
+        let right = if input.pressed(KeyCode::KeyD) { 1. } else { 0. };
+        let left = if input.pressed(KeyCode::KeyA) { 1. } else { 0. };
 
         velocity.linvel.x = (right - left) * 200.;
 
         if climber.intersecting_climbables.is_empty() {
             climber.climbing = false;
-        } else if input.just_pressed(KeyCode::W) || input.just_pressed(KeyCode::S) {
+        } else if input.just_pressed(KeyCode::KeyW) || input.just_pressed(KeyCode::KeyS) {
             climber.climbing = true;
         }
 
         if climber.climbing {
-            let up = if input.pressed(KeyCode::W) { 1. } else { 0. };
-            let down = if input.pressed(KeyCode::S) { 1. } else { 0. };
+            let up = if input.pressed(KeyCode::KeyW) { 1. } else { 0. };
+            let down = if input.pressed(KeyCode::KeyS) { 1. } else { 0. };
 
             velocity.linvel.y = (up - down) * 200.;
         }
@@ -108,7 +108,7 @@ pub fn spawn_wall_collision(
     // 2. it lets us easily add the collision entities as children of the appropriate level entity
     let mut level_to_wall_locations: HashMap<Entity, HashSet<GridCoords>> = HashMap::new();
 
-    wall_query.for_each(|(&grid_coords, parent)| {
+    wall_query.iter().for_each(|(&grid_coords, parent)| {
         // An intgrid tile's direct parent will be a layer entity, not the level entity
         // To get the level entity, you need the tile's grandparent.
         // This is where parent_query comes in.
@@ -121,7 +121,7 @@ pub fn spawn_wall_collision(
     });
 
     if !wall_query.is_empty() {
-        level_query.for_each(|(level_entity, level_iid)| {
+        level_query.iter().for_each(|(level_entity, level_iid)| {
             if let Some(level_walls) = level_to_wall_locations.get(&level_entity) {
                 let ldtk_project = ldtk_project_assets
                     .get(ldtk_projects.single())
@@ -448,7 +448,7 @@ pub fn spawn_ground_sensor(
 pub fn ground_detection(
     mut ground_sensors: Query<&mut GroundSensor>,
     mut collisions: EventReader<CollisionEvent>,
-    collidables: Query<With<Collider>, Without<Sensor>>,
+    collidables: Query<Entity, (With<Collider>, Without<Sensor>)>,
 ) {
     for collision_event in collisions.read() {
         match collision_event {
@@ -492,9 +492,9 @@ pub fn update_on_ground(
 pub fn restart_level(
     mut commands: Commands,
     level_query: Query<Entity, With<LevelIid>>,
-    input: Res<Input<KeyCode>>,
+    input: Res<ButtonInput<KeyCode>>,
 ) {
-    if input.just_pressed(KeyCode::R) {
+    if input.just_pressed(KeyCode::KeyR) {
         for level_entity in &level_query {
             commands.entity(level_entity).insert(Respawn);
         }

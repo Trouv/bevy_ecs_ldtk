@@ -115,7 +115,7 @@ pub fn expand_ldtk_entity_derive(ast: syn::DeriveInput) -> proc_macro::TokenStre
                 tileset: Option<&bevy::prelude::Handle<bevy::prelude::Image>>,
                 tileset_definition: Option<&bevy_ecs_ldtk::prelude::TilesetDefinition>,
                 asset_server: &bevy::prelude::AssetServer,
-                texture_atlases: &mut bevy::prelude::Assets<bevy::prelude::TextureAtlas>,
+                texture_atlases: &mut bevy::prelude::Assets<bevy::prelude::TextureAtlasLayout>,
             ) -> Self {
                 Self {
                     #(#field_constructions)*
@@ -231,18 +231,16 @@ fn expand_sprite_sheet_bundle_attribute(
 
             quote! {
                 #field_name: bevy::prelude::SpriteSheetBundle {
-                    texture_atlas: texture_atlases.add(
-                        bevy::prelude::TextureAtlas::from_grid(
-                            asset_server.load(#asset_path).into(),
-                            bevy::prelude::Vec2::new(#tile_width, #tile_height),
-                            #columns, #rows, Some(bevy::prelude::Vec2::splat(#padding)),
-                            Some(bevy::prelude::Vec2::splat(#offset)),
-                        )
-                    ),
-                    sprite: bevy::prelude::TextureAtlasSprite {
-                        index: #index,
-                        ..Default::default()
+                    atlas: bevy::prelude::TextureAtlas {
+                        layout: texture_atlases.add(
+                            bevy::prelude::TextureAtlasLayout::from_grid(
+                                bevy::prelude::Vec2::new(#tile_width, #tile_height),
+                                #columns, #rows, Some(bevy::prelude::Vec2::splat(#padding)),
+                                Some(bevy::prelude::Vec2::splat(#offset)),
+                            )),
+                        index: #index
                     },
+                    texture: asset_server.load(#asset_path).into(),
                     ..Default::default()
                 },
             }

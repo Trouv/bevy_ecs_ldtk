@@ -34,7 +34,7 @@ use std::{collections::HashMap, marker::PhantomData};
 ///
 /// fn main() {
 ///     App::empty()
-///         .add_plugins(LdtkPlugin)
+///         .add_plugins(LdtkPlugin::default())
 ///         .register_ldtk_int_cell::<MyBundle>(1)
 ///         // add other systems, plugins, resources...
 ///         .run();

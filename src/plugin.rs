@@ -1,5 +1,5 @@
 //! Provides [LdtkPlugin] and its scheduling-related dependencies.
-use crate::{app, assets, components, resources, systems};
+use crate::{app, assets, components, ldtk::LdtkJson, resources, systems};
 use bevy::{
     app::MainScheduleOrder, ecs::schedule::ScheduleLabel, prelude::*, transform::TransformSystem,
 };
@@ -26,8 +26,26 @@ enum ProcessApiSet {
 /// Adds the default systems, assets, and resources used by `bevy_ecs_ldtk`.
 ///
 /// Add it to your [App] to gain LDtk functionality!
-#[derive(Copy, Clone, Debug, Default)]
-pub struct LdtkPlugin;
+#[derive(Copy, Clone, Debug)]
+pub struct LdtkPlugin {
+    /// Function used to deserialize loaded Ldtk files.
+    /// You should be using the [`Default`] implementation
+    /// Unless you're preprocessing your Ldtk files.
+    pub deserialize_fn: fn(Vec<u8>) -> Result<LdtkJson, assets::LdtkProjectLoaderError>,
+}
+
+fn de_call_json(bytes: Vec<u8>) -> Result<LdtkJson, assets::LdtkProjectLoaderError> {
+    let res: LdtkJson = serde_json::from_slice(&bytes)?;
+    Ok(res)
+}
+
+impl Default for LdtkPlugin {
+    fn default() -> Self {
+        Self {
+            deserialize_fn: de_call_json,
+        }
+    }
+}
 
 impl Plugin for LdtkPlugin {
     fn build(&self, mut app: &mut App) {
@@ -41,7 +59,7 @@ impl Plugin for LdtkPlugin {
             .expect("expected MainScheduleOrder to exist, try using DefaultPlugins")
             .insert_after(Update, ProcessLdtkApi);
 
-        app.add_plugins(assets::LdtkAssetPlugin)
+        app.add_plugins(assets::LdtkAssetPlugin(self.deserialize_fn))
             .configure_sets(
                 ProcessLdtkApi,
                 (ProcessApiSet::PreClean, ProcessApiSet::Clean).chain(),

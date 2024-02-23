@@ -6,7 +6,7 @@ fn main() {
         .add_plugins(
             DefaultPlugins.set(ImagePlugin::default_nearest()), // prevents blurry sprites
         )
-        .add_plugins(LdtkPlugin)
+        .add_plugins(LdtkPlugin::default())
         .add_systems(Startup, setup)
         .insert_resource(LevelSelection::index(0))
         .register_ldtk_entity::<MyBundle>("MyEntityIdentifier")

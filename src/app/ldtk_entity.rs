@@ -281,6 +281,37 @@ use std::{collections::HashMap, marker::PhantomData};
 ///     }
 /// }
 /// ```
+///
+/// ### `#[default]`
+///
+/// Indicates that this component or bundle should be initialized using
+/// [Default::default].
+/// This can be useful when implementing `Default` for the whole `LdtkEntity` is
+/// not easily possible, because some of the fields do not implement `Default`.
+///
+/// ```
+/// # use bevy::prelude::*;
+/// # use bevy_ecs_ldtk::prelude::*;
+/// # #[derive(Component, Default)]
+/// # struct Damage;
+/// # #[derive(Component, Default)]
+/// # struct BleedDamage;
+/// #[derive(Bundle, LdtkEntity)]
+/// pub struct Weapon {
+///     #[default]
+///     damage: Damage,
+///     #[sprite_bundle]
+///     sprite: SpriteBundle,
+/// }
+///
+/// #[derive(Bundle, LdtkEntity)]
+/// pub struct Dagger {
+///     #[ldtk_entity]
+///     weapon_bundle: Weapon,
+///     #[default]
+///     bleed_damage: BleedDamage,
+/// }
+/// ```
 pub trait LdtkEntity {
     /// The constructor used by the plugin when spawning entities from an LDtk file.
     /// Has access to resources/assets most commonly used for spawning 2d objects.

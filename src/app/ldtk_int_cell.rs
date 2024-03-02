@@ -154,6 +154,35 @@ use std::{collections::HashMap, marker::PhantomData};
 ///     damage: Damage,
 /// }
 /// ```
+///
+/// ### `#[default]`
+///
+/// Indicates that this component or bundle should be initialized using
+/// [Default::default].
+/// This can be useful when implementing `Default` for the whole `IntGridCell` is
+/// not easily possible, because some of the fields do not implement `Default`.
+///
+/// ```
+/// # use bevy::prelude::*;
+/// # use bevy_ecs_ldtk::prelude::*;
+/// # #[derive(Component, Default)]
+/// # struct RigidBody;
+/// # #[derive(Component, Default)]
+/// # struct Damage;
+/// #[derive(Bundle, LdtkIntCell)]
+/// pub struct Wall {
+///     #[default]
+///     rigid_body: RigidBody,
+/// }
+///
+/// #[derive(Bundle, LdtkIntCell)]
+/// pub struct DestructibleWall {
+///     #[ldtk_int_cell]
+///     wall: Wall,
+///     #[default]
+///     damage: Damage,
+/// }
+/// ```
 pub trait LdtkIntCell {
     /// The constructor used by the plugin when spawning additional components on IntGrid tiles.
     /// If you need access to more of the [World](bevy::prelude::World), you can create a system that queries for

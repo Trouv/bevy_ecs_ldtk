@@ -2,7 +2,7 @@
 // trait. As a result, you can run this example with --no-default-features
 
 use bevy::prelude::*;
-use bevy_ecs_ldtk::prelude::*;
+use bevy_ecs_ldtk::{prelude::*, utils::ldtk_pivot_to_anchor};
 
 fn main() {
     App::new()
@@ -51,6 +51,7 @@ fn process_my_entity(
 
                 let sprite = TextureAtlasSprite {
                     index: (tile.y / tile.h) as usize * 16 + (tile.x / tile.w) as usize,
+                    anchor: ldtk_pivot_to_anchor(entity_instance.pivot),
                     ..Default::default()
                 };
 

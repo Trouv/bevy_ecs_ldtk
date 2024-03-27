@@ -58,4 +58,4 @@ name = "collectathon"
 path = "examples/collectathon/main.rs"
 
 [patch.crates-io]
-bevy_ecs_tilemap = { git = "https://github.com/rparrett/bevy_ecs_tilemap/", branch = "bevy13" }
+bevy_ecs_tilemap = { git = "https://github.com/StarArawn/bevy_ecs_tilemap/", branch = "main" }

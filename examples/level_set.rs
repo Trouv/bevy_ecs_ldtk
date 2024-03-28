@@ -51,7 +51,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
 // This function is a demonstation that changes to the LevelSet have the expected results.
 // Hit spacebar and watch what happens!
-fn toggle_levels(input: Res<Input<KeyCode>>, mut level_sets: Query<&mut LevelSet>) {
+fn toggle_levels(input: Res<ButtonInput<KeyCode>>, mut level_sets: Query<&mut LevelSet>) {
     if input.just_pressed(KeyCode::Space) {
         let mut rng = rand::thread_rng();
         let level_to_toggle = LevelIid::new(*LEVEL_IIDS.choose(&mut rng).unwrap());

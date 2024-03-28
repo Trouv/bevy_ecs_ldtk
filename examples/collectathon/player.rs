@@ -30,22 +30,22 @@ const MOVEMENT_SPEED: f32 = 96.;
 
 fn move_player(
     mut players: Query<&mut Transform, With<Player>>,
-    input: Res<Input<KeyCode>>,
+    input: Res<ButtonInput<KeyCode>>,
     time: Res<Time>,
 ) {
     for mut player_transform in players.iter_mut() {
         let mut movement = Vec2::ZERO;
 
-        if input.pressed(KeyCode::W) || input.pressed(KeyCode::Up) {
+        if input.pressed(KeyCode::KeyW) || input.pressed(KeyCode::ArrowUp) {
             movement += Vec2::Y;
         }
-        if input.pressed(KeyCode::A) || input.pressed(KeyCode::Left) {
+        if input.pressed(KeyCode::KeyA) || input.pressed(KeyCode::ArrowLeft) {
             movement -= Vec2::X;
         }
-        if input.pressed(KeyCode::S) || input.pressed(KeyCode::Down) {
+        if input.pressed(KeyCode::KeyS) || input.pressed(KeyCode::ArrowDown) {
             movement -= Vec2::Y;
         }
-        if input.pressed(KeyCode::D) || input.pressed(KeyCode::Right) {
+        if input.pressed(KeyCode::KeyD) || input.pressed(KeyCode::ArrowRight) {
             movement += Vec2::X;
         }
 

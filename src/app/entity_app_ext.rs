@@ -150,7 +150,7 @@ mod tests {
             _: Option<&Handle<Image>>,
             _: Option<&TilesetDefinition>,
             _: &AssetServer,
-            _: &mut Assets<TextureAtlas>,
+            _: &mut Assets<TextureAtlasLayout>,
         ) -> LdtkEntityBundle {
             LdtkEntityBundle::default()
         }

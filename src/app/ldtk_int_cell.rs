@@ -191,21 +191,21 @@ impl<B: LdtkIntCell + Bundle> PhantomLdtkIntCell<B> {
 }
 
 pub trait PhantomLdtkIntCellTrait {
-    fn evaluate<'w, 's, 'a, 'b>(
+    fn evaluate<'a, 'b>(
         &self,
-        entity_commands: &'b mut EntityCommands<'w, 's, 'a>,
+        entity_commands: &'b mut EntityCommands<'a>,
         int_grid_cell: IntGridCell,
         layer_instance: &LayerInstance,
-    ) -> &'b mut EntityCommands<'w, 's, 'a>;
+    ) -> &'b mut EntityCommands<'a>;
 }
 
 impl<B: LdtkIntCell + Bundle> PhantomLdtkIntCellTrait for PhantomLdtkIntCell<B> {
-    fn evaluate<'w, 's, 'a, 'b>(
+    fn evaluate<'a, 'b>(
         &self,
-        entity_commands: &'b mut EntityCommands<'w, 's, 'a>,
+        entity_commands: &'b mut EntityCommands<'a>,
         int_grid_cell: IntGridCell,
         layer_instance: &LayerInstance,
-    ) -> &'b mut EntityCommands<'w, 's, 'a> {
+    ) -> &'b mut EntityCommands<'a> {
         entity_commands.insert(B::bundle_int_cell(int_grid_cell, layer_instance))
     }
 }

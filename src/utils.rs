@@ -314,49 +314,44 @@ pub fn sprite_sheet_bundle_from_entity_info(
     entity_instance: &EntityInstance,
     tileset: Option<&Handle<Image>>,
     tileset_definition: Option<&TilesetDefinition>,
-    texture_atlases: &mut Assets<TextureAtlas>,
+    texture_atlases: &mut Assets<TextureAtlasLayout>,
     grid: bool,
 ) -> SpriteSheetBundle {
     match (tileset, &entity_instance.tile, tileset_definition) {
         (Some(tileset), Some(tile), Some(tileset_definition)) => SpriteSheetBundle {
-            texture_atlas: if grid {
-                texture_atlases.add(TextureAtlas::from_grid(
-                    tileset.clone(),
+            atlas: if grid {
+                let layout = TextureAtlasLayout::from_grid(
                     Vec2::new(tile.w as f32, tile.h as f32),
                     tileset_definition.c_wid as usize,
                     tileset_definition.c_hei as usize,
                     Some(Vec2::splat(tileset_definition.spacing as f32)),
                     Some(Vec2::splat(tileset_definition.padding as f32)),
-                ))
-            } else {
-                let mut texture_atlas = TextureAtlas::new_empty(
-                    tileset.clone(),
-                    Vec2::new(
-                        tileset_definition.px_wid as f32,
-                        tileset_definition.px_hei as f32,
-                    ),
                 );
-                texture_atlas.add_texture(Rect::new(
+                let texture_atlas: Handle<TextureAtlasLayout> = texture_atlases.add(layout);
+                TextureAtlas {
+                    layout: texture_atlas,
+                    index: (tile.y / (tile.h + tileset_definition.spacing)) as usize
+                        * tileset_definition.c_wid as usize
+                        + (tile.x / (tile.w + tileset_definition.spacing)) as usize,
+                }
+            } else {
+                let mut layout = TextureAtlasLayout::new_empty(Vec2::new(
+                    tileset_definition.px_wid as f32,
+                    tileset_definition.px_hei as f32,
+                ));
+                layout.add_texture(Rect::new(
                     tile.x as f32,
                     tile.y as f32,
                     (tile.x + tile.w) as f32,
                     (tile.y + tile.h) as f32,
                 ));
-                texture_atlases.add(texture_atlas)
-            },
-            sprite: if grid {
-                TextureAtlasSprite {
-                    index: (tile.y / (tile.h + tileset_definition.spacing)) as usize
-                        * tileset_definition.c_wid as usize
-                        + (tile.x / (tile.w + tileset_definition.spacing)) as usize,
-                    ..Default::default()
-                }
-            } else {
-                TextureAtlasSprite {
+                let texture_atlas: Handle<TextureAtlasLayout> = texture_atlases.add(layout);
+                TextureAtlas {
+                    layout: texture_atlas,
                     index: 0,
-                    ..Default::default()
                 }
             },
+            texture: tileset.clone(),
             ..Default::default()
         },
         _ => {

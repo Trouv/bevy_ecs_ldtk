@@ -157,7 +157,7 @@ impl LdtkEntity for Patrol {
         _: Option<&Handle<Image>>,
         _: Option<&TilesetDefinition>,
         _: &AssetServer,
-        _: &mut Assets<TextureAtlas>,
+        _: &mut Assets<TextureAtlasLayout>,
     ) -> Patrol {
         let mut points = Vec::new();
         points.push(ldtk_pixel_coords_to_translation_pivoted(

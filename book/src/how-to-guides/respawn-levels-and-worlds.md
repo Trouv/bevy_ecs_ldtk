@@ -27,9 +27,9 @@ For example, if the game should only spawn one level at a time, operate under th
 fn respawn_only_level(
     mut commands: Commands,
     levels: Query<Entity, With<LevelIid>>,
-    input: Res<Input<KeyCode>>
+    input: Res<ButtonInput<KeyCode>>
 ) {
-    if input.just_pressed(KeyCode::L) {
+    if input.just_pressed(KeyCode::KeyL) {
         commands.entity(levels.single()).insert(Respawn);
     }
 }
@@ -54,7 +54,7 @@ There is a method on `LdtkProject` to perform this search.
     ldtk_projects: Query<&Handle<LdtkProject>>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
 ) {
-    if input.just_pressed(KeyCode::L) {
+    if input.just_pressed(KeyCode::KeyL) {
         if let Some(only_project) = ldtk_project_assets.get(ldtk_projects.single()) {
             let level_selection_iid = LevelIid::new(
                 only_project

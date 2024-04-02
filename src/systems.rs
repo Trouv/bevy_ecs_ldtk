@@ -216,7 +216,7 @@ pub fn process_ldtk_levels(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     images: ResMut<Assets<Image>>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
     #[cfg(feature = "external_levels")] level_assets: Res<Assets<LdtkExternalLevel>>,
     ldtk_entity_map: NonSend<LdtkEntityMap>,

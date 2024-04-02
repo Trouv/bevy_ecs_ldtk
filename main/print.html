@@ -482,15 +482,15 @@ Then, add the new direction to the player entity's <code>GridCoords</code> compo
 
 fn move_player_from_input(
     mut players: Query&lt;&amp;mut GridCoords, With&lt;Player&gt;&gt;,
-    input: Res&lt;Input&lt;KeyCode&gt;&gt;,
+    input: Res&lt;ButtonInput&lt;KeyCode&gt;&gt;,
 ) {
-    let movement_direction = if input.just_pressed(KeyCode::W) {
+    let movement_direction = if input.just_pressed(KeyCode::KeyW) {
         GridCoords::new(0, 1)
-    } else if input.just_pressed(KeyCode::A) {
+    } else if input.just_pressed(KeyCode::KeyA) {
         GridCoords::new(-1, 0)
-    } else if input.just_pressed(KeyCode::S) {
+    } else if input.just_pressed(KeyCode::KeyS) {
         GridCoords::new(0, -1)
-    } else if input.just_pressed(KeyCode::D) {
+    } else if input.just_pressed(KeyCode::KeyD) {
         GridCoords::new(1, 0)
     } else {
         return;
@@ -686,16 +686,16 @@ fn cache_wall_locations(
 </span><span class="boring">}
 </span>fn move_player_from_input(
     mut players: Query&lt;&amp;mut GridCoords, With&lt;Player&gt;&gt;,
-    input: Res&lt;Input&lt;KeyCode&gt;&gt;,
+    input: Res&lt;ButtonInput&lt;KeyCode&gt;&gt;,
     level_walls: Res&lt;LevelWalls&gt;,
 ) {
-    let movement_direction = if input.just_pressed(KeyCode::W) {
+    let movement_direction = if input.just_pressed(KeyCode::KeyW) {
         GridCoords::new(0, 1)
-    } else if input.just_pressed(KeyCode::A) {
+    } else if input.just_pressed(KeyCode::KeyA) {
         GridCoords::new(-1, 0)
-    } else if input.just_pressed(KeyCode::S) {
+    } else if input.just_pressed(KeyCode::KeyS) {
         GridCoords::new(0, -1)
-    } else if input.just_pressed(KeyCode::D) {
+    } else if input.just_pressed(KeyCode::KeyD) {
         GridCoords::new(1, 0)
     } else {
         return;
@@ -1173,9 +1173,9 @@ This is especially easy if, like most users, you only have one world in your gam
 </span>fn respawn_world(
     mut commands: Commands,
     ldtk_projects: Query&lt;Entity, With&lt;Handle&lt;LdtkProject&gt;&gt;&gt;,
-    input: Res&lt;Input&lt;KeyCode&gt;&gt;,
+    input: Res&lt;ButtonInput&lt;KeyCode&gt;&gt;,
 ) {
-    if input.just_pressed(KeyCode::R) {
+    if input.just_pressed(KeyCode::KeyR) {
         commands.entity(ldtk_projects.single()).insert(Respawn);
     }
 }
@@ -1193,9 +1193,9 @@ For example, if the game should only spawn one level at a time, operate under th
 </span>fn respawn_only_level(
     mut commands: Commands,
     levels: Query&lt;Entity, With&lt;LevelIid&gt;&gt;,
-    input: Res&lt;Input&lt;KeyCode&gt;&gt;
+    input: Res&lt;ButtonInput&lt;KeyCode&gt;&gt;
 ) {
-    if input.just_pressed(KeyCode::L) {
+    if input.just_pressed(KeyCode::KeyL) {
         commands.entity(levels.single()).insert(Respawn);
     }
 }
@@ -1211,9 +1211,9 @@ If you share this assumption, get the <code>LevelIid</code> from the <code>Level
     mut commands: Commands,
     level_selection: Res&lt;LevelSelection&gt;,
     levels: Query&lt;(Entity, &amp;LevelIid)&gt;,
-    input: Res&lt;Input&lt;KeyCode&gt;&gt;,
+    input: Res&lt;ButtonInput&lt;KeyCode&gt;&gt;,
 ) {
-    if input.just_pressed(KeyCode::L) {
+    if input.just_pressed(KeyCode::KeyL) {
         let level_selection_iid = match level_selection.as_ref() {
             LevelSelection::Iid(iid) =&gt; iid,
             _ =&gt; panic!(&quot;level should always be selected by iid in this example&quot;),
@@ -1237,11 +1237,11 @@ There is a method on <code>LdtkProject</code> to perform this search.</p>
     mut commands: Commands,
     level_selection: Res&lt;LevelSelection&gt;,
     levels: Query&lt;(Entity, &amp;LevelIid)&gt;,
-    input: Res&lt;Input&lt;KeyCode&gt;&gt;,
+    input: Res&lt;ButtonInput&lt;KeyCode&gt;&gt;,
     ldtk_projects: Query&lt;&amp;Handle&lt;LdtkProject&gt;&gt;,
     ldtk_project_assets: Res&lt;Assets&lt;LdtkProject&gt;&gt;,
 ) {
-    if input.just_pressed(KeyCode::L) {
+    if input.just_pressed(KeyCode::KeyL) {
         if let Some(only_project) = ldtk_project_assets.get(ldtk_projects.single()) {
             let level_selection_iid = LevelIid::new(
                 only_project

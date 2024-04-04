@@ -285,31 +285,28 @@ use std::{collections::HashMap, marker::PhantomData};
 /// ### `#[default]`
 ///
 /// Indicates that this component or bundle should be initialized using
-/// [Default::default].
+/// [`Default::default`].
 /// This can be useful when implementing `Default` for the whole `LdtkEntity` is
 /// not easily possible, because some of the fields do not implement `Default`.
 ///
 /// ```
 /// # use bevy::prelude::*;
 /// # use bevy_ecs_ldtk::prelude::*;
+/// # mod other_crate {
+/// #     #[derive(bevy::prelude::Component)]
+/// #     pub struct ForeignComponentWithNoDefault;
+/// # }
+/// # fn custom_constructor(_: &EntityInstance) -> ForeignComponentWithNoDefault { todo!(); }
 /// # #[derive(Component, Default)]
 /// # struct Damage;
-/// # #[derive(Component, Default)]
-/// # struct BleedDamage;
-/// #[derive(Bundle, LdtkEntity)]
-/// pub struct Weapon {
-///     #[default]
-///     damage: Damage,
-///     #[sprite_bundle]
-///     sprite: SpriteBundle,
-/// }
+/// use other_crate::ForeignComponentWithNoDefault;
 ///
 /// #[derive(Bundle, LdtkEntity)]
-/// pub struct Dagger {
-///     #[ldtk_entity]
-///     weapon_bundle: Weapon,
+/// pub struct MyBundle {
 ///     #[default]
-///     bleed_damage: BleedDamage,
+///     damage: Damage,
+///     #[with(custom_constructor)]
+///     foreign: ForeignComponentWithNoDefault,
 /// }
 /// ```
 pub trait LdtkEntity {

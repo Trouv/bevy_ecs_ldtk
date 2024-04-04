@@ -158,7 +158,7 @@ use std::{collections::HashMap, marker::PhantomData};
 /// ### `#[default]`
 ///
 /// Indicates that this component or bundle should be initialized using
-/// [Default::default].
+/// [`Default::default`].
 /// This can be useful when implementing `Default` for the whole `IntGridCell` is
 /// not easily possible, because some of the fields do not implement `Default`.
 ///

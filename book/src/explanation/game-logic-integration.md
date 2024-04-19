@@ -128,7 +128,6 @@ struct PlayerBundle {
 fn process_player(
     mut commands: Commands,
     new_players: Query<Entity, Added<Player>>,
-    assets: Res<AssetServer>,
 )
 {
     for player_entity in new_players.iter() {

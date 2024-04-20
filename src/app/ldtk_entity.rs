@@ -139,7 +139,7 @@ use std::{collections::HashMap, marker::PhantomData};
 /// [Worldly] entities don't despawn when their birth level despawns, and they don't respawn when
 /// their birth level respawns.
 /// For a more detailed explanation, please see the
-/// [*Worldly Entities*](https://trouv.github.io/bevy_ecs_ldtk/v0.9.0/explanation/anatomy-of-the-world.html#worldly-entities) <!-- x-release-please-version -->
+/// [*Worldly Entities*](https://trouv.github.io/bevy_ecs_ldtk/v0.10.0/explanation/anatomy-of-the-world.html#worldly-entities) <!-- x-release-please-version -->
 /// section of the `bevy_ecs_ldtk` book.
 /// ```
 /// # use bevy::prelude::*;

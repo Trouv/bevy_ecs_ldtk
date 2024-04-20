@@ -6,7 +6,7 @@ use crate::LevelIid;
 /// [`Component`] that determines the desired levels to be spawned in an [`LdtkWorldBundle`].
 ///
 /// For more explanation and comparison of options for selecting levels to spawn, see the
-/// [*Level Selection*](https://trouv.github.io/bevy_ecs_ldtk/v0.9.0/explanation/level-selection.html) <!-- x-release-please-version -->
+/// [*Level Selection*](https://trouv.github.io/bevy_ecs_ldtk/v0.10.0/explanation/level-selection.html) <!-- x-release-please-version -->
 /// chapter of the `bevy_ecs_ldtk` book.
 ///
 /// [`Component`]: https://docs.rs/bevy/latest/bevy/ecs/prelude/trait.Component.html

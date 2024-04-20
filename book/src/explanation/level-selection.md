@@ -1,14 +1,14 @@
 # Level Selection
-Once you have spawned an [`LdtkWorldBundle`](https://docs.rs/bevy_ecs_ldtk/0.9.0/bevy_ecs_ldtk/prelude/struct.LdtkWorldBundle.html) with a handle pointing to your LDtk project file, the levels you have selected will spawn as children of the world bundle. <!-- x-release-please-version -->
+Once you have spawned an [`LdtkWorldBundle`](https://docs.rs/bevy_ecs_ldtk/0.10.0/bevy_ecs_ldtk/prelude/struct.LdtkWorldBundle.html) with a handle pointing to your LDtk project file, the levels you have selected will spawn as children of the world bundle. <!-- x-release-please-version -->
 You have a couple options for selecting levels, which will be discussed in this chapter.
 
 ## `LevelSelection` resource
-The highest-level option for selecting a level to spawn is using the [`LevelSelection`](https://docs.rs/bevy_ecs_ldtk/0.9.0/bevy_ecs_ldtk/prelude/enum.LevelSelection.html) resource. <!-- x-release-please-version -->
+The highest-level option for selecting a level to spawn is using the [`LevelSelection`](https://docs.rs/bevy_ecs_ldtk/0.10.0/bevy_ecs_ldtk/prelude/enum.LevelSelection.html) resource. <!-- x-release-please-version -->
 This resource allows you to specify a particular level either by its indices in the project/world, its identifier, its iid, or its uid.
 Once this resource is added or changed, levels will be spawned/despawned in order to match your selection.
 
 One additional feature worth pointing out is loading level neighbors.
-You can enable this with the settings resource [`LdtkSettings`](https://docs.rs/bevy_ecs_ldtk/0.9.0/bevy_ecs_ldtk/prelude/struct.LdtkSettings.html): <!-- x-release-please-version -->
+You can enable this with the settings resource [`LdtkSettings`](https://docs.rs/bevy_ecs_ldtk/0.10.0/bevy_ecs_ldtk/prelude/struct.LdtkSettings.html): <!-- x-release-please-version -->
 
 ```rust,no_run
 use bevy::prelude::*;
@@ -33,7 +33,7 @@ This can be especially useful for GridVania/Free-style worlds where it's importa
 Note: this *only* works if you are using the `LevelSelection` resource.
 
 ## `LevelSet` component
-One component in the `LdtkWorldBundle` is [`LevelSet`](https://docs.rs/bevy_ecs_ldtk/0.9.0/bevy_ecs_ldtk/prelude/struct.LevelSet.html). <!-- x-release-please-version -->
+One component in the `LdtkWorldBundle` is [`LevelSet`](https://docs.rs/bevy_ecs_ldtk/0.10.0/bevy_ecs_ldtk/prelude/struct.LevelSet.html). <!-- x-release-please-version -->
 This component can be used for lower-level level selection.
 Instead of selecting one level globally with a `LevelSelection` resource, you can select a specific set of levels by their iids.
 From the `level_set` cargo example:

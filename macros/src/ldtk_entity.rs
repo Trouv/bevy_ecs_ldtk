@@ -7,6 +7,7 @@ static GRID_COORDS_ATTRIBUTE_NAME: &str = "grid_coords";
 static LDTK_ENTITY_ATTRIBUTE_NAME: &str = "ldtk_entity";
 static FROM_ENTITY_INSTANCE_ATTRIBUTE_NAME: &str = "from_entity_instance";
 static WITH_ATTRIBUTE_NAME: &str = "with";
+static DEFAULT_ATTRIBUTE_NAME: &str = "default";
 
 pub fn expand_ldtk_entity_derive(ast: syn::DeriveInput) -> proc_macro::TokenStream {
     let struct_name = &ast.ident;
@@ -94,6 +95,15 @@ pub fn expand_ldtk_entity_derive(ast: syn::DeriveInput) -> proc_macro::TokenStre
             .find(|a| *a.path.get_ident().as_ref().unwrap() == WITH_ATTRIBUTE_NAME);
         if let Some(attribute) = with {
             field_constructions.push(expand_with_attribute(attribute, field_name, field_type));
+            continue;
+        }
+
+        let default = field
+            .attrs
+            .iter()
+            .find(|a| *a.path.get_ident().as_ref().unwrap() == DEFAULT_ATTRIBUTE_NAME);
+        if let Some(attribute) = default {
+            field_constructions.push(expand_default_attribute(attribute, field_name, field_type));
             continue;
         }
     }
@@ -362,5 +372,23 @@ fn expand_with_attribute(
         _ => {
             panic!("#[with...] attribute should take the form #[with(function_name)]")
         }
+    }
+}
+
+fn expand_default_attribute(
+    attribute: &syn::Attribute,
+    field_name: &syn::Ident,
+    _: &syn::Type,
+) -> proc_macro2::TokenStream {
+    match attribute
+        .parse_meta()
+        .expect("Cannot parse #[default] attribute")
+    {
+        syn::Meta::Path(_) => {
+            quote! {
+                #field_name: Default::default(),
+            }
+        }
+        _ => panic!("#[default] attribute should take the form #[default]"),
     }
 }

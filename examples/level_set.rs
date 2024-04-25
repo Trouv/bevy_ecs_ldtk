@@ -10,7 +10,7 @@ use rand::prelude::*;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugins(LdtkPlugin)
+        .add_plugins(LdtkPlugin::default())
         .add_systems(Startup, setup)
         .add_systems(Update, toggle_levels)
         // No LevelSelection resource!

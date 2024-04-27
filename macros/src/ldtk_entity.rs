@@ -229,18 +229,23 @@ fn expand_sprite_sheet_bundle_attribute(
                 _ => panic!("Eighth argument of #[sprite_sheet_bundle(...)] should be an int")
             };
 
+            
             quote! {
+                let texture_handle = asset_server.load(#asset_path).into();
+                let layout_handle = texture_atlases.add(
+                    bevy::prelude::TextureAtlasLayout::from_grid(
+                        bevy::prelude::Vec2::new(#tile_width, #tile_height),
+                        #columns, #rows, Some(bevy::prelude::Vec2::splat(#padding)),
+                        Some(bevy::prelude::Vec2::splat(#offset)),
+                    )
+                );
+
                 #field_name: bevy::prelude::SpriteSheetBundle {
-                    atlas: bevy::prelude::TextureAtlas {
-                        layout: texture_atlases.add(
-                            bevy::prelude::TextureAtlasLayout::from_grid(
-                                bevy::prelude::Vec2::new(#tile_width, #tile_height),
-                                #columns, #rows, Some(bevy::prelude::Vec2::splat(#padding)),
-                                Some(bevy::prelude::Vec2::splat(#offset)),
-                            )),
-                        index: #index
+                    atlas: TextureAtlas {
+                       layout: layout_handle,
+                       index: #index
                     },
-                    texture: asset_server.load(#asset_path).into(),
+                    texture: texture_handle,
                     ..Default::default()
                 },
             }

@@ -1,10 +1,7 @@
 use crate::ldtk::{Definitions, Type};
 use bevy::{
     prelude::*,
-    render::{
-        render_asset::RenderAssetUsages,
-        render_resource::{Extent3d, TextureDimension, TextureFormat},
-    },
+    render::{render_asset::RenderAssetUsages, render_resource::{Extent3d, TextureDimension, TextureFormat}},
 };
 
 impl Definitions {
@@ -30,7 +27,7 @@ impl Definitions {
                     TextureDimension::D2,
                     &[255, 255, 255, 255],
                     TextureFormat::Rgba8UnormSrgb,
-                    RenderAssetUsages::default(),
+                    RenderAssetUsages::default()
                 )
             })
     }

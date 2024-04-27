@@ -40,7 +40,7 @@ fn process_my_entity(
             let tileset = asset_server.load("atlas/MV Icons Complete Sheet Free - ALL.png");
 
             if let Some(tile) = &entity_instance.tile {
-                let texture_atlas_layout = texture_atlases_layouts.add(TextureAtlasLayout::from_grid(
+                let texture_atlas_layout = texture_atlas_layouts.add(TextureAtlasLayout::from_grid(
                     Vec2::new(tile.w as f32, tile.h as f32),
                     16,
                     95,

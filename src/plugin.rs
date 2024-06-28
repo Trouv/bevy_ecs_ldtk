@@ -36,7 +36,7 @@ impl Plugin for LdtkPlugin {
             app = app.add_plugins(bevy_ecs_tilemap::TilemapPlugin);
         }
 
-        app.world
+        app.world_mut()
             .get_resource_mut::<MainScheduleOrder>()
             .expect("expected MainScheduleOrder to exist, try using DefaultPlugins")
             .insert_after(Update, ProcessLdtkApi);

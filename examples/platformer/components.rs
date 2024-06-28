@@ -199,7 +199,7 @@ impl LdtkEntity for Patrol {
 #[derive(Clone, Default, Bundle, LdtkEntity)]
 pub struct MobBundle {
     #[sprite_sheet_bundle]
-    pub sprite_sheet_bundle: SpriteSheetBundle,
+    pub sprite_sheet_bundle: LdtkSpriteSheetBundle,
     #[from_entity_instance]
     pub collider_bundle: ColliderBundle,
     pub enemy: Enemy,
@@ -210,7 +210,7 @@ pub struct MobBundle {
 #[derive(Clone, Default, Bundle, LdtkEntity)]
 pub struct ChestBundle {
     #[sprite_sheet_bundle]
-    pub sprite_sheet_bundle: SpriteSheetBundle,
+    pub sprite_sheet_bundle: LdtkSpriteSheetBundle,
     #[from_entity_instance]
     pub collider_bundle: ColliderBundle,
 }
@@ -218,7 +218,7 @@ pub struct ChestBundle {
 #[derive(Clone, Default, Bundle, LdtkEntity)]
 pub struct PumpkinsBundle {
     #[sprite_sheet_bundle(no_grid)]
-    pub sprite_sheet_bundle: SpriteSheetBundle,
+    pub sprite_sheet_bundle: LdtkSpriteSheetBundle,
 }
 
 #[derive(Clone, Default, Component)]

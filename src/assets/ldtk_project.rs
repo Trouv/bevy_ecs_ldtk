@@ -10,7 +10,7 @@ use bevy::{
     asset::{io::Reader, AssetLoader, AssetPath, AsyncReadExt, LoadContext},
     prelude::*,
     reflect::Reflect,
-    utils::BoxedFuture,
+    utils::ConditionalSendFuture,
 };
 use derive_getters::Getters;
 use derive_more::From;
@@ -230,7 +230,9 @@ impl AssetLoader for LdtkProjectLoader {
         reader: &'a mut Reader,
         _settings: &'a Self::Settings,
         load_context: &'a mut LoadContext,
-    ) -> BoxedFuture<'a, Result<Self::Asset, Self::Error>> {
+    ) -> impl ConditionalSendFuture<
+        Output = Result<<Self as AssetLoader>::Asset, <Self as AssetLoader>::Error>,
+    > {
         Box::pin(async move {
             let mut bytes = Vec::new();
             reader.read_to_end(&mut bytes).await?;

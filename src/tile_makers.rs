@@ -227,7 +227,7 @@ pub(crate) fn tile_pos_to_transparent_tile_maker(
     move |tile_pos: TilePos| -> Option<TileBundle> {
         if alpha < 1. {
             tile_maker(tile_pos).map(|mut tile| {
-                tile.color.0.set_a(alpha);
+                tile.color.0.set_alpha(alpha);
                 tile
             })
         } else {
@@ -256,6 +256,8 @@ pub(crate) fn tile_pos_to_tile_grid_bundle_maker(
 
 #[cfg(test)]
 mod tests {
+    use bevy::color::palettes::css::{self};
+
     use super::*;
 
     #[test]
@@ -442,12 +444,12 @@ mod tests {
         let int_grid_defs = vec![
             IntGridValueDefinition {
                 value: 1,
-                color: Color::RED,
+                color: css::RED.into(),
                 ..Default::default()
             },
             IntGridValueDefinition {
                 value: 2,
-                color: Color::BLUE,
+                color: css::BLUE.into(),
                 ..Default::default()
             },
         ];
@@ -459,13 +461,13 @@ mod tests {
 
         assert_eq!(
             tile_maker(TilePos { x: 0, y: 0 }).unwrap().color.0,
-            Color::BLUE
+            css::BLUE.into()
         );
         assert!(tile_maker(TilePos { x: 1, y: 0 }).is_none());
         assert!(tile_maker(TilePos { x: 0, y: 1 }).is_none());
         assert_eq!(
             tile_maker(TilePos { x: 1, y: 1 }).unwrap().color.0,
-            Color::RED
+            css::RED.into()
         );
     }
 }

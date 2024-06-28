@@ -45,12 +45,12 @@ fn background_image_sprite_sheet_bundle(
     background_position: &LevelBackgroundPosition,
     level_height: i32,
     transform_z: f32,
-) -> Result<SpriteSheetBundle, BackgroundImageError> {
+) -> Result<LdtkSpriteSheetBundle, BackgroundImageError> {
     if let Some(background_image) = images.get(background_image_handle) {
         // We need to use a texture atlas to apply the correct crop to the image
-        let tile_size = Vec2::new(
-            background_image.texture_descriptor.size.width as f32,
-            background_image.texture_descriptor.size.height as f32,
+        let tile_size = UVec2::new(
+            background_image.texture_descriptor.size.width,
+            background_image.texture_descriptor.size.height,
         );
         let mut texture_atlas_layout = TextureAtlasLayout::new_empty(tile_size);
 
@@ -68,7 +68,7 @@ fn background_image_sprite_sheet_bundle(
 
         let crop_rect = Rect { min, max };
 
-        let index = texture_atlas_layout.add_texture(crop_rect);
+        let index = texture_atlas_layout.add_texture(crop_rect.as_urect());
 
         let scale = background_position.scale;
 
@@ -80,15 +80,17 @@ fn background_image_sprite_sheet_bundle(
         let center_translation =
             top_left_translation + (Vec2::new(scaled_size.x, -scaled_size.y) / 2.);
 
-        Ok(SpriteSheetBundle {
-            atlas: TextureAtlas {
+        Ok(LdtkSpriteSheetBundle {
+            sprite_bundle: SpriteBundle {
+                texture: background_image_handle.clone(),
+                transform: Transform::from_translation(center_translation.extend(transform_z))
+                    .with_scale(scale.extend(1.)),
+                ..Default::default()
+            },
+            texture_atlas: TextureAtlas {
                 index,
                 layout: texture_atlases.add(texture_atlas_layout),
             },
-            texture: background_image_handle.clone(),
-            transform: Transform::from_translation(center_translation.extend(transform_z))
-                .with_scale(scale.extend(1.)),
-            ..Default::default()
         })
     } else {
         Err(BackgroundImageError::ImageNotLoaded)

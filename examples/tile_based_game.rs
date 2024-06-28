@@ -46,7 +46,7 @@ struct Player;
 struct PlayerBundle {
     player: Player,
     #[sprite_sheet_bundle]
-    sprite_bundle: SpriteSheetBundle,
+    sprite_bundle: LdtkSpriteSheetBundle,
     #[grid_coords]
     grid_coords: GridCoords,
 }
@@ -58,7 +58,7 @@ struct Goal;
 struct GoalBundle {
     goal: Goal,
     #[sprite_sheet_bundle]
-    sprite_bundle: SpriteSheetBundle,
+    sprite_bundle: LdtkSpriteSheetBundle,
     #[grid_coords]
     grid_coords: GridCoords,
 }

@@ -515,7 +515,7 @@ pub mod tests {
                 .fake();
 
             let mut assets = app
-                .world
+                .world_mut()
                 .get_resource_mut::<Assets<LdtkExternalLevel>>()
                 .unwrap();
 
@@ -591,7 +591,7 @@ pub mod tests {
             assert_eq!(
                 project
                     .iter_external_levels(
-                        app.world
+                        app.world()
                             .get_resource::<Assets<LdtkExternalLevel>>()
                             .unwrap()
                     )
@@ -601,7 +601,7 @@ pub mod tests {
 
             for (external_level, expected_level) in project
                 .iter_external_levels(
-                    app.world
+                    app.world()
                         .get_resource::<Assets<LdtkExternalLevel>>()
                         .unwrap(),
                 )
@@ -617,7 +617,7 @@ pub mod tests {
             let project = fake_and_load_ldtk_json_with_metadata(&mut app);
 
             let assets = app
-                .world
+                .world()
                 .get_resource::<Assets<LdtkExternalLevel>>()
                 .unwrap();
 
@@ -647,7 +647,7 @@ pub mod tests {
             let project = fake_and_load_ldtk_json_with_metadata(&mut app);
 
             let assets = app
-                .world
+                .world()
                 .get_resource::<Assets<LdtkExternalLevel>>()
                 .unwrap();
 
@@ -676,7 +676,7 @@ pub mod tests {
             let project = fake_and_load_ldtk_json_with_metadata(&mut app);
 
             let assets = app
-                .world
+                .world()
                 .get_resource::<Assets<LdtkExternalLevel>>()
                 .unwrap();
 

@@ -108,14 +108,17 @@ impl LdtkEntityAppExt for App {
         entity_identifier: Option<String>,
     ) -> &mut Self {
         let new_entry = Box::new(PhantomLdtkEntity::<B>::new());
-        match self.world.get_non_send_resource_mut::<LdtkEntityMap>() {
+        match self
+            .world_mut()
+            .get_non_send_resource_mut::<LdtkEntityMap>()
+        {
             Some(mut entries) => {
                 entries.insert((layer_identifier, entity_identifier), new_entry);
             }
             None => {
                 let mut bundle_map = LdtkEntityMap::new();
                 bundle_map.insert((layer_identifier, entity_identifier), new_entry);
-                self.world
+                self.world_mut()
                     .insert_non_send_resource::<LdtkEntityMap>(bundle_map);
             }
         }
@@ -164,7 +167,10 @@ mod tests {
             .register_default_ldtk_entity_for_layer::<LdtkEntityBundle>("default_entity_for_layer")
             .register_default_ldtk_entity::<LdtkEntityBundle>();
 
-        let ldtk_entity_map = app.world.get_non_send_resource::<LdtkEntityMap>().unwrap();
+        let ldtk_entity_map = app
+            .world_mut()
+            .get_non_send_resource::<LdtkEntityMap>()
+            .unwrap();
 
         assert!(ldtk_entity_map.contains_key(&(
             Some("layer".to_string()),

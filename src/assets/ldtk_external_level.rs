@@ -4,7 +4,7 @@ use crate::ldtk::{loaded_level::LoadedLevel, Level};
 use bevy::{
     asset::{io::Reader, AssetLoader, AsyncReadExt, LoadContext},
     prelude::*,
-    utils::BoxedFuture,
+    utils::ConditionalSendFuture,
 };
 use thiserror::Error;
 
@@ -66,7 +66,9 @@ impl AssetLoader for LdtkExternalLevelLoader {
         reader: &'a mut Reader,
         _settings: &'a Self::Settings,
         _load_context: &'a mut LoadContext,
-    ) -> BoxedFuture<'a, Result<Self::Asset, Self::Error>> {
+    ) -> impl ConditionalSendFuture<
+        Output = Result<<Self as AssetLoader>::Asset, <Self as AssetLoader>::Error>,
+    > {
         Box::pin(async move {
             let mut bytes = Vec::new();
             reader.read_to_end(&mut bytes).await?;

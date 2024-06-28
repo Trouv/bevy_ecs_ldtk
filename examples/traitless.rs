@@ -41,7 +41,7 @@ fn process_my_entity(
 
             if let Some(tile) = &entity_instance.tile {
                 let layout = texture_atlases.add(TextureAtlasLayout::from_grid(
-                    Vec2::new(tile.w as f32, tile.h as f32),
+                    UVec2::new(tile.w as u32, tile.h as u32),
                     16,
                     95,
                     None,

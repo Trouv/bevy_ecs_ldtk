@@ -48,9 +48,9 @@ fn background_image_sprite_sheet_bundle(
 ) -> Result<SpriteSheetBundle, BackgroundImageError> {
     if let Some(background_image) = images.get(background_image_handle) {
         // We need to use a texture atlas to apply the correct crop to the image
-        let tile_size = Vec2::new(
-            background_image.texture_descriptor.size.width as f32,
-            background_image.texture_descriptor.size.height as f32,
+        let tile_size = UVec2::new(
+            background_image.texture_descriptor.size.width,
+            background_image.texture_descriptor.size.height,
         );
         let mut texture_atlas_layout = TextureAtlasLayout::new_empty(tile_size);
 
@@ -68,7 +68,7 @@ fn background_image_sprite_sheet_bundle(
 
         let crop_rect = Rect { min, max };
 
-        let index = texture_atlas_layout.add_texture(crop_rect);
+        let index = texture_atlas_layout.add_texture(crop_rect.as_urect());
 
         let scale = background_position.scale;
 

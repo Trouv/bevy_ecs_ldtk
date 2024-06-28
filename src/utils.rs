@@ -321,11 +321,11 @@ pub fn sprite_sheet_bundle_from_entity_info(
         (Some(tileset), Some(tile), Some(tileset_definition)) => SpriteSheetBundle {
             atlas: if grid {
                 let layout = TextureAtlasLayout::from_grid(
-                    Vec2::new(tile.w as f32, tile.h as f32),
-                    tileset_definition.c_wid as usize,
-                    tileset_definition.c_hei as usize,
-                    Some(Vec2::splat(tileset_definition.spacing as f32)),
-                    Some(Vec2::splat(tileset_definition.padding as f32)),
+                    UVec2::new(tile.w as u32, tile.h as u32),
+                    tileset_definition.c_wid as u32,
+                    tileset_definition.c_hei as u32,
+                    Some(UVec2::splat(tileset_definition.spacing as u32)),
+                    Some(UVec2::splat(tileset_definition.padding as u32)),
                 );
                 let texture_atlas: Handle<TextureAtlasLayout> = texture_atlases.add(layout);
                 TextureAtlas {
@@ -335,15 +335,15 @@ pub fn sprite_sheet_bundle_from_entity_info(
                         + (tile.x / (tile.w + tileset_definition.spacing)) as usize,
                 }
             } else {
-                let mut layout = TextureAtlasLayout::new_empty(Vec2::new(
-                    tileset_definition.px_wid as f32,
-                    tileset_definition.px_hei as f32,
+                let mut layout = TextureAtlasLayout::new_empty(UVec2::new(
+                    tileset_definition.px_wid as u32,
+                    tileset_definition.px_hei as u32,
                 ));
-                layout.add_texture(Rect::new(
-                    tile.x as f32,
-                    tile.y as f32,
-                    (tile.x + tile.w) as f32,
-                    (tile.y + tile.h) as f32,
+                layout.add_texture(URect::new(
+                    tile.x as u32,
+                    tile.y as u32,
+                    (tile.x + tile.w) as u32,
+                    (tile.y + tile.h) as u32,
                 ));
                 let texture_atlas: Handle<TextureAtlasLayout> = texture_atlases.add(layout);
                 TextureAtlas {

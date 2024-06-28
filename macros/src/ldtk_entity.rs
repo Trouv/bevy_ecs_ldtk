@@ -201,28 +201,28 @@ fn expand_sprite_sheet_bundle_attribute(
                 _ => panic!("First argument of #[sprite_sheet_bundle(...)] should be a string")
             };
             let tile_width = match nested_iter.next() {
-                Some(syn::NestedMeta::Lit(syn::Lit::Float(asset))) => asset.base10_parse::<f32>().unwrap(),
-                _ => panic!("Second argument of #[sprite_sheet_bundle(...)] should be a float")
+                Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_parse::<u32>().unwrap(),
+                _ => panic!("Second argument of #[sprite_sheet_bundle(...)] should be an int")
             };
             let tile_height = match nested_iter.next() {
-                Some(syn::NestedMeta::Lit(syn::Lit::Float(asset))) => asset.base10_parse::<f32>().unwrap(),
-                _ => panic!("Third argument of #[sprite_sheet_bundle(...)] should be a float")
+                Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_parse::<u32>().unwrap(),
+                _ => panic!("Third argument of #[sprite_sheet_bundle(...)] should be an int")
             };
             let columns = match nested_iter.next() {
-                Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_parse::<usize>().unwrap(),
+                Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_parse::<u32>().unwrap(),
                 _ => panic!("Fourth argument of #[sprite_sheet_bundle(...)] should be an int")
             };
             let rows = match nested_iter.next() {
-                Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_parse::<usize>().unwrap(),
+                Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_parse::<u32>().unwrap(),
                 _ => panic!("Fifth argument of #[sprite_sheet_bundle(...)] should be an int")
             };
             let padding = match nested_iter.next() {
-                Some(syn::NestedMeta::Lit(syn::Lit::Float(asset))) => asset.base10_parse::<f32>().unwrap(),
-                _ => panic!("Sixth argument of #[sprite_sheet_bundle(...)] should be a float")
+                Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_parse::<u32>().unwrap(),
+                _ => panic!("Sixth argument of #[sprite_sheet_bundle(...)] should be an int")
             };
             let offset = match nested_iter.next() {
-                Some(syn::NestedMeta::Lit(syn::Lit::Float(asset))) => asset.base10_parse::<f32>().unwrap(),
-                _ => panic!("Seventh argument of #[sprite_sheet_bundle(...)] should be a float")
+                Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_parse::<u32>().unwrap(),
+                _ => panic!("Seventh argument of #[sprite_sheet_bundle(...)] should be an int")
             };
             let index = match nested_iter.next() {
                 Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_parse::<usize>().unwrap(),
@@ -234,9 +234,9 @@ fn expand_sprite_sheet_bundle_attribute(
                     atlas: bevy::prelude::TextureAtlas {
                         layout: texture_atlases.add(
                             bevy::prelude::TextureAtlasLayout::from_grid(
-                                bevy::prelude::Vec2::new(#tile_width, #tile_height),
-                                #columns, #rows, Some(bevy::prelude::Vec2::splat(#padding)),
-                                Some(bevy::prelude::Vec2::splat(#offset)),
+                                bevy::prelude::UVec2::new(#tile_width, #tile_height),
+                                #columns, #rows, Some(bevy::prelude::UVec2::splat(#padding)),
+                                Some(bevy::prelude::UVec2::splat(#offset)),
                             )),
                         index: #index
                     },

@@ -119,7 +119,7 @@ use std::{collections::HashMap, marker::PhantomData};
 /// # struct BleedDamage;
 /// #[derive(Bundle, LdtkEntity, Default)]
 /// pub struct Sword {
-///     #[sprite_sheet_bundle("weapons.png", 32.0, 32.0, 4, 5, 5.0, 1.0, 17)]
+///     #[sprite_sheet_bundle("weapons.png", 32, 32, 4, 5, 5, 1, 17)]
 ///     sprite_sheet: SpriteSheetBundle,
 ///     damage: Damage,
 /// }

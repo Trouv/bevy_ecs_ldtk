@@ -53,11 +53,13 @@ fn process_my_entity(
                     layout,
                 };
 
-                commands.entity(entity).insert(SpriteSheetBundle {
-                    atlas,
-                    texture,
-                    transform: *transform,
-                    ..Default::default()
+                commands.entity(entity).insert(LdtkSpriteSheetBundle {
+                    sprite_bundle: SpriteBundle {
+                        texture,
+                        transform: *transform,
+                        ..Default::default()
+                    },
+                    texture_atlas: atlas,
                 });
             }
         }

@@ -181,12 +181,12 @@ fn expand_sprite_sheet_bundle_attribute(
     match field_type {
         syn::Type::Path(syn::TypePath { path: syn::Path { segments, .. }, .. }) => {
             if let Some(last) = segments.last() {
-                if last.ident != *"SpriteSheetBundle" {
-                    panic!("#[sprite_sheet_bundle...] attribute should apply to a field of type bevy::prelude::SpriteSheetBundle")
+                if last.ident != *"LdtkSpriteSheetBundle" {
+                    panic!("#[sprite_sheet_bundle...] attribute should apply to a field of type bevy_ecs_ldtk::prelude::LdtkSpriteSheetBundle")
                 }
             }
         },
-        _ => panic!("#[sprite_sheet_bundle...] attribute should apply to a field of type bevy::prelude::SpriteSheetBundle")
+        _ => panic!("#[sprite_sheet_bundle...] attribute should apply to a field of type bevy_ecs_ldtk::prelude::LdtkSpriteSheetBundle")
     }
 
     match attribute
@@ -230,8 +230,12 @@ fn expand_sprite_sheet_bundle_attribute(
             };
 
             quote! {
-                #field_name: bevy::prelude::SpriteSheetBundle {
-                    atlas: bevy::prelude::TextureAtlas {
+                #field_name: LdtkSpriteSheetBundle{
+                        sprite_bundle: bevy::prelude::SpriteBundle {
+                        texture: asset_server.load(#asset_path).into(),
+                        ..Default::default()
+                    },
+                    texture_atlas: bevy::prelude::TextureAtlas {
                         layout: texture_atlases.add(
                             bevy::prelude::TextureAtlasLayout::from_grid(
                                 bevy::prelude::UVec2::new(#tile_width, #tile_height),
@@ -239,9 +243,7 @@ fn expand_sprite_sheet_bundle_attribute(
                                 Some(bevy::prelude::UVec2::splat(#offset)),
                             )),
                         index: #index
-                    },
-                    texture: asset_server.load(#asset_path).into(),
-                    ..Default::default()
+                    }
                 },
             }
         },

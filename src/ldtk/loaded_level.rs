@@ -178,7 +178,7 @@ impl<'a> LdtkFields for LoadedLevel<'a> {
 
 #[cfg(test)]
 mod tests {
-    use bevy::{color::palettes::css, prelude::*};
+    use bevy::color::palettes::css;
 
     use super::*;
 

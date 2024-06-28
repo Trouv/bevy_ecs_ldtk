@@ -72,6 +72,7 @@ pub mod prelude {
             IntGridRendering, LdtkSettings, LevelBackground, LevelEvent, LevelSelection,
             LevelSpawnBehavior, SetClearColor, SpawnExclusions,
         },
+        utils::LdtkSpriteSheetBundle,
     };
 
     #[cfg(feature = "derive")]

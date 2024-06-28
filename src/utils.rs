@@ -316,10 +316,10 @@ pub fn sprite_sheet_bundle_from_entity_info(
     tileset_definition: Option<&TilesetDefinition>,
     texture_atlases: &mut Assets<TextureAtlasLayout>,
     grid: bool,
-) -> SpriteSheetBundle {
+) -> LdtkSpriteSheetBundle {
     match (tileset, &entity_instance.tile, tileset_definition) {
-        (Some(tileset), Some(tile), Some(tileset_definition)) => SpriteSheetBundle {
-            atlas: if grid {
+        (Some(tileset), Some(tile), Some(tileset_definition)) => {
+            let texture_atlas = if grid {
                 let layout = TextureAtlasLayout::from_grid(
                     UVec2::new(tile.w as u32, tile.h as u32),
                     tileset_definition.c_wid as u32,
@@ -350,13 +350,19 @@ pub fn sprite_sheet_bundle_from_entity_info(
                     layout: texture_atlas,
                     index: 0,
                 }
-            },
-            texture: tileset.clone(),
-            ..Default::default()
-        },
+            };
+
+            LdtkSpriteSheetBundle {
+                sprite_bundle: SpriteBundle {
+                    texture: tileset.clone(),
+                    ..Default::default()
+                },
+                texture_atlas,
+            }
+        }
         _ => {
             warn!("EntityInstance needs a tile, an associated tileset, and an associated tileset definition to be bundled as a SpriteSheetBundle");
-            SpriteSheetBundle::default()
+            LdtkSpriteSheetBundle::default()
         }
     }
 }
@@ -379,6 +385,12 @@ pub fn sprite_bundle_from_entity_info(tileset: Option<&Handle<Image>>) -> Sprite
         texture: tileset,
         ..Default::default()
     }
+}
+
+#[derive(Bundle, Clone, Debug, Default)]
+pub struct LdtkSpriteSheetBundle {
+    pub sprite_bundle: SpriteBundle,
+    pub texture_atlas: TextureAtlas,
 }
 
 #[cfg(test)]

@@ -165,22 +165,21 @@ use std::{collections::HashMap, marker::PhantomData};
 /// ```
 /// # use bevy::prelude::*;
 /// # use bevy_ecs_ldtk::prelude::*;
-/// # #[derive(Component, Default)]
-/// # struct RigidBody;
+/// # mod other_crate {
+/// #     #[derive(bevy::prelude::Component)]
+/// #     pub struct ForeignComponentWithNoDefault;
+/// # }
+/// # fn custom_constructor(_: IntGridCell) -> ForeignComponentWithNoDefault { todo!(); }
 /// # #[derive(Component, Default)]
 /// # struct Damage;
-/// #[derive(Bundle, LdtkIntCell)]
-/// pub struct Wall {
-///     #[default]
-///     rigid_body: RigidBody,
-/// }
+/// use other_crate::ForeignComponentWithNoDefault;
 ///
 /// #[derive(Bundle, LdtkIntCell)]
-/// pub struct DestructibleWall {
-///     #[ldtk_int_cell]
-///     wall: Wall,
+/// pub struct MyBundle {
 ///     #[default]
 ///     damage: Damage,
+///     #[with(custom_constructor)]
+///     foreign: ForeignComponentWithNoDefault,
 /// }
 /// ```
 pub trait LdtkIntCell {

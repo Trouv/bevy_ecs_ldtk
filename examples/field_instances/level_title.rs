@@ -32,7 +32,7 @@ pub fn set_level_title_to_current_level(
                 .get_string_field("title")
                 .expect("level should have non-nullable title string field");
 
-            **current_level_title = title.clone();
+            (*current_level_title).clone_from(title);
         }
     }
 }

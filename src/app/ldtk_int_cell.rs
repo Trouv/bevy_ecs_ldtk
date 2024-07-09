@@ -154,6 +154,34 @@ use std::{collections::HashMap, marker::PhantomData};
 ///     damage: Damage,
 /// }
 /// ```
+///
+/// ### `#[default]`
+///
+/// Indicates that this component or bundle should be initialized using
+/// [`Default::default`].
+/// This can be useful when implementing `Default` for the whole `IntGridCell` is
+/// not easily possible, because some of the fields do not implement `Default`.
+///
+/// ```
+/// # use bevy::prelude::*;
+/// # use bevy_ecs_ldtk::prelude::*;
+/// # mod other_crate {
+/// #     #[derive(bevy::prelude::Component)]
+/// #     pub struct ForeignComponentWithNoDefault;
+/// # }
+/// # fn custom_constructor(_: IntGridCell) -> ForeignComponentWithNoDefault { todo!(); }
+/// # #[derive(Component, Default)]
+/// # struct Damage;
+/// use other_crate::ForeignComponentWithNoDefault;
+///
+/// #[derive(Bundle, LdtkIntCell)]
+/// pub struct MyBundle {
+///     #[default]
+///     damage: Damage,
+///     #[with(custom_constructor)]
+///     foreign: ForeignComponentWithNoDefault,
+/// }
+/// ```
 pub trait LdtkIntCell {
     /// The constructor used by the plugin when spawning additional components on IntGrid tiles.
     /// If you need access to more of the [World](bevy::prelude::World), you can create a system that queries for

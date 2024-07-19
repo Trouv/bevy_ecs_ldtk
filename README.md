@@ -46,7 +46,7 @@ $ cargo run --example example-name
 ## Compatibility
 | bevy | bevy_ecs_tilemap | LDtk | bevy_ecs_ldtk |
 | --- | --- | --- | --- |
-| 0.13 | `e4f3cc668110d9a46f6fe407db4f6d4daeabc3d2` | 1.5.3 | `main` |
+| 0.14 | 0.14 | 1.5.3 | `main` |
 | 0.12 | 0.12 | 1.5.3 | 0.9 |
 | 0.11 | 0.11 | 1.3.3 | 0.8 |
 | 0.10 | 0.10 | 1.1 | 0.7 |

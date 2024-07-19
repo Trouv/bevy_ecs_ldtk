@@ -6,7 +6,10 @@ use crate::{
     components::{GridCoords, IntGridCell},
 };
 
-use crate::{components::TileGridBundle, ldtk::*};
+use crate::{
+    components::{LdtkSpriteSheetBundle, TileGridBundle},
+    ldtk::*,
+};
 use bevy::prelude::*;
 use bevy_ecs_tilemap::{
     map::{TilemapId, TilemapSize},
@@ -385,12 +388,6 @@ pub fn sprite_bundle_from_entity_info(tileset: Option<&Handle<Image>>) -> Sprite
         texture: tileset,
         ..Default::default()
     }
-}
-
-#[derive(Bundle, Clone, Debug, Default)]
-pub struct LdtkSpriteSheetBundle {
-    pub sprite_bundle: SpriteBundle,
-    pub texture_atlas: TextureAtlas,
 }
 
 #[cfg(test)]

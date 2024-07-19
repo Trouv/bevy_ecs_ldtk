@@ -59,6 +59,7 @@ pub mod prelude {
     pub use crate::{
         app::{LdtkEntity, LdtkEntityAppExt, LdtkIntCell, LdtkIntCellAppExt},
         assets::{LdtkProject, LevelIndices, LevelMetadataAccessor},
+        components::LdtkSpriteSheetBundle,
         components::{
             EntityIid, EntityInstance, GridCoords, IntGridCell, LayerMetadata, LdtkWorldBundle,
             LevelIid, LevelSet, Respawn, TileEnumTags, TileMetadata, Worldly,
@@ -72,7 +73,6 @@ pub mod prelude {
             IntGridRendering, LdtkSettings, LevelBackground, LevelEvent, LevelSelection,
             LevelSpawnBehavior, SetClearColor, SpawnExclusions,
         },
-        utils::LdtkSpriteSheetBundle,
     };
 
     #[cfg(feature = "derive")]

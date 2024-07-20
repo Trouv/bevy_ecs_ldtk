@@ -15,6 +15,7 @@ use crate::{
 /// Implements [`LdtkEntity`], and can be added to an [`LdtkEntity`] bundle with the `#[sprite_sheet_bundle]`
 /// field attribute.
 /// See [`LdtkEntity#sprite_sheet_bundle`] for attribute macro usage.
+///
 /// [`Bundle`]: https://docs.rs/bevy/latest/bevy/ecs/prelude/trait.Bundle.html
 #[derive(Bundle, Clone, Debug, Default)]
 pub struct LdtkSpriteSheetBundle {

@@ -11,7 +11,7 @@ use std::{collections::HashMap, marker::PhantomData};
 /// [App]: bevy::prelude::App
 /// [Component]: bevy::prelude::Component
 /// [SpriteBundle]: bevy::prelude::SpriteBundle
-/// [LdtkSpriteSheetBundle]: super::prelude::LdtkSpriteSheetBundle
+/// [LdtkSpriteSheetBundle]: crate::prelude::LdtkSpriteSheetBundle
 /// [TextureAtlasLayout]: bevy::prelude::TextureAtlasLayout
 ///
 /// Provides a constructor which can be used for spawning entities from an LDtk file.

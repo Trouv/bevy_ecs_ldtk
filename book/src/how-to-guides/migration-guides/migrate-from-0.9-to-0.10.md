@@ -19,9 +19,10 @@ struct PlayerBundle {
 ```
 ```rust,no_run
 // 0.10
+# use bevy_ecs_ldtk::prelude::*;
+# use bevy::prelude::*;
 #[derive(Default, Bundle, LdtkEntity)]
 struct PlayerBundle {
-    player: Player,
     #[sprite_sheet_bundle]
     sprite_bundle: LdtkSpriteSheetBundle,
     #[grid_coords]

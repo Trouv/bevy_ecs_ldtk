@@ -31,5 +31,6 @@
 - [Compile Headless]()
 - [Migration Guides](how-to-guides/migration-guides/README.md)
   - [Migrate from 0.8 to 0.9](how-to-guides/migration-guides/migrate-from-0.8-to-0.9.md)
+  - [Migrate from 0.9 to 0.10](how-to-guides/migration-guides/migrate-from-0.9-to-0.10.md)
 ---
 [API Reference](api-reference.md).

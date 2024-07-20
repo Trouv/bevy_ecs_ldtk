@@ -178,17 +178,17 @@ impl<'a> LdtkFields for LoadedLevel<'a> {
 
 #[cfg(test)]
 mod tests {
-    use bevy::prelude::*;
+    use bevy::color::palettes::css;
 
     use super::*;
 
     fn valid_level() -> Level {
         Level {
-            bg_color: Color::AZURE,
+            bg_color: css::AZURE.into(),
             bg_pos: Some(LevelBackgroundPosition::default()),
             neighbours: vec![NeighbourLevel::default()],
-            smart_color: Color::BEIGE,
-            level_bg_color: Some(Color::CYAN),
+            smart_color: css::BEIGE.into(),
+            level_bg_color: Some(css::AQUA.into()),
             bg_pivot_x: 0.,
             bg_pivot_y: 1.,
             level_bg_pos: Some(BgPos::Cover),
@@ -219,11 +219,11 @@ mod tests {
         assert_eq!(*loaded.layer_instances(), vec![LayerInstance::default()]);
 
         // all other getters
-        assert_eq!(*loaded.bg_color(), Color::AZURE);
+        assert_eq!(*loaded.bg_color(), css::AZURE.into());
         assert_eq!(*loaded.bg_pos(), Some(LevelBackgroundPosition::default()));
         assert_eq!(*loaded.neighbours(), vec![NeighbourLevel::default()]);
-        assert_eq!(*loaded.smart_color(), Color::BEIGE);
-        assert_eq!(*loaded.level_bg_color(), Some(Color::CYAN));
+        assert_eq!(*loaded.smart_color(), css::BEIGE.into());
+        assert_eq!(*loaded.level_bg_color(), Some(css::AQUA.into()));
         assert_eq!(*loaded.bg_pivot_x(), 0.);
         assert_eq!(*loaded.bg_pivot_y(), 1.);
         assert_eq!(*loaded.level_bg_pos(), Some(BgPos::Cover));

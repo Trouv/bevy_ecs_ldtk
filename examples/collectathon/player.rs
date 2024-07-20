@@ -23,7 +23,7 @@ struct PlayerBundle {
     #[worldly]
     worldly: Worldly,
     #[sprite_sheet_bundle]
-    sprite_sheet: SpriteSheetBundle,
+    sprite_sheet: LdtkSpriteSheetBundle,
 }
 
 const MOVEMENT_SPEED: f32 = 96.;

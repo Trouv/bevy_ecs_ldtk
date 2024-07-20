@@ -60,7 +60,7 @@ Now, run the game with `$ cargo run --release` to see your first level spawning 
 You may have noticed that the Player and Goal are not rendered here.
 They are there, but they require a little more work to become visible.
 
-Create a `PlayerBundle` and `GoalBundle`, each with a `SpriteSheetBundle` field.
+Create a `PlayerBundle` and `GoalBundle`, each with an `LdtkSpriteSheetBundle` field.
 You will develop these bundles a little bit more in the next chapter, but for now they will be similar.
 Derive `LdtkEntity` for these bundles, and give the field a `#[sprite_sheet_bundle]` attribute.
 This trait implementation defines how these bundles should be spawned by the plugin.
@@ -71,13 +71,13 @@ More specifically - they should be spawned as sprites identical to the entity's 
 #[derive(Default, Bundle, LdtkEntity)]
 struct PlayerBundle {
     #[sprite_sheet_bundle]
-    sprite_sheet_bundle: SpriteSheetBundle,
+    sprite_sheet_bundle: LdtkSpriteSheetBundle,
 }
 
 #[derive(Default, Bundle, LdtkEntity)]
 struct GoalBundle {
     #[sprite_sheet_bundle]
-    sprite_sheet_bundle: SpriteSheetBundle,
+    sprite_sheet_bundle: LdtkSpriteSheetBundle,
 }
 ```
 
@@ -95,12 +95,12 @@ fn main() {
 # #[derive(Default, Bundle, LdtkEntity)]
 # struct PlayerBundle {
 #     #[sprite_sheet_bundle]
-#     sprite_sheet_bundle: SpriteSheetBundle,
+#     sprite_sheet_bundle: LdtkSpriteSheetBundle,
 # }
 # #[derive(Default, Bundle, LdtkEntity)]
 # struct GoalBundle {
 #     #[sprite_sheet_bundle]
-#     sprite_sheet_bundle: SpriteSheetBundle,
+#     sprite_sheet_bundle: LdtkSpriteSheetBundle,
 # }
 ```
 

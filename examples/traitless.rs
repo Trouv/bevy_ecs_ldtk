@@ -41,7 +41,7 @@ fn process_my_entity(
 
             if let Some(tile) = &entity_instance.tile {
                 let layout = texture_atlases.add(TextureAtlasLayout::from_grid(
-                    Vec2::new(tile.w as f32, tile.h as f32),
+                    UVec2::new(tile.w as u32, tile.h as u32),
                     16,
                     95,
                     None,
@@ -53,11 +53,13 @@ fn process_my_entity(
                     layout,
                 };
 
-                commands.entity(entity).insert(SpriteSheetBundle {
-                    atlas,
-                    texture,
-                    transform: *transform,
-                    ..Default::default()
+                commands.entity(entity).insert(LdtkSpriteSheetBundle {
+                    sprite_bundle: SpriteBundle {
+                        texture,
+                        transform: *transform,
+                        ..Default::default()
+                    },
+                    texture_atlas: atlas,
                 });
             }
         }

@@ -19,7 +19,7 @@ struct Coin;
 struct CoinBundle {
     coin: Coin,
     #[sprite_sheet_bundle]
-    sprite_sheet: SpriteSheetBundle,
+    sprite_sheet: LdtkSpriteSheetBundle,
 }
 
 /// Component for entities that can collect coins.

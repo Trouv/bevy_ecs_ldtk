@@ -364,7 +364,7 @@ pub fn sprite_sheet_bundle_from_entity_info(
             }
         }
         _ => {
-            warn!("EntityInstance needs a tile, an associated tileset, and an associated tileset definition to be bundled as a SpriteSheetBundle");
+            warn!("EntityInstance needs a tile, an associated tileset, and an associated tileset definition to be bundled as a LdtkSpriteSheetBundle");
             LdtkSpriteSheetBundle::default()
         }
     }

@@ -308,7 +308,7 @@ where
     try_each_optional_permutation(a, b, |x, y| map.get(&(x, y))).unwrap_or(default)
 }
 
-/// Creates a [SpriteSheetBundle] from the entity information available to the
+/// Creates a [`LdtkSpriteSheetBundle`] from the entity information available to the
 /// [LdtkEntity::bundle_entity] method.
 ///
 /// Used for the `#[sprite_sheet_bundle]` attribute macro for `#[derive(LdtkEntity)]`.

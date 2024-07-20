@@ -37,8 +37,8 @@ Without any intervention, the bundle's fields are constructed using the bundle's
 However, various attributes are available to override this behavior, like `#[sprite_bundle]` in the above example.
 This attribute gives the entity a sprite using the tileset in its LDtk editor visual.
 For documentation about all the available attributes, check out the API reference for these traits:
-- [`LdtkEntity`](https://docs.rs/bevy_ecs_ldtk/0.9.0/bevy_ecs_ldtk/app/trait.LdtkEntity.html) <!-- x-release-please-version -->
-- [`LdtkIntCell`](https://docs.rs/bevy_ecs_ldtk/0.9.0/bevy_ecs_ldtk/app/trait.LdtkIntCell.html) <!-- x-release-please-version -->
+- [`LdtkEntity`](https://docs.rs/bevy_ecs_ldtk/0.10.0/bevy_ecs_ldtk/app/trait.LdtkEntity.html) <!-- x-release-please-version -->
+- [`LdtkIntCell`](https://docs.rs/bevy_ecs_ldtk/0.10.0/bevy_ecs_ldtk/app/trait.LdtkIntCell.html) <!-- x-release-please-version -->
 
 This approach is suitable for many common, simple use cases.
 There's also room for more granular, component-level customization within some of the attributes, like `#[with(...)]` or `#[from_entity_instance]`.

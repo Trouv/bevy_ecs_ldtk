@@ -8,7 +8,7 @@ You are welcome to bring your own tile-based LDtk project to this tutorial, but 
 For details about the tutorial in general, including prerequisites, please see the parent page.
 
 ## Set up minimal Bevy App
-In the `main` function of your game, create a Bevy `App` with `DefaultPlugins` and `LdtkPlugin`.
+In the `main` function of your game, create a Bevy `App` with `DefaultPlugins` and `LdtkPlugin::default()`.
 This code snippet also sets bevy's texture filtering to "nearest", which is good for pixelated games.
 ```rust,no_run
 use bevy::prelude::*;
@@ -17,7 +17,7 @@ use bevy_ecs_ldtk::prelude::*;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
-        .add_plugins(LdtkPlugin)
+        .add_plugins(LdtkPlugin::default())
         .run();
 }
 ```

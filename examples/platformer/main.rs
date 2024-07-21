@@ -6,8 +6,16 @@ use bevy_ecs_ldtk::prelude::*;
 
 use bevy_rapier2d::prelude::*;
 
-mod components;
-mod systems;
+/// Handles initialization and switching levels
+mod game_flow;
+mod camera;
+mod walls;
+mod physics;
+mod player;
+mod inventory;
+mod climbing;
+mod enemy;
+mod misc_objects;
 
 fn main() {
     App::new()
@@ -36,25 +44,17 @@ fn main() {
             set_clear_color: SetClearColor::FromLevelBackground,
             ..Default::default()
         })
-        .add_systems(Startup, systems::setup)
-        .add_systems(Update, systems::spawn_wall_collision)
-        .add_systems(Update, systems::movement)
-        .add_systems(Update, systems::detect_climb_range)
-        .add_systems(Update, systems::ignore_gravity_if_climbing)
-        .add_systems(Update, systems::patrol)
-        .add_systems(Update, systems::camera_fit_inside_current_level)
-        .add_systems(Update, systems::update_level_selection)
-        .add_systems(Update, systems::dbg_player_items)
-        .add_systems(Update, systems::spawn_ground_sensor)
-        .add_systems(Update, systems::ground_detection)
-        .add_systems(Update, systems::update_on_ground)
-        .add_systems(Update, systems::restart_level)
-        .register_ldtk_int_cell::<components::WallBundle>(1)
-        .register_ldtk_int_cell::<components::LadderBundle>(2)
-        .register_ldtk_int_cell::<components::WallBundle>(3)
-        .register_ldtk_entity::<components::PlayerBundle>("Player")
-        .register_ldtk_entity::<components::MobBundle>("Mob")
-        .register_ldtk_entity::<components::ChestBundle>("Chest")
-        .register_ldtk_entity::<components::PumpkinsBundle>("Pumpkins")
+        .add_plugins(game_flow::GameFlowPlugin)
+        .add_systems(Update, walls::spawn_wall_collision)
+        .add_plugins(physics::PhysicsPlugin)
+        .add_plugins(climbing::ClimbingPlugin)
+        .add_plugins(player::PlayerPlugin)
+        .add_plugins(enemy::EnemyPlugin)
+        .add_systems(Update, inventory::dbg_print_inventory)
+        .add_systems(Update, camera::camera_fit_inside_current_level)
+        .add_plugins(misc_objects::MiscObjectsPlugin)
+        .register_ldtk_int_cell::<walls::WallBundle>(1)
+        .register_ldtk_int_cell::<climbing::LadderBundle>(2)
+        .register_ldtk_int_cell::<walls::WallBundle>(3)
         .run();
 }

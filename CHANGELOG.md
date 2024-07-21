@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.10.0](https://github.com/Trouv/bevy_ecs_ldtk/compare/v0.9.0...v0.10.0) (2024-07-20)
+
+
+### ⚠ BREAKING CHANGES
+
+* upgrade to bevy and bevy_ecs_ldtk 0.14 ([#325](https://github.com/Trouv/bevy_ecs_ldtk/issues/325))
+* upgrade to bevy 0.13 ([#302](https://github.com/Trouv/bevy_ecs_ldtk/issues/302))
+
+### Features
+
+* add #[default] attribute to LdtkEntity and LdtkIntCell derive macros ([#306](https://github.com/Trouv/bevy_ecs_ldtk/issues/306)) ([416a46e](https://github.com/Trouv/bevy_ecs_ldtk/commit/416a46ea832ad85fe852abc3fd3a46e05a1550b7))
+* upgrade to bevy 0.13 ([#302](https://github.com/Trouv/bevy_ecs_ldtk/issues/302)) ([2ee602f](https://github.com/Trouv/bevy_ecs_ldtk/commit/2ee602ff46969d58f4a22db34c2ea4e42c6cac75)), closes [#301](https://github.com/Trouv/bevy_ecs_ldtk/issues/301)
+* upgrade to bevy and bevy_ecs_ldtk 0.14 ([#325](https://github.com/Trouv/bevy_ecs_ldtk/issues/325)) ([d888535](https://github.com/Trouv/bevy_ecs_ldtk/commit/d888535e4c57147f60dd0de6878ada0c8fe8611e))
+
+
+### Documentation Changes
+
+* remove unused AssetServer param in *Game logic integration* chapter ([#318](https://github.com/Trouv/bevy_ecs_ldtk/issues/318)) ([617b108](https://github.com/Trouv/bevy_ecs_ldtk/commit/617b108dfc22799047cdb4d2c84c3cdfba7e985a))
+
 ## [0.9.0](https://github.com/Trouv/bevy_ecs_ldtk/compare/v0.8.0...v0.9.0) (2024-02-11)
 
 

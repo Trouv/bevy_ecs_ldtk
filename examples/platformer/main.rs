@@ -18,7 +18,15 @@ fn main() {
         ))
         .insert_resource(RapierConfiguration {
             gravity: Vec2::new(0.0, -2000.0),
-            ..Default::default()
+            physics_pipeline_active: true,
+            query_pipeline_active: true,
+            timestep_mode: TimestepMode::Variable {
+                max_dt: 1.0 / 60.0,
+                time_scale: 1.0,
+                substeps: 1,
+            },
+            scaled_shape_subdivision: 10,
+            force_update_from_transform_changes: false,
         })
         .insert_resource(LevelSelection::Uid(0))
         .insert_resource(LdtkSettings {

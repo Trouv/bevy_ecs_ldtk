@@ -1,41 +1,31 @@
 # Migrate from 0.9 to 0.10
 
-## Entity translations now respect pivot
-Entities now spawn with a translation matching their actual location, rather than their "visual center".
+## Bevy upgrade
+`bevy_ecs_ldtk` has upgraded to Bevy and `bevy_ecs_tilemap` version `0.14`.
+A Bevy `0.14` migration guide is available on [Bevy's website](https://bevyengine.org/learn/migration-guides/0-13-to-0-14/).
 
-![Diagram showing an entity with a dot representing its location in three cases: in the LDtk editor; loaded in version 0.9; and loaded in 0.10. In LDtk, the dot is at the upper-left corner. Loaded in 0.10, the dot is at the same place, but in 0.9, the dot is instead at the entity's center.](images/pivot-0-9-to-0-10.png)
-
-For `LdtkEntity` bundles with a `#[sprite_sheet_bundle(...)]`, the macro calculates the sprite's `Anchor` from the pivot, so they should appear the same,
-but gameplay logic will need to be rewritten to account for the differences,
-as will systems that add sprite bundles manually. In the latter case,
-`utils::ldtk_pivot_to_anchor` can be used to find the correct `Anchor`.
-
-If the entity's center point is still wanted, it can be found using `utils::ldtk_entity_visual_center`:
+## `SpriteSheetBundle` replaced with `LdtkSpriteSheetBundle`
+In `0.14`, Bevy depricated `SpriteSheetBundle` to clear up confusion for new users. To maintain existing functionality with the `#[sprite_sheet_bundle]` macro, `SpriteSheetBundle` has been re-implemented as `LdtkSpriteSheetBundle`
 ```rust,ignore
-//0.9
-fn shoot_laser_from_center (
-	mut query: Query<(&mut Transform, &FiringLaser), With<EntityInstance>>
-) {
-	for (mut transform, laser) in &mut query {
-		let center = transform.translation();
-
-		//do laser shooting stuff
-	}
+// 0.9
+#[derive(Default, Bundle, LdtkEntity)]
+struct PlayerBundle {
+    player: Player,
+    #[sprite_sheet_bundle]
+    sprite_bundle: SpriteSheetBundle,
+    #[grid_coords]
+    grid_coords: GridCoords,
 }
 ```
-```rust,ignore
-//0.10
-fn shoot_laser_from_center (
-	mut query: Query<(&EntityInstance, &mut Transform, &FiringLaser)>
-) {
-	for (instance, mut transform, laser) in &mut query {
-		let object_center = bevy_ecs_ldtk::utils::ldtk_entity_visual_center(
-			transform.translation(),
-			IVec2::new(entity.width, entity.height),
-			entity.pivot
-		);
-
-		//do laser shooting stuff
-	}
+```rust,no_run
+// 0.10
+# use bevy_ecs_ldtk::prelude::*;
+# use bevy::prelude::*;
+#[derive(Default, Bundle, LdtkEntity)]
+struct PlayerBundle {
+    #[sprite_sheet_bundle]
+    sprite_bundle: LdtkSpriteSheetBundle,
+    #[grid_coords]
+    grid_coords: GridCoords,
 }
 ```

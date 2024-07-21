@@ -11,8 +11,8 @@ use std::{collections::HashMap, marker::PhantomData};
 /// [App]: bevy::prelude::App
 /// [Component]: bevy::prelude::Component
 /// [SpriteBundle]: bevy::prelude::SpriteBundle
-/// [SpriteSheetBundle]: bevy::prelude::SpriteSheetBundle
-/// [TextureAtlas]: bevy::prelude::TextureAtlas
+/// [LdtkSpriteSheetBundle]: crate::prelude::LdtkSpriteSheetBundle
+/// [TextureAtlasLayout]: bevy::prelude::TextureAtlasLayout
 ///
 /// Provides a constructor which can be used for spawning entities from an LDtk file.
 ///
@@ -98,18 +98,18 @@ use std::{collections::HashMap, marker::PhantomData};
 /// ```
 ///
 /// ### `#[sprite_sheet_bundle...]`
-/// Similar to `#[sprite_bundle...]`, indicates that a [SpriteSheetBundle] field should be created
+/// Similar to `#[sprite_bundle...]`, indicates that a [LdtkSpriteSheetBundle] field should be created
 /// with an actual material/image.
 /// There are two forms for this attribute:
 /// - `#[sprite_sheet_bundle("path/to/asset.png", tile_width, tile_height, columns, rows, padding,
 /// offset, index)]` will create the field using all of the information provided.
-/// Similar to using [TextureAtlas::from_grid()].
+/// Similar to using [TextureAtlasLayout::from_grid()].
 /// - `#[sprite_sheet_bundle]` will create the field using information from the LDtk Editor visual,
 /// if it has one.
 /// - `#[sprite_sheet_bundle(no_grid)]` will create the field using information from the LDtk
 /// Editor visual, if it has one, but without using a grid. Instead a single texture will be used.
 /// This may be useful if the LDtk entity's visual uses a rectangle of tiles from its tileset,
-/// but will prevent using the generated [TextureAtlas] for animation purposes.
+/// but will prevent using the generated [TextureAtlasLayout] for animation purposes.
 /// ```
 /// # use bevy::prelude::*;
 /// # use bevy_ecs_ldtk::prelude::*;
@@ -119,8 +119,8 @@ use std::{collections::HashMap, marker::PhantomData};
 /// # struct BleedDamage;
 /// #[derive(Bundle, LdtkEntity, Default)]
 /// pub struct Sword {
-///     #[sprite_sheet_bundle("weapons.png", 32.0, 32.0, 4, 5, 5.0, 1.0, 17)]
-///     sprite_sheet: SpriteSheetBundle,
+///     #[sprite_sheet_bundle("weapons.png", 32, 32, 4, 5, 5, 1, 17)]
+///     sprite_sheet: LdtkSpriteSheetBundle,
 ///     damage: Damage,
 /// }
 ///
@@ -129,7 +129,7 @@ use std::{collections::HashMap, marker::PhantomData};
 ///     damage: Damage,
 ///     bleed_damage: BleedDamage,
 ///     #[sprite_sheet_bundle]
-///     sprite_sheet: SpriteSheetBundle,
+///     sprite_sheet: LdtkSpriteSheetBundle,
 /// }
 /// ```
 ///
@@ -139,7 +139,7 @@ use std::{collections::HashMap, marker::PhantomData};
 /// [Worldly] entities don't despawn when their birth level despawns, and they don't respawn when
 /// their birth level respawns.
 /// For a more detailed explanation, please see the
-/// [*Worldly Entities*](https://trouv.github.io/bevy_ecs_ldtk/v0.9.0/explanation/anatomy-of-the-world.html#worldly-entities) <!-- x-release-please-version -->
+/// [*Worldly Entities*](https://trouv.github.io/bevy_ecs_ldtk/v0.10.0/explanation/anatomy-of-the-world.html#worldly-entities) <!-- x-release-please-version -->
 /// section of the `bevy_ecs_ldtk` book.
 /// ```
 /// # use bevy::prelude::*;
@@ -152,7 +152,7 @@ use std::{collections::HashMap, marker::PhantomData};
 /// pub struct PlayerBundle {
 ///     player: Player,
 ///     #[sprite_sheet_bundle]
-///     sprite_sheet_bundle: SpriteSheetBundle,
+///     sprite_sheet_bundle: LdtkSpriteSheetBundle,
 ///     #[worldly]
 ///     worldly: Worldly,
 /// }
@@ -175,7 +175,7 @@ use std::{collections::HashMap, marker::PhantomData};
 ///     block: Block,
 ///     movable: Movable,
 ///     #[sprite_sheet_bundle]
-///     sprite_sheet_bundle: SpriteSheetBundle,
+///     sprite_sheet_bundle: LdtkSpriteSheetBundle,
 ///     #[grid_coords]
 ///     grid_coords: GridCoords,
 /// }
@@ -281,6 +281,34 @@ use std::{collections::HashMap, marker::PhantomData};
 ///     }
 /// }
 /// ```
+///
+/// ### `#[default]`
+///
+/// Indicates that this component or bundle should be initialized using
+/// [`Default::default`].
+/// This can be useful when implementing `Default` for the whole `LdtkEntity` is
+/// not easily possible, because some of the fields do not implement `Default`.
+///
+/// ```
+/// # use bevy::prelude::*;
+/// # use bevy_ecs_ldtk::prelude::*;
+/// # mod other_crate {
+/// #     #[derive(bevy::prelude::Component)]
+/// #     pub struct ForeignComponentWithNoDefault;
+/// # }
+/// # fn custom_constructor(_: &EntityInstance) -> ForeignComponentWithNoDefault { todo!(); }
+/// # #[derive(Component, Default)]
+/// # struct Damage;
+/// use other_crate::ForeignComponentWithNoDefault;
+///
+/// #[derive(Bundle, LdtkEntity)]
+/// pub struct MyBundle {
+///     #[default]
+///     damage: Damage,
+///     #[with(custom_constructor)]
+///     foreign: ForeignComponentWithNoDefault,
+/// }
+/// ```
 pub trait LdtkEntity {
     /// The constructor used by the plugin when spawning entities from an LDtk file.
     /// Has access to resources/assets most commonly used for spawning 2d objects.
@@ -300,7 +328,7 @@ pub trait LdtkEntity {
         tileset: Option<&Handle<Image>>,
         tileset_definition: Option<&TilesetDefinition>,
         asset_server: &AssetServer,
-        texture_atlases: &mut Assets<TextureAtlas>,
+        texture_atlases: &mut Assets<TextureAtlasLayout>,
     ) -> Self;
 }
 
@@ -311,7 +339,7 @@ impl LdtkEntity for EntityInstanceBundle {
         _: Option<&Handle<Image>>,
         _: Option<&TilesetDefinition>,
         _: &AssetServer,
-        _: &mut Assets<TextureAtlas>,
+        _: &mut Assets<TextureAtlasLayout>,
     ) -> Self {
         EntityInstanceBundle {
             entity_instance: entity_instance.clone(),
@@ -326,28 +354,9 @@ impl LdtkEntity for SpriteBundle {
         tileset: Option<&Handle<Image>>,
         _: Option<&TilesetDefinition>,
         _: &AssetServer,
-        _: &mut Assets<TextureAtlas>,
+        _: &mut Assets<TextureAtlasLayout>,
     ) -> Self {
         utils::sprite_bundle_from_entity_info(entity_instance, tileset)
-    }
-}
-
-impl LdtkEntity for SpriteSheetBundle {
-    fn bundle_entity(
-        entity_instance: &EntityInstance,
-        _: &LayerInstance,
-        tileset: Option<&Handle<Image>>,
-        tileset_definition: Option<&TilesetDefinition>,
-        _: &AssetServer,
-        texture_atlases: &mut Assets<TextureAtlas>,
-    ) -> Self {
-        utils::sprite_sheet_bundle_from_entity_info(
-            entity_instance,
-            tileset,
-            tileset_definition,
-            texture_atlases,
-            true,
-        )
     }
 }
 
@@ -358,7 +367,7 @@ impl LdtkEntity for Worldly {
         _: Option<&Handle<Image>>,
         _: Option<&TilesetDefinition>,
         _: &AssetServer,
-        _: &mut Assets<TextureAtlas>,
+        _: &mut Assets<TextureAtlasLayout>,
     ) -> Worldly {
         Worldly::from_entity_info(entity_instance)
     }
@@ -371,7 +380,7 @@ impl LdtkEntity for GridCoords {
         _: Option<&Handle<Image>>,
         _: Option<&TilesetDefinition>,
         _: &AssetServer,
-        _: &mut Assets<TextureAtlas>,
+        _: &mut Assets<TextureAtlasLayout>,
     ) -> Self {
         GridCoords::from_entity_info(entity_instance, layer_instance)
     }
@@ -392,29 +401,29 @@ impl<B: LdtkEntity + Bundle> PhantomLdtkEntity<B> {
 
 pub trait PhantomLdtkEntityTrait {
     #[allow(clippy::too_many_arguments)]
-    fn evaluate<'w, 's, 'a, 'b>(
+    fn evaluate<'a, 'b>(
         &self,
-        commands: &'b mut EntityCommands<'w, 's, 'a>,
+        commands: &'b mut EntityCommands<'a>,
         entity_instance: &EntityInstance,
         layer_instance: &LayerInstance,
         tileset: Option<&Handle<Image>>,
         tileset_definition: Option<&TilesetDefinition>,
         asset_server: &AssetServer,
-        texture_atlases: &mut Assets<TextureAtlas>,
-    ) -> &'b mut EntityCommands<'w, 's, 'a>;
+        texture_atlases: &mut Assets<TextureAtlasLayout>,
+    ) -> &'b mut EntityCommands<'a>;
 }
 
 impl<B: LdtkEntity + Bundle> PhantomLdtkEntityTrait for PhantomLdtkEntity<B> {
-    fn evaluate<'w, 's, 'a, 'b>(
+    fn evaluate<'a, 'b>(
         &self,
-        entity_commands: &'b mut EntityCommands<'w, 's, 'a>,
+        entity_commands: &'b mut EntityCommands<'a>,
         entity_instance: &EntityInstance,
         layer_instance: &LayerInstance,
         tileset: Option<&Handle<Image>>,
         tileset_definition: Option<&TilesetDefinition>,
         asset_server: &AssetServer,
-        texture_atlases: &mut Assets<TextureAtlas>,
-    ) -> &'b mut EntityCommands<'w, 's, 'a> {
+        texture_atlases: &mut Assets<TextureAtlasLayout>,
+    ) -> &'b mut EntityCommands<'a> {
         entity_commands.insert(B::bundle_entity(
             entity_instance,
             layer_instance,

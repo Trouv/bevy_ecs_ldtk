@@ -32,7 +32,7 @@ Some resources for learning Bevy include those listed on the [Bevy website](http
 LDtk also provides documentation on [its website](https://ldtk.io/docs/).
 
 `bevy_ecs_ldtk`'s [source code](https://github.com/Trouv/bevy_ecs_ldtk) is available on github.
-This repository also contains [cargo examples](https://github.com/Trouv/bevy_ecs_ldtk/tree/v0.9.0/examples), which can be run after cloning the repository using `$ cargo run --example example-name`. <!-- x-release-please-version -->
+This repository also contains [cargo examples](https://github.com/Trouv/bevy_ecs_ldtk/tree/v0.10.0/examples), which can be run after cloning the repository using `$ cargo run --example example-name`. <!-- x-release-please-version -->
 These examples may be difficult to follow on their own, and many of their strategies are described in this book.
 When viewing these examples, be careful to checkout the correct git tag for the version of the plugin you are using.
 Some changes may have been made to the plugin or to the examples on the `main` branch that are not released yet, and trying to apply these to the version of the plugin you are using can lead to errors.

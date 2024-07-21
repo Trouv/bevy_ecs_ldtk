@@ -14,9 +14,9 @@ fn respawn_level(
     mut commands: Commands,
     level_selection: Res<LevelSelection>,
     levels: Query<(Entity, &LevelIid)>,
-    input: Res<Input<KeyCode>>,
+    input: Res<ButtonInput<KeyCode>>,
 ) {
-    if input.just_pressed(KeyCode::L) {
+    if input.just_pressed(KeyCode::KeyL) {
         let level_selection_iid = match level_selection.as_ref() {
             LevelSelection::Iid(iid) => iid,
             _ => panic!("level should always be selected by iid in this example"),
@@ -33,9 +33,9 @@ fn respawn_level(
 fn respawn_world(
     mut commands: Commands,
     ldtk_projects: Query<Entity, With<Handle<LdtkProject>>>,
-    input: Res<Input<KeyCode>>,
+    input: Res<ButtonInput<KeyCode>>,
 ) {
-    if input.just_pressed(KeyCode::R) {
+    if input.just_pressed(KeyCode::KeyR) {
         commands.entity(ldtk_projects.single()).insert(Respawn);
     }
 }

@@ -6,7 +6,10 @@ use crate::{
     components::{GridCoords, IntGridCell},
 };
 
-use crate::{components::TileGridBundle, ldtk::*};
+use crate::{
+    components::{LdtkSpriteSheetBundle, TileGridBundle},
+    ldtk::*,
+};
 use bevy::{prelude::*, sprite::Anchor};
 use bevy_ecs_tilemap::{
     map::{TilemapId, TilemapSize},
@@ -321,7 +324,7 @@ pub fn ldtk_pivot_to_anchor(pivot: Vec2) -> Anchor {
     Anchor::Custom(Vec2::new(pivot.x - 0.5, 0.5 - pivot.y))
 }
 
-/// Creates a [SpriteSheetBundle] from the entity information available to the
+/// Creates a [`LdtkSpriteSheetBundle`] from the entity information available to the
 /// [LdtkEntity::bundle_entity] method.
 ///
 /// Used for the `#[sprite_sheet_bundle]` attribute macro for `#[derive(LdtkEntity)]`.
@@ -330,62 +333,59 @@ pub fn sprite_sheet_bundle_from_entity_info(
     entity_instance: &EntityInstance,
     tileset: Option<&Handle<Image>>,
     tileset_definition: Option<&TilesetDefinition>,
-    texture_atlases: &mut Assets<TextureAtlas>,
+    texture_atlases: &mut Assets<TextureAtlasLayout>,
     grid: bool,
-) -> SpriteSheetBundle {
+) -> LdtkSpriteSheetBundle {
     if let (Some(tileset), Some(tile), Some(tileset_definition)) =
         (tileset, &entity_instance.tile, tileset_definition)
     {
-        // Anchor is calculated the same way for gridded and non-gridded
-        // atlases, so only calculate it once (for DRYness).
-        let anchor = ldtk_pivot_to_anchor(entity_instance.pivot);
-
-        SpriteSheetBundle {
-            texture_atlas: if grid {
-                texture_atlases.add(TextureAtlas::from_grid(
-                    tileset.clone(),
-                    Vec2::new(tile.w as f32, tile.h as f32),
-                    tileset_definition.c_wid as usize,
-                    tileset_definition.c_hei as usize,
-                    Some(Vec2::splat(tileset_definition.spacing as f32)),
-                    Some(Vec2::splat(tileset_definition.padding as f32)),
-                ))
-            } else {
-                let mut texture_atlas = TextureAtlas::new_empty(
-                    tileset.clone(),
-                    Vec2::new(
-                        tileset_definition.px_wid as f32,
-                        tileset_definition.px_hei as f32,
-                    ),
+            let texture_atlas = if grid {
+                let layout = TextureAtlasLayout::from_grid(
+                    UVec2::new(tile.w as u32, tile.h as u32),
+                    tileset_definition.c_wid as u32,
+                    tileset_definition.c_hei as u32,
+                    Some(UVec2::splat(tileset_definition.spacing as u32)),
+                    Some(UVec2::splat(tileset_definition.padding as u32)),
                 );
-                texture_atlas.add_texture(Rect::new(
-                    tile.x as f32,
-                    tile.y as f32,
-                    (tile.x + tile.w) as f32,
-                    (tile.y + tile.h) as f32,
-                ));
-                texture_atlases.add(texture_atlas)
-            },
-            sprite: if grid {
-                TextureAtlasSprite {
+                let texture_atlas: Handle<TextureAtlasLayout> = texture_atlases.add(layout);
+                TextureAtlas {
+                    layout: texture_atlas,
                     index: (tile.y / (tile.h + tileset_definition.spacing)) as usize
                         * tileset_definition.c_wid as usize
                         + (tile.x / (tile.w + tileset_definition.spacing)) as usize,
-                    anchor,
-                    ..Default::default()
                 }
             } else {
-                TextureAtlasSprite {
+                let mut layout = TextureAtlasLayout::new_empty(UVec2::new(
+                    tileset_definition.px_wid as u32,
+                    tileset_definition.px_hei as u32,
+                ));
+                layout.add_texture(URect::new(
+                    tile.x as u32,
+                    tile.y as u32,
+                    (tile.x + tile.w) as u32,
+                    (tile.y + tile.h) as u32,
+                ));
+                let texture_atlas: Handle<TextureAtlasLayout> = texture_atlases.add(layout);
+                TextureAtlas {
+                    layout: texture_atlas,
                     index: 0,
-                    anchor,
-                    ..Default::default()
                 }
-            },
-            ..Default::default()
-        }
+            };
+
+            LdtkSpriteSheetBundle {
+                sprite_bundle: SpriteBundle {
+                    sprite: Sprite {
+                        anchor: ldtk_pivot_to_anchor(entity_instance.pivot),
+                        ..Default::default()
+                    },
+                    texture: tileset.clone(),
+                    ..Default::default()
+                },
+                texture_atlas,
+            }
     } else {
         warn!("EntityInstance needs a tile, an associated tileset, and an associated tileset definition to be bundled as a SpriteSheetBundle");
-        SpriteSheetBundle::default()
+        LdtkSpriteSheetBundle::default()
     }
 }
 

@@ -37,21 +37,15 @@ pub struct IntGridCell {
     pub value: i32,
 }
 
-/// [Component] that indicates that an ldtk entity should be a child of the world, not their layer.
+/// [`Component`] that indicates that an ldtk entity should be a child of the world, not their layer.
 ///
-/// By default, [LdtkEntity]s are children of the layer they spawn in.
-/// This can be a problem if that entity is supposed to travel across multiple levels, since they
-/// will despawn the moment the level they were born in despawns.
+/// For a more detailed explanation, please see the
+/// [*Worldly Entities*](https://trouv.github.io/bevy_ecs_ldtk/v0.9.0/explanation/anatomy-of-the-world.html#worldly-entities) <!-- x-release-please-version -->
+/// section of the `bevy_ecs_ldtk` book.
 ///
-/// This component makes them children of the [LdtkWorldBundle] (after one update),
-/// so they can traverse levels without despawning.
-/// Furthermore, this component prevents respawns of the same entity if the level they were born in
-/// despawns/respawns.
-/// For this purpose, it uses the `iid` stored in this component to uniquely identify ldtk
-/// entities.
-///
-/// Implements [LdtkEntity], and can be added to an [LdtkEntity] bundle with the `#[worldly]` field
-/// attribute. See [LdtkEntity#worldly] for more details.
+/// Implements [`LdtkEntity`], and can be added to an [`LdtkEntity`] bundle with the `#[worldly]`
+/// field attribute.
+/// See [`LdtkEntity#worldly`] for attribute macro usage.
 #[derive(Clone, Eq, PartialEq, Debug, Default, Hash, Component, Reflect)]
 #[reflect(Component)]
 pub struct Worldly {
@@ -307,12 +301,9 @@ impl From<&LayerInstance> for LayerMetadata {
 
 /// [Component] that indicates that an LDtk level or world should respawn.
 ///
-/// Inserting this component on an entity with either [`Handle<LdtkProject>`] or [`LevelIid`]
-/// components will cause it to respawn.
-/// This can be used to implement a simple level-restart feature.
-/// Internally, this is used to support the entire level spawning process
-///
-/// [`Handle<LdtkProject>`]: crate::assets::LdtkProject
+/// For more details and example usage, please see the
+/// [*Respawn Levels and Worlds*](https://trouv.github.io/bevy_ecs_ldtk/v0.9.0/how-to-guides/respawn-levels-and-worlds.html) <!-- x-release-please-version -->
+/// chapter of the `bevy_ecs_ldtk` book.
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Hash, Component, Reflect)]
 #[reflect(Component)]
 pub struct Respawn;
@@ -335,20 +326,9 @@ pub(crate) struct EntityInstanceBundle {
 
 /// `Bundle` for spawning LDtk worlds and their levels. The main bundle for using this plugin.
 ///
-/// After the ldtk file is done loading, the levels you've chosen with [`LevelSelection`] or
-/// [`LevelSet`] will begin to spawn.
-/// Each level is its own entity, with the [`LdtkWorldBundle`] as its parent.
-/// Each level has a [`LevelIid`] component.
-///
-/// All layers will also spawn as their own entities.
-/// Each layer's parent will be the level entity.
-/// Each layer will have a [`LayerMetadata`] component.
-///
-/// AutoTile, Tile, and IntGrid layer entities are bevy_ecs_tilemap TileMaps.
-/// Each tile in these layers will have the layer entity as its parent.
-///
-/// For Entity layers, all LDtk entities will have the layer entity as their parent by default.
-/// However, this behavior can be changed by marking them with the [`Worldly`] component.
+/// For a more detailed explanation of the resulting world, please see the
+/// [*Anatomy of the World*](https://trouv.github.io/bevy_ecs_ldtk/v0.9.0/explanation/anatomy-of-the-world.html) <!-- x-release-please-version -->
+/// chapter of the `bevy_ecs_ldtk` book.
 #[derive(Clone, Default, Bundle)]
 pub struct LdtkWorldBundle {
     pub ldtk_handle: Handle<LdtkProject>,
@@ -356,5 +336,6 @@ pub struct LdtkWorldBundle {
     pub transform: Transform,
     pub global_transform: GlobalTransform,
     pub visibility: Visibility,
-    pub computed_visibility: ComputedVisibility,
+    pub inherited_visibility: InheritedVisibility,
+    pub view_visibility: ViewVisibility,
 }

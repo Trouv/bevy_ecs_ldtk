@@ -1,7 +1,7 @@
 [package]
 name = "bevy_ecs_ldtk_macros"
 description = "Derive macros for bevy_ecs_ldtk."
-version = "0.8.0"
+version = "0.9.0"
 edition = "2021"
 authors = ["Trevor Lovell <trevorlovelldesign@gmail.com>"]
 license = "MIT OR Apache-2.0"

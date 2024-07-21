@@ -233,7 +233,7 @@ pub fn detect_climb_range(
     climbables: Query<Entity, With<Climbable>>,
     mut collisions: EventReader<CollisionEvent>,
 ) {
-    for collision in collisions.iter() {
+    for collision in collisions.read() {
         match collision {
             CollisionEvent::Started(collider_a, collider_b, _) => {
                 if let (Ok(mut climber), Ok(climbable)) =
@@ -450,7 +450,7 @@ pub fn ground_detection(
     mut collisions: EventReader<CollisionEvent>,
     collidables: Query<With<Collider>, Without<Sensor>>,
 ) {
-    for collision_event in collisions.iter() {
+    for collision_event in collisions.read() {
         match collision_event {
             CollisionEvent::Started(e1, e2, _) => {
                 if collidables.contains(*e1) {

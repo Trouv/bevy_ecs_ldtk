@@ -3,21 +3,14 @@ use std::collections::HashSet;
 
 use crate::LevelIid;
 
-/// [`Component`] that determines the desired levels to be loaded for an [`LdtkWorldBundle`].
+/// [`Component`] that determines the desired levels to be spawned in an [`LdtkWorldBundle`].
 ///
-/// There is an abstraction for this in the form of the [`LevelSelection`] resource.
-/// This component does not respond to the [`load_level_neighbors`] option at all, while the
-/// [`LevelSelection`] does.
-/// If a [`LevelSelection`] is inserted, the plugin will update this component based off its value.
-/// If not, [`LevelSet`] allows you to have more direct control over the levels you spawn.
+/// For more explanation and comparison of options for selecting levels to spawn, see the
+/// [*Level Selection*](https://trouv.github.io/bevy_ecs_ldtk/v0.9.0/explanation/level-selection.html) <!-- x-release-please-version -->
+/// chapter of the `bevy_ecs_ldtk` book.
 ///
-/// Changes to this component are idempotent, so levels won't be respawned greedily.
-///
-/// [`LevelSelection`]: crate::prelude::LevelSelection
-/// [`load_level_neighbors`]:
-/// crate::prelude::LevelSpawnBehavior::UseWorldTranslation::load_level_neighbors
+/// [`Component`]: https://docs.rs/bevy/latest/bevy/ecs/prelude/trait.Component.html
 /// [`LdtkWorldBundle`]: crate::prelude::LdtkWorldBundle
-/// [`Component`]: https://docs.rs/bevy/latest/bevy/ecs/component/trait.Component.html
 #[derive(Clone, Eq, PartialEq, Debug, Default, Component)]
 pub struct LevelSet {
     pub iids: HashSet<LevelIid>,

@@ -2,11 +2,7 @@
 
 ## `bevy_ecs_ldtk`
 
-[`bevy_ecs_ldtk`](https://crates.io/crates/bevy_ecs_ldtk) is an ECS-friendly [LDtk](https://ldtk.io/) plugin for [Bevy](https://bevyengine.org/).
-It allows you to use LDtk projects as an asset, spawn levels, and insert bevy components/bundles on LDtk entities/tiles.
-This plugin is ECS-friendly, partly for its internal usage of ECS that provides extra functionality to users, and partly for its usage of [`bevy_ecs_tilemap`](https://crates.io/crates/bevy_ecs_tilemap) for rendering tilemaps.
-This is all behind an ergonomic API, providing low-boilerplate solutions to common use cases.
-For less common use cases, strategies that leverage this plugin's ECS constructs are also available.
+{{ #include blurb.md }}
 
 ## This book
 This book is a work in progress, but aims to provide the following pieces of documentation:
@@ -27,6 +23,7 @@ Splitting the documentation up this way means that this book is not necessarily 
 Some chapters are intended to be read while working on your own project, while others are meant to be more like studying material.
 The following chapters are good jumping-off points for beginners:
 - [*Tile-based Game* tutorial](tutorials/tile-based-game/index.html)
+- [*Level Selection* explanation](explanation/level-selection.md)
 - [*Game Logic Integration* explanation](explanation/game-logic-integration.md)
 
 ## Other resources
@@ -35,7 +32,7 @@ Some resources for learning Bevy include those listed on the [Bevy website](http
 LDtk also provides documentation on [its website](https://ldtk.io/docs/).
 
 `bevy_ecs_ldtk`'s [source code](https://github.com/Trouv/bevy_ecs_ldtk) is available on github.
-This repository also contains [cargo examples](https://github.com/Trouv/bevy_ecs_ldtk/tree/v0.8.0/examples), which can be run after cloning the repository using `$ cargo run --example example-name`. <!-- x-release-please-version -->
+This repository also contains [cargo examples](https://github.com/Trouv/bevy_ecs_ldtk/tree/v0.9.0/examples), which can be run after cloning the repository using `$ cargo run --example example-name`. <!-- x-release-please-version -->
 These examples may be difficult to follow on their own, and many of their strategies are described in this book.
 When viewing these examples, be careful to checkout the correct git tag for the version of the plugin you are using.
 Some changes may have been made to the plugin or to the examples on the `main` branch that are not released yet, and trying to apply these to the version of the plugin you are using can lead to errors.

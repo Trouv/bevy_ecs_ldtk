@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::{io, path::Path};
 
 use crate::{
     assets::{
@@ -7,9 +7,9 @@ use crate::{
     ldtk::{raw_level_accessor::RawLevelAccessor, LdtkJson, Level},
 };
 use bevy::{
-    asset::{AssetLoader, AssetPath, LoadContext, LoadedAsset},
+    asset::{io::Reader, AssetLoader, AssetPath, AsyncReadExt, LoadContext},
     prelude::*,
-    reflect::{Reflect, TypeUuid},
+    reflect::Reflect,
     utils::BoxedFuture,
 };
 use derive_getters::Getters;
@@ -76,8 +76,7 @@ fn ldtk_path_to_asset_path<'b>(ldtk_path: &Path, rel_path: &str) -> AssetPath<'b
 /// [`LdtkExternalLevel`]: crate::assets::LdtkExternalLevel
 /// [`loaded_level` accessors]: LdtkJsonWithMetadata#impl-LdtkJsonWithMetadata<InternalLevels>
 /// [`external_level` accessors]: LdtkJsonWithMetadata#impl-LdtkJsonWithMetadata<ExternalLevels>
-#[derive(Clone, Debug, PartialEq, From, TypeUuid, Getters, Reflect)]
-#[uuid = "43571891-8570-4416-903f-582efe3426ac"]
+#[derive(Clone, Debug, PartialEq, From, Getters, Reflect, Asset)]
 pub struct LdtkProject {
     /// LDtk json data and level metadata.
     data: LdtkProjectData,
@@ -155,6 +154,12 @@ impl LevelMetadataAccessor for LdtkProject {
 #[allow(dead_code)]
 #[derive(Debug, Error)]
 pub enum LdtkProjectLoaderError {
+    /// Encountered IO error reading LDtk project
+    #[error("encountered IO error reading LDtk project: {0}")]
+    Io(#[from] io::Error),
+    /// Unable to deserialize LDtk project
+    #[error("unable to deserialize LDtk project: {0}")]
+    Deserialize(#[from] serde_json::Error),
     /// LDtk project uses internal levels, but the `internal_levels` feature is disabled.
     #[error("LDtk project uses internal levels, but the internal_levels feature is disabled")]
     InternalLevelsDisabled,
@@ -173,29 +178,17 @@ pub enum LdtkProjectLoaderError {
 #[derive(Default)]
 pub struct LdtkProjectLoader;
 
-struct LoadLevelMetadataResult<'a, L> {
-    dependent_asset_paths: Vec<AssetPath<'a>>,
-    level_metadata: L,
-}
-
-fn load_level_metadata<'a>(
-    load_context: &LoadContext,
+fn load_level_metadata(
+    load_context: &mut LoadContext,
     level_indices: LevelIndices,
     level: &Level,
     expect_level_loaded: bool,
-) -> Result<LoadLevelMetadataResult<'a, LevelMetadata>, LdtkProjectLoaderError> {
-    let (bg_image_path, bg_image) = level
-        .bg_rel_path
-        .as_ref()
-        .map(|rel_path| {
-            let asset_path = ldtk_path_to_asset_path(load_context.path(), rel_path);
+) -> Result<LevelMetadata, LdtkProjectLoaderError> {
+    let bg_image = level.bg_rel_path.as_ref().map(|rel_path| {
+        let asset_path = ldtk_path_to_asset_path(load_context.path(), rel_path);
 
-            (
-                Some(asset_path.clone()),
-                Some(load_context.get_handle(asset_path)),
-            )
-        })
-        .unwrap_or((None, None));
+        load_context.load(asset_path)
+    });
 
     if expect_level_loaded && level.layer_instances.is_none() {
         Err(LdtkProjectLoaderError::InternalLevelWithNullLayers)?;
@@ -203,22 +196,16 @@ fn load_level_metadata<'a>(
 
     let level_metadata = LevelMetadata::new(bg_image, level_indices);
 
-    Ok(LoadLevelMetadataResult {
-        dependent_asset_paths: bg_image_path.into_iter().collect(),
-        level_metadata,
-    })
+    Ok(level_metadata)
 }
 
 #[cfg(feature = "external_levels")]
-fn load_external_level_metadata<'a>(
-    load_context: &LoadContext,
+fn load_external_level_metadata(
+    load_context: &mut LoadContext,
     level_indices: LevelIndices,
     level: &Level,
-) -> Result<LoadLevelMetadataResult<'a, ExternalLevelMetadata>, LdtkProjectLoaderError> {
-    let LoadLevelMetadataResult {
-        level_metadata,
-        mut dependent_asset_paths,
-    } = load_level_metadata(load_context, level_indices, level, false)?;
+) -> Result<ExternalLevelMetadata, LdtkProjectLoaderError> {
+    let level_metadata = load_level_metadata(load_context, level_indices, level, false)?;
 
     let external_level_path = ldtk_path_to_asset_path(
         load_context.path(),
@@ -228,33 +215,33 @@ fn load_external_level_metadata<'a>(
             .ok_or(LdtkProjectLoaderError::ExternalLevelWithNullPath)?,
     );
 
-    let external_handle = load_context.get_handle(external_level_path.clone());
-    dependent_asset_paths.push(external_level_path);
+    let external_handle = load_context.load(external_level_path.clone());
 
-    Ok(LoadLevelMetadataResult {
-        level_metadata: ExternalLevelMetadata::new(level_metadata, external_handle),
-        dependent_asset_paths,
-    })
+    Ok(ExternalLevelMetadata::new(level_metadata, external_handle))
 }
 
 impl AssetLoader for LdtkProjectLoader {
+    type Asset = LdtkProject;
+    type Settings = ();
+    type Error = LdtkProjectLoaderError;
+
     fn load<'a>(
         &'a self,
-        bytes: &'a [u8],
+        reader: &'a mut Reader,
+        _settings: &'a Self::Settings,
         load_context: &'a mut LoadContext,
-    ) -> BoxedFuture<'a, anyhow::Result<()>> {
+    ) -> BoxedFuture<'a, Result<Self::Asset, Self::Error>> {
         Box::pin(async move {
-            let data: LdtkJson = serde_json::from_slice(bytes)?;
-
-            let mut dependent_asset_paths = Vec::new();
+            let mut bytes = Vec::new();
+            reader.read_to_end(&mut bytes).await?;
+            let data: LdtkJson = serde_json::from_slice(&bytes)?;
 
             let mut tileset_map: HashMap<i32, Handle<Image>> = HashMap::new();
             for tileset in &data.defs.tilesets {
                 if let Some(tileset_path) = &tileset.rel_path {
                     let asset_path = ldtk_path_to_asset_path(load_context.path(), tileset_path);
 
-                    dependent_asset_paths.push(asset_path.clone());
-                    tileset_map.insert(tileset.uid, load_context.get_handle(asset_path));
+                    tileset_map.insert(tileset.uid, load_context.load(asset_path));
                 } else if tileset.embed_atlas.is_some() {
                     warn!("Ignoring LDtk's Internal_Icons. They cannot be displayed due to their license.");
                 } else {
@@ -263,9 +250,10 @@ impl AssetLoader for LdtkProjectLoader {
                 }
             }
 
-            let int_grid_image_handle = data.defs.create_int_grid_image().map(|image| {
-                load_context.set_labeled_asset("int_grid_image", LoadedAsset::new(image))
-            });
+            let int_grid_image_handle = data
+                .defs
+                .create_int_grid_image()
+                .map(|image| load_context.add_labeled_asset("int_grid_image".to_string(), image));
 
             let ldtk_project = if data.external_levels {
                 #[cfg(feature = "external_levels")]
@@ -273,13 +261,10 @@ impl AssetLoader for LdtkProjectLoader {
                     let mut level_map = HashMap::new();
 
                     for (level_indices, level) in data.iter_raw_levels_with_indices() {
-                        let LoadLevelMetadataResult {
-                            level_metadata,
-                            dependent_asset_paths: new_asset_paths,
-                        } = load_external_level_metadata(load_context, level_indices, level)?;
+                        let level_metadata =
+                            load_external_level_metadata(load_context, level_indices, level)?;
 
                         level_map.insert(level.iid.clone(), level_metadata);
-                        dependent_asset_paths.extend(new_asset_paths);
                     }
 
                     LdtkProject::new(
@@ -299,13 +284,10 @@ impl AssetLoader for LdtkProjectLoader {
                     let mut level_map = HashMap::new();
 
                     for (level_indices, level) in data.iter_raw_levels_with_indices() {
-                        let LoadLevelMetadataResult {
-                            level_metadata,
-                            dependent_asset_paths: new_asset_paths,
-                        } = load_level_metadata(load_context, level_indices, level, true)?;
+                        let level_metadata =
+                            load_level_metadata(load_context, level_indices, level, true)?;
 
                         level_map.insert(level.iid.clone(), level_metadata);
-                        dependent_asset_paths.extend(new_asset_paths);
                     }
 
                     LdtkProject::new(
@@ -321,10 +303,7 @@ impl AssetLoader for LdtkProjectLoader {
                 }
             };
 
-            load_context.set_default_asset(
-                LoadedAsset::new(ldtk_project).with_dependencies(dependent_asset_paths),
-            );
-            Ok(())
+            Ok(ldtk_project)
         })
     }
 
@@ -336,9 +315,8 @@ impl AssetLoader for LdtkProjectLoader {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use bevy::asset::HandleId;
     use derive_more::Constructor;
-    use fake::{Dummy, Fake};
+    use fake::{Dummy, Fake, Faker};
     use rand::Rng;
 
     #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Constructor)]
@@ -360,13 +338,13 @@ mod tests {
                 .defs
                 .tilesets
                 .iter()
-                .map(|tileset| (tileset.uid, Handle::weak(HandleId::random::<Image>())))
+                .map(|tileset| (tileset.uid, Handle::weak_from_u128(Faker.fake())))
                 .collect();
 
             LdtkProject {
                 data,
                 tileset_map,
-                int_grid_image_handle: Some(Handle::weak(HandleId::random::<Image>())),
+                int_grid_image_handle: Some(Handle::weak_from_u128(Faker.fake())),
             }
         }
     }

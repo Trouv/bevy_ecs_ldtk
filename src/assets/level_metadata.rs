@@ -48,8 +48,6 @@ impl ExternalLevelMetadata {
 
 #[cfg(test)]
 mod tests {
-    use bevy::render::texture::DEFAULT_IMAGE_HANDLE;
-
     use super::*;
 
     #[test]
@@ -60,14 +58,11 @@ mod tests {
         assert_eq!(*level_metadata.indices(), LevelIndices::in_root(1));
 
         let level_metadata = LevelMetadata::new(
-            Some(DEFAULT_IMAGE_HANDLE.typed()),
+            Some(Handle::<Image>::default()),
             LevelIndices::in_world(2, 3),
         );
 
-        assert_eq!(
-            *level_metadata.bg_image(),
-            Some(DEFAULT_IMAGE_HANDLE.typed())
-        );
+        assert_eq!(*level_metadata.bg_image(), Some(Handle::<Image>::default()),);
         assert_eq!(*level_metadata.indices(), LevelIndices::in_world(2, 3));
     }
 

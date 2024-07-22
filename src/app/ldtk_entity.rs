@@ -349,14 +349,14 @@ impl LdtkEntity for EntityInstanceBundle {
 
 impl LdtkEntity for SpriteBundle {
     fn bundle_entity(
-        _: &EntityInstance,
+        entity_instance: &EntityInstance,
         _: &LayerInstance,
         tileset: Option<&Handle<Image>>,
         _: Option<&TilesetDefinition>,
         _: &AssetServer,
         _: &mut Assets<TextureAtlasLayout>,
     ) -> Self {
-        utils::sprite_bundle_from_entity_info(tileset)
+        utils::sprite_bundle_from_entity_info(entity_instance, tileset)
     }
 }
 

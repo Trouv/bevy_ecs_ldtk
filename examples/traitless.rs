@@ -2,7 +2,7 @@
 // trait. As a result, you can run this example with --no-default-features
 
 use bevy::prelude::*;
-use bevy_ecs_ldtk::prelude::*;
+use bevy_ecs_ldtk::{prelude::*, utils::ldtk_pivot_to_anchor};
 
 fn main() {
     App::new()
@@ -55,6 +55,10 @@ fn process_my_entity(
 
                 commands.entity(entity).insert(LdtkSpriteSheetBundle {
                     sprite_bundle: SpriteBundle {
+                        sprite: Sprite { 
+                            anchor: ldtk_pivot_to_anchor(entity_instance.pivot),
+                            ..Default::default()
+                        },
                         texture,
                         transform: *transform,
                         ..Default::default()

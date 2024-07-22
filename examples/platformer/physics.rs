@@ -164,16 +164,13 @@ pub fn update_on_ground(
     }
 }
 
-
 /// Handles platformer-specific physics operations, specifically ground detection.
 pub struct PhysicsPlugin;
 
 impl Plugin for PhysicsPlugin {
-	fn build(&self, app: &mut App) {
-		app
-        .add_systems(Update, spawn_ground_sensor)
-        .add_systems(Update, ground_detection)
-        .add_systems(Update, update_on_ground)
-		;
-	}
+    fn build(&self, app: &mut App) {
+        app.add_systems(Update, spawn_ground_sensor)
+            .add_systems(Update, ground_detection)
+            .add_systems(Update, update_on_ground);
+    }
 }

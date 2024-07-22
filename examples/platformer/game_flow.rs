@@ -62,15 +62,12 @@ pub fn restart_level(
     }
 }
 
-
 pub struct GameFlowPlugin;
 
 impl Plugin for GameFlowPlugin {
     fn build(&self, app: &mut App) {
-        app
-        .add_systems(Startup, setup)
-        .add_systems(Update, update_level_selection)
-        .add_systems(Update, restart_level)
-        ;
+        app.add_systems(Startup, setup)
+            .add_systems(Update, update_level_selection)
+            .add_systems(Update, restart_level);
     }
 }

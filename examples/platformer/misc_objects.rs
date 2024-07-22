@@ -21,9 +21,7 @@ pub struct MiscObjectsPlugin;
 
 impl Plugin for MiscObjectsPlugin {
     fn build(&self, app: &mut App) {
-        app
-        .register_ldtk_entity::<ChestBundle>("Chest")
-        .register_ldtk_entity::<PumpkinsBundle>("Pumpkins")
-        ;
+        app.register_ldtk_entity::<ChestBundle>("Chest")
+            .register_ldtk_entity::<PumpkinsBundle>("Pumpkins");
     }
 }

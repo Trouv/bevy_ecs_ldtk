@@ -6,16 +6,16 @@ use bevy_ecs_ldtk::prelude::*;
 
 use bevy_rapier2d::prelude::*;
 
-/// Handles initialization and switching levels
-mod game_flow;
 mod camera;
-mod walls;
-mod physics;
-mod player;
-mod inventory;
 mod climbing;
 mod enemy;
+/// Handles initialization and switching levels
+mod game_flow;
+mod inventory;
 mod misc_objects;
+mod physics;
+mod player;
+mod walls;
 
 fn main() {
     App::new()

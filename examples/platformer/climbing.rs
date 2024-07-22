@@ -20,7 +20,6 @@ pub struct LadderBundle {
     pub climbable: Climbable,
 }
 
-
 pub fn detect_climb_range(
     mut climbers: Query<&mut Climber>,
     climbables: Query<Entity, With<Climbable>>,
@@ -69,14 +68,11 @@ pub fn ignore_gravity_if_climbing(
     }
 }
 
-
 pub struct ClimbingPlugin;
 
 impl Plugin for ClimbingPlugin {
-	fn build(&self, app: &mut App) {
-		app
-        .add_systems(Update, detect_climb_range)
-        .add_systems(Update, ignore_gravity_if_climbing)
-		;
-	}
+    fn build(&self, app: &mut App) {
+        app.add_systems(Update, detect_climb_range)
+            .add_systems(Update, ignore_gravity_if_climbing);
+    }
 }

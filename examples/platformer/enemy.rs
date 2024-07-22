@@ -104,14 +104,11 @@ pub fn patrol(mut query: Query<(&mut Transform, &mut Velocity, &mut Patrol)>) {
     }
 }
 
-
 pub struct EnemyPlugin;
 
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
-        app
-        .add_systems(Update, patrol)
-        .register_ldtk_entity::<MobBundle>("Mob")
-        ;
+        app.add_systems(Update, patrol)
+            .register_ldtk_entity::<MobBundle>("Mob");
     }
 }

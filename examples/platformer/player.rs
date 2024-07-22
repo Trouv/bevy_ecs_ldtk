@@ -2,8 +2,8 @@ use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::dynamics::Velocity;
 
-use crate::{climbing::Climber, inventory::Inventory};
 use crate::physics::{ColliderBundle, GroundDetection};
+use crate::{climbing::Climber, inventory::Inventory};
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Component)]
 pub struct Player;
@@ -59,14 +59,11 @@ pub fn player_movement(
     }
 }
 
-
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app
-        .add_systems(Update, player_movement)
-        .register_ldtk_entity::<PlayerBundle>("Player")
-        ;
+        app.add_systems(Update, player_movement)
+            .register_ldtk_entity::<PlayerBundle>("Player");
     }
 }

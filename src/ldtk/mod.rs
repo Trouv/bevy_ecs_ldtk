@@ -24,6 +24,7 @@
 //! 10. All urls in docs have been changed to hyperlinks with `<>`
 //! 11. `From<&EntityInstance>` implemented for [`EntityInstance`]
 //! 12. [`LayerInstance::layer_instance_type`] changed from [`String`] to [`Type`].
+#![allow(clippy::doc_lazy_continuation)]
 
 use bevy::{
     prelude::{Color, Component, IVec2, Vec2},

@@ -8,6 +8,7 @@
 //! - health, a non-nullable int.
 //! - equipment_drops, an array of Equipment values, which is a custom enum.
 //! - mother, a nullable entity reference.
+//!
 //! This example accesses all of these and stores them on the enemy entity via components.
 //! With the mother field - it also demonstrates one possible pattern for resolving an LDtk entity
 //! reference to an actual bevy "relational" component.

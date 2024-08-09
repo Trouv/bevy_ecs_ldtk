@@ -69,8 +69,9 @@ use std::{collections::HashMap, marker::PhantomData};
 /// Indicates that a [SpriteBundle] field should be created with an actual material/image.
 /// There are two forms for this attribute:
 /// - `#[sprite_bundle("path/to/asset.png")]` will create the field using the image at the provided
-/// path in the assets folder.
+///   path in the assets folder.
 /// - `#[sprite_bundle]` will create the field using its Editor Visual image in LDtk, if it has one.
+///
 /// Note that if your editor visual is part of a tilemap, you should use `#[sprite_sheet_bundle]` instead.
 /// ```
 /// # use bevy::prelude::*;
@@ -102,14 +103,14 @@ use std::{collections::HashMap, marker::PhantomData};
 /// with an actual material/image.
 /// There are two forms for this attribute:
 /// - `#[sprite_sheet_bundle("path/to/asset.png", tile_width, tile_height, columns, rows, padding,
-/// offset, index)]` will create the field using all of the information provided.
-/// Similar to using [TextureAtlasLayout::from_grid()].
+///   offset, index)]` will create the field using all of the information provided.
+///   Similar to using [TextureAtlasLayout::from_grid()].
 /// - `#[sprite_sheet_bundle]` will create the field using information from the LDtk Editor visual,
-/// if it has one.
+///   if it has one.
 /// - `#[sprite_sheet_bundle(no_grid)]` will create the field using information from the LDtk
-/// Editor visual, if it has one, but without using a grid. Instead a single texture will be used.
-/// This may be useful if the LDtk entity's visual uses a rectangle of tiles from its tileset,
-/// but will prevent using the generated [TextureAtlasLayout] for animation purposes.
+///   Editor visual, if it has one, but without using a grid. Instead a single texture will be used.
+///   This may be useful if the LDtk entity's visual uses a rectangle of tiles from its tileset,
+///   but will prevent using the generated [TextureAtlasLayout] for animation purposes.
 /// ```
 /// # use bevy::prelude::*;
 /// # use bevy_ecs_ldtk::prelude::*;

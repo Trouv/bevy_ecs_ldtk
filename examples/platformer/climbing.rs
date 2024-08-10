@@ -73,6 +73,7 @@ pub struct ClimbingPlugin;
 impl Plugin for ClimbingPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, detect_climb_range)
-            .add_systems(Update, ignore_gravity_if_climbing);
+            .add_systems(Update, ignore_gravity_if_climbing)
+            .register_ldtk_int_cell::<LadderBundle>(2);
     }
 }

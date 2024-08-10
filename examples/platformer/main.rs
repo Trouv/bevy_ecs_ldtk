@@ -11,6 +11,7 @@ mod climbing;
 mod enemy;
 /// Handles initialization and switching levels
 mod game_flow;
+mod ground_detection;
 mod inventory;
 mod misc_objects;
 mod physics;
@@ -46,13 +47,12 @@ fn main() {
         })
         .add_plugins(game_flow::GameFlowPlugin)
         .add_plugins(walls::WallPlugin)
-        .add_plugins(physics::PhysicsPlugin)
+        .add_plugins(ground_detection::GroundDetectionPlugin)
         .add_plugins(climbing::ClimbingPlugin)
         .add_plugins(player::PlayerPlugin)
         .add_plugins(enemy::EnemyPlugin)
         .add_systems(Update, inventory::dbg_print_inventory)
         .add_systems(Update, camera::camera_fit_inside_current_level)
         .add_plugins(misc_objects::MiscObjectsPlugin)
-        .register_ldtk_int_cell::<climbing::LadderBundle>(2)
         .run();
 }

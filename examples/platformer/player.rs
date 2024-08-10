@@ -2,8 +2,8 @@ use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::dynamics::Velocity;
 
-use crate::{ground_detection::GroundDetection, physics::ColliderBundle};
 use crate::{climbing::Climber, inventory::Inventory};
+use crate::{colliders::ColliderBundle, ground_detection::GroundDetection};
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Component)]
 pub struct Player;

@@ -2,7 +2,7 @@ use bevy::{prelude::*, utils::HashSet};
 use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::physics::SensorBundle;
+use crate::colliders::SensorBundle;
 
 #[derive(Clone, Eq, PartialEq, Debug, Default, Component)]
 pub struct Climber {

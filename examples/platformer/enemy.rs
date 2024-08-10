@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_ecs_ldtk::{prelude::*, utils::ldtk_pixel_coords_to_translation_pivoted};
 use bevy_rapier2d::dynamics::Velocity;
 
-use crate::physics::ColliderBundle;
+use crate::colliders::ColliderBundle;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Component)]
 pub struct Enemy;

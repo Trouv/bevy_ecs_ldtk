@@ -8,13 +8,14 @@ use bevy_rapier2d::prelude::*;
 
 mod camera;
 mod climbing;
+/// Bundles for auto-loading Rapier colliders as part of the level
+mod colliders;
 mod enemy;
 /// Handles initialization and switching levels
 mod game_flow;
 mod ground_detection;
 mod inventory;
 mod misc_objects;
-mod physics;
 mod player;
 mod walls;
 

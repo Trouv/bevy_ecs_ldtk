@@ -45,7 +45,7 @@ fn main() {
             ..Default::default()
         })
         .add_plugins(game_flow::GameFlowPlugin)
-        .add_systems(Update, walls::spawn_wall_collision)
+        .add_plugins(walls::WallPlugin)
         .add_plugins(physics::PhysicsPlugin)
         .add_plugins(climbing::ClimbingPlugin)
         .add_plugins(player::PlayerPlugin)
@@ -53,8 +53,6 @@ fn main() {
         .add_systems(Update, inventory::dbg_print_inventory)
         .add_systems(Update, camera::camera_fit_inside_current_level)
         .add_plugins(misc_objects::MiscObjectsPlugin)
-        .register_ldtk_int_cell::<walls::WallBundle>(1)
         .register_ldtk_int_cell::<climbing::LadderBundle>(2)
-        .register_ldtk_int_cell::<walls::WallBundle>(3)
         .run();
 }

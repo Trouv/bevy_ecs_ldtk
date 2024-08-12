@@ -23,7 +23,7 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
         .add_plugins((
-            LdtkPlugin,
+            LdtkPlugin::default(),
             RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0),
         ))
         .insert_resource(RapierConfiguration {

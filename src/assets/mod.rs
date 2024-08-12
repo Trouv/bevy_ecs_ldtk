@@ -34,6 +34,7 @@ pub use ldtk_project_data::LdtkProjectData;
 
 mod ldtk_project;
 pub use ldtk_project::LdtkProject;
+pub use ldtk_project::LdtkProjectLoaderError;
 
 mod level_indices;
 pub use level_indices::LevelIndices;

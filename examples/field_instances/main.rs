@@ -35,7 +35,7 @@ fn main() {
         .add_plugins(
             DefaultPlugins.set(ImagePlugin::default_nearest()), // prevents blurry sprites
         )
-        .add_plugins(LdtkPlugin)
+        .add_plugins(LdtkPlugin::default())
         .insert_resource(LevelSelection::default())
         .add_systems(Startup, setup)
         .add_systems(Update, mother::resolve_mother_references)

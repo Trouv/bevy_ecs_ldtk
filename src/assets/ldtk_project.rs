@@ -175,8 +175,9 @@ pub enum LdtkProjectLoaderError {
 }
 
 /// AssetLoader for [`LdtkProject`].
-#[derive(Default)]
-pub struct LdtkProjectLoader;
+pub struct LdtkProjectLoader {
+    pub de_call: fn(Vec<u8>) -> Result<LdtkJson, LdtkProjectLoaderError>,
+}
 
 fn load_level_metadata(
     load_context: &mut LoadContext,
@@ -236,7 +237,7 @@ impl AssetLoader for LdtkProjectLoader {
         Box::pin(async move {
             let mut bytes = Vec::new();
             reader.read_to_end(&mut bytes).await?;
-            let data: LdtkJson = serde_json::from_slice(&bytes)?;
+            let data = (self.de_call)(bytes)?;
 
             let mut tileset_map: HashMap<i32, Handle<Image>> = HashMap::new();
             for tileset in &data.defs.tilesets {

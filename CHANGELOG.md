@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.1](https://github.com/Trouv/bevy_ecs_ldtk/compare/v0.10.0...v0.10.1) (2024-08-12)
+
+
+### Documentation Changes
+
+* refactor platformer example by topic ([#329](https://github.com/Trouv/bevy_ecs_ldtk/issues/329)) ([f59e5e5](https://github.com/Trouv/bevy_ecs_ldtk/commit/f59e5e588026922620c1981108828e1e3ae6153f))
+
 ## [0.10.0](https://github.com/Trouv/bevy_ecs_ldtk/compare/v0.9.0...v0.10.0) (2024-07-20)
 
 

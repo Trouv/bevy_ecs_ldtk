@@ -302,6 +302,49 @@ impl From<&LayerInstance> for LayerMetadata {
     }
 }
 
+#[derive(Clone, Debug, Component, Reflect)]
+#[reflect(Component)]
+pub(crate) struct IntGridCellValues {
+    c_wid: i32,
+    c_hei: i32,
+    values: Vec<i32>,
+}
+
+impl IntGridCellValues {
+    pub(crate) fn from_csv(c_wid: i32, c_hei: i32, int_grid_csv: Vec<i32>) -> Self {
+        Self {
+            c_wid,
+            c_hei,
+            values: int_grid_csv,
+        }
+    }
+
+    pub(crate) fn get(&self, x: i32, y: i32) -> Option<i32> {
+        // Reading values is done during autotiling, in which case we check a kernel of cells around given coordinates.
+        // In this case, the most ergonomic way is to return None when out of bounds.
+        if x >= 0 && x < self.c_wid && y >= 0 && y < self.c_hei {
+            let idx = self.index(x, y);
+            Some(self.values[idx])
+        } else {
+            None
+        }
+    }
+
+    pub(crate) fn set(&mut self, x: i32, y: i32, value: i32) {
+        // Setting values is done in our updating system, so we consider out-of-bounds to be an error,
+        // because it would imply that some tile has GridCoords outside the bounds of the level.
+        debug_assert!(x >= 0 && x < self.c_wid);
+        debug_assert!(y >= 0 && y < self.c_hei);
+        let idx = self.index(x, y);
+        self.values[idx] = value;
+    }
+
+    fn index(&self, x: i32, y: i32) -> usize {
+        let idx = x + ((self.c_hei - y - 1) * self.c_wid);
+        idx as usize
+    }
+}
+
 /// [Component] that indicates that an LDtk level or world should respawn.
 ///
 /// For more details and example usage, please see the

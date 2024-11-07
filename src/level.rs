@@ -657,6 +657,17 @@ pub fn spawn_level(
                         }
                     };
 
+                    if layer_instance.layer_instance_type == Type::IntGrid {
+                        // Initialize the lookup table for updated int grid cells.
+                        commands
+                            .entity(layer_entity)
+                            .insert(IntGridCellValues::from_csv(
+                                layer_instance.c_wid,
+                                layer_instance.c_hei,
+                                layer_instance.int_grid_csv.clone(),
+                            ));
+                    }
+
                     insert_spatial_bundle_for_layer_tiles(
                         commands,
                         &tilemap_bundle.storage,

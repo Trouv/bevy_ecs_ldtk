@@ -33,7 +33,13 @@ fn main() {
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(Camera2dBundle {
-        transform: Transform::from_xyz(100.0, 100.0, 0.0),
+        transform: Transform::from_xyz(300.0, 240.0, 0.0),
+        projection: OrthographicProjection {
+            far: 1000.,
+            near: -1000.,
+            scale: 0.5,
+            ..default()
+        },
         ..default()
     });
 
@@ -45,7 +51,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
 // We need to keep the cursor position updated based on any `CursorMoved` events.
 // Taken from: https://github.com/StarArawn/bevy_ecs_tilemap/blob/main/examples/mouse_to_tile.rs
-pub fn update_cursor_pos(
+fn update_cursor_pos(
     camera_q: Query<(&GlobalTransform, &Camera)>,
     mut cursor_moved_events: EventReader<CursorMoved>,
     mut cursor_pos: ResMut<CursorPos>,

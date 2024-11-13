@@ -236,14 +236,23 @@ pub(crate) fn apply_int_grid_autotiling(
         ) = igrid_layer_query
             .get_mut(cell_parent.get())
             .expect("int grid cell not the child of a level");
-        let layer_uid = int_grid_layer_data.layer_def_uid;
-        let level_entity = int_grid_layer_parent.get();
 
-        // First, update the cell's value in the lookup table
+        // First, check if the value actually changed.
+        let current_cell_value = int_grid_layer_updated_tiles
+            .get(cell_coords.x, cell_coords.y)
+            .expect("updated int grid cell out of bounds");
+        if current_cell_value == cell.value {
+            // Value didn't actually change, don't trigger autotiling as a result of this cell.
+            continue;
+        }
+
+        // Update the cell's value in the table.
         int_grid_layer_updated_tiles.set(cell_coords.x, cell_coords.y, cell.value);
 
         // Then we need to determine which other layers were affected by this change.
         // To do that we need to go up to the level and then to the project, so that we can access the json metadata.
+        let layer_uid = int_grid_layer_data.layer_def_uid;
+        let level_entity = int_grid_layer_parent.get();
         let level_parent = level_query
             .get(level_entity)
             .expect("int grid cell not the child of a level");

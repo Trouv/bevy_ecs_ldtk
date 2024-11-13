@@ -56,7 +56,11 @@ impl Plugin for LdtkPlugin {
             )
             .add_systems(
                 ProcessLdtkApi,
-                (systems::apply_level_selection, systems::apply_level_set)
+                (
+                    systems::apply_level_selection,
+                    systems::apply_level_set,
+                    systems::apply_int_grid_autotiling,
+                )
                     .chain()
                     .in_set(ProcessApiSet::PreClean),
             )
@@ -79,6 +83,7 @@ impl Plugin for LdtkPlugin {
             .register_type::<components::GridCoords>()
             .register_type::<components::TileMetadata>()
             .register_type::<components::TileEnumTags>()
-            .register_type::<components::LayerMetadata>();
+            .register_type::<components::LayerMetadata>()
+            .register_type::<components::IntGridCellValues>();
     }
 }

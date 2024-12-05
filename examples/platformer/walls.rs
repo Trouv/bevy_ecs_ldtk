@@ -34,7 +34,7 @@ pub fn spawn_wall_collision(
     wall_query: Query<(&GridCoords, &Parent), Added<Wall>>,
     parent_query: Query<&Parent, Without<Wall>>,
     level_query: Query<(Entity, &LevelIid)>,
-    ldtk_projects: Query<&Handle<LdtkProject>>,
+    ldtk_projects: Query<&LdtkProjectHandle>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
 ) {
     /// Represents a wide wall that is 1 tile tall
@@ -78,7 +78,7 @@ pub fn spawn_wall_collision(
         level_query.iter().for_each(|(level_entity, level_iid)| {
             if let Some(level_walls) = level_to_wall_locations.get(&level_entity) {
                 let ldtk_project = ldtk_project_assets
-                    .get(ldtk_projects.single())
+                    .get(&ldtk_projects.single().handle)
                     .expect("Project should be loaded if level has spawned");
 
                 let level = ldtk_project

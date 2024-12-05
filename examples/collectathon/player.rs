@@ -51,7 +51,7 @@ fn move_player(
 
         if movement != Vec2::ZERO {
             player_transform.translation +=
-                movement.extend(0.) * MOVEMENT_SPEED * time.delta_seconds();
+                movement.extend(0.) * MOVEMENT_SPEED * time.delta_secs();
         }
     }
 }
@@ -59,13 +59,13 @@ fn move_player(
 fn level_selection_follow_player(
     players: Query<&GlobalTransform, With<Player>>,
     levels: Query<(&LevelIid, &GlobalTransform)>,
-    ldtk_projects: Query<&Handle<LdtkProject>>,
+    ldtk_projects: Query<&LdtkProjectHandle>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
     mut level_selection: ResMut<LevelSelection>,
 ) {
     if let Ok(player_transform) = players.get_single() {
         let ldtk_project = ldtk_project_assets
-            .get(ldtk_projects.single())
+            .get(&ldtk_projects.single().handle)
             .expect("ldtk project should be loaded before player is spawned");
 
         for (level_iid, level_transform) in levels.iter() {

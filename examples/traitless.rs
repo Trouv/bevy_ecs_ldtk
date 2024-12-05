@@ -15,10 +15,10 @@ fn main() {
 }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2d::default());
 
     commands.spawn(LdtkWorldBundle {
-        ldtk_handle: asset_server.load("my_project.ldtk"),
+        ldtk_handle: asset_server.load("my_project.ldtk").into(),
         ..Default::default()
     });
 }
@@ -54,12 +54,8 @@ fn process_my_entity(
                 };
 
                 commands.entity(entity).insert(LdtkSpriteSheetBundle {
-                    sprite_bundle: SpriteBundle {
-                        texture,
-                        transform: *transform,
-                        ..Default::default()
-                    },
-                    texture_atlas: atlas,
+                    sprite_bundle: Sprite::from_atlas_image(texture, atlas),
+                    transform: *transform,
                 });
             }
         }

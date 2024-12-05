@@ -12,7 +12,7 @@ pub struct LevelTitle(String);
 pub fn set_level_title_to_current_level(
     mut level_events: EventReader<LevelEvent>,
     levels: Query<&LevelIid>,
-    projects: Query<&Handle<LdtkProject>>,
+    projects: Query<&LdtkProjectHandle>,
     project_assets: Res<Assets<LdtkProject>>,
     mut current_level_title: ResMut<LevelTitle>,
 ) {
@@ -23,7 +23,7 @@ pub fn set_level_title_to_current_level(
                 .expect("only one level should be spawned at a time in this example");
 
             let level_data = project_assets
-                .get(projects.single())
+                .get(&projects.single().handle)
                 .expect("project asset should be loaded if levels are spawned")
                 .get_raw_level_by_iid(&level_iid.to_string())
                 .expect("spawned level should exist in the loaded project");

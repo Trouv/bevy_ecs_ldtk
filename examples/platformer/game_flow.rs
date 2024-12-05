@@ -6,7 +6,9 @@ pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     let camera = Camera2dBundle::default();
     commands.spawn(camera);
 
-    let ldtk_handle = asset_server.load("Typical_2D_platformer_example.ldtk");
+    let ldtk_handle = asset_server
+        .load("Typical_2D_platformer_example.ldtk")
+        .into();
     commands.spawn(LdtkWorldBundle {
         ldtk_handle,
         ..Default::default()
@@ -17,12 +19,12 @@ pub fn update_level_selection(
     level_query: Query<(&LevelIid, &Transform), Without<Player>>,
     player_query: Query<&Transform, With<Player>>,
     mut level_selection: ResMut<LevelSelection>,
-    ldtk_projects: Query<&Handle<LdtkProject>>,
+    ldtk_projects: Query<&LdtkProjectHandle>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
 ) {
     for (level_iid, level_transform) in &level_query {
         let ldtk_project = ldtk_project_assets
-            .get(ldtk_projects.single())
+            .get(&ldtk_projects.single().handle)
             .expect("Project should be loaded if level has spawned");
 
         let level = ldtk_project

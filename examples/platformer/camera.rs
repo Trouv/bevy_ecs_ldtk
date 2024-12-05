@@ -16,7 +16,7 @@ pub fn camera_fit_inside_current_level(
     >,
     player_query: Query<&Transform, With<Player>>,
     level_query: Query<(&Transform, &LevelIid), (Without<OrthographicProjection>, Without<Player>)>,
-    ldtk_projects: Query<&Handle<LdtkProject>>,
+    ldtk_projects: Query<&LdtkProjectHandle>,
     level_selection: Res<LevelSelection>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
 ) {
@@ -31,7 +31,7 @@ pub fn camera_fit_inside_current_level(
 
         for (level_transform, level_iid) in &level_query {
             let ldtk_project = ldtk_project_assets
-                .get(ldtk_projects.single())
+                .get(&ldtk_projects.single().handle)
                 .expect("Project should be loaded if level has spawned");
 
             let level = ldtk_project

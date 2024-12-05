@@ -348,7 +348,7 @@ impl LdtkEntity for EntityInstanceBundle {
     }
 }
 
-impl LdtkEntity for SpriteBundle {
+impl LdtkEntity for Sprite {
     fn bundle_entity(
         _: &EntityInstance,
         _: &LayerInstance,

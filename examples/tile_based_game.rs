@@ -27,14 +27,17 @@ fn main() {
 }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let mut camera = Camera2dBundle::default();
-    camera.projection.scale = 0.5;
-    camera.transform.translation.x += 1280.0 / 4.0;
-    camera.transform.translation.y += 720.0 / 4.0;
-    commands.spawn(camera);
+    commands.spawn((
+        Camera2d::default(),
+        OrthographicProjection {
+            scale: 0.5,
+            ..OrthographicProjection::default_2d()
+        },
+        Transform::from_xyz(1280.0 / 4.0, 720.0 / 4.0, 0.0),
+    ));
 
     commands.spawn(LdtkWorldBundle {
-        ldtk_handle: asset_server.load("tile-based-game.ldtk"),
+        ldtk_handle: asset_server.load("tile-based-game.ldtk").into(),
         ..Default::default()
     });
 }
@@ -129,13 +132,13 @@ fn cache_wall_locations(
     mut level_walls: ResMut<LevelWalls>,
     mut level_events: EventReader<LevelEvent>,
     walls: Query<&GridCoords, With<Wall>>,
-    ldtk_project_entities: Query<&Handle<LdtkProject>>,
+    ldtk_project_entities: Query<&LdtkProjectHandle>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
 ) {
     for level_event in level_events.read() {
         if let LevelEvent::Spawned(level_iid) = level_event {
             let ldtk_project = ldtk_project_assets
-                .get(ldtk_project_entities.single())
+                .get(&ldtk_project_entities.single().handle)
                 .expect("LdtkProject should be loaded when level is spawned");
             let level = ldtk_project
                 .get_raw_level_by_iid(level_iid.get())

@@ -11,7 +11,7 @@ pub struct Player;
 #[derive(Clone, Default, Bundle, LdtkEntity)]
 pub struct PlayerBundle {
     #[sprite_bundle("player.png")]
-    pub sprite_bundle: SpriteBundle,
+    pub sprite_bundle: Sprite,
     #[from_entity_instance]
     pub collider_bundle: ColliderBundle,
     pub player: Player,

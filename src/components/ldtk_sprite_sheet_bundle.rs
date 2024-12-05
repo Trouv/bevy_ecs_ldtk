@@ -1,8 +1,8 @@
 use bevy::{
     asset::{AssetServer, Assets, Handle},
-    prelude::Bundle,
-    render::texture::Image,
-    sprite::{SpriteBundle, TextureAtlas, TextureAtlasLayout},
+    image::Image,
+    prelude::{Bundle, Transform},
+    sprite::{Sprite, TextureAtlasLayout},
 };
 
 use crate::{
@@ -19,8 +19,8 @@ use crate::{
 /// [`Bundle`]: https://docs.rs/bevy/latest/bevy/ecs/prelude/trait.Bundle.html
 #[derive(Bundle, Clone, Debug, Default)]
 pub struct LdtkSpriteSheetBundle {
-    pub sprite_bundle: SpriteBundle,
-    pub texture_atlas: TextureAtlas,
+    pub sprite_bundle: Sprite,
+    pub transform: Transform,
 }
 
 impl LdtkEntity for LdtkSpriteSheetBundle {

@@ -7,10 +7,9 @@ use crate::{
     ldtk::{raw_level_accessor::RawLevelAccessor, LdtkJson, Level},
 };
 use bevy::{
-    asset::{io::Reader, AssetLoader, AssetPath, AsyncReadExt, LoadContext},
+    asset::{io::Reader, AssetLoader, AssetPath, LoadContext},
     prelude::*,
     reflect::Reflect,
-    utils::ConditionalSendFuture,
 };
 use derive_getters::Getters;
 use derive_more::From;
@@ -225,88 +224,84 @@ impl AssetLoader for LdtkProjectLoader {
     type Settings = ();
     type Error = LdtkProjectLoaderError;
 
-    fn load<'a>(
-        &'a self,
-        reader: &'a mut Reader,
-        _settings: &'a Self::Settings,
-        load_context: &'a mut LoadContext,
-    ) -> impl ConditionalSendFuture<
-        Output = Result<<Self as AssetLoader>::Asset, <Self as AssetLoader>::Error>,
-    > {
-        Box::pin(async move {
-            let mut bytes = Vec::new();
-            reader.read_to_end(&mut bytes).await?;
-            let data: LdtkJson = serde_json::from_slice(&bytes)?;
+    async fn load(
+        &self,
+        reader: &mut dyn Reader,
+        _settings: &Self::Settings,
+        load_context: &mut LoadContext<'_>,
+    ) -> Result<Self::Asset, Self::Error> {
+        let mut bytes = Vec::new();
+        reader.read_to_end(&mut bytes).await?;
+        let data: LdtkJson = serde_json::from_slice(&bytes)?;
 
-            let mut tileset_map: HashMap<i32, Handle<Image>> = HashMap::new();
-            for tileset in &data.defs.tilesets {
-                if let Some(tileset_path) = &tileset.rel_path {
-                    let asset_path = ldtk_path_to_asset_path(load_context.path(), tileset_path);
+        let mut tileset_map: HashMap<i32, Handle<Image>> = HashMap::new();
+        for tileset in &data.defs.tilesets {
+            if let Some(tileset_path) = &tileset.rel_path {
+                let asset_path = ldtk_path_to_asset_path(load_context.path(), tileset_path);
 
-                    tileset_map.insert(tileset.uid, load_context.load(asset_path));
-                } else if tileset.embed_atlas.is_some() {
-                    warn!("Ignoring LDtk's Internal_Icons. They cannot be displayed due to their license.");
-                } else {
-                    let identifier = &tileset.identifier;
-                    warn!("{identifier} tileset cannot be loaded, it has a null relative path.");
+                tileset_map.insert(tileset.uid, load_context.load(asset_path));
+            } else if tileset.embed_atlas.is_some() {
+                warn!("Ignoring LDtk's Internal_Icons. They cannot be displayed due to their license.");
+            } else {
+                let identifier = &tileset.identifier;
+                warn!("{identifier} tileset cannot be loaded, it has a null relative path.");
+            }
+        }
+
+        let int_grid_image_handle = data
+            .defs
+            .create_int_grid_image()
+            .map(|image| load_context.add_labeled_asset("int_grid_image".to_string(), image));
+
+        let ldtk_project = if data.external_levels {
+            #[cfg(feature = "external_levels")]
+            {
+                let mut level_map = HashMap::new();
+
+                for (level_indices, level) in data.iter_raw_levels_with_indices() {
+                    let level_metadata =
+                        load_external_level_metadata(load_context, level_indices, level)?;
+
+                    level_map.insert(level.iid.clone(), level_metadata);
                 }
+
+                LdtkProject::new(
+                    LdtkProjectData::Parent(LdtkJsonWithMetadata::new(data, level_map)),
+                    tileset_map,
+                    int_grid_image_handle,
+                )
             }
 
-            let int_grid_image_handle = data
-                .defs
-                .create_int_grid_image()
-                .map(|image| load_context.add_labeled_asset("int_grid_image".to_string(), image));
+            #[cfg(not(feature = "external_levels"))]
+            {
+                Err(LdtkProjectLoaderError::ExternalLevelsDisabled)?
+            }
+        } else {
+            #[cfg(feature = "internal_levels")]
+            {
+                let mut level_map = HashMap::new();
 
-            let ldtk_project = if data.external_levels {
-                #[cfg(feature = "external_levels")]
-                {
-                    let mut level_map = HashMap::new();
+                for (level_indices, level) in data.iter_raw_levels_with_indices() {
+                    let level_metadata =
+                        load_level_metadata(load_context, level_indices, level, true)?;
 
-                    for (level_indices, level) in data.iter_raw_levels_with_indices() {
-                        let level_metadata =
-                            load_external_level_metadata(load_context, level_indices, level)?;
-
-                        level_map.insert(level.iid.clone(), level_metadata);
-                    }
-
-                    LdtkProject::new(
-                        LdtkProjectData::Parent(LdtkJsonWithMetadata::new(data, level_map)),
-                        tileset_map,
-                        int_grid_image_handle,
-                    )
+                    level_map.insert(level.iid.clone(), level_metadata);
                 }
 
-                #[cfg(not(feature = "external_levels"))]
-                {
-                    Err(LdtkProjectLoaderError::ExternalLevelsDisabled)?
-                }
-            } else {
-                #[cfg(feature = "internal_levels")]
-                {
-                    let mut level_map = HashMap::new();
+                LdtkProject::new(
+                    LdtkProjectData::Standalone(LdtkJsonWithMetadata::new(data, level_map)),
+                    tileset_map,
+                    int_grid_image_handle,
+                )
+            }
 
-                    for (level_indices, level) in data.iter_raw_levels_with_indices() {
-                        let level_metadata =
-                            load_level_metadata(load_context, level_indices, level, true)?;
+            #[cfg(not(feature = "internal_levels"))]
+            {
+                Err(LdtkProjectLoaderError::InternalLevelsDisabled)?
+            }
+        };
 
-                        level_map.insert(level.iid.clone(), level_metadata);
-                    }
-
-                    LdtkProject::new(
-                        LdtkProjectData::Standalone(LdtkJsonWithMetadata::new(data, level_map)),
-                        tileset_map,
-                        int_grid_image_handle,
-                    )
-                }
-
-                #[cfg(not(feature = "internal_levels"))]
-                {
-                    Err(LdtkProjectLoaderError::InternalLevelsDisabled)?
-                }
-            };
-
-            Ok(ldtk_project)
-        })
+        Ok(ldtk_project)
     }
 
     fn extensions(&self) -> &[&str] {

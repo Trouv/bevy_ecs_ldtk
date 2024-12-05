@@ -189,7 +189,7 @@ impl<'de> Deserialize<'de> for FieldInstance {
 }
 
 #[derive(PartialEq, Debug, Clone, Serialize, Reflect)]
-#[reflect_value()]
+#[reflect(opaque)]
 #[serde(untagged)]
 /// The actual value of a field instance on a [Level] or [EntityInstance].
 ///

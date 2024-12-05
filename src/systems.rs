@@ -15,7 +15,7 @@ use crate::{
 #[cfg(feature = "external_levels")]
 use crate::assets::LdtkExternalLevel;
 
-use bevy::{asset::RecursiveDependencyLoadState, ecs::system::SystemState, prelude::*};
+use bevy::{ecs::system::SystemState, prelude::*};
 use std::collections::{HashMap, HashSet};
 
 /// Detects [LdtkProject] events and spawns levels as children of the [LdtkWorldBundle].
@@ -23,7 +23,7 @@ use std::collections::{HashMap, HashSet};
 pub fn process_ldtk_assets(
     mut commands: Commands,
     mut ldtk_project_events: EventReader<AssetEvent<LdtkProject>>,
-    ldtk_world_query: Query<(Entity, &Handle<LdtkProject>)>,
+    ldtk_world_query: Query<(Entity, &LdtkProjectHandle)>,
     #[cfg(feature = "render")] ldtk_settings: Res<LdtkSettings>,
     #[cfg(feature = "render")] mut clear_color: ResMut<ClearColor>,
     #[cfg(feature = "render")] ldtk_project_assets: Res<Assets<LdtkProject>>,
@@ -62,7 +62,7 @@ pub fn process_ldtk_assets(
     }
 
     for (entity, handle) in ldtk_world_query.iter() {
-        if ldtk_handles_to_respawn.contains(&handle.id()) {
+        if ldtk_handles_to_respawn.contains(&handle.handle.id()) {
             commands.entity(entity).insert(Respawn);
         }
     }
@@ -73,12 +73,12 @@ pub fn apply_level_selection(
     level_selection: Option<Res<LevelSelection>>,
     ldtk_settings: Res<LdtkSettings>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
-    mut level_set_query: Query<(&Handle<LdtkProject>, &mut LevelSet)>,
+    mut level_set_query: Query<(&LdtkProjectHandle, &mut LevelSet)>,
     #[cfg(feature = "render")] mut clear_color: ResMut<ClearColor>,
 ) {
     if let Some(level_selection) = level_selection {
         for (ldtk_handle, mut level_set) in level_set_query.iter_mut() {
-            if let Some(project) = &ldtk_project_assets.get(ldtk_handle) {
+            if let Some(project) = &ldtk_project_assets.get(&ldtk_handle.handle) {
                 if let Some(level) = project.find_raw_level_by_level_selection(&level_selection) {
                     let new_level_set = {
                         let mut iids = HashSet::new();
@@ -123,7 +123,7 @@ pub fn apply_level_set(
         Entity,
         &LevelSet,
         Option<&Children>,
-        &Handle<LdtkProject>,
+        &LdtkProjectHandle,
         Option<&Respawn>,
     )>,
     ldtk_level_query: Query<(&LevelIid, Entity)>,
@@ -134,11 +134,11 @@ pub fn apply_level_set(
 ) {
     for (world_entity, level_set, children, ldtk_asset_handle, respawn) in ldtk_world_query.iter() {
         // Only apply level set if the asset has finished loading
-        if let Some(project) = ldtk_project_assets.get(ldtk_asset_handle) {
+        if let Some(project) = ldtk_project_assets.get(&ldtk_asset_handle.handle) {
             if let Some(load_state) =
-                asset_server.get_recursive_dependency_load_state(ldtk_asset_handle)
+                asset_server.get_recursive_dependency_load_state(&ldtk_asset_handle.handle)
             {
-                if load_state != RecursiveDependencyLoadState::Loaded {
+                if !load_state.is_loaded() {
                     continue;
                 }
             }
@@ -164,7 +164,7 @@ pub fn apply_level_set(
                 })
                 .collect::<Vec<_>>();
 
-            commands.entity(world_entity).push_children(&spawned_levels);
+            commands.entity(world_entity).add_children(&spawned_levels);
 
             // Despawn levels that shouldn't be spawned but are
             for &iid in previous_iids.difference(&level_set_as_ref) {
@@ -201,10 +201,7 @@ fn pre_spawn_level(commands: &mut Commands, level: &Level, ldtk_settings: &LdtkS
 
     commands
         .spawn(LevelIid::new(level.iid.clone()))
-        .insert(SpatialBundle {
-            transform: Transform::from_translation(translation),
-            ..default()
-        })
+        .insert(Transform::from_translation(translation))
         .insert(Name::new(level.identifier.clone()))
         .id()
 }
@@ -221,7 +218,7 @@ pub fn process_ldtk_levels(
     #[cfg(feature = "external_levels")] level_assets: Res<Assets<LdtkExternalLevel>>,
     ldtk_entity_map: NonSend<LdtkEntityMap>,
     ldtk_int_cell_map: NonSend<LdtkIntCellMap>,
-    ldtk_query: Query<&Handle<LdtkProject>>,
+    ldtk_query: Query<&LdtkProjectHandle>,
     level_query: Query<
         (
             Entity,
@@ -250,7 +247,7 @@ pub fn process_ldtk_levels(
 
         if !already_processed {
             if let Ok(ldtk_handle) = ldtk_query.get(parent.get()) {
-                if let Some(ldtk_project) = ldtk_project_assets.get(ldtk_handle) {
+                if let Some(ldtk_project) = ldtk_project_assets.get(&ldtk_handle.handle) {
                     // Commence the spawning
                     let tileset_definition_map: HashMap<i32, &TilesetDefinition> = ldtk_project
                         .json_data()
@@ -336,7 +333,7 @@ pub fn process_ldtk_levels(
 pub fn clean_respawn_entities(world: &mut World) {
     #[allow(clippy::type_complexity)]
     let mut system_state: SystemState<(
-        Query<&Children, (With<Handle<LdtkProject>>, With<Respawn>)>,
+        Query<&Children, (With<LdtkProjectHandle>, With<Respawn>)>,
         Query<(Entity, &LevelIid), With<Respawn>>,
         Query<&LevelIid, Without<Respawn>>,
         Query<Entity, With<Worldly>>,

@@ -1,10 +1,18 @@
 use crate::player::Player;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
+use bevy_rapier2d::prelude::*;
 
 pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let camera = Camera2dBundle::default();
-    commands.spawn(camera);
+    commands.spawn(Camera2d);
+
+    commands.spawn(RapierConfiguration {
+        gravity: Vec2::new(0.0, -2000.0),
+        physics_pipeline_active: true,
+        query_pipeline_active: true,
+        scaled_shape_subdivision: 10,
+        force_update_from_transform_changes: false,
+    });
 
     let ldtk_handle = asset_server
         .load("Typical_2D_platformer_example.ldtk")

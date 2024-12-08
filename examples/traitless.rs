@@ -15,19 +15,13 @@ fn main() {
 }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn(Camera2d::default());
+    commands.spawn(Camera2d);
 
     commands.spawn(LdtkWorldBundle {
         ldtk_handle: asset_server.load("my_project.ldtk").into(),
         ..Default::default()
     });
 }
-
-#[derive(Default, Component)]
-struct ComponentA;
-
-#[derive(Default, Component)]
-struct ComponentB;
 
 fn process_my_entity(
     mut commands: Commands,

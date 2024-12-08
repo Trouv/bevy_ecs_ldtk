@@ -334,7 +334,7 @@ pub struct LdtkProjectHandle {
 
 impl From<Handle<LdtkProject>> for LdtkProjectHandle {
     fn from(handle: Handle<LdtkProject>) -> Self {
-        LdtkProjectHandle { handle: handle }
+        LdtkProjectHandle { handle }
     }
 }
 

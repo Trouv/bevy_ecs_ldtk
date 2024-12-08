@@ -37,7 +37,7 @@ const LEVEL_IIDS: [&str; 8] = [
 ];
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn(Camera2d::default());
+    commands.spawn(Camera2d);
 
     let level_set = LevelSet::from_iids(LEVEL_IIDS);
 

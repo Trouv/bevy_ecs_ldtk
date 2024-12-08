@@ -42,7 +42,7 @@ fn main() {
         .init_resource::<level_title::LevelTitle>()
         .add_systems(
             Update,
-            level_title::set_level_title_to_current_level.run_if(on_event::<LevelEvent>()),
+            level_title::set_level_title_to_current_level.run_if(on_event::<LevelEvent>),
         )
         .register_ldtk_entity::<enemy::EnemyBundle>("Enemy")
         // The rest of this is bevy_inspector_egui boilerplate
@@ -55,7 +55,7 @@ fn main() {
 }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn(Camera2d::default());
+    commands.spawn(Camera2d);
 
     let ldtk_handle = asset_server.load("field_instances.ldtk").into();
 

@@ -84,7 +84,7 @@ fn background_image_sprite_sheet_bundle(
             sprite_bundle: Sprite::from_atlas_image(
                 background_image_handle.clone(),
                 TextureAtlas {
-                    index: index,
+                    index,
                     layout: texture_atlases.add(texture_atlas_layout),
                 },
             ),

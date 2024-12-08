@@ -48,7 +48,7 @@ fn process_my_entity(
                 };
 
                 commands.entity(entity).insert(LdtkSpriteSheetBundle {
-                    sprite_bundle: Sprite::from_atlas_image(texture, atlas),
+                    sprite: Sprite::from_atlas_image(texture, atlas),
                     transform: *transform,
                 });
             }

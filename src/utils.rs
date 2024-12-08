@@ -356,7 +356,7 @@ pub fn sprite_sheet_bundle_from_entity_info(
             };
 
             LdtkSpriteSheetBundle {
-                sprite_bundle: Sprite::from_atlas_image(tileset.clone(), texture_atlas),
+                sprite: Sprite::from_atlas_image(tileset.clone(), texture_atlas),
                 ..Default::default()
             }
         }
@@ -367,16 +367,16 @@ pub fn sprite_sheet_bundle_from_entity_info(
     }
 }
 
-/// Creates a [SpriteBundle] from the entity information available to the
+/// Creates a [Sprite] from the entity information available to the
 /// [LdtkEntity::bundle_entity] method.
 ///
-/// Used for the `#[sprite_bundle]` attribute macro for `#[derive(LdtkEntity)]`.
-/// See [LdtkEntity#sprite_bundle] for more info.
-pub fn sprite_bundle_from_entity_info(tileset: Option<&Handle<Image>>) -> Sprite {
+/// Used for the `#[sprite]` attribute macro for `#[derive(LdtkEntity)]`.
+/// See [LdtkEntity#sprite] for more info.
+pub fn sprite_from_entity_info(tileset: Option<&Handle<Image>>) -> Sprite {
     let tileset = match tileset {
         Some(tileset) => tileset.clone(),
         None => {
-            warn!("EntityInstance needs a tileset to be bundled as a SpriteBundle");
+            warn!("EntityInstance needs a tileset to be inserted as a Sprite");
             return Sprite::default();
         }
     };

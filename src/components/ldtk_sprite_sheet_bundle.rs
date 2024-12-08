@@ -19,7 +19,7 @@ use crate::{
 /// [`Bundle`]: https://docs.rs/bevy/latest/bevy/ecs/prelude/trait.Bundle.html
 #[derive(Bundle, Clone, Debug, Default)]
 pub struct LdtkSpriteSheetBundle {
-    pub sprite_bundle: Sprite,
+    pub sprite: Sprite,
     pub transform: Transform,
 }
 

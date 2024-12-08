@@ -81,7 +81,7 @@ fn background_image_sprite_sheet_bundle(
             top_left_translation + (Vec2::new(scaled_size.x, -scaled_size.y) / 2.);
 
         Ok(LdtkSpriteSheetBundle {
-            sprite_bundle: Sprite::from_atlas_image(
+            sprite: Sprite::from_atlas_image(
                 background_image_handle.clone(),
                 TextureAtlas {
                     index,

@@ -1,6 +1,6 @@
 use quote::quote;
 
-static SPRITE_BUNDLE_ATTRIBUTE_NAME: &str = "sprite_bundle";
+static SPRITE_ATTRIBUTE_NAME: &str = "sprite";
 static SPRITE_SHEET_BUNDLE_ATTRIBUTE_NAME: &str = "sprite_sheet_bundle";
 static WORLDLY_ATTRIBUTE_NAME: &str = "worldly";
 static GRID_COORDS_ATTRIBUTE_NAME: &str = "grid_coords";
@@ -25,14 +25,12 @@ pub fn expand_ldtk_entity_derive(ast: syn::DeriveInput) -> proc_macro::TokenStre
         let field_name = field.ident.as_ref().unwrap();
         let field_type = &field.ty;
 
-        let sprite_bundle = field
+        let sprite = field
             .attrs
             .iter()
-            .find(|a| *a.path.get_ident().as_ref().unwrap() == SPRITE_BUNDLE_ATTRIBUTE_NAME);
-        if let Some(attribute) = sprite_bundle {
-            field_constructions.push(expand_sprite_bundle_attribute(
-                attribute, field_name, field_type,
-            ));
+            .find(|a| *a.path.get_ident().as_ref().unwrap() == SPRITE_ATTRIBUTE_NAME);
+        if let Some(attribute) = sprite {
+            field_constructions.push(expand_sprite_attribute(attribute, field_name, field_type));
             continue;
         }
 
@@ -137,26 +135,29 @@ pub fn expand_ldtk_entity_derive(ast: syn::DeriveInput) -> proc_macro::TokenStre
     gen.into()
 }
 
-fn expand_sprite_bundle_attribute(
+fn expand_sprite_attribute(
     attribute: &syn::Attribute,
     field_name: &syn::Ident,
     field_type: &syn::Type,
 ) -> proc_macro2::TokenStream {
     // check the type
     match field_type {
-        syn::Type::Path(syn::TypePath { path: syn::Path { segments, .. }, .. }) => {
+        syn::Type::Path(syn::TypePath {
+            path: syn::Path { segments, .. },
+            ..
+        }) => {
             if let Some(last) = segments.last() {
-                if last.ident != *"SpriteBundle" {
-                    panic!("#[sprite_bundle...] attribute should apply to a field of type bevy::prelude::SpriteBundle")
+                if last.ident != *"Sprite" {
+                    panic!("#[sprite...] attribute should apply to a field of type bevy::prelude::Sprite")
                 }
             }
-        },
-        _ => panic!("#[sprite_bundle...] attribute should apply to a field of type bevy::prelude::SpriteBundle")
+        }
+        _ => panic!("#[sprite...] attribute should apply to a field of type bevy::prelude::Sprite"),
     }
 
     match attribute
         .parse_meta()
-        .expect("Cannot parse #[sprite_bundle...] attribute")
+        .expect("Cannot parse #[sprite...] attribute")
     {
         syn::Meta::List(syn::MetaList { nested, .. }) if nested.len() == 1 => {
             match nested.first().unwrap() {
@@ -164,21 +165,19 @@ fn expand_sprite_bundle_attribute(
                     let asset_path = &asset.value();
 
                     quote! {
-                        #field_name: bevy::prelude::SpriteBundle {
-                            texture: asset_server.load(#asset_path),
-                            ..Default::default()
-                        },
+                        #field_name: bevy::prelude::Sprite::from_image(
+                            asset_server.load(#asset_path)),
                     }
                 },
-                _ => panic!("Expected asset path as the only argument of #[sprite_bundle(...)]"),
+                _ => panic!("Expected asset path as the only argument of #[sprite(...)]"),
             }
         },
         syn::Meta::Path(_) => {
             quote! {
-                #field_name: bevy_ecs_ldtk::utils::sprite_bundle_from_entity_info(tileset),
+                #field_name: bevy_ecs_ldtk::utils::sprite_from_entity_info(tileset),
             }
         },
-        _ => panic!("#[sprite_bundle...] attribute should take the form #[sprite_bundle(\"asset/path.png\")] or #[sprite_bundle]"),
+        _ => panic!("#[sprite...] attribute should take the form #[sprite(\"asset/path.png\")] or #[sprite]"),
     }
 }
 
@@ -241,7 +240,7 @@ fn expand_sprite_sheet_bundle_attribute(
 
             quote! {
                 #field_name: LdtkSpriteSheetBundle{
-                        sprite_bundle: bevy::prelude::SpriteBundle {
+                        sprite: bevy::prelude::SpriteBundle {
                         texture: asset_server.load(#asset_path).into(),
                         ..Default::default()
                     },

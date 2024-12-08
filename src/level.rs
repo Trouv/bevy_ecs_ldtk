@@ -38,14 +38,14 @@ enum BackgroundImageError {
     ImageNotLoaded,
 }
 
-fn background_image_sprite_sheet_bundle(
+fn background_image_sprite_sheet(
     images: &Assets<Image>,
     texture_atlases: &mut Assets<TextureAtlasLayout>,
     background_image_handle: &Handle<Image>,
     background_position: &LevelBackgroundPosition,
     level_height: i32,
     transform_z: f32,
-) -> Result<LdtkSpriteSheetBundle, BackgroundImageError> {
+) -> Result<(Sprite, Transform), BackgroundImageError> {
     if let Some(background_image) = images.get(background_image_handle) {
         // We need to use a texture atlas to apply the correct crop to the image
         let tile_size = UVec2::new(
@@ -80,17 +80,17 @@ fn background_image_sprite_sheet_bundle(
         let center_translation =
             top_left_translation + (Vec2::new(scaled_size.x, -scaled_size.y) / 2.);
 
-        Ok(LdtkSpriteSheetBundle {
-            sprite: Sprite::from_atlas_image(
+        Ok((
+            Sprite::from_atlas_image(
                 background_image_handle.clone(),
                 TextureAtlas {
                     index,
                     layout: texture_atlases.add(texture_atlas_layout),
                 },
             ),
-            transform: Transform::from_translation(center_translation.extend(transform_z))
+            Transform::from_translation(center_translation.extend(transform_z))
                 .with_scale(scale.extend(1.)),
-        })
+        ))
     } else {
         Err(BackgroundImageError::ImageNotLoaded)
     }
@@ -251,7 +251,7 @@ pub fn spawn_level(
         if let (Some(background_image_handle), Some(background_position)) =
             (background_image, level.bg_pos())
         {
-            match background_image_sprite_sheet_bundle(
+            match background_image_sprite_sheet(
                 images,
                 texture_atlases,
                 background_image_handle,
@@ -259,9 +259,9 @@ pub fn spawn_level(
                 *level.px_hei(),
                 layer_z as f32,
             ) {
-                Ok(sprite_sheet_bundle) => {
+                Ok(sprite_sheet) => {
                     commands.entity(ldtk_entity).with_children(|parent| {
-                        parent.spawn(sprite_sheet_bundle);
+                        parent.spawn(sprite_sheet);
                     });
 
                     layer_z += 1;

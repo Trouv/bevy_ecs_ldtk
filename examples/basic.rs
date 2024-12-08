@@ -32,6 +32,6 @@ struct ComponentB;
 pub struct MyBundle {
     a: ComponentA,
     b: ComponentB,
-    #[sprite_sheet_bundle]
-    sprite_bundle: LdtkSpriteSheetBundle,
+    #[sprite_sheet]
+    sprite_sheet: Sprite,
 }

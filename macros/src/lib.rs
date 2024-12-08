@@ -7,7 +7,7 @@ mod ldtk_int_cell;
     LdtkEntity,
     attributes(
         sprite,
-        sprite_sheet_bundle,
+        sprite_sheet,
         worldly,
         grid_coords,
         ldtk_entity,

@@ -8,9 +8,6 @@ pub use level_iid::LevelIid;
 mod level_set;
 pub use level_set::LevelSet;
 
-mod ldtk_sprite_sheet_bundle;
-pub use ldtk_sprite_sheet_bundle::LdtkSpriteSheetBundle;
-
 pub use crate::ldtk::EntityInstance;
 use crate::{
     ldtk::{LayerInstance, Type},

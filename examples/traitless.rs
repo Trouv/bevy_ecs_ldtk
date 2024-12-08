@@ -47,10 +47,9 @@ fn process_my_entity(
                     layout,
                 };
 
-                commands.entity(entity).insert(LdtkSpriteSheetBundle {
-                    sprite: Sprite::from_atlas_image(texture, atlas),
-                    transform: *transform,
-                });
+                commands
+                    .entity(entity)
+                    .insert((Sprite::from_atlas_image(texture, atlas), *transform));
             }
         }
     }

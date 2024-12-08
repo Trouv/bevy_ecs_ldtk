@@ -11,7 +11,6 @@ use std::{collections::HashMap, marker::PhantomData};
 /// [App]: bevy::prelude::App
 /// [Component]: bevy::prelude::Component
 /// [Sprite]: bevy::prelude::Sprite
-/// [LdtkSpriteSheetBundle]: crate::prelude::LdtkSpriteSheetBundle
 /// [TextureAtlasLayout]: bevy::prelude::TextureAtlasLayout
 ///
 /// Provides a constructor which can be used for spawning entities from an LDtk file.
@@ -72,7 +71,7 @@ use std::{collections::HashMap, marker::PhantomData};
 ///   path in the assets folder.
 /// - `#[sprite]` will create the field using its Editor Visual image in LDtk, if it has one.
 ///
-/// Note that if your editor visual is part of a tilemap, you should use `#[sprite_sheet_bundle]` instead.
+/// Note that if your editor visual is part of a tilemap, you should use `#[sprite_sheet]` instead.
 /// ```
 /// # use bevy::prelude::*;
 /// # use bevy_ecs_ldtk::prelude::*;
@@ -98,16 +97,16 @@ use std::{collections::HashMap, marker::PhantomData};
 /// }
 /// ```
 ///
-/// ### `#[sprite_sheet_bundle...]`
-/// Similar to `#[sprite...]`, indicates that a [LdtkSpriteSheetBundle] field should be created
+/// ### `#[sprite_sheet...]`
+/// Similar to `#[sprite...]`, indicates that a [Sprite] field should be created
 /// with an actual material/image.
 /// There are two forms for this attribute:
-/// - `#[sprite_sheet_bundle("path/to/asset.png", tile_width, tile_height, columns, rows, padding,
+/// - `#[sprite_sheet("path/to/asset.png", tile_width, tile_height, columns, rows, padding,
 ///   offset, index)]` will create the field using all of the information provided.
 ///   Similar to using [TextureAtlasLayout::from_grid()].
-/// - `#[sprite_sheet_bundle]` will create the field using information from the LDtk Editor visual,
+/// - `#[sprite_sheet]` will create the field using information from the LDtk Editor visual,
 ///   if it has one.
-/// - `#[sprite_sheet_bundle(no_grid)]` will create the field using information from the LDtk
+/// - `#[sprite_sheet(no_grid)]` will create the field using information from the LDtk
 ///   Editor visual, if it has one, but without using a grid. Instead a single texture will be used.
 ///   This may be useful if the LDtk entity's visual uses a rectangle of tiles from its tileset,
 ///   but will prevent using the generated [TextureAtlasLayout] for animation purposes.
@@ -120,8 +119,8 @@ use std::{collections::HashMap, marker::PhantomData};
 /// # struct BleedDamage;
 /// #[derive(Bundle, LdtkEntity, Default)]
 /// pub struct Sword {
-///     #[sprite_sheet_bundle("weapons.png", 32, 32, 4, 5, 5, 1, 17)]
-///     sprite_sheet: LdtkSpriteSheetBundle,
+///     #[sprite_sheet("weapons.png", 32, 32, 4, 5, 5, 1, 17)]
+///     sprite_sheet: Sprite,
 ///     damage: Damage,
 /// }
 ///
@@ -129,8 +128,8 @@ use std::{collections::HashMap, marker::PhantomData};
 /// pub struct Dagger {
 ///     damage: Damage,
 ///     bleed_damage: BleedDamage,
-///     #[sprite_sheet_bundle]
-///     sprite_sheet: LdtkSpriteSheetBundle,
+///     #[sprite_sheet]
+///     sprite_sheet: Sprite,
 /// }
 /// ```
 ///
@@ -152,8 +151,8 @@ use std::{collections::HashMap, marker::PhantomData};
 /// #[derive(Bundle, LdtkEntity, Default)]
 /// pub struct PlayerBundle {
 ///     player: Player,
-///     #[sprite_sheet_bundle]
-///     sprite_sheet_bundle: LdtkSpriteSheetBundle,
+///     #[sprite_sheet]
+///     sprite_sheet: Sprite,
 ///     #[worldly]
 ///     worldly: Worldly,
 /// }
@@ -175,8 +174,8 @@ use std::{collections::HashMap, marker::PhantomData};
 /// pub struct BlockBundle {
 ///     block: Block,
 ///     movable: Movable,
-///     #[sprite_sheet_bundle]
-///     sprite_sheet_bundle: LdtkSpriteSheetBundle,
+///     #[sprite_sheet]
+///     sprite_sheet: Sprite,
 ///     #[grid_coords]
 ///     grid_coords: GridCoords,
 /// }

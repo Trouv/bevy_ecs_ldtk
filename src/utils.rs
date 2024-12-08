@@ -6,10 +6,7 @@ use crate::{
     components::{GridCoords, IntGridCell},
 };
 
-use crate::{
-    components::{LdtkSpriteSheetBundle, TileGridBundle},
-    ldtk::*,
-};
+use crate::{components::TileGridBundle, ldtk::*};
 use bevy::prelude::*;
 use bevy_ecs_tilemap::{
     map::{TilemapId, TilemapSize},
@@ -308,18 +305,18 @@ where
     try_each_optional_permutation(a, b, |x, y| map.get(&(x, y))).unwrap_or(default)
 }
 
-/// Creates a [`LdtkSpriteSheetBundle`] from the entity information available to the
+/// Creates a [`Sprite`] with [`TextureAtlas`] from the entity information available to the
 /// [LdtkEntity::bundle_entity] method.
 ///
-/// Used for the `#[sprite_sheet_bundle]` attribute macro for `#[derive(LdtkEntity)]`.
-/// See [LdtkEntity#sprite_sheet_bundle] for more info.
-pub fn sprite_sheet_bundle_from_entity_info(
+/// Used for the `#[sprite_sheet]` attribute macro for `#[derive(LdtkEntity)]`.
+/// See [LdtkEntity#sprite_sheet] for more info.
+pub fn sprite_sheet_from_entity_info(
     entity_instance: &EntityInstance,
     tileset: Option<&Handle<Image>>,
     tileset_definition: Option<&TilesetDefinition>,
     texture_atlases: &mut Assets<TextureAtlasLayout>,
     grid: bool,
-) -> LdtkSpriteSheetBundle {
+) -> Sprite {
     match (tileset, &entity_instance.tile, tileset_definition) {
         (Some(tileset), Some(tile), Some(tileset_definition)) => {
             let texture_atlas = if grid {
@@ -355,14 +352,11 @@ pub fn sprite_sheet_bundle_from_entity_info(
                 }
             };
 
-            LdtkSpriteSheetBundle {
-                sprite: Sprite::from_atlas_image(tileset.clone(), texture_atlas),
-                ..Default::default()
-            }
+            Sprite::from_atlas_image(tileset.clone(), texture_atlas)
         }
         _ => {
-            warn!("EntityInstance needs a tile, an associated tileset, and an associated tileset definition to be bundled as a LdtkSpriteSheetBundle");
-            LdtkSpriteSheetBundle::default()
+            warn!("EntityInstance needs a tile, an associated tileset, and an associated tileset definition to be inserted as a Sprite");
+            Sprite::default()
         }
     }
 }

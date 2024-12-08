@@ -48,8 +48,8 @@ struct Player;
 #[derive(Default, Bundle, LdtkEntity)]
 struct PlayerBundle {
     player: Player,
-    #[sprite_sheet_bundle]
-    sprite_bundle: LdtkSpriteSheetBundle,
+    #[sprite_sheet]
+    sprite_sheet: Sprite,
     #[grid_coords]
     grid_coords: GridCoords,
 }
@@ -60,8 +60,8 @@ struct Goal;
 #[derive(Default, Bundle, LdtkEntity)]
 struct GoalBundle {
     goal: Goal,
-    #[sprite_sheet_bundle]
-    sprite_bundle: LdtkSpriteSheetBundle,
+    #[sprite_sheet]
+    sprite_sheet: Sprite,
     #[grid_coords]
     grid_coords: GridCoords,
 }

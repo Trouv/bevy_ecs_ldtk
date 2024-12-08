@@ -22,8 +22,8 @@ struct PlayerBundle {
     wallet: Wallet,
     #[worldly]
     worldly: Worldly,
-    #[sprite_sheet_bundle]
-    sprite_sheet: LdtkSpriteSheetBundle,
+    #[sprite_sheet]
+    sprite_sheet: Sprite,
 }
 
 const MOVEMENT_SPEED: f32 = 96.;

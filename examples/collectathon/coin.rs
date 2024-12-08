@@ -18,8 +18,8 @@ struct Coin;
 #[derive(Default, Bundle, LdtkEntity)]
 struct CoinBundle {
     coin: Coin,
-    #[sprite_sheet_bundle]
-    sprite_sheet: LdtkSpriteSheetBundle,
+    #[sprite_sheet]
+    sprite_sheet: Sprite,
 }
 
 /// Component for entities that can collect coins.

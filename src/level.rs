@@ -292,6 +292,7 @@ pub fn spawn_level(
                     .spawn(Transform::from_translation(
                         layer_offset.extend(layer_z as f32),
                     ))
+                    .insert(Visibility::default())
                     .insert(LayerMetadata::from(layer_instance))
                     .insert(Name::new(layer_instance.identifier.to_owned()))
                     .with_children(|commands| {
@@ -704,6 +705,7 @@ pub fn spawn_level(
                                 + layer_offset)
                                 .extend(layer_z as f32),
                         ))
+                        .insert(Visibility::default())
                         .insert(LayerMetadata::from(layer_instance))
                         .insert(Name::new(layer_instance.identifier.to_owned()));
 

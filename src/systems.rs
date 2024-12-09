@@ -202,6 +202,7 @@ fn pre_spawn_level(commands: &mut Commands, level: &Level, ldtk_settings: &LdtkS
     commands
         .spawn(LevelIid::new(level.iid.clone()))
         .insert(Transform::from_translation(translation))
+        .insert(Visibility::default())
         .insert(Name::new(level.identifier.clone()))
         .id()
 }

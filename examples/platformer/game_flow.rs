@@ -32,7 +32,7 @@ pub fn update_level_selection(
 ) {
     for (level_iid, level_transform) in &level_query {
         let ldtk_project = ldtk_project_assets
-            .get(&ldtk_projects.single().handle)
+            .get(ldtk_projects.single())
             .expect("Project should be loaded if level has spawned");
 
         let level = ldtk_project

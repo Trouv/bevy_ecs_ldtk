@@ -62,7 +62,7 @@ pub fn process_ldtk_assets(
     }
 
     for (entity, handle) in ldtk_world_query.iter() {
-        if ldtk_handles_to_respawn.contains(&handle.handle.id()) {
+        if ldtk_handles_to_respawn.contains(&handle.id()) {
             commands.entity(entity).insert(Respawn);
         }
     }
@@ -78,7 +78,7 @@ pub fn apply_level_selection(
 ) {
     if let Some(level_selection) = level_selection {
         for (ldtk_handle, mut level_set) in level_set_query.iter_mut() {
-            if let Some(project) = &ldtk_project_assets.get(&ldtk_handle.handle) {
+            if let Some(project) = &ldtk_project_assets.get(ldtk_handle) {
                 if let Some(level) = project.find_raw_level_by_level_selection(&level_selection) {
                     let new_level_set = {
                         let mut iids = HashSet::new();
@@ -134,9 +134,9 @@ pub fn apply_level_set(
 ) {
     for (world_entity, level_set, children, ldtk_asset_handle, respawn) in ldtk_world_query.iter() {
         // Only apply level set if the asset has finished loading
-        if let Some(project) = ldtk_project_assets.get(&ldtk_asset_handle.handle) {
+        if let Some(project) = ldtk_project_assets.get(ldtk_asset_handle) {
             if let Some(load_state) =
-                asset_server.get_recursive_dependency_load_state(&ldtk_asset_handle.handle)
+                asset_server.get_recursive_dependency_load_state(ldtk_asset_handle)
             {
                 if !load_state.is_loaded() {
                     continue;
@@ -248,7 +248,7 @@ pub fn process_ldtk_levels(
 
         if !already_processed {
             if let Ok(ldtk_handle) = ldtk_query.get(parent.get()) {
-                if let Some(ldtk_project) = ldtk_project_assets.get(&ldtk_handle.handle) {
+                if let Some(ldtk_project) = ldtk_project_assets.get(ldtk_handle) {
                     // Commence the spawning
                     let tileset_definition_map: HashMap<i32, &TilesetDefinition> = ldtk_project
                         .json_data()

@@ -31,7 +31,7 @@ pub fn camera_fit_inside_current_level(
 
         for (level_transform, level_iid) in &level_query {
             let ldtk_project = ldtk_project_assets
-                .get(&ldtk_projects.single().handle)
+                .get(ldtk_projects.single())
                 .expect("Project should be loaded if level has spawned");
 
             let level = ldtk_project

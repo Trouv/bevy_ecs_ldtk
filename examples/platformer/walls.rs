@@ -78,7 +78,7 @@ pub fn spawn_wall_collision(
         level_query.iter().for_each(|(level_entity, level_iid)| {
             if let Some(level_walls) = level_to_wall_locations.get(&level_entity) {
                 let ldtk_project = ldtk_project_assets
-                    .get(&ldtk_projects.single().handle)
+                    .get(ldtk_projects.single())
                     .expect("Project should be loaded if level has spawned");
 
                 let level = ldtk_project

@@ -65,7 +65,7 @@ fn level_selection_follow_player(
 ) {
     if let Ok(player_transform) = players.get_single() {
         let ldtk_project = ldtk_project_assets
-            .get(&ldtk_projects.single().handle)
+            .get(ldtk_projects.single())
             .expect("ldtk project should be loaded before player is spawned");
 
         for (level_iid, level_transform) in levels.iter() {

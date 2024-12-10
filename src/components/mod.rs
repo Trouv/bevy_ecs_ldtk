@@ -14,6 +14,7 @@ use crate::{
     prelude::LdtkProject,
     utils::ldtk_grid_coords_to_grid_coords,
 };
+use bevy::asset::UntypedAssetId;
 use bevy::prelude::*;
 
 use std::ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign};
@@ -324,7 +325,8 @@ pub(crate) struct EntityInstanceBundle {
     pub entity_instance: EntityInstance,
 }
 
-#[derive(Component, Clone, Default)]
+#[derive(Debug, Default, Clone, Component, Reflect, Deref, DerefMut)]
+#[reflect(Component)]
 pub struct LdtkProjectHandle {
     pub handle: Handle<LdtkProject>,
 }
@@ -332,6 +334,30 @@ pub struct LdtkProjectHandle {
 impl From<Handle<LdtkProject>> for LdtkProjectHandle {
     fn from(handle: Handle<LdtkProject>) -> Self {
         LdtkProjectHandle { handle }
+    }
+}
+
+impl Into<AssetId<LdtkProject>> for LdtkProjectHandle {
+    fn into(self) -> AssetId<LdtkProject> {
+        self.id()
+    }
+}
+
+impl Into<AssetId<LdtkProject>> for &LdtkProjectHandle {
+    fn into(self) -> AssetId<LdtkProject> {
+        self.id()
+    }
+}
+
+impl Into<UntypedAssetId> for LdtkProjectHandle {
+    fn into(self) -> UntypedAssetId {
+        self.id().into()
+    }
+}
+
+impl Into<UntypedAssetId> for &LdtkProjectHandle {
+    fn into(self) -> UntypedAssetId {
+        self.id().into()
     }
 }
 

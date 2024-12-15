@@ -15,7 +15,7 @@ members = ["macros"]
 
 [dependencies]
 bevy_ecs_ldtk_macros = { version = "0.10.0", optional = true, path = "macros" }
-bevy_ecs_tilemap = { git = "https://github.com/alxgnon/bevy_ecs_tilemap.git", default-features = false }
+bevy_ecs_tilemap = { version = "0.15.0", default-features = false }
 bevy = { version = "0.15", default-features = false, features = [
     "bevy_sprite",
 ] }

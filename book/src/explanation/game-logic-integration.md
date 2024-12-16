@@ -27,14 +27,14 @@ struct Player;
 #[derive(Default, Bundle, LdtkEntity)]
 struct PlayerBundle {
     player: Player,
-    #[sprite_bundle]
-    sprite_bundle: SpriteBundle,
+    #[sprite]
+    sprite: Sprite,
 }
 ```
 
 How does `LdtkEntity`/`LdtkIntCell` construct the bundle when derived?
 Without any intervention, the bundle's fields are constructed using the bundle's `Default` implementation.
-However, various attributes are available to override this behavior, like `#[sprite_bundle]` in the above example.
+However, various attributes are available to override this behavior, like `#[sprite]` in the above example.
 This attribute gives the entity a sprite using the tileset in its LDtk editor visual.
 For documentation about all the available attributes, check out the API reference for these traits:
 - [`LdtkEntity`](https://docs.rs/bevy_ecs_ldtk/0.10.0/bevy_ecs_ldtk/app/trait.LdtkEntity.html) <!-- x-release-please-version -->
@@ -74,11 +74,10 @@ fn process_player(
             commands
                 .entity(entity)
                 .insert(Player)
-                .insert(SpriteBundle {
-                    texture: assets.load("player.png"),
-                    transform: *transform,
-                    ..default()
-                })
+                .insert((
+                    Sprite::from_image(assets.load("player.png")),
+                    *transform
+                ))
                 .with_children(|commands| {
                     commands.spawn(PlayerChild);
                 });
@@ -121,8 +120,8 @@ struct Player;
 #[derive(Default, Bundle, LdtkEntity)]
 struct PlayerBundle {
     player: Player,
-    #[sprite_bundle]
-    sprite_bundle: SpriteBundle,
+    #[sprite]
+    sprite: Sprite,
 }
 
 fn process_player(

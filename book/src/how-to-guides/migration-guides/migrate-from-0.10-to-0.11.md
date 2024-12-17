@@ -5,7 +5,7 @@
 A Bevy `0.15` migration guide is available on [Bevy's website](https://bevyengine.org/learn/migration-guides/0-14-to-0-15/).
 
 ## `LdtkSpriteSheetBundle` replaced with `Sprite`
-The use of `LdtkSpriteSheetBundle` has been replaced by a simple use of `Sprite`. The macro has changed as well, and is now named `#[sprite_sheet]`.
+Since the `Sprite` struct in Bevy `0.15` can now store `TextureAtlas` information on its own, the use of `LdtkSpriteSheetBundle` has been replaced by a simple use of `Sprite`. The macro has changed as well, and is now named `#[sprite_sheet]`.
 ```rust,ignore
 // 0.10
 # use bevy_ecs_ldtk::prelude::*;

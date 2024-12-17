@@ -76,7 +76,7 @@ fn process_player(
                 .insert(Player)
                 .insert((
                     Sprite::from_image(assets.load("player.png")),
-                    *transform
+                    *transform,
                 ))
                 .with_children(|commands| {
                     commands.spawn(PlayerChild);

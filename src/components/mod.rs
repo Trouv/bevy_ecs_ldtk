@@ -325,6 +325,11 @@ pub(crate) struct EntityInstanceBundle {
     pub entity_instance: EntityInstance,
 }
 
+/// `Component` storing the LDtk project asset handle, marking the root entity for the plugin to spawn levels in.
+///
+/// For a more detailed explanation of the spawning process, please see the
+/// [*Anatomy of the World*](https://trouv.github.io/bevy_ecs_ldtk/v0.10.0/explanation/anatomy-of-the-world.html) <!-- x-release-please-version -->
+/// chapter of the `bevy_ecs_ldtk` book.
 #[derive(Debug, Default, Clone, Component, Reflect, Deref, DerefMut)]
 #[reflect(Component)]
 pub struct LdtkProjectHandle {
@@ -337,27 +342,27 @@ impl From<Handle<LdtkProject>> for LdtkProjectHandle {
     }
 }
 
-impl Into<AssetId<LdtkProject>> for LdtkProjectHandle {
-    fn into(self) -> AssetId<LdtkProject> {
-        self.id()
+impl From<&LdtkProjectHandle> for AssetId<LdtkProject> {
+    fn from(val: &LdtkProjectHandle) -> Self {
+        val.id()
     }
 }
 
-impl Into<AssetId<LdtkProject>> for &LdtkProjectHandle {
-    fn into(self) -> AssetId<LdtkProject> {
-        self.id()
+impl From<LdtkProjectHandle> for AssetId<LdtkProject> {
+    fn from(val: LdtkProjectHandle) -> Self {
+        val.id()
     }
 }
 
-impl Into<UntypedAssetId> for LdtkProjectHandle {
-    fn into(self) -> UntypedAssetId {
-        self.id().into()
+impl From<&LdtkProjectHandle> for UntypedAssetId {
+    fn from(val: &LdtkProjectHandle) -> Self {
+        val.id().into()
     }
 }
 
-impl Into<UntypedAssetId> for &LdtkProjectHandle {
-    fn into(self) -> UntypedAssetId {
-        self.id().into()
+impl From<LdtkProjectHandle> for UntypedAssetId {
+    fn from(val: LdtkProjectHandle) -> Self {
+        val.id().into()
     }
 }
 

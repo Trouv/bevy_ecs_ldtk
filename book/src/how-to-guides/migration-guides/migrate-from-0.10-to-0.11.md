@@ -18,7 +18,7 @@ struct PlayerBundle {
     grid_coords: GridCoords,
 }
 ```
-```rust,no_run
+```rust,ignore
 // 0.11
 # use bevy_ecs_ldtk::prelude::*;
 # use bevy::prelude::*;
@@ -45,7 +45,7 @@ pub struct Player {
     sprite_bundle: SpriteBundle,
 }
 ```
-```rust,no_run
+```rust,ignore
 // 0.11
 # use bevy_ecs_ldtk::prelude::*;
 # use bevy::prelude::*;
@@ -73,7 +73,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
 }
 ```
-```rust,no_run
+```rust,ignore
 // 0.11
 # use bevy_ecs_ldtk::prelude::*;
 # use bevy::prelude::*;
@@ -101,7 +101,7 @@ fn respawn_world(
     }
 }
 ```
-```rust,no_run
+```rust,ignore
 // 0.11
 # use bevy_ecs_ldtk::prelude::*;
 # use bevy::prelude::*;

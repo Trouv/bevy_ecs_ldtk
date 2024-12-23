@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.11.0](https://github.com/Trouv/bevy_ecs_ldtk/compare/v0.10.0...v0.11.0) (2024-12-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* upgrade to bevy and bevy_ecs_tilemap 0.15 ([#340](https://github.com/Trouv/bevy_ecs_ldtk/issues/340))
+
+### Features
+
+* upgrade to bevy and bevy_ecs_tilemap 0.15 ([#340](https://github.com/Trouv/bevy_ecs_ldtk/issues/340)) ([f44a281](https://github.com/Trouv/bevy_ecs_ldtk/commit/f44a2814faf3f200232800aeb9e67f7c85f7278e))
+
+
+### Documentation Changes
+
+* refactor platformer example by topic ([#329](https://github.com/Trouv/bevy_ecs_ldtk/issues/329)) ([f59e5e5](https://github.com/Trouv/bevy_ecs_ldtk/commit/f59e5e588026922620c1981108828e1e3ae6153f))
+
 ## [0.10.0](https://github.com/Trouv/bevy_ecs_ldtk/compare/v0.9.0...v0.10.0) (2024-07-20)
 
 

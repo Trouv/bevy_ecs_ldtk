@@ -40,8 +40,8 @@ Naturally, this can only occur in Tile/AutoTile layers (or IntGrid layers with A
 ## Level backgrounds
 LDtk allows you to supply a background color and a background image for individual levels.
 `bevy_ecs_ldtk` renders these by default.
-The background color is spawned as a normal bevy [`SpriteBundle`](https://docs.rs/bevy/latest/bevy/prelude/struct.SpriteBundle.html), as a child of the level entity.
-The background image, if it exists, is also spawned as a `SpriteBundle`.
+The background color is spawned as a normal bevy [`Sprite`](https://docs.rs/bevy/latest/bevy/prelude/struct.Sprite.html), as a child of the level entity.
+The background image, if it exists, is also spawned as a `Sprite`.
 
 These background sprites can be disabled (not spawned) using the settings resource [`LdtkSettings`](https://docs.rs/bevy_ecs_ldtk/0.10.0/bevy_ecs_ldtk/prelude/struct.LdtkSettings.html): <!-- x-release-please-version -->
 ```rust,no_run

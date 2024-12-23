@@ -6,8 +6,8 @@ mod ldtk_int_cell;
 #[proc_macro_derive(
     LdtkEntity,
     attributes(
-        sprite_bundle,
-        sprite_sheet_bundle,
+        sprite,
+        sprite_sheet,
         worldly,
         grid_coords,
         ldtk_entity,

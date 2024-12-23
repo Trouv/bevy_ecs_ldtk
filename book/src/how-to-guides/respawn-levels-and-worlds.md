@@ -51,7 +51,7 @@ There is a method on `LdtkProject` to perform this search.
 # use bevy::prelude::*;
 # use bevy_ecs_ldtk::prelude::*;
 {{ #include ../../../examples/collectathon/respawn.rs:13:17 }}
-    ldtk_projects: Query<&Handle<LdtkProject>>,
+    ldtk_projects: Query<&LdtkProjectHandle>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
 ) {
     if input.just_pressed(KeyCode::KeyL) {

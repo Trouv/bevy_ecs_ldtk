@@ -12,7 +12,7 @@ To update your game to LDtk 1.5.3, you should only need to install the new versi
 Fields on an `LdtkEntity`- or `LdtkIntCell`-derived bundle are no longer constructed from the field's `Default` implementation, but the bundle's.
 
 You may observe different behavior in `0.9` if the value for a field in your bundle's `Default` implementation differs from the field type's own `Default` implementation:
-```rust,no_run
+```rust,ignore
 # use bevy::prelude::*;
 # use bevy_ecs_ldtk::prelude::*;
 #[derive(Component)]
@@ -50,7 +50,7 @@ struct MyBundle {
     component: MyComponentThatImplementsDefault,
 }
 ```
-```rust,no_run
+```rust,ignore
 # use bevy_ecs_ldtk::prelude::*;
 # use bevy::prelude::*;
 # #[derive(Default, Component)]
@@ -80,7 +80,7 @@ fn get_level_of_entity(
     }
 }
 ```
-```rust,no_run
+```rust,ignore
 # use bevy_ecs_ldtk::prelude::*;
 # use bevy::prelude::*;
 // 0.9
@@ -114,7 +114,7 @@ fn do_some_processing_with_ldtk_data(
     // do something
 }
 ```
-```rust,no_run
+```rust,ignore
 # use bevy_ecs_ldtk::prelude::*;
 # use bevy::prelude::*;
 // 0.9
@@ -135,7 +135,7 @@ let tileset_map = ldtk_project.tileset_map;
 let int_grid_image_handle = ldtk_project.int_grid_image_handle;
 let level_map = ldtk_project.level_map;
 ```
-```rust,no_run
+```rust,ignore
 # use bevy_ecs_ldtk::prelude::*;
 # fn foo(ldtk_project: LdtkProject) {
 // 0.9
@@ -157,7 +157,7 @@ ldtk_asset.iter_levels();
 
 ldtk_asset.get_level(&LevelSelection::Uid(24));
 ```
-```rust,no_run
+```rust,ignore
 # use bevy_ecs_ldtk::{prelude::*, ldtk::LdtkJson};
 # fn foo(ldtk_json: LdtkJson, ldtk_project: LdtkProject) {
 // 0.9
@@ -215,7 +215,7 @@ fn print_level_entity(levels: Query<Entity, With<Handle<LdtkLevel>>>) {
     }
 }
 ```
-```rust,no_run
+```rust,ignore
 # use bevy_ecs_ldtk::prelude::*;
 # use bevy::prelude::*;
 // 0.9
@@ -238,7 +238,7 @@ fn print_level_uid(levels: Query<Handle<LdtkLevel>>, level_assets: Res<Assets<Ld
     }
 }
 ```
-```rust,no_run
+```rust,ignore
 # use bevy_ecs_ldtk::prelude::*;
 # use bevy::prelude::*;
 // 0.9
@@ -260,7 +260,7 @@ If the level data you need *is* inside the level's `layer_instances`, you may wa
 A `Level` might not have complete data - in the case that it's the "raw" level inside an external-levels project's `LdtkProject` asset.
 This new `LoadedLevel` type provides type guarantees that the level has complete data.
 For internal-levels (aka "standalone") projects, you can retrieve loaded level data with a `LevelIid` and `LdtkProject` alone:
-```rust,no_run
+```rust,ignore
 # use bevy_ecs_ldtk::prelude::*;
 # use bevy::prelude::*;
 // 0.9, w/ internal_levels enabled
@@ -336,7 +336,7 @@ let level_set = LevelSet {
     ].into_iter().collect(),
 }
 ```
-```rust,no_run
+```rust,ignore
 # use bevy_ecs_ldtk::prelude::*;
 # fn f() {
 // 0.9
@@ -364,7 +364,7 @@ fn assert_level_event_type(mut level_events: EventReader<LevelEvent>) {
     }
 }
 ```
-```rust,no_run
+```rust,ignore
 # use bevy_ecs_ldtk::prelude::*;
 # use bevy::prelude::*;
 use std::any::{Any, TypeId};
@@ -387,7 +387,7 @@ fn assert_level_event_type(mut level_events: EventReader<LevelEvent>) {
 // 0.8
 let level_selection = LevelSelection::Iid("e5eb2d73-60bb-4779-8b33-38a63da8d1db".to_string());
 ```
-```rust,no_run
+```rust,ignore
 # use bevy_ecs_ldtk::prelude::*;
 # fn f() {
 // 0.9
@@ -403,7 +403,7 @@ However, you can still construct a `LevelSelection` from a single level index us
 // 0.8
 let level_selection = LevelSelection::Index(2);
 ```
-```rust,no_run
+```rust,ignore
 # use bevy_ecs_ldtk::prelude::*;
 # fn f() {
 // 0.9
@@ -418,7 +418,7 @@ This new method can accept any iterator of strings rather than just one:
 // 0.8
 let level_set = LevelSet::from_iid("e5eb2d73-60bb-4779-8b33-38a63da8d1db");
 ```
-```rust,no_run
+```rust,ignore
 # use bevy_ecs_ldtk::prelude::*;
 # fn f() {
 // 0.9

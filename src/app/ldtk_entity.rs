@@ -10,8 +10,7 @@ use std::{collections::HashMap, marker::PhantomData};
 /// [Bundle]: bevy::prelude::Bundle
 /// [App]: bevy::prelude::App
 /// [Component]: bevy::prelude::Component
-/// [SpriteBundle]: bevy::prelude::SpriteBundle
-/// [LdtkSpriteSheetBundle]: crate::prelude::LdtkSpriteSheetBundle
+/// [Sprite]: bevy::prelude::Sprite
 /// [TextureAtlasLayout]: bevy::prelude::TextureAtlasLayout
 ///
 /// Provides a constructor which can be used for spawning entities from an LDtk file.
@@ -65,14 +64,14 @@ use std::{collections::HashMap, marker::PhantomData};
 /// is required (unless all fields are overriden, see below).
 /// However, this behavior can be overridden with some field attribute macros...
 ///
-/// ### `#[sprite_bundle...]`
-/// Indicates that a [SpriteBundle] field should be created with an actual material/image.
+/// ### `#[sprite...]`
+/// Indicates that a [Sprite] field should be created with an actual material/image.
 /// There are two forms for this attribute:
-/// - `#[sprite_bundle("path/to/asset.png")]` will create the field using the image at the provided
+/// - `#[sprite("path/to/asset.png")]` will create the field using the image at the provided
 ///   path in the assets folder.
-/// - `#[sprite_bundle]` will create the field using its Editor Visual image in LDtk, if it has one.
+/// - `#[sprite]` will create the field using its Editor Visual image in LDtk, if it has one.
 ///
-/// Note that if your editor visual is part of a tilemap, you should use `#[sprite_sheet_bundle]` instead.
+/// Note that if your editor visual is part of a tilemap, you should use `#[sprite_sheet]` instead.
 /// ```
 /// # use bevy::prelude::*;
 /// # use bevy_ecs_ldtk::prelude::*;
@@ -84,8 +83,8 @@ use std::{collections::HashMap, marker::PhantomData};
 /// # struct Health;
 /// #[derive(Bundle, LdtkEntity, Default)]
 /// pub struct Gem {
-///     #[sprite_bundle("textures/gem.png")]
-///     sprite_bundle: SpriteBundle,
+///     #[sprite("textures/gem.png")]
+///     sprite: Sprite,
 ///     sellable: Sellable,
 /// }
 ///
@@ -93,21 +92,21 @@ use std::{collections::HashMap, marker::PhantomData};
 /// pub struct Player {
 ///     player: PlayerComponent,
 ///     health: Health,
-///     #[sprite_bundle] // Uses the Editor Visual sprite in LDtk
-///     sprite_bundle: SpriteBundle,
+///     #[sprite] // Uses the Editor Visual sprite in LDtk
+///     sprite: Sprite,
 /// }
 /// ```
 ///
-/// ### `#[sprite_sheet_bundle...]`
-/// Similar to `#[sprite_bundle...]`, indicates that a [LdtkSpriteSheetBundle] field should be created
+/// ### `#[sprite_sheet...]`
+/// Similar to `#[sprite...]`, indicates that a [Sprite] field should be created
 /// with an actual material/image.
 /// There are two forms for this attribute:
-/// - `#[sprite_sheet_bundle("path/to/asset.png", tile_width, tile_height, columns, rows, padding,
+/// - `#[sprite_sheet("path/to/asset.png", tile_width, tile_height, columns, rows, padding,
 ///   offset, index)]` will create the field using all of the information provided.
 ///   Similar to using [TextureAtlasLayout::from_grid()].
-/// - `#[sprite_sheet_bundle]` will create the field using information from the LDtk Editor visual,
+/// - `#[sprite_sheet]` will create the field using information from the LDtk Editor visual,
 ///   if it has one.
-/// - `#[sprite_sheet_bundle(no_grid)]` will create the field using information from the LDtk
+/// - `#[sprite_sheet(no_grid)]` will create the field using information from the LDtk
 ///   Editor visual, if it has one, but without using a grid. Instead a single texture will be used.
 ///   This may be useful if the LDtk entity's visual uses a rectangle of tiles from its tileset,
 ///   but will prevent using the generated [TextureAtlasLayout] for animation purposes.
@@ -120,8 +119,8 @@ use std::{collections::HashMap, marker::PhantomData};
 /// # struct BleedDamage;
 /// #[derive(Bundle, LdtkEntity, Default)]
 /// pub struct Sword {
-///     #[sprite_sheet_bundle("weapons.png", 32, 32, 4, 5, 5, 1, 17)]
-///     sprite_sheet: LdtkSpriteSheetBundle,
+///     #[sprite_sheet("weapons.png", 32, 32, 4, 5, 5, 1, 17)]
+///     sprite_sheet: Sprite,
 ///     damage: Damage,
 /// }
 ///
@@ -129,8 +128,8 @@ use std::{collections::HashMap, marker::PhantomData};
 /// pub struct Dagger {
 ///     damage: Damage,
 ///     bleed_damage: BleedDamage,
-///     #[sprite_sheet_bundle]
-///     sprite_sheet: LdtkSpriteSheetBundle,
+///     #[sprite_sheet]
+///     sprite_sheet: Sprite,
 /// }
 /// ```
 ///
@@ -152,8 +151,8 @@ use std::{collections::HashMap, marker::PhantomData};
 /// #[derive(Bundle, LdtkEntity, Default)]
 /// pub struct PlayerBundle {
 ///     player: Player,
-///     #[sprite_sheet_bundle]
-///     sprite_sheet_bundle: LdtkSpriteSheetBundle,
+///     #[sprite_sheet]
+///     sprite_sheet: Sprite,
 ///     #[worldly]
 ///     worldly: Worldly,
 /// }
@@ -175,8 +174,8 @@ use std::{collections::HashMap, marker::PhantomData};
 /// pub struct BlockBundle {
 ///     block: Block,
 ///     movable: Movable,
-///     #[sprite_sheet_bundle]
-///     sprite_sheet_bundle: LdtkSpriteSheetBundle,
+///     #[sprite_sheet]
+///     sprite_sheet: Sprite,
 ///     #[grid_coords]
 ///     grid_coords: GridCoords,
 /// }
@@ -199,8 +198,8 @@ use std::{collections::HashMap, marker::PhantomData};
 /// #[derive(Bundle, LdtkEntity, Default)]
 /// pub struct Weapon {
 ///     damage: Damage,
-///     #[sprite_bundle]
-///     sprite: SpriteBundle,
+///     #[sprite]
+///     sprite: Sprite,
 /// }
 ///
 /// #[derive(Bundle, LdtkEntity, Default)]
@@ -240,8 +239,8 @@ use std::{collections::HashMap, marker::PhantomData};
 ///
 /// #[derive(Bundle, LdtkEntity, Default)]
 /// pub struct NickelBundle {
-///     #[sprite_bundle]
-///     sprite: SpriteBundle,
+///     #[sprite]
+///     sprite: Sprite,
 ///     #[from_entity_instance]
 ///     sellable: Sellable,
 ///     #[from_entity_instance]
@@ -348,7 +347,7 @@ impl LdtkEntity for EntityInstanceBundle {
     }
 }
 
-impl LdtkEntity for SpriteBundle {
+impl LdtkEntity for Sprite {
     fn bundle_entity(
         _: &EntityInstance,
         _: &LayerInstance,
@@ -357,7 +356,7 @@ impl LdtkEntity for SpriteBundle {
         _: &AssetServer,
         _: &mut Assets<TextureAtlasLayout>,
     ) -> Self {
-        utils::sprite_bundle_from_entity_info(tileset)
+        utils::sprite_from_entity_info(tileset)
     }
 }
 

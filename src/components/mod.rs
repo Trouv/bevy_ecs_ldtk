@@ -8,15 +8,13 @@ pub use level_iid::LevelIid;
 mod level_set;
 pub use level_set::LevelSet;
 
-mod ldtk_sprite_sheet_bundle;
-pub use ldtk_sprite_sheet_bundle::LdtkSpriteSheetBundle;
-
 pub use crate::ldtk::EntityInstance;
 use crate::{
     ldtk::{LayerInstance, Type},
     prelude::LdtkProject,
     utils::ldtk_grid_coords_to_grid_coords,
 };
+use bevy::asset::UntypedAssetId;
 use bevy::prelude::*;
 
 use std::ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign};
@@ -311,7 +309,7 @@ impl From<&LayerInstance> for LayerMetadata {
 #[reflect(Component)]
 pub struct Respawn;
 
-#[derive(Copy, Clone, Debug, Default, Bundle)]
+#[derive(Clone, Debug, Default, Bundle)]
 pub(crate) struct TileGridBundle {
     pub tile_bundle: TileBundle,
     pub grid_coords: GridCoords,
@@ -327,6 +325,47 @@ pub(crate) struct EntityInstanceBundle {
     pub entity_instance: EntityInstance,
 }
 
+/// `Component` storing the LDtk project asset handle, marking the root entity for the plugin to spawn levels in.
+///
+/// For a more detailed explanation of the spawning process, please see the
+/// [*Anatomy of the World*](https://trouv.github.io/bevy_ecs_ldtk/v0.10.0/explanation/anatomy-of-the-world.html) <!-- x-release-please-version -->
+/// chapter of the `bevy_ecs_ldtk` book.
+#[derive(Debug, Default, Clone, Component, Reflect, Deref, DerefMut)]
+#[reflect(Component)]
+pub struct LdtkProjectHandle {
+    pub handle: Handle<LdtkProject>,
+}
+
+impl From<Handle<LdtkProject>> for LdtkProjectHandle {
+    fn from(handle: Handle<LdtkProject>) -> Self {
+        LdtkProjectHandle { handle }
+    }
+}
+
+impl From<&LdtkProjectHandle> for AssetId<LdtkProject> {
+    fn from(val: &LdtkProjectHandle) -> Self {
+        val.id()
+    }
+}
+
+impl From<LdtkProjectHandle> for AssetId<LdtkProject> {
+    fn from(val: LdtkProjectHandle) -> Self {
+        val.id()
+    }
+}
+
+impl From<&LdtkProjectHandle> for UntypedAssetId {
+    fn from(val: &LdtkProjectHandle) -> Self {
+        val.id().into()
+    }
+}
+
+impl From<LdtkProjectHandle> for UntypedAssetId {
+    fn from(val: LdtkProjectHandle) -> Self {
+        val.id().into()
+    }
+}
+
 /// `Bundle` for spawning LDtk worlds and their levels. The main bundle for using this plugin.
 ///
 /// For a more detailed explanation of the resulting world, please see the
@@ -334,7 +373,7 @@ pub(crate) struct EntityInstanceBundle {
 /// chapter of the `bevy_ecs_ldtk` book.
 #[derive(Clone, Default, Bundle)]
 pub struct LdtkWorldBundle {
-    pub ldtk_handle: Handle<LdtkProject>,
+    pub ldtk_handle: LdtkProjectHandle,
     pub level_set: LevelSet,
     pub transform: Transform,
     pub global_transform: GlobalTransform,

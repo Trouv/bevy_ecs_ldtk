@@ -2,9 +2,8 @@ use std::io;
 
 use crate::ldtk::{loaded_level::LoadedLevel, Level};
 use bevy::{
-    asset::{io::Reader, AssetLoader, AsyncReadExt, LoadContext},
+    asset::{io::Reader, AssetLoader, LoadContext},
     prelude::*,
-    utils::ConditionalSendFuture,
 };
 use thiserror::Error;
 
@@ -61,27 +60,23 @@ impl AssetLoader for LdtkExternalLevelLoader {
     type Settings = ();
     type Error = LdtkExternalLevelLoaderError;
 
-    fn load<'a>(
-        &'a self,
-        reader: &'a mut Reader,
-        _settings: &'a Self::Settings,
-        _load_context: &'a mut LoadContext,
-    ) -> impl ConditionalSendFuture<
-        Output = Result<<Self as AssetLoader>::Asset, <Self as AssetLoader>::Error>,
-    > {
-        Box::pin(async move {
-            let mut bytes = Vec::new();
-            reader.read_to_end(&mut bytes).await?;
-            let data: Level = serde_json::from_slice(&bytes)?;
+    async fn load(
+        &self,
+        reader: &mut dyn Reader,
+        _settings: &Self::Settings,
+        _load_context: &mut LoadContext<'_>,
+    ) -> Result<Self::Asset, Self::Error> {
+        let mut bytes = Vec::new();
+        reader.read_to_end(&mut bytes).await?;
+        let data: Level = serde_json::from_slice(&bytes)?;
 
-            if data.layer_instances.is_none() {
-                Err(LdtkExternalLevelLoaderError::NullLayers)?;
-            }
+        if data.layer_instances.is_none() {
+            Err(LdtkExternalLevelLoaderError::NullLayers)?;
+        }
 
-            let ldtk_level = LdtkExternalLevel { data };
+        let ldtk_level = LdtkExternalLevel { data };
 
-            Ok(ldtk_level)
-        })
+        Ok(ldtk_level)
     }
 
     fn extensions(&self) -> &[&str] {

@@ -16,7 +16,7 @@ pub fn camera_fit_inside_current_level(
     >,
     player_query: Query<&Transform, With<Player>>,
     level_query: Query<(&Transform, &LevelIid), (Without<OrthographicProjection>, Without<Player>)>,
-    ldtk_projects: Query<&Handle<LdtkProject>>,
+    ldtk_projects: Query<&LdtkProjectHandle>,
     level_selection: Res<LevelSelection>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
 ) {

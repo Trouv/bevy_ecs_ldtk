@@ -17,7 +17,7 @@ struct PlayerBundle {
     grid_coords: GridCoords,
 }
 ```
-```rust,no_run
+```rust,ignore
 // 0.10
 # use bevy_ecs_ldtk::prelude::*;
 # use bevy::prelude::*;

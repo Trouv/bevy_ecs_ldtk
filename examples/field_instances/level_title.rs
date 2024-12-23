@@ -12,7 +12,7 @@ pub struct LevelTitle(String);
 pub fn set_level_title_to_current_level(
     mut level_events: EventReader<LevelEvent>,
     levels: Query<&LevelIid>,
-    projects: Query<&Handle<LdtkProject>>,
+    projects: Query<&LdtkProjectHandle>,
     project_assets: Res<Assets<LdtkProject>>,
     mut current_level_title: ResMut<LevelTitle>,
 ) {

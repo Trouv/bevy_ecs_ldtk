@@ -3,16 +3,14 @@ use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn setup(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut rapier_config: Query<&mut RapierConfiguration>,
+) {
     commands.spawn(Camera2d);
 
-    commands.spawn(RapierConfiguration {
-        gravity: Vec2::new(0.0, -2000.0),
-        physics_pipeline_active: true,
-        query_pipeline_active: true,
-        scaled_shape_subdivision: 10,
-        force_update_from_transform_changes: false,
-    });
+    rapier_config.single_mut().gravity = Vec2::new(0.0, -2000.0);
 
     let ldtk_handle = asset_server
         .load("Typical_2D_platformer_example.ldtk")

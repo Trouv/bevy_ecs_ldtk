@@ -1,4 +1,5 @@
 use quote::quote;
+use syn::{Error, ExprClosure, Path};
 
 static LDTK_INT_CELL_ATTRIBUTE_NAME: &str = "ldtk_int_cell";
 static FROM_INT_GRID_CELL_ATTRIBUTE_NAME: &str = "from_int_grid_cell";
@@ -24,7 +25,7 @@ pub fn expand_ldtk_int_cell_derive(ast: syn::DeriveInput) -> proc_macro::TokenSt
         let ldtk_int_cell = field
             .attrs
             .iter()
-            .find(|a| *a.path.get_ident().as_ref().unwrap() == LDTK_INT_CELL_ATTRIBUTE_NAME);
+            .find(|a| *a.path().get_ident().as_ref().unwrap() == LDTK_INT_CELL_ATTRIBUTE_NAME);
         if let Some(attribute) = ldtk_int_cell {
             field_constructions.push(expand_ldtk_int_cell_attribute(
                 attribute, field_name, field_type,
@@ -35,7 +36,7 @@ pub fn expand_ldtk_int_cell_derive(ast: syn::DeriveInput) -> proc_macro::TokenSt
         let from_int_grid_cell = field
             .attrs
             .iter()
-            .find(|a| *a.path.get_ident().as_ref().unwrap() == FROM_INT_GRID_CELL_ATTRIBUTE_NAME);
+            .find(|a| *a.path().get_ident().as_ref().unwrap() == FROM_INT_GRID_CELL_ATTRIBUTE_NAME);
         if let Some(attribute) = from_int_grid_cell {
             field_constructions.push(expand_from_int_grid_cell_attribute(
                 attribute, field_name, field_type,
@@ -46,16 +47,19 @@ pub fn expand_ldtk_int_cell_derive(ast: syn::DeriveInput) -> proc_macro::TokenSt
         let with = field
             .attrs
             .iter()
-            .find(|a| *a.path.get_ident().as_ref().unwrap() == WITH_ATTRIBUTE_NAME);
+            .find(|a| *a.path().get_ident().as_ref().unwrap() == WITH_ATTRIBUTE_NAME);
         if let Some(attribute) = with {
-            field_constructions.push(expand_with_attribute(attribute, field_name, field_type));
+            match expand_with_attribute(attribute, field_name, field_type) {
+                Ok(attr) => field_constructions.push(attr),
+                Err(e) => return e.into(),
+            }
             continue;
         }
 
         let default = field
             .attrs
             .iter()
-            .find(|a| *a.path.get_ident().as_ref().unwrap() == DEFAULT_ATTRIBUTE_NAME);
+            .find(|a| *a.path().get_ident().as_ref().unwrap() == DEFAULT_ATTRIBUTE_NAME);
         if let Some(attribute) = default {
             field_constructions.push(expand_default_attribute(attribute, field_name, field_type));
             continue;
@@ -92,10 +96,7 @@ fn expand_ldtk_int_cell_attribute(
     field_name: &syn::Ident,
     field_type: &syn::Type,
 ) -> proc_macro2::TokenStream {
-    match attribute
-        .parse_meta()
-        .expect("Cannot parse #[ldtk_int_cell] attribute")
-    {
+    match attribute.meta {
         syn::Meta::Path(_) => {
             quote! {
                 #field_name: <#field_type as bevy_ecs_ldtk::prelude::LdtkIntCell>::bundle_int_cell(int_grid_cell, layer_instance),
@@ -110,10 +111,7 @@ fn expand_from_int_grid_cell_attribute(
     field_name: &syn::Ident,
     field_type: &syn::Type,
 ) -> proc_macro2::TokenStream {
-    match attribute
-        .parse_meta()
-        .expect("Cannot parse #[from_int_grid_cell] attribute")
-    {
+    match attribute.meta {
         syn::Meta::Path(_) => {
             quote! {
                 #field_name: <#field_type as From<bevy_ecs_ldtk::prelude::IntGridCell>>::from(int_grid_cell),
@@ -129,25 +127,24 @@ fn expand_with_attribute(
     attribute: &syn::Attribute,
     field_name: &syn::Ident,
     _: &syn::Type,
-) -> proc_macro2::TokenStream {
-    match attribute
-        .parse_meta()
-        .expect("Cannot parse #[with...] attribute")
-    {
-        syn::Meta::List(syn::MetaList { nested, .. }) if nested.len() == 1 => {
-            match nested.first().unwrap() {
-                syn::NestedMeta::Meta(syn::Meta::Path(path)) => {
-                    quote! {
-                        #field_name: #path(int_grid_cell),
-                    }
-                }
-                _ => panic!("Expected function as the only argument of #[with(...)]"),
-            }
+) -> Result<proc_macro2::TokenStream, proc_macro2::TokenStream> {
+    if let syn::Meta::List(syn::MetaList { ref tokens, .. }) = attribute.meta {
+        if let Ok(path) = syn::parse2::<Path>(tokens.clone()) {
+            return Ok(quote! {
+                #field_name: #path(int_grid_cell),
+            });
         }
-        _ => {
-            panic!("#[with...] attribute should take the form #[with(function_name)]")
+        if let Ok(closure) = syn::parse2::<ExprClosure>(tokens.clone()) {
+            return Ok(quote! {
+                #field_name: (#closure)(int_grid_cell),
+            });
         }
     }
+    Err(Error::new_spanned(
+        attribute,
+        "#[with...] attribute should take the form #[with(function_name) or #[with(|_| {..})]]",
+    )
+    .into_compile_error())
 }
 
 fn expand_default_attribute(
@@ -155,10 +152,7 @@ fn expand_default_attribute(
     field_name: &syn::Ident,
     _: &syn::Type,
 ) -> proc_macro2::TokenStream {
-    match attribute
-        .parse_meta()
-        .expect("Cannot parse #[default] attribute")
-    {
+    match attribute.meta {
         syn::Meta::Path(_) => {
             quote! {
                 #field_name: Default::default(),

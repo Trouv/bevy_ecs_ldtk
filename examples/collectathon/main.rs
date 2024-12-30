@@ -26,11 +26,15 @@ fn main() {
 }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let mut camera = Camera2dBundle::default();
-    camera.projection.scale = 0.5;
-    commands.spawn(camera);
+    commands.spawn((
+        Camera2d,
+        OrthographicProjection {
+            scale: 0.5,
+            ..OrthographicProjection::default_2d()
+        },
+    ));
 
-    let ldtk_handle = asset_server.load("collectathon.ldtk");
+    let ldtk_handle = asset_server.load("collectathon.ldtk").into();
 
     commands.spawn(LdtkWorldBundle {
         ldtk_handle,

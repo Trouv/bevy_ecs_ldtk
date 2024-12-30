@@ -39,7 +39,7 @@ impl<'a> TryFrom<&'a Level> for LoadedLevel<'a> {
     }
 }
 
-impl<'a> LoadedLevel<'a> {
+impl LoadedLevel<'_> {
     /// The raw level data borrowed by this instance.
     pub fn raw(&self) -> &Level {
         self.level
@@ -170,7 +170,7 @@ impl<'a> LoadedLevel<'a> {
     }
 }
 
-impl<'a> LdtkFields for LoadedLevel<'a> {
+impl LdtkFields for LoadedLevel<'_> {
     fn field_instances(&self) -> &[FieldInstance] {
         self.level.field_instances()
     }

@@ -38,14 +38,14 @@ enum BackgroundImageError {
     ImageNotLoaded,
 }
 
-fn background_image_sprite_sheet_bundle(
+fn background_image_sprite_sheet(
     images: &Assets<Image>,
     texture_atlases: &mut Assets<TextureAtlasLayout>,
     background_image_handle: &Handle<Image>,
     background_position: &LevelBackgroundPosition,
     level_height: i32,
     transform_z: f32,
-) -> Result<LdtkSpriteSheetBundle, BackgroundImageError> {
+) -> Result<(Sprite, Transform), BackgroundImageError> {
     if let Some(background_image) = images.get(background_image_handle) {
         // We need to use a texture atlas to apply the correct crop to the image
         let tile_size = UVec2::new(
@@ -80,18 +80,17 @@ fn background_image_sprite_sheet_bundle(
         let center_translation =
             top_left_translation + (Vec2::new(scaled_size.x, -scaled_size.y) / 2.);
 
-        Ok(LdtkSpriteSheetBundle {
-            sprite_bundle: SpriteBundle {
-                texture: background_image_handle.clone(),
-                transform: Transform::from_translation(center_translation.extend(transform_z))
-                    .with_scale(scale.extend(1.)),
-                ..Default::default()
-            },
-            texture_atlas: TextureAtlas {
-                index,
-                layout: texture_atlases.add(texture_atlas_layout),
-            },
-        })
+        Ok((
+            Sprite::from_atlas_image(
+                background_image_handle.clone(),
+                TextureAtlas {
+                    index,
+                    layout: texture_atlases.add(texture_atlas_layout),
+                },
+            ),
+            Transform::from_translation(center_translation.extend(transform_z))
+                .with_scale(scale.extend(1.)),
+        ))
     } else {
         Err(BackgroundImageError::ImageNotLoaded)
     }
@@ -133,12 +132,12 @@ fn insert_metadata_to_tile(
     metadata_inserted
 }
 
-fn spatial_bundle_for_tiles(grid_coords: GridCoords, grid_size: i32) -> SpatialBundle {
+fn spatial_bundle_for_tiles(grid_coords: GridCoords, grid_size: i32) -> Transform {
     let translation =
         grid_coords_to_translation_relative_to_tile_layer(grid_coords, IVec2::splat(grid_size))
             .extend(0.);
 
-    SpatialBundle::from_transform(Transform::from_translation(translation))
+    Transform::from_translation(translation)
 }
 
 fn insert_spatial_bundle_for_layer_tiles(
@@ -234,15 +233,14 @@ pub fn spawn_level(
         let translation = Vec3::new(*level.px_wid() as f32, *level.px_hei() as f32, 0.) / 2.;
 
         let background_entity = commands
-            .spawn(SpriteBundle {
-                sprite: Sprite {
+            .spawn((
+                Sprite {
                     color: *level.bg_color(),
                     custom_size: Some(Vec2::new(*level.px_wid() as f32, *level.px_hei() as f32)),
                     ..default()
                 },
-                transform: Transform::from_translation(translation),
-                ..default()
-            })
+                Transform::from_translation(translation),
+            ))
             .id();
 
         commands.entity(ldtk_entity).add_child(background_entity);
@@ -253,7 +251,7 @@ pub fn spawn_level(
         if let (Some(background_image_handle), Some(background_position)) =
             (background_image, level.bg_pos())
         {
-            match background_image_sprite_sheet_bundle(
+            match background_image_sprite_sheet(
                 images,
                 texture_atlases,
                 background_image_handle,
@@ -261,9 +259,9 @@ pub fn spawn_level(
                 *level.px_hei(),
                 layer_z as f32,
             ) {
-                Ok(sprite_sheet_bundle) => {
+                Ok(sprite_sheet) => {
                     commands.entity(ldtk_entity).with_children(|parent| {
-                        parent.spawn(sprite_sheet_bundle);
+                        parent.spawn(sprite_sheet);
                     });
 
                     layer_z += 1;
@@ -291,9 +289,10 @@ pub fn spawn_level(
         match layer_instance.layer_instance_type {
             Type::Entities => {
                 let layer_entity = commands
-                    .spawn(SpatialBundle::from_transform(Transform::from_translation(
+                    .spawn(Transform::from_translation(
                         layer_offset.extend(layer_z as f32),
-                    )))
+                    ))
+                    .insert(Visibility::default())
                     .insert(LayerMetadata::from(layer_instance))
                     .insert(Name::new(layer_instance.identifier.to_owned()))
                     .with_children(|commands| {
@@ -351,10 +350,7 @@ pub fn spawn_level(
                                     texture_atlases,
                                 );
 
-                                entity_commands.insert(SpatialBundle {
-                                    transform,
-                                    ..default()
-                                });
+                                entity_commands.insert(transform);
                             }
                         }
                     })
@@ -713,13 +709,14 @@ pub fn spawn_level(
                     commands
                         .entity(layer_entity)
                         .insert(tilemap_bundle)
-                        .insert(SpatialBundle::from_transform(Transform::from_translation(
+                        .insert(Transform::from_translation(
                             (bottom_left_pixel
                                 + centering_adjustment
                                 + pivot_adjustment
                                 + layer_offset)
                                 .extend(layer_z as f32),
-                        )))
+                        ))
+                        .insert(Visibility::default())
                         .insert(LayerMetadata::from(layer_instance))
                         .insert(Name::new(layer_instance.identifier.to_owned()));
 

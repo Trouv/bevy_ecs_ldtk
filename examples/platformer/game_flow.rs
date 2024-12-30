@@ -1,12 +1,20 @@
 use crate::player::Player;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
+use bevy_rapier2d::prelude::*;
 
-pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let camera = Camera2dBundle::default();
-    commands.spawn(camera);
+pub fn setup(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut rapier_config: Query<&mut RapierConfiguration>,
+) {
+    commands.spawn(Camera2d);
 
-    let ldtk_handle = asset_server.load("Typical_2D_platformer_example.ldtk");
+    rapier_config.single_mut().gravity = Vec2::new(0.0, -2000.0);
+
+    let ldtk_handle = asset_server
+        .load("Typical_2D_platformer_example.ldtk")
+        .into();
     commands.spawn(LdtkWorldBundle {
         ldtk_handle,
         ..Default::default()
@@ -17,7 +25,7 @@ pub fn update_level_selection(
     level_query: Query<(&LevelIid, &Transform), Without<Player>>,
     player_query: Query<&Transform, With<Player>>,
     mut level_selection: ResMut<LevelSelection>,
-    ldtk_projects: Query<&Handle<LdtkProject>>,
+    ldtk_projects: Query<&LdtkProjectHandle>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
 ) {
     for (level_iid, level_transform) in &level_query {

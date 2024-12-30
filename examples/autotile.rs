@@ -32,19 +32,19 @@ fn main() {
 }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn(Camera2dBundle {
-        transform: Transform::from_xyz(300.0, 240.0, 0.0),
-        projection: OrthographicProjection {
+    commands.spawn((
+        Camera2d,
+        Transform::from_xyz(300.0, 240.0, 0.0),
+        OrthographicProjection {
             far: 1000.,
             near: -1000.,
             scale: 0.5,
-            ..default()
+            ..OrthographicProjection::default_2d()
         },
-        ..default()
-    });
+    ));
 
     commands.spawn(LdtkWorldBundle {
-        ldtk_handle: asset_server.load("autotile.ldtk"),
+        ldtk_handle: asset_server.load("autotile.ldtk").into(),
         ..default()
     });
 }
@@ -61,7 +61,7 @@ fn update_cursor_pos(
         // any transforms on the camera. This is done by projecting the cursor position into
         // camera space (world space).
         for (cam_t, cam) in camera_q.iter() {
-            if let Some(pos) = cam.viewport_to_world_2d(cam_t, cursor_moved.position) {
+            if let Ok(pos) = cam.viewport_to_world_2d(cam_t, cursor_moved.position) {
                 *cursor_pos = CursorPos(pos);
             }
         }

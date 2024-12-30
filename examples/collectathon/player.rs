@@ -22,8 +22,8 @@ struct PlayerBundle {
     wallet: Wallet,
     #[worldly]
     worldly: Worldly,
-    #[sprite_sheet_bundle]
-    sprite_sheet: LdtkSpriteSheetBundle,
+    #[sprite_sheet]
+    sprite_sheet: Sprite,
 }
 
 const MOVEMENT_SPEED: f32 = 96.;
@@ -51,7 +51,7 @@ fn move_player(
 
         if movement != Vec2::ZERO {
             player_transform.translation +=
-                movement.extend(0.) * MOVEMENT_SPEED * time.delta_seconds();
+                movement.extend(0.) * MOVEMENT_SPEED * time.delta_secs();
         }
     }
 }
@@ -59,7 +59,7 @@ fn move_player(
 fn level_selection_follow_player(
     players: Query<&GlobalTransform, With<Player>>,
     levels: Query<(&LevelIid, &GlobalTransform)>,
-    ldtk_projects: Query<&Handle<LdtkProject>>,
+    ldtk_projects: Query<&LdtkProjectHandle>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
     mut level_selection: ResMut<LevelSelection>,
 ) {

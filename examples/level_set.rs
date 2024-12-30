@@ -37,12 +37,12 @@ const LEVEL_IIDS: [&str; 8] = [
 ];
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2d);
 
     let level_set = LevelSet::from_iids(LEVEL_IIDS);
 
     commands.spawn(LdtkWorldBundle {
-        ldtk_handle: asset_server.load("WorldMap_Free_layout.ldtk"),
+        ldtk_handle: asset_server.load("WorldMap_Free_layout.ldtk").into(),
         level_set,
         transform: Transform::from_xyz(-256., -144., 0.),
         ..Default::default()

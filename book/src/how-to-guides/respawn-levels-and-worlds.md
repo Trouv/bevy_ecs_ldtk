@@ -1,5 +1,5 @@
 # Respawn Levels and Worlds
-Internally, `bevy_ecs_ldtk` uses a [`Respawn`](https://docs.rs/bevy_ecs_ldtk/0.10.0/bevy_ecs_ldtk/prelude/struct.Respawn.html) component on worlds and levels to assist in the spawning process. <!-- x-release-please-version -->
+Internally, `bevy_ecs_ldtk` uses a [`Respawn`](https://docs.rs/bevy_ecs_ldtk/0.11.0/bevy_ecs_ldtk/prelude/struct.Respawn.html) component on worlds and levels to assist in the spawning process. <!-- x-release-please-version -->
 This can be leveraged by users to implement a simple level restart feature, or an even more heavy-handed world restart feature.
 
 This code is from the `collectathon` cargo example.
@@ -51,7 +51,7 @@ There is a method on `LdtkProject` to perform this search.
 # use bevy::prelude::*;
 # use bevy_ecs_ldtk::prelude::*;
 {{ #include ../../../examples/collectathon/respawn.rs:13:17 }}
-    ldtk_projects: Query<&Handle<LdtkProject>>,
+    ldtk_projects: Query<&LdtkProjectHandle>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
 ) {
     if input.just_pressed(KeyCode::KeyL) {

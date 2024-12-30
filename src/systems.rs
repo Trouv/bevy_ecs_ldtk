@@ -15,7 +15,7 @@ use crate::{
 #[cfg(feature = "external_levels")]
 use crate::assets::LdtkExternalLevel;
 
-use bevy::{asset::RecursiveDependencyLoadState, ecs::system::SystemState, prelude::*};
+use bevy::{ecs::system::SystemState, prelude::*};
 use bevy_ecs_tilemap::tiles::TileTextureIndex;
 use rand::{seq::SliceRandom, thread_rng, Rng};
 use std::collections::{HashMap, HashSet};
@@ -25,7 +25,7 @@ use std::collections::{HashMap, HashSet};
 pub fn process_ldtk_assets(
     mut commands: Commands,
     mut ldtk_project_events: EventReader<AssetEvent<LdtkProject>>,
-    ldtk_world_query: Query<(Entity, &Handle<LdtkProject>)>,
+    ldtk_world_query: Query<(Entity, &LdtkProjectHandle)>,
     #[cfg(feature = "render")] ldtk_settings: Res<LdtkSettings>,
     #[cfg(feature = "render")] mut clear_color: ResMut<ClearColor>,
     #[cfg(feature = "render")] ldtk_project_assets: Res<Assets<LdtkProject>>,
@@ -75,7 +75,7 @@ pub fn apply_level_selection(
     level_selection: Option<Res<LevelSelection>>,
     ldtk_settings: Res<LdtkSettings>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
-    mut level_set_query: Query<(&Handle<LdtkProject>, &mut LevelSet)>,
+    mut level_set_query: Query<(&LdtkProjectHandle, &mut LevelSet)>,
     #[cfg(feature = "render")] mut clear_color: ResMut<ClearColor>,
 ) {
     if let Some(level_selection) = level_selection {
@@ -125,7 +125,7 @@ pub fn apply_level_set(
         Entity,
         &LevelSet,
         Option<&Children>,
-        &Handle<LdtkProject>,
+        &LdtkProjectHandle,
         Option<&Respawn>,
     )>,
     ldtk_level_query: Query<(&LevelIid, Entity)>,
@@ -140,7 +140,7 @@ pub fn apply_level_set(
             if let Some(load_state) =
                 asset_server.get_recursive_dependency_load_state(ldtk_asset_handle)
             {
-                if load_state != RecursiveDependencyLoadState::Loaded {
+                if !load_state.is_loaded() {
                     continue;
                 }
             }
@@ -166,7 +166,7 @@ pub fn apply_level_set(
                 })
                 .collect::<Vec<_>>();
 
-            commands.entity(world_entity).push_children(&spawned_levels);
+            commands.entity(world_entity).add_children(&spawned_levels);
 
             // Despawn levels that shouldn't be spawned but are
             for &iid in previous_iids.difference(&level_set_as_ref) {
@@ -203,10 +203,8 @@ fn pre_spawn_level(commands: &mut Commands, level: &Level, ldtk_settings: &LdtkS
 
     commands
         .spawn(LevelIid::new(level.iid.clone()))
-        .insert(SpatialBundle {
-            transform: Transform::from_translation(translation),
-            ..default()
-        })
+        .insert(Transform::from_translation(translation))
+        .insert(Visibility::default())
         .insert(Name::new(level.identifier.clone()))
         .id()
 }
@@ -217,7 +215,7 @@ pub(crate) fn apply_int_grid_autotiling(
     layer_query: Query<(Entity, &LayerMetadata, &Parent)>,
     mut igrid_layer_query: Query<(Entity, &LayerMetadata, &mut IntGridCellValues, &Parent)>,
     level_query: Query<&Parent, With<LevelIid>>,
-    project_query: Query<&Handle<LdtkProject>>,
+    project_query: Query<&LdtkProjectHandle>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
 ) {
     if igrid_cell_query.is_empty() {
@@ -441,7 +439,7 @@ pub fn process_ldtk_levels(
     #[cfg(feature = "external_levels")] level_assets: Res<Assets<LdtkExternalLevel>>,
     ldtk_entity_map: NonSend<LdtkEntityMap>,
     ldtk_int_cell_map: NonSend<LdtkIntCellMap>,
-    ldtk_query: Query<&Handle<LdtkProject>>,
+    ldtk_query: Query<&LdtkProjectHandle>,
     level_query: Query<
         (
             Entity,
@@ -556,7 +554,7 @@ pub fn process_ldtk_levels(
 pub fn clean_respawn_entities(world: &mut World) {
     #[allow(clippy::type_complexity)]
     let mut system_state: SystemState<(
-        Query<&Children, (With<Handle<LdtkProject>>, With<Respawn>)>,
+        Query<&Children, (With<LdtkProjectHandle>, With<Respawn>)>,
         Query<(Entity, &LevelIid), With<Respawn>>,
         Query<&LevelIid, Without<Respawn>>,
         Query<Entity, With<Worldly>>,

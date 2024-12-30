@@ -32,7 +32,7 @@ fn respawn_level(
 
 fn respawn_world(
     mut commands: Commands,
-    ldtk_projects: Query<Entity, With<Handle<LdtkProject>>>,
+    ldtk_projects: Query<Entity, With<LdtkProjectHandle>>,
     input: Res<ButtonInput<KeyCode>>,
 ) {
     if input.just_pressed(KeyCode::KeyR) {

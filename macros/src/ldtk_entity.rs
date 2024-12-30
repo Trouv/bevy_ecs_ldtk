@@ -1,7 +1,7 @@
 use quote::quote;
 
-static SPRITE_BUNDLE_ATTRIBUTE_NAME: &str = "sprite_bundle";
-static SPRITE_SHEET_BUNDLE_ATTRIBUTE_NAME: &str = "sprite_sheet_bundle";
+static SPRITE_ATTRIBUTE_NAME: &str = "sprite";
+static SPRITE_SHEET_ATTRIBUTE_NAME: &str = "sprite_sheet";
 static WORLDLY_ATTRIBUTE_NAME: &str = "worldly";
 static GRID_COORDS_ATTRIBUTE_NAME: &str = "grid_coords";
 static LDTK_ENTITY_ATTRIBUTE_NAME: &str = "ldtk_entity";
@@ -25,23 +25,21 @@ pub fn expand_ldtk_entity_derive(ast: syn::DeriveInput) -> proc_macro::TokenStre
         let field_name = field.ident.as_ref().unwrap();
         let field_type = &field.ty;
 
-        let sprite_bundle = field
+        let sprite = field
             .attrs
             .iter()
-            .find(|a| *a.path.get_ident().as_ref().unwrap() == SPRITE_BUNDLE_ATTRIBUTE_NAME);
-        if let Some(attribute) = sprite_bundle {
-            field_constructions.push(expand_sprite_bundle_attribute(
-                attribute, field_name, field_type,
-            ));
+            .find(|a| *a.path.get_ident().as_ref().unwrap() == SPRITE_ATTRIBUTE_NAME);
+        if let Some(attribute) = sprite {
+            field_constructions.push(expand_sprite_attribute(attribute, field_name, field_type));
             continue;
         }
 
-        let sprite_sheet_bundle = field
+        let sprite_sheet = field
             .attrs
             .iter()
-            .find(|a| *a.path.get_ident().as_ref().unwrap() == SPRITE_SHEET_BUNDLE_ATTRIBUTE_NAME);
-        if let Some(attribute) = sprite_sheet_bundle {
-            field_constructions.push(expand_sprite_sheet_bundle_attribute(
+            .find(|a| *a.path.get_ident().as_ref().unwrap() == SPRITE_SHEET_ATTRIBUTE_NAME);
+        if let Some(attribute) = sprite_sheet {
+            field_constructions.push(expand_sprite_sheet_attribute(
                 attribute, field_name, field_type,
             ));
             continue;
@@ -137,26 +135,29 @@ pub fn expand_ldtk_entity_derive(ast: syn::DeriveInput) -> proc_macro::TokenStre
     gen.into()
 }
 
-fn expand_sprite_bundle_attribute(
+fn expand_sprite_attribute(
     attribute: &syn::Attribute,
     field_name: &syn::Ident,
     field_type: &syn::Type,
 ) -> proc_macro2::TokenStream {
     // check the type
     match field_type {
-        syn::Type::Path(syn::TypePath { path: syn::Path { segments, .. }, .. }) => {
+        syn::Type::Path(syn::TypePath {
+            path: syn::Path { segments, .. },
+            ..
+        }) => {
             if let Some(last) = segments.last() {
-                if last.ident != *"SpriteBundle" {
-                    panic!("#[sprite_bundle...] attribute should apply to a field of type bevy::prelude::SpriteBundle")
+                if last.ident != *"Sprite" {
+                    panic!("#[sprite...] attribute should apply to a field of type bevy::prelude::Sprite")
                 }
             }
-        },
-        _ => panic!("#[sprite_bundle...] attribute should apply to a field of type bevy::prelude::SpriteBundle")
+        }
+        _ => panic!("#[sprite...] attribute should apply to a field of type bevy::prelude::Sprite"),
     }
 
     match attribute
         .parse_meta()
-        .expect("Cannot parse #[sprite_bundle...] attribute")
+        .expect("Cannot parse #[sprite...] attribute")
     {
         syn::Meta::List(syn::MetaList { nested, .. }) if nested.len() == 1 => {
             match nested.first().unwrap() {
@@ -164,88 +165,88 @@ fn expand_sprite_bundle_attribute(
                     let asset_path = &asset.value();
 
                     quote! {
-                        #field_name: bevy::prelude::SpriteBundle {
-                            texture: asset_server.load(#asset_path),
-                            ..Default::default()
-                        },
+                        #field_name: bevy::prelude::Sprite::from_image(
+                            asset_server.load(#asset_path)),
                     }
                 },
-                _ => panic!("Expected asset path as the only argument of #[sprite_bundle(...)]"),
+                _ => panic!("Expected asset path as the only argument of #[sprite(...)]"),
             }
         },
         syn::Meta::Path(_) => {
             quote! {
-                #field_name: bevy_ecs_ldtk::utils::sprite_bundle_from_entity_info(tileset),
+                #field_name: bevy_ecs_ldtk::utils::sprite_from_entity_info(tileset),
             }
         },
-        _ => panic!("#[sprite_bundle...] attribute should take the form #[sprite_bundle(\"asset/path.png\")] or #[sprite_bundle]"),
+        _ => panic!("#[sprite...] attribute should take the form #[sprite(\"asset/path.png\")] or #[sprite]"),
     }
 }
 
-fn expand_sprite_sheet_bundle_attribute(
+fn expand_sprite_sheet_attribute(
     attribute: &syn::Attribute,
     field_name: &syn::Ident,
     field_type: &syn::Type,
 ) -> proc_macro2::TokenStream {
     // check the type
     match field_type {
-        syn::Type::Path(syn::TypePath { path: syn::Path { segments, .. }, .. }) => {
+        syn::Type::Path(syn::TypePath {
+            path: syn::Path { segments, .. },
+            ..
+        }) => {
             if let Some(last) = segments.last() {
-                if last.ident != *"LdtkSpriteSheetBundle" {
-                    panic!("#[sprite_sheet_bundle...] attribute should apply to a field of type bevy_ecs_ldtk::prelude::LdtkSpriteSheetBundle")
+                if last.ident != *"Sprite" {
+                    panic!("#[sprite_sheet...] attribute should apply to a field of type bevy::prelude::Sprite")
                 }
             }
-        },
-        _ => panic!("#[sprite_sheet_bundle...] attribute should apply to a field of type bevy_ecs_ldtk::prelude::LdtkSpriteSheetBundle")
+        }
+        _ => panic!(
+            "#[sprite_sheet...] attribute should apply to a field of type bevy::prelude::Sprite"
+        ),
     }
 
     match attribute
         .parse_meta()
-        .expect("Cannot parse #[sprite_sheet_bundle...] attribute")
+        .expect("Cannot parse #[sprite_sheet...] attribute")
     {
         syn::Meta::List(syn::MetaList { nested, .. }) if nested.len() == 8 => {
             let mut nested_iter = nested.iter();
 
             let asset_path = &match nested_iter.next() {
                 Some(syn::NestedMeta::Lit(syn::Lit::Str(asset))) => asset.value(),
-                _ => panic!("First argument of #[sprite_sheet_bundle(...)] should be a string")
+                _ => panic!("First argument of #[sprite_sheet(...)] should be a string")
             };
             let tile_width = match nested_iter.next() {
                 Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_parse::<u32>().unwrap(),
-                _ => panic!("Second argument of #[sprite_sheet_bundle(...)] should be an int")
+                _ => panic!("Second argument of #[sprite_sheet(...)] should be an int")
             };
             let tile_height = match nested_iter.next() {
                 Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_parse::<u32>().unwrap(),
-                _ => panic!("Third argument of #[sprite_sheet_bundle(...)] should be an int")
+                _ => panic!("Third argument of #[sprite_sheet(...)] should be an int")
             };
             let columns = match nested_iter.next() {
                 Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_parse::<u32>().unwrap(),
-                _ => panic!("Fourth argument of #[sprite_sheet_bundle(...)] should be an int")
+                _ => panic!("Fourth argument of #[sprite_sheet(...)] should be an int")
             };
             let rows = match nested_iter.next() {
                 Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_parse::<u32>().unwrap(),
-                _ => panic!("Fifth argument of #[sprite_sheet_bundle(...)] should be an int")
+                _ => panic!("Fifth argument of #[sprite_sheet(...)] should be an int")
             };
             let padding = match nested_iter.next() {
                 Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_parse::<u32>().unwrap(),
-                _ => panic!("Sixth argument of #[sprite_sheet_bundle(...)] should be an int")
+                _ => panic!("Sixth argument of #[sprite_sheet(...)] should be an int")
             };
             let offset = match nested_iter.next() {
                 Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_parse::<u32>().unwrap(),
-                _ => panic!("Seventh argument of #[sprite_sheet_bundle(...)] should be an int")
+                _ => panic!("Seventh argument of #[sprite_sheet(...)] should be an int")
             };
             let index = match nested_iter.next() {
                 Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_parse::<usize>().unwrap(),
-                _ => panic!("Eighth argument of #[sprite_sheet_bundle(...)] should be an int")
+                _ => panic!("Eighth argument of #[sprite_sheet(...)] should be an int")
             };
 
             quote! {
-                #field_name: LdtkSpriteSheetBundle{
-                        sprite_bundle: bevy::prelude::SpriteBundle {
-                        texture: asset_server.load(#asset_path).into(),
-                        ..Default::default()
-                    },
-                    texture_atlas: bevy::prelude::TextureAtlas {
+                #field_name: bevy::prelude::Sprite::from_atlas_image(
+                    asset_server.load(#asset_path),
+                    bevy::prelude::TextureAtlas {
                         layout: texture_atlases.add(
                             bevy::prelude::TextureAtlasLayout::from_grid(
                                 bevy::prelude::UVec2::new(#tile_width, #tile_height),
@@ -253,8 +254,8 @@ fn expand_sprite_sheet_bundle_attribute(
                                 Some(bevy::prelude::UVec2::splat(#offset)),
                             )),
                         index: #index
-                    }
-                },
+                    },
+                ),
             }
         },
         syn::Meta::List(syn::MetaList { nested, .. }) if nested.len() == 1 => {
@@ -262,19 +263,19 @@ fn expand_sprite_sheet_bundle_attribute(
 
             match nested_iter.next() {
                 Some(syn::NestedMeta::Meta(syn::Meta::Path(path))) if path.is_ident("no_grid") => {},
-                _ => panic!("Argument of #[sprite_sheet_bundle(...)] should be no_grid")
+                _ => panic!("Argument of #[sprite_sheet(...)] should be no_grid")
             };
 
             quote! {
-                #field_name: bevy_ecs_ldtk::utils::sprite_sheet_bundle_from_entity_info(entity_instance, tileset, tileset_definition, texture_atlases, false),
+                #field_name: bevy_ecs_ldtk::utils::sprite_sheet_from_entity_info(entity_instance, tileset, tileset_definition, texture_atlases, false),
             }
         },
         syn::Meta::Path(_) => {
             quote! {
-                #field_name: bevy_ecs_ldtk::utils::sprite_sheet_bundle_from_entity_info(entity_instance, tileset, tileset_definition, texture_atlases, true),
+                #field_name: bevy_ecs_ldtk::utils::sprite_sheet_from_entity_info(entity_instance, tileset, tileset_definition, texture_atlases, true),
             }
         },
-        _ => panic!("#[sprite_sheet_bundle...] attribute should take the form #[sprite_sheet_bundle(\"asset/path.png\", tile_width, tile_height, columns, rows, padding, offset, index)], #[sprite_sheet_bundle(no_grid)] or #[sprite_sheet_bundle]"),
+        _ => panic!("#[sprite_sheet...] attribute should take the form #[sprite_sheet(\"asset/path.png\", tile_width, tile_height, columns, rows, padding, offset, index)], #[sprite_sheet(no_grid)] or #[sprite_sheet]"),
     }
 }
 

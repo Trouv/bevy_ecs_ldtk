@@ -6,7 +6,7 @@ use crate::{
     app::{LdtkEntityMap, LdtkIntCellMap},
     assets::{LdtkProject, LdtkProjectData, LevelMetadataAccessor},
     components::*,
-    ldtk::{Level, TilesetDefinition},
+    ldtk::{AutoLayerRuleGroup, Checker, Level, TilesetDefinition},
     level::spawn_level,
     resources::{LdtkSettings, LevelEvent, LevelSelection, LevelSpawnBehavior},
     utils::*,
@@ -16,6 +16,8 @@ use crate::{
 use crate::assets::LdtkExternalLevel;
 
 use bevy::{ecs::system::SystemState, prelude::*};
+use bevy_ecs_tilemap::tiles::TileTextureIndex;
+use rand::{seq::SliceRandom, thread_rng, Rng};
 use std::collections::{HashMap, HashSet};
 
 /// Detects [LdtkProject] events and spawns levels as children of the [LdtkWorldBundle].
@@ -205,6 +207,228 @@ fn pre_spawn_level(commands: &mut Commands, level: &Level, ldtk_settings: &LdtkS
         .insert(Visibility::default())
         .insert(Name::new(level.identifier.clone()))
         .id()
+}
+
+pub(crate) fn init_int_grid_affected_layers(
+    mut commands: Commands,
+    igrid_layer_query: Query<(Entity, &Parent, &LayerMetadata), Added<IntGridLayerCellValues>>,
+    level_query: Query<(Entity, &Parent), With<LevelIid>>,
+    layer_query: Query<(Entity, &LayerMetadata, &Parent)>,
+    project_query: Query<&LdtkProjectHandle>,
+    ldtk_project_assets: Res<Assets<LdtkProject>>,
+) {
+    for (layer_entity, layer_parent, layer_metadata) in &igrid_layer_query {
+        let (level_entity, level_parent) = level_query
+            .get(layer_parent.get())
+            .expect("int grid layer not the child of a level");
+
+        let project_handle = project_query
+            .get(level_parent.get())
+            .expect("level is not the child of a project");
+
+        let project = ldtk_project_assets
+            .get(project_handle)
+            .expect("ldtk project missing");
+
+        // Collect all the layers whose autotiling depends on the values of this layer
+        let affected_layer_ids = project
+            .json_data()
+            .defs
+            .layers
+            .iter()
+            .filter_map(|layer| {
+                if let Some(auto_source_uid) = layer.auto_source_layer_def_uid {
+                    if auto_source_uid == layer_metadata.layer_def_uid {
+                        // This layer is autotiled by the updated layer.
+                        Some(layer.uid)
+                    } else {
+                        None
+                    }
+                } else if layer.tileset_def_uid.is_some()
+                    && layer.uid == layer_metadata.layer_def_uid
+                {
+                    // The updated layer autotiles itself.
+                    Some(layer.uid)
+                } else {
+                    None
+                }
+            })
+            .collect::<HashSet<_>>();
+
+        // Now find the entity ids for the affected layers.
+        let affected_layer_entities = layer_query
+            .iter()
+            .filter(|(_, layer_data, _)| affected_layer_ids.contains(&layer_data.layer_def_uid))
+            .filter(|(_, _, layer_parent)| layer_parent.get() == level_entity)
+            .map(|(entity, _, _)| entity)
+            .collect::<Vec<_>>();
+
+        commands
+            .entity(layer_entity)
+            .insert(IntGridLayerAffectedLayers(affected_layer_entities));
+    }
+}
+
+pub(crate) fn update_int_grid_layer_values(
+    igrid_cell_query: Query<(&IntGridCell, &GridCoords, &Parent), Changed<IntGridCell>>,
+    mut igrid_layer_query: Query<&mut IntGridLayerCellValues>,
+) {
+    for (cell, cell_coords, cell_parent) in &igrid_cell_query {
+        let mut int_grid_layer_updated_tiles = igrid_layer_query
+            .get_mut(cell_parent.get())
+            .expect("int grid cell not the child of a level");
+
+        // First, check if the value actually changed.
+        let current_cell_value = int_grid_layer_updated_tiles
+            .get(cell_coords.x, cell_coords.y)
+            .expect("updated int grid cell out of bounds");
+        if current_cell_value == cell.value {
+            // Value didn't actually change, don't trigger autotiling as a result of this cell.
+            continue;
+        }
+
+        // Update the cell's value in the table.
+        int_grid_layer_updated_tiles.set(cell_coords.x, cell_coords.y, cell.value);
+    }
+}
+
+pub(crate) fn apply_int_grid_autotiling(
+    mut tile_query: Query<(&mut TileTextureIndex, &GridCoords, &Parent)>,
+    igrid_layer_query: Query<
+        (&IntGridLayerCellValues, &IntGridLayerAffectedLayers),
+        Changed<IntGridLayerCellValues>,
+    >,
+    layer_query: Query<(&LayerMetadata, &Parent), With<EnableDynamicAutotiling>>,
+    level_query: Query<&Parent, With<LevelIid>>,
+    project_query: Query<&LdtkProjectHandle>,
+    ldtk_project_assets: Res<Assets<LdtkProject>>,
+) {
+    for (igrid_layer_values, igrid_layer_affected_layers) in &igrid_layer_query {
+        for &layer_entity in &igrid_layer_affected_layers.0 {
+            // Fetch the autotiling rules.
+            // First from the layer to the level...
+            let (layer_data, layer_parent) = layer_query.get(layer_entity).expect("missing layer");
+            let level_entity = layer_parent.get();
+            let level_parent = level_query
+                .get(level_entity)
+                .expect("int grid cell not the child of a level");
+
+            // Then from the level to the project...
+            let project_handle = project_query
+                .get(level_parent.get())
+                .expect("level is not the child of a project");
+            let project = ldtk_project_assets
+                .get(project_handle)
+                .expect("ldtk project missing");
+
+            // And in the project json find the layer.
+            let layer_defs = project
+                .json_data()
+                .defs
+                .layers
+                .iter()
+                .find(|layer_def| layer_def.uid == layer_data.layer_def_uid)
+                .expect("layer missing from project");
+            let autotiling_rule_groups = &layer_defs.auto_rule_groups;
+
+            // Fetch the tiles in the layer.
+            let tiles_in_layer = tile_query
+                .iter_mut()
+                .filter(|(_, _, parent)| parent.get() == layer_entity);
+
+            // Perform the autotiling.
+            for (mut tile_texture, &coords, _) in tiles_in_layer {
+                // The first matching rule for the coordinates wins.
+                if let Some(autotile) =
+                    autotile_match(autotiling_rule_groups, igrid_layer_values, coords)
+                {
+                    tile_texture.0 = autotile as u32;
+                }
+            }
+        }
+    }
+}
+
+fn autotile_match(
+    autotiling_rule_groups: &Vec<AutoLayerRuleGroup>,
+    int_grid: &IntGridLayerCellValues,
+    coords: GridCoords,
+) -> Option<i32> {
+    let mut rng = thread_rng();
+
+    for group in autotiling_rule_groups {
+        if !group.active {
+            continue;
+        }
+
+        let mut matched_tile = None;
+
+        for rule in &group.rules {
+            // Error-out for some cases which are not implemented yet. (@TODO)
+            debug_assert!(!rule.perlin_active);
+            debug_assert!(!rule.flip_x);
+            debug_assert!(!rule.flip_y);
+            debug_assert_eq!(rule.checker, Checker::None);
+            debug_assert!([1, 3, 5, 7, 9].contains(&rule.size));
+            debug_assert!(!rule.tile_rects_ids.is_empty());
+            debug_assert!(rule.tile_rects_ids.iter().all(|rect| rect.len() == 1));
+
+            if !rule.active {
+                continue;
+            }
+            if !rng.gen_bool(rule.chance as f64) {
+                // Checking if the rule applies is more expensive than generating a random boolean,
+                // so exit early if the rule fails its chance roll.
+                continue;
+            }
+
+            // Check if the rule matches the int grid area.
+            let mut matches = true;
+            let mut i = 0;
+            for dy in (-rule.size / 2)..=(rule.size / 2) {
+                for dx in (-rule.size / 2)..=(rule.size / 2) {
+                    // Rules in the pattern are from bottom to top.
+                    let x = coords.x + dx;
+                    let y = coords.y - dy;
+                    let expected_value = rule.pattern[i];
+                    i += 1;
+
+                    if expected_value == 0 {
+                        // Pattern value 0 means "any value" or "no value".
+                        continue;
+                    }
+
+                    if let Some(int_grid_value) = int_grid.get(x, y).or(rule.out_of_bounds_value) {
+                        if (expected_value < 0) && (int_grid_value == -expected_value) {
+                            // A negative pattern value means the cell must not contain the positive of that value.
+                            matches = false;
+                        }
+                        if int_grid_value != expected_value {
+                            matches = false;
+                        }
+                    } else {
+                        // Out of bounds.
+                        matches = false;
+                    }
+                }
+            }
+
+            if matches {
+                let selected_tile = rule.tile_rects_ids.choose(&mut rng).expect("msg");
+                matched_tile = Some(selected_tile[0]);
+
+                if rule.break_on_match {
+                    break;
+                }
+            }
+        }
+
+        if matched_tile.is_some() {
+            return matched_tile;
+        }
+    }
+
+    None
 }
 
 /// Performs all the spawning of levels, layers, chunks, bundles, entities, tiles, etc. when a

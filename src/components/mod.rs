@@ -38,6 +38,15 @@ pub struct IntGridCell {
     pub value: i32,
 }
 
+/// [Component] added to any layer by default.
+///
+/// It controls whether or not dynamic autotiling will be enabled for the layer.
+/// That is, whether updates to the `IntGrid` values on the same or on different layers, will cause
+/// the tiles on this layer to also be updated according to the autotling rules found in the [`LdtkProject`].
+#[derive(Component, Default, Debug, Reflect)]
+#[reflect(Component)]
+pub struct EnableDynamicAutotiling;
+
 /// [`Component`] that indicates that an ldtk entity should be a child of the world, not their layer.
 ///
 /// For a more detailed explanation, please see the
@@ -299,6 +308,59 @@ impl From<&LayerInstance> for LayerMetadata {
         }
     }
 }
+
+/// [Component] added to any `IntGrid` tile by default.
+///
+/// It shall keep track of the values of an int grid layer so that we may access them directly for autotiling.
+/// This component is kept private to the crate because its values will be updated via a [`Changed<IntGridCell>`] system inside this crate,
+/// so we should prevent the user from accessing it before that system runs and potentially getting invalid values.
+#[derive(Clone, Debug, Component, Reflect)]
+#[reflect(Component)]
+pub(crate) struct IntGridLayerCellValues {
+    c_wid: i32,
+    c_hei: i32,
+    values: Vec<i32>,
+}
+
+impl IntGridLayerCellValues {
+    pub(crate) fn from_csv(c_wid: i32, c_hei: i32, int_grid_csv: Vec<i32>) -> Self {
+        Self {
+            c_wid,
+            c_hei,
+            values: int_grid_csv,
+        }
+    }
+
+    pub(crate) fn get(&self, x: i32, y: i32) -> Option<i32> {
+        // Reading values is done during autotiling, in which case we check a kernel of cells around given coordinates.
+        // In this case, the most ergonomic way is to return None when out of bounds.
+        if x >= 0 && x < self.c_wid && y >= 0 && y < self.c_hei {
+            let idx = self.index(x, y);
+            debug_assert!(idx < self.values.len());
+            Some(self.values[idx])
+        } else {
+            None
+        }
+    }
+
+    pub(crate) fn set(&mut self, x: i32, y: i32, value: i32) {
+        // Setting values is done in our updating system, so we consider out-of-bounds to be an error,
+        // because it would imply that some tile has GridCoords outside the bounds of the level.
+        debug_assert!(x >= 0 && x < self.c_wid);
+        debug_assert!(y >= 0 && y < self.c_hei);
+        let idx = self.index(x, y);
+        self.values[idx] = value;
+    }
+
+    fn index(&self, x: i32, y: i32) -> usize {
+        let idx = x + ((self.c_hei - y - 1) * self.c_wid);
+        idx as usize
+    }
+}
+
+#[derive(Clone, Debug, Component, Reflect)]
+#[reflect(Component)]
+pub(crate) struct IntGridLayerAffectedLayers(pub Vec<Entity>);
 
 /// [Component] that indicates that an LDtk level or world should respawn.
 ///

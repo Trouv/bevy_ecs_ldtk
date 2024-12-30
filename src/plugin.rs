@@ -59,10 +59,19 @@ impl Plugin for LdtkPlugin {
                 (
                     systems::apply_level_selection,
                     systems::apply_level_set,
-                    systems::apply_int_grid_autotiling,
+                    systems::init_int_grid_affected_layers,
                 )
                     .chain()
                     .in_set(ProcessApiSet::PreClean),
+            )
+            .add_systems(
+                ProcessLdtkApi,
+                (
+                    systems::update_int_grid_layer_values,
+                    systems::apply_int_grid_autotiling,
+                )
+                    .chain()
+                    .in_set(ProcessApiSet::Clean),
             )
             .add_systems(
                 ProcessLdtkApi,
@@ -84,6 +93,7 @@ impl Plugin for LdtkPlugin {
             .register_type::<components::TileMetadata>()
             .register_type::<components::TileEnumTags>()
             .register_type::<components::LayerMetadata>()
-            .register_type::<components::IntGridCellValues>();
+            .register_type::<components::IntGridLayerCellValues>()
+            .register_type::<components::IntGridLayerAffectedLayers>();
     }
 }

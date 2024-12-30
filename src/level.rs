@@ -657,7 +657,7 @@ pub fn spawn_level(
                         // Initialize the lookup table for updated int grid cells.
                         commands
                             .entity(layer_entity)
-                            .insert(IntGridCellValues::from_csv(
+                            .insert(IntGridLayerCellValues::from_csv(
                                 layer_instance.c_wid,
                                 layer_instance.c_hei,
                                 layer_instance.int_grid_csv.clone(),

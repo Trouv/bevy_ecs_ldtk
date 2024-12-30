@@ -300,15 +300,20 @@ impl From<&LayerInstance> for LayerMetadata {
     }
 }
 
+/// [Component] added to any `IntGrid` tile by default.
+///
+/// It shall keep track of the values of an int grid layer so that we may access them directly for autotiling.
+/// This component is kept private to the crate because its values will be updated via a [`Changed<IntGridCell>`] system inside this crate,
+/// so we should prevent the user from accessing it before that system runs and potentially getting invalid values.
 #[derive(Clone, Debug, Component, Reflect)]
 #[reflect(Component)]
-pub(crate) struct IntGridCellValues {
+pub(crate) struct IntGridLayerCellValues {
     c_wid: i32,
     c_hei: i32,
     values: Vec<i32>,
 }
 
-impl IntGridCellValues {
+impl IntGridLayerCellValues {
     pub(crate) fn from_csv(c_wid: i32, c_hei: i32, int_grid_csv: Vec<i32>) -> Self {
         Self {
             c_wid,
@@ -322,6 +327,7 @@ impl IntGridCellValues {
         // In this case, the most ergonomic way is to return None when out of bounds.
         if x >= 0 && x < self.c_wid && y >= 0 && y < self.c_hei {
             let idx = self.index(x, y);
+            debug_assert!(idx < self.values.len());
             Some(self.values[idx])
         } else {
             None
@@ -342,6 +348,10 @@ impl IntGridCellValues {
         idx as usize
     }
 }
+
+#[derive(Clone, Debug, Component, Reflect)]
+#[reflect(Component)]
+pub(crate) struct IntGridLayerAffectedLayers(pub Vec<Entity>);
 
 /// [Component] that indicates that an LDtk level or world should respawn.
 ///

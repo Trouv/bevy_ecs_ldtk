@@ -718,7 +718,8 @@ pub fn spawn_level(
                         ))
                         .insert(Visibility::default())
                         .insert(LayerMetadata::from(layer_instance))
-                        .insert(Name::new(layer_instance.identifier.to_owned()));
+                        .insert(Name::new(layer_instance.identifier.to_owned()))
+                        .insert(EnableDynamicAutotiling);
 
                     commands.entity(ldtk_entity).add_child(layer_entity);
 

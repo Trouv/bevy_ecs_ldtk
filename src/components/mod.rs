@@ -38,6 +38,15 @@ pub struct IntGridCell {
     pub value: i32,
 }
 
+/// [Component] added to any layer by default.
+///
+/// It controls whether or not dynamic autotiling will be enabled for the layer.
+/// That is, whether updates to the `IntGrid` values on the same or on different layers, will cause
+/// the tiles on this layer to also be updated according to the autotling rules found in the [`LdtkProject`].
+#[derive(Component, Default, Debug, Reflect)]
+#[reflect(Component)]
+pub struct EnableDynamicAutotiling;
+
 /// [`Component`] that indicates that an ldtk entity should be a child of the world, not their layer.
 ///
 /// For a more detailed explanation, please see the

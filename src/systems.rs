@@ -298,7 +298,7 @@ pub(crate) fn apply_int_grid_autotiling(
         (&IntGridLayerCellValues, &IntGridLayerAffectedLayers),
         Changed<IntGridLayerCellValues>,
     >,
-    layer_query: Query<(&LayerMetadata, &Parent)>,
+    layer_query: Query<(&LayerMetadata, &Parent), With<EnableDynamicAutotiling>>,
     level_query: Query<&Parent, With<LevelIid>>,
     project_query: Query<&LdtkProjectHandle>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,

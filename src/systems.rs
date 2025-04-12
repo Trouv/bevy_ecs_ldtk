@@ -146,7 +146,7 @@ pub fn apply_level_set(
             let previous_level_maps = children
                 .into_iter()
                 .flat_map(|iterator| iterator.iter())
-                .filter_map(|child_entity| ldtk_level_query.get(*child_entity).ok())
+                .filter_map(|child_entity| ldtk_level_query.get(child_entity).ok())
                 .map(|(level_iid, entity)| (level_iid.clone(), entity))
                 .collect::<HashMap<_, _>>();
 
@@ -224,7 +224,7 @@ pub fn process_ldtk_levels(
         (
             Entity,
             &LevelIid,
-            &Parent,
+            &ChildOf,
             Option<&Respawn>,
             Option<&Children>,
         ),
@@ -356,11 +356,11 @@ pub fn clean_respawn_entities(world: &mut World) {
         for world_children in ldtk_worlds_to_clean.iter() {
             for child in world_children
                 .iter()
-                .filter(|l| other_ldtk_levels.contains(**l) || worldly_entities.contains(**l))
+                .filter(|l| other_ldtk_levels.contains(*l) || worldly_entities.contains(*l))
             {
-                entities_to_despawn_recursively.push(*child);
+                entities_to_despawn_recursively.push(child);
 
-                if let Ok(level_iid) = other_ldtk_levels.get(*child) {
+                if let Ok(level_iid) = other_ldtk_levels.get(child) {
                     level_events.send(LevelEvent::Despawned(level_iid.clone()));
                 }
             }
@@ -378,14 +378,14 @@ pub fn clean_respawn_entities(world: &mut World) {
     }
 
     for entity in entities_to_despawn_descendants {
-        world.entity_mut(entity).despawn_descendants();
+        world.entity_mut(entity).despawn_related::<Children>();
     }
 }
 
 /// Implements the functionality for `Worldly` components.
 pub fn worldly_adoption(
     mut commands: Commands,
-    ancestors: Query<&Parent>,
+    ancestors: Query<&ChildOf>,
     worldly_query: Query<Entity, Added<Worldly>>,
 ) {
     for worldly_entity in worldly_query.iter() {

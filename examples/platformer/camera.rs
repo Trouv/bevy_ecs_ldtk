@@ -17,10 +17,15 @@ pub fn camera_fit_inside_current_level(
     level_selection: Res<LevelSelection>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
 ) -> Result {
-    let Transform {
+    // Bail early if the player isn't spawned.
+    let Ok(Transform {
         translation: player_translation,
         ..
-    } = player_query.single()?;
+    }) = player_query.single()
+    else {
+        return Ok(());
+    };
+
     let player_translation = *player_translation;
 
     let (mut projection, mut camera_transform) = camera_query.single_mut()?;

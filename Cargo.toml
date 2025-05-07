@@ -30,10 +30,10 @@ path-clean = "1.0.1"
 
 [dev-dependencies]
 bevy = "0.16"
-bevy_rapier2d = "0.28.0"
+bevy_rapier2d = { git = "https://github.com/dimforge/bevy_rapier", rev = "7ecb59737be6a52ad41fb88061a32e706f507aaf" }
 fake = { version = "2.8.0", features = ["uuid"] }
 rand = "0.8"
-bevy-inspector-egui = "0.28"
+bevy-inspector-egui = "0.31"
 
 [features]
 default = ["derive", "render", "internal_levels"]

@@ -15,15 +15,15 @@ pub fn set_level_title_to_current_level(
     projects: Query<&LdtkProjectHandle>,
     project_assets: Res<Assets<LdtkProject>>,
     mut current_level_title: ResMut<LevelTitle>,
-) {
+) -> Result {
     for level_event in level_events.read() {
         if matches!(level_event, LevelEvent::Transformed(_)) {
             let level_iid = levels
-                .get_single()
+                .single()
                 .expect("only one level should be spawned at a time in this example");
 
             let level_data = project_assets
-                .get(projects.single())
+                .get(projects.single()?)
                 .expect("project asset should be loaded if levels are spawned")
                 .get_raw_level_by_iid(&level_iid.to_string())
                 .expect("spawned level should exist in the loaded project");
@@ -35,4 +35,5 @@ pub fn set_level_title_to_current_level(
             (*current_level_title).clone_from(title);
         }
     }
+    Ok(())
 }

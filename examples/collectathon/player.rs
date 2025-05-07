@@ -62,10 +62,10 @@ fn level_selection_follow_player(
     ldtk_projects: Query<&LdtkProjectHandle>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
     mut level_selection: ResMut<LevelSelection>,
-) {
-    if let Ok(player_transform) = players.get_single() {
+) -> Result {
+    if let Ok(player_transform) = players.single() {
         let ldtk_project = ldtk_project_assets
-            .get(ldtk_projects.single())
+            .get(ldtk_projects.single()?)
             .expect("ldtk project should be loaded before player is spawned");
 
         for (level_iid, level_transform) in levels.iter() {
@@ -89,4 +89,5 @@ fn level_selection_follow_player(
             }
         }
     }
+    Ok(())
 }

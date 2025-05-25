@@ -296,7 +296,7 @@ fn process_player(
     for player_entity in new_players.iter() {
         commands
             .spawn(PlayerChild)
-            .set_parent(player_entity);
+            .insert(ChildOf(player_entity));
     }
 }</code></pre></pre>
 <p>Using a simple component or a marker component for the initial spawn of an entity and processing it further in another system is called the &quot;blueprint pattern&quot;.

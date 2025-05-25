@@ -186,10 +186,11 @@ This is especially easy if, like most users, you only have one world in your gam
     mut commands: Commands,
     ldtk_projects: Query&lt;Entity, With&lt;LdtkProjectHandle&gt;&gt;,
     input: Res&lt;ButtonInput&lt;KeyCode&gt;&gt;,
-) {
+) -&gt; Result {
     if input.just_pressed(KeyCode::KeyR) {
-        commands.entity(ldtk_projects.single()).insert(Respawn);
+        commands.entity(ldtk_projects.single()?).insert(Respawn);
     }
+    Ok(())
 }
 <span class="boring">}</span></code></pre></pre>
 <p>Note that this <em>will</em> respawn <a href="../explanation/anatomy-of-the-world.html#worldly-entities">worldly</a> entities too.</p>
@@ -206,10 +207,11 @@ For example, if the game should only spawn one level at a time, operate under th
     mut commands: Commands,
     levels: Query&lt;Entity, With&lt;LevelIid&gt;&gt;,
     input: Res&lt;ButtonInput&lt;KeyCode&gt;&gt;
-) {
+) -&gt; Result {
     if input.just_pressed(KeyCode::KeyL) {
-        commands.entity(levels.single()).insert(Respawn);
+        commands.entity(levels.single()?).insert(Respawn);
     }
+    Ok(())
 }
 <span class="boring">}</span></code></pre></pre>
 <p>If the game spawns multiple levels and you want the one specified in the <code>LevelSelection</code>, you may need a more complex strategy.</p>
@@ -252,9 +254,9 @@ There is a method on <code>LdtkProject</code> to perform this search.</p>
     input: Res&lt;ButtonInput&lt;KeyCode&gt;&gt;,
     ldtk_projects: Query&lt;&amp;LdtkProjectHandle&gt;,
     ldtk_project_assets: Res&lt;Assets&lt;LdtkProject&gt;&gt;,
-) {
+) -&gt; Result {
     if input.just_pressed(KeyCode::KeyL) {
-        if let Some(only_project) = ldtk_project_assets.get(ldtk_projects.single()) {
+        if let Some(only_project) = ldtk_project_assets.get(ldtk_projects.single()?) {
             let level_selection_iid = LevelIid::new(
                 only_project
                     .find_raw_level_by_level_selection(&amp;level_selection)
@@ -271,6 +273,7 @@ There is a method on <code>LdtkProject</code> to perform this search.</p>
 
         }
     }
+    Ok(())
 }
 <span class="boring">}</span></code></pre></pre>
 <p>Note that, unlike respawning the world, respawning the level will <em>not</em> respawn any <a href="../explanation/anatomy-of-the-world.html#worldly-entities">worldly</a> entities.</p>

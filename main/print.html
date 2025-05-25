@@ -364,10 +364,10 @@ This code snippet also doubles the scale of the camera and adjusts its transform
 fn setup(mut commands: Commands, asset_server: Res&lt;AssetServer&gt;) {
     commands.spawn((
         Camera2d,
-        OrthographicProjection {
+        Projection::Orthographic(OrthographicProjection {
             scale: 0.5,
             ..OrthographicProjection::default_2d()
-        },
+        }),
         Transform::from_xyz(1280.0 / 4.0, 720.0 / 4.0, 0.0),
     ));
 
@@ -642,11 +642,11 @@ fn cache_wall_locations(
     walls: Query&lt;&amp;GridCoords, With&lt;Wall&gt;&gt;,
     ldtk_project_entities: Query&lt;&amp;LdtkProjectHandle&gt;,
     ldtk_project_assets: Res&lt;Assets&lt;LdtkProject&gt;&gt;,
-) {
+) -&gt; Result {
     for level_event in level_events.read() {
         if let LevelEvent::Spawned(level_iid) = level_event {
             let ldtk_project = ldtk_project_assets
-                .get(ldtk_project_entities.single())
+                .get(ldtk_project_entities.single()?)
                 .expect(&quot;LdtkProject should be loaded when level is spawned&quot;);
             let level = ldtk_project
                 .get_raw_level_by_iid(level_iid.get())
@@ -663,6 +663,7 @@ fn cache_wall_locations(
             *level_walls = new_level_walls;
         }
     }
+    Ok(())
 }</code></pre></pre>
 <p>Finally, update the <code>move_player_from_input</code> system to access the <code>LevelWalls</code> resource and check whether or not the player's destination is in a wall.</p>
 <pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
@@ -760,6 +761,7 @@ If they do match, update the <code>LevelSelection</code> resource, increasing it
         )
         .run();
 }
+
 
 fn check_goal(
     level_selection: ResMut&lt;LevelSelection&gt;,
@@ -976,7 +978,7 @@ fn process_player(
     for player_entity in new_players.iter() {
         commands
             .spawn(PlayerChild)
-            .set_parent(player_entity);
+            .insert(ChildOf(player_entity));
     }
 }</code></pre></pre>
 <p>Using a simple component or a marker component for the initial spawn of an entity and processing it further in another system is called the &quot;blueprint pattern&quot;.
@@ -1175,10 +1177,11 @@ This is especially easy if, like most users, you only have one world in your gam
     mut commands: Commands,
     ldtk_projects: Query&lt;Entity, With&lt;LdtkProjectHandle&gt;&gt;,
     input: Res&lt;ButtonInput&lt;KeyCode&gt;&gt;,
-) {
+) -&gt; Result {
     if input.just_pressed(KeyCode::KeyR) {
-        commands.entity(ldtk_projects.single()).insert(Respawn);
+        commands.entity(ldtk_projects.single()?).insert(Respawn);
     }
+    Ok(())
 }
 <span class="boring">}</span></code></pre></pre>
 <p>Note that this <em>will</em> respawn <a href="how-to-guides/../explanation/anatomy-of-the-world.html#worldly-entities">worldly</a> entities too.</p>
@@ -1195,10 +1198,11 @@ For example, if the game should only spawn one level at a time, operate under th
     mut commands: Commands,
     levels: Query&lt;Entity, With&lt;LevelIid&gt;&gt;,
     input: Res&lt;ButtonInput&lt;KeyCode&gt;&gt;
-) {
+) -&gt; Result {
     if input.just_pressed(KeyCode::KeyL) {
-        commands.entity(levels.single()).insert(Respawn);
+        commands.entity(levels.single()?).insert(Respawn);
     }
+    Ok(())
 }
 <span class="boring">}</span></code></pre></pre>
 <p>If the game spawns multiple levels and you want the one specified in the <code>LevelSelection</code>, you may need a more complex strategy.</p>
@@ -1241,9 +1245,9 @@ There is a method on <code>LdtkProject</code> to perform this search.</p>
     input: Res&lt;ButtonInput&lt;KeyCode&gt;&gt;,
     ldtk_projects: Query&lt;&amp;LdtkProjectHandle&gt;,
     ldtk_project_assets: Res&lt;Assets&lt;LdtkProject&gt;&gt;,
-) {
+) -&gt; Result {
     if input.just_pressed(KeyCode::KeyL) {
-        if let Some(only_project) = ldtk_project_assets.get(ldtk_projects.single()) {
+        if let Some(only_project) = ldtk_project_assets.get(ldtk_projects.single()?) {
             let level_selection_iid = LevelIid::new(
                 only_project
                     .find_raw_level_by_level_selection(&amp;level_selection)
@@ -1260,6 +1264,7 @@ There is a method on <code>LdtkProject</code> to perform this search.</p>
 
         }
     }
+    Ok(())
 }
 <span class="boring">}</span></code></pre></pre>
 <p>Note that, unlike respawning the world, respawning the level will <em>not</em> respawn any <a href="how-to-guides/../explanation/anatomy-of-the-world.html#worldly-entities">worldly</a> entities.</p>
@@ -1302,10 +1307,10 @@ Then, get the raw level data for every spawned level using the level entity's <c
     ldtk_projects: Query&lt;&amp;LdtkProjectHandle&gt;,
     ldtk_project_assets: Res&lt;Assets&lt;LdtkProject&gt;&gt;,
     mut level_selection: ResMut&lt;LevelSelection&gt;,
-) {
-    if let Ok(player_transform) = players.get_single() {
+) -&gt; Result {
+    if let Ok(player_transform) = players.single() {
         let ldtk_project = ldtk_project_assets
-            .get(ldtk_projects.single())
+            .get(ldtk_projects.single()?)
             .expect(&quot;ldtk project should be loaded before player is spawned&quot;);
 
         for (level_iid, level_transform) in levels.iter() {
@@ -1314,6 +1319,7 @@ Then, get the raw level data for every spawned level using the level entity's <c
                 .expect(&quot;level should exist in only project&quot;);
         }
     }
+    Ok(())
 }
 <span class="boring">}</span></code></pre></pre>
 <p>The level's <code>GlobalTransform</code>'s x/y value should be used as the lower-left bound of the <code>Rect</code>.
@@ -1349,10 +1355,10 @@ The full system should look something like this:</p>
     ldtk_projects: Query&lt;&amp;LdtkProjectHandle&gt;,
     ldtk_project_assets: Res&lt;Assets&lt;LdtkProject&gt;&gt;,
     mut level_selection: ResMut&lt;LevelSelection&gt;,
-) {
-    if let Ok(player_transform) = players.get_single() {
+) -&gt; Result {
+    if let Ok(player_transform) = players.single() {
         let ldtk_project = ldtk_project_assets
-            .get(ldtk_projects.single())
+            .get(ldtk_projects.single()?)
             .expect(&quot;ldtk project should be loaded before player is spawned&quot;);
 
         for (level_iid, level_transform) in levels.iter() {
@@ -1376,6 +1382,7 @@ The full system should look something like this:</p>
             }
         }
     }
+    Ok(())
 }
 <span class="boring">}</span></code></pre></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="migration-guides"><a class="header" href="#migration-guides">Migration Guides</a></h1>

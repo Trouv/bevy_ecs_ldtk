@@ -210,10 +210,10 @@ Then, get the raw level data for every spawned level using the level entity's <c
     ldtk_projects: Query&lt;&amp;LdtkProjectHandle&gt;,
     ldtk_project_assets: Res&lt;Assets&lt;LdtkProject&gt;&gt;,
     mut level_selection: ResMut&lt;LevelSelection&gt;,
-) {
-    if let Ok(player_transform) = players.get_single() {
+) -&gt; Result {
+    if let Ok(player_transform) = players.single() {
         let ldtk_project = ldtk_project_assets
-            .get(ldtk_projects.single())
+            .get(ldtk_projects.single()?)
             .expect(&quot;ldtk project should be loaded before player is spawned&quot;);
 
         for (level_iid, level_transform) in levels.iter() {
@@ -222,6 +222,7 @@ Then, get the raw level data for every spawned level using the level entity's <c
                 .expect(&quot;level should exist in only project&quot;);
         }
     }
+    Ok(())
 }
 <span class="boring">}</span></code></pre></pre>
 <p>The level's <code>GlobalTransform</code>'s x/y value should be used as the lower-left bound of the <code>Rect</code>.
@@ -257,10 +258,10 @@ The full system should look something like this:</p>
     ldtk_projects: Query&lt;&amp;LdtkProjectHandle&gt;,
     ldtk_project_assets: Res&lt;Assets&lt;LdtkProject&gt;&gt;,
     mut level_selection: ResMut&lt;LevelSelection&gt;,
-) {
-    if let Ok(player_transform) = players.get_single() {
+) -&gt; Result {
+    if let Ok(player_transform) = players.single() {
         let ldtk_project = ldtk_project_assets
-            .get(ldtk_projects.single())
+            .get(ldtk_projects.single()?)
             .expect(&quot;ldtk project should be loaded before player is spawned&quot;);
 
         for (level_iid, level_transform) in levels.iter() {
@@ -284,6 +285,7 @@ The full system should look something like this:</p>
             }
         }
     }
+    Ok(())
 }
 <span class="boring">}</span></code></pre></pre>
 

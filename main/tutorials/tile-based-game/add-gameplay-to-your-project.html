@@ -378,11 +378,11 @@ fn cache_wall_locations(
     walls: Query&lt;&amp;GridCoords, With&lt;Wall&gt;&gt;,
     ldtk_project_entities: Query&lt;&amp;LdtkProjectHandle&gt;,
     ldtk_project_assets: Res&lt;Assets&lt;LdtkProject&gt;&gt;,
-) {
+) -&gt; Result {
     for level_event in level_events.read() {
         if let LevelEvent::Spawned(level_iid) = level_event {
             let ldtk_project = ldtk_project_assets
-                .get(ldtk_project_entities.single())
+                .get(ldtk_project_entities.single()?)
                 .expect(&quot;LdtkProject should be loaded when level is spawned&quot;);
             let level = ldtk_project
                 .get_raw_level_by_iid(level_iid.get())
@@ -399,6 +399,7 @@ fn cache_wall_locations(
             *level_walls = new_level_walls;
         }
     }
+    Ok(())
 }</code></pre></pre>
 <p>Finally, update the <code>move_player_from_input</code> system to access the <code>LevelWalls</code> resource and check whether or not the player's destination is in a wall.</p>
 <pre><pre class="playground"><code class="language-rust no_run"><span class="boring">#![allow(unused)]
@@ -496,6 +497,7 @@ If they do match, update the <code>LevelSelection</code> resource, increasing it
         )
         .run();
 }
+
 
 fn check_goal(
     level_selection: ResMut&lt;LevelSelection&gt;,

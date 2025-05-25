@@ -55,7 +55,7 @@ mod tests {
 
         let image = definitions.create_int_grid_image().unwrap();
 
-        for byte in image.data.iter() {
+        for byte in image.data.unwrap_or_default().iter() {
             assert_eq!(*byte, 255);
         }
     }

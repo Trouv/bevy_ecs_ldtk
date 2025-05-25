@@ -455,7 +455,7 @@ pub mod tests {
             },
             LevelIid,
         };
-        use fake::{Fake, Faker};
+        use fake::{uuid::UUIDv4, Fake, Faker};
 
         impl<F> Dummy<LdtkJsonWithMetadataFaker<F>> for LdtkJsonWithMetadata<ExternalLevels>
         where
@@ -475,7 +475,9 @@ pub mod tests {
                             level.iid.clone(),
                             ExternalLevelMetadata::new(
                                 LevelMetadata::new(None, LevelIndices::in_root(i)),
-                                Handle::weak_from_u128(Faker.fake()),
+                                Handle::Weak(AssetId::Uuid {
+                                    uuid: UUIDv4.fake(),
+                                }),
                             ),
                         )
                     })

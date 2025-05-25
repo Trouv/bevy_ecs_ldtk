@@ -52,7 +52,7 @@ fn collect(
                 wallet.coins += 1;
                 println!("Coins: {}", wallet.coins);
 
-                commands.entity(coin_entity).despawn_recursive();
+                commands.entity(coin_entity).despawn();
             }
         }
     }

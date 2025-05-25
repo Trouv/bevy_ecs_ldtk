@@ -28,10 +28,10 @@ fn main() {
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
         Camera2d,
-        OrthographicProjection {
+        Projection::Orthographic(OrthographicProjection {
             scale: 0.5,
             ..OrthographicProjection::default_2d()
-        },
+        }),
     ));
 
     let ldtk_handle = asset_server.load("collectathon.ldtk").into();

@@ -62,7 +62,7 @@ impl Plugin for LdtkPlugin {
             )
             .add_systems(
                 ProcessLdtkApi,
-                (apply_deferred, systems::clean_respawn_entities)
+                (ApplyDeferred, systems::clean_respawn_entities)
                     .chain()
                     .in_set(ProcessApiSet::Clean),
             )

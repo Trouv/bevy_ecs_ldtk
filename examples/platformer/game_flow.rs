@@ -7,10 +7,10 @@ pub fn setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut rapier_config: Query<&mut RapierConfiguration>,
-) {
+) -> Result {
     commands.spawn(Camera2d);
 
-    rapier_config.single_mut().gravity = Vec2::new(0.0, -2000.0);
+    rapier_config.single_mut()?.gravity = Vec2::new(0.0, -2000.0);
 
     let ldtk_handle = asset_server
         .load("Typical_2D_platformer_example.ldtk")
@@ -19,6 +19,7 @@ pub fn setup(
         ldtk_handle,
         ..Default::default()
     });
+    Ok(())
 }
 
 pub fn update_level_selection(
@@ -27,10 +28,10 @@ pub fn update_level_selection(
     mut level_selection: ResMut<LevelSelection>,
     ldtk_projects: Query<&LdtkProjectHandle>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
-) {
+) -> Result {
     for (level_iid, level_transform) in &level_query {
         let ldtk_project = ldtk_project_assets
-            .get(ldtk_projects.single())
+            .get(ldtk_projects.single()?)
             .expect("Project should be loaded if level has spawned");
 
         let level = ldtk_project
@@ -56,6 +57,7 @@ pub fn update_level_selection(
             }
         }
     }
+    Ok(())
 }
 
 pub fn restart_level(

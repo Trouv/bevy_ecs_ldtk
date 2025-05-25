@@ -132,7 +132,7 @@ fn process_player(
     for player_entity in new_players.iter() {
         commands
             .spawn(PlayerChild)
-            .set_parent(player_entity);
+            .insert(ChildOf(player_entity));
     }
 }
 ```

@@ -29,10 +29,10 @@ fn main() {
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
         Camera2d,
-        OrthographicProjection {
+        Projection::Orthographic(OrthographicProjection {
             scale: 0.5,
             ..OrthographicProjection::default_2d()
-        },
+        }),
         Transform::from_xyz(1280.0 / 4.0, 720.0 / 4.0, 0.0),
     ));
 
@@ -134,11 +134,11 @@ fn cache_wall_locations(
     walls: Query<&GridCoords, With<Wall>>,
     ldtk_project_entities: Query<&LdtkProjectHandle>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
-) {
+) -> Result {
     for level_event in level_events.read() {
         if let LevelEvent::Spawned(level_iid) = level_event {
             let ldtk_project = ldtk_project_assets
-                .get(ldtk_project_entities.single())
+                .get(ldtk_project_entities.single()?)
                 .expect("LdtkProject should be loaded when level is spawned");
             let level = ldtk_project
                 .get_raw_level_by_iid(level_iid.get())
@@ -155,6 +155,7 @@ fn cache_wall_locations(
             *level_walls = new_level_walls;
         }
     }
+    Ok(())
 }
 
 fn check_goal(

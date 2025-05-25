@@ -150,7 +150,7 @@ fn main() {
         .run();
 }
 
-{{#include ../../../../examples/tile_based_game.rs:131:158}}
+{{#include ../../../../examples/tile_based_game.rs:131:159}}
 ```
 
 Finally, update the `move_player_from_input` system to access the `LevelWalls` resource and check whether or not the player's destination is in a wall.

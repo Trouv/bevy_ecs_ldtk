@@ -54,6 +54,8 @@ fn main() {
 
 Now, run the game with `$ cargo run --release` to see your first level spawning in Bevy!
 
+Is the rendered level different than shown in LDtk? See the [known limitations section](../../explanation/limitations.md)
+
 ![bevy-setup](images/bevy-setup.png)
 
 ## Spawn sprites for your LDtk entities

@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.12.0](https://github.com/Trouv/bevy_ecs_ldtk/compare/v0.11.0...v0.12.0) (2025-05-25)
+
+
+### ⚠ BREAKING CHANGES
+
+* upgrade to bevy and bevy_ecs_tilemap 0.16 ([#357](https://github.com/Trouv/bevy_ecs_ldtk/issues/357))
+
+### Features
+
+* upgrade to bevy and bevy_ecs_tilemap 0.16 ([#357](https://github.com/Trouv/bevy_ecs_ldtk/issues/357)) ([2ab5671](https://github.com/Trouv/bevy_ecs_ldtk/commit/2ab5671d33f4a48e83bd8836e506ed43744c3102))
+
+
+### Documentation Changes
+
+* document spacing and padding limitations [#94](https://github.com/Trouv/bevy_ecs_ldtk/issues/94) ([#351](https://github.com/Trouv/bevy_ecs_ldtk/issues/351)) ([ba9c7f0](https://github.com/Trouv/bevy_ecs_ldtk/commit/ba9c7f01dcb8ddbf2bd3c24579d59c9fe78e2568))
+
 ## [0.11.0](https://github.com/Trouv/bevy_ecs_ldtk/compare/v0.10.0...v0.11.0) (2024-12-23)
 
 

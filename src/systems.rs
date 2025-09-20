@@ -134,56 +134,56 @@ pub fn apply_level_set(
 ) {
     for (world_entity, level_set, children, ldtk_asset_handle, respawn) in ldtk_world_query.iter() {
         // Only apply level set if the asset has finished loading
-        if let Some(project) = ldtk_project_assets.get(ldtk_asset_handle) {
-            if let Some(load_state) =
-                asset_server.get_recursive_dependency_load_state(ldtk_asset_handle)
-            {
-                if !load_state.is_loaded() {
-                    continue;
-                }
+        let Some(project) = ldtk_project_assets.get(ldtk_asset_handle) else {
+            continue;
+        };
+        if let Some(load_state) =
+            asset_server.get_recursive_dependency_load_state(ldtk_asset_handle)
+        {
+            if !load_state.is_loaded() {
+                continue;
             }
-            // Determine what levels are currently spawned
-            let previous_level_maps = children
-                .into_iter()
-                .flat_map(|iterator| iterator.iter())
-                .filter_map(|child_entity| ldtk_level_query.get(child_entity).ok())
-                .map(|(level_iid, entity)| (level_iid.clone(), entity))
-                .collect::<HashMap<_, _>>();
+        }
+        // Determine what levels are currently spawned
+        let previous_level_maps = children
+            .into_iter()
+            .flat_map(|iterator| iterator.iter())
+            .filter_map(|child_entity| ldtk_level_query.get(child_entity).ok())
+            .map(|(level_iid, entity)| (level_iid.clone(), entity))
+            .collect::<HashMap<_, _>>();
 
-            let previous_iids: HashSet<&LevelIid> = previous_level_maps.keys().collect();
+        let previous_iids: HashSet<&LevelIid> = previous_level_maps.keys().collect();
 
-            let level_set_as_ref = level_set.iids.iter().collect::<HashSet<_>>();
+        let level_set_as_ref = level_set.iids.iter().collect::<HashSet<_>>();
 
-            // Spawn levels that should be spawned but aren't
-            let spawned_levels = level_set_as_ref
-                .difference(&previous_iids)
-                .filter_map(|&iid| project.get_raw_level_by_iid(iid.get()))
-                .map(|level| {
-                    level_events
-                        .write(LevelEvent::SpawnTriggered(LevelIid::new(level.iid.clone())));
-                    pre_spawn_level(&mut commands, level, &ldtk_settings)
-                })
-                .collect::<Vec<_>>();
+        // Spawn levels that should be spawned but aren't
+        let spawned_levels = level_set_as_ref
+            .difference(&previous_iids)
+            .filter_map(|&iid| project.get_raw_level_by_iid(iid.get()))
+            .map(|level| {
+                level_events.write(LevelEvent::SpawnTriggered(LevelIid::new(level.iid.clone())));
+                pre_spawn_level(&mut commands, level, &ldtk_settings)
+            })
+            .collect::<Vec<_>>();
 
-            commands.entity(world_entity).add_children(&spawned_levels);
+        commands.entity(world_entity).add_children(&spawned_levels);
 
-            // Despawn levels that shouldn't be spawned but are
-            for &iid in previous_iids.difference(&level_set_as_ref) {
-                let map_entity = previous_level_maps.get(iid).expect(
+        // Despawn levels that shouldn't be spawned but are
+        for &iid in previous_iids.difference(&level_set_as_ref) {
+            let map_entity = previous_level_maps.get(iid).expect(
                 "The set of previous_iids and the keys in previous_level_maps should be the same.",
             );
-                commands.entity(*map_entity).despawn();
-                level_events.write(LevelEvent::Despawned(iid.clone()));
-            }
+            commands.entity(*map_entity).despawn();
+            level_events.write(LevelEvent::Despawned(iid.clone()));
+        }
 
-            // If the world was empty before but has now been populated, and this world was
-            // supposed to respawn, then this run of the system must have completed the "spawning"
-            // portion of said respawn.
-            // In that case, the respawn component needs to be removed so that the cleanup system
-            // doesn't start the process over again.
-            if previous_iids.is_empty() && !spawned_levels.is_empty() && respawn.is_some() {
-                commands.entity(world_entity).remove::<Respawn>();
-            }
+        // If the world was empty before but has now been populated, and this world was
+        // supposed to respawn, then this run of the system must have completed the "spawning"
+        // portion of said respawn.
+        // In that case, the respawn component needs to be removed so that the cleanup system
+        // doesn't start the process over again.
+        if previous_iids.is_empty() && !spawned_levels.is_empty() && respawn.is_some() {
+            commands.entity(world_entity).remove::<Respawn>();
         }
     }
 }

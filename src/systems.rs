@@ -76,40 +76,43 @@ pub fn apply_level_selection(
     mut level_set_query: Query<(&LdtkProjectHandle, &mut LevelSet)>,
     #[cfg(feature = "render")] mut clear_color: ResMut<ClearColor>,
 ) {
-    if let Some(level_selection) = level_selection {
-        for (ldtk_handle, mut level_set) in level_set_query.iter_mut() {
-            if let Some(project) = &ldtk_project_assets.get(ldtk_handle) {
-                if let Some(level) = project.find_raw_level_by_level_selection(&level_selection) {
-                    let new_level_set = {
-                        let mut iids = HashSet::new();
-                        iids.insert(LevelIid::new(level.iid.clone()));
+    let Some(level_selection) = level_selection else {
+        return;
+    };
+    for (ldtk_handle, mut level_set) in level_set_query.iter_mut() {
+        let Some(project) = &ldtk_project_assets.get(ldtk_handle) else {
+            continue;
+        };
+        let Some(level) = project.find_raw_level_by_level_selection(&level_selection) else {
+            continue;
+        };
+        let new_level_set = {
+            let mut iids = HashSet::new();
+            iids.insert(LevelIid::new(level.iid.clone()));
 
-                        if let LevelSpawnBehavior::UseWorldTranslation {
-                            load_level_neighbors,
-                        } = ldtk_settings.level_spawn_behavior
-                        {
-                            if load_level_neighbors {
-                                iids.extend(
-                                    level
-                                        .neighbours
-                                        .iter()
-                                        .map(|n| LevelIid::new(n.level_iid.clone())),
-                                );
-                            }
-                        }
-
-                        LevelSet { iids }
-                    };
-
-                    if *level_set != new_level_set {
-                        *level_set = new_level_set;
-
-                        #[cfg(feature = "render")]
-                        if ldtk_settings.set_clear_color == SetClearColor::FromLevelBackground {
-                            clear_color.0 = level.bg_color;
-                        }
-                    }
+            if let LevelSpawnBehavior::UseWorldTranslation {
+                load_level_neighbors,
+            } = ldtk_settings.level_spawn_behavior
+            {
+                if load_level_neighbors {
+                    iids.extend(
+                        level
+                            .neighbours
+                            .iter()
+                            .map(|n| LevelIid::new(n.level_iid.clone())),
+                    );
                 }
+            }
+
+            LevelSet { iids }
+        };
+
+        if *level_set != new_level_set {
+            *level_set = new_level_set;
+
+            #[cfg(feature = "render")]
+            if ldtk_settings.set_clear_color == SetClearColor::FromLevelBackground {
+                clear_color.0 = level.bg_color;
             }
         }
     }

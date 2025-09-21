@@ -18,7 +18,7 @@ use crate::assets::{ExternalLevels, LdtkExternalLevel};
 use bevy::prelude::*;
 
 #[cfg(feature = "internal_levels")]
-fn expect_level_loaded(level: &Level) -> LoadedLevel {
+fn expect_level_loaded(level: &Level) -> LoadedLevel<'_> {
     LoadedLevel::try_from(level)
         .expect("LdtkProject construction should guarantee that internal levels are loaded")
 }
@@ -96,7 +96,7 @@ impl LdtkJsonWithMetadata<InternalLevels> {
     /// These levels are [loaded], meaning that they are type-guaranteed to have complete data.
     ///
     /// [loaded]: crate::assets::LdtkProject#raw-vs-loaded-levels
-    pub fn iter_loaded_levels(&self) -> impl Iterator<Item = LoadedLevel> {
+    pub fn iter_loaded_levels(&self) -> impl Iterator<Item = LoadedLevel<'_>> {
         self.iter_raw_levels().map(expect_level_loaded)
     }
 
@@ -105,7 +105,10 @@ impl LdtkJsonWithMetadata<InternalLevels> {
     /// These levels are [loaded], meaning that they are type-guaranteed to have complete data.
     ///
     /// [loaded]: crate::assets::LdtkProject#raw-vs-loaded-levels
-    pub fn get_loaded_level_at_indices(&self, indices: &LevelIndices) -> Option<LoadedLevel> {
+    pub fn get_loaded_level_at_indices<'a>(
+        &'a self,
+        indices: &LevelIndices,
+    ) -> Option<LoadedLevel<'a>> {
         self.get_raw_level_at_indices(indices)
             .map(expect_level_loaded)
     }
@@ -115,7 +118,7 @@ impl LdtkJsonWithMetadata<InternalLevels> {
     /// These levels are [loaded], meaning that they are type-guaranteed to have complete data.
     ///
     /// [loaded]: crate::assets::LdtkProject#raw-vs-loaded-levels
-    pub fn get_loaded_level_by_iid(&self, iid: &String) -> Option<LoadedLevel> {
+    pub fn get_loaded_level_by_iid<'a>(&'a self, iid: &String) -> Option<LoadedLevel<'a>> {
         self.get_raw_level_by_iid(iid).map(expect_level_loaded)
     }
 
@@ -127,10 +130,10 @@ impl LdtkJsonWithMetadata<InternalLevels> {
     /// These levels are [loaded], meaning that they are type-guaranteed to have complete data.
     ///
     /// [loaded]: crate::assets::LdtkProject#raw-vs-loaded-levels
-    pub fn find_loaded_level_by_level_selection(
-        &self,
+    pub fn find_loaded_level_by_level_selection<'a>(
+        &'a self,
         level_selection: &LevelSelection,
-    ) -> Option<LoadedLevel> {
+    ) -> Option<LoadedLevel<'a>> {
         self.find_raw_level_by_level_selection(level_selection)
             .map(expect_level_loaded)
     }

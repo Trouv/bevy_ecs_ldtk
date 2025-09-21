@@ -289,12 +289,12 @@ pub fn spawn_level(
         match layer_instance.layer_instance_type {
             Type::Entities => {
                 let layer_entity = commands
-                    .spawn(Transform::from_translation(
-                        layer_offset.extend(layer_z as f32),
+                    .spawn((
+                        Transform::from_translation(layer_offset.extend(layer_z as f32)),
+                        Visibility::default(),
+                        LayerMetadata::from(layer_instance),
+                        Name::new(layer_instance.identifier.to_owned()),
                     ))
-                    .insert(Visibility::default())
-                    .insert(LayerMetadata::from(layer_instance))
-                    .insert(Name::new(layer_instance.identifier.to_owned()))
                     .with_children(|commands| {
                         for entity_instance in &layer_instance.entity_instances {
                             let transform = calculate_transform_from_entity_instance(
@@ -325,11 +325,9 @@ pub fn spawn_level(
                             if !worldly_set.contains(&predicted_worldly) {
                                 let default_ldtk_entity: Box<dyn PhantomLdtkEntityTrait> =
                                     Box::new(PhantomLdtkEntity::<EntityInstanceBundle>::new());
-                                let mut entity_commands = commands.spawn_empty();
-
                                 // insert Name before evaluating LdtkEntitys so that user-provided
                                 // names aren't overwritten
-                                entity_commands.insert((
+                                let mut entity_commands = commands.spawn((
                                     EntityIid::new(entity_instance.iid.to_owned()),
                                     Name::new(entity_instance.identifier.to_owned()),
                                 ));
@@ -474,7 +472,8 @@ pub fn spawn_level(
                 {
                     let layer_entity = commands.spawn_empty().id();
 
-                    let tilemap_bundle = if layer_instance.layer_instance_type == Type::IntGrid {
+                    let mut tilemap_bundle = if layer_instance.layer_instance_type == Type::IntGrid
+                    {
                         // The current spawning of IntGrid layers doesn't allow using
                         // LayerBuilder::new_batch().
                         // So, the actual LayerBuilder usage diverges greatly here
@@ -695,21 +694,19 @@ pub fn spawn_level(
                         -grid_tile_size_difference * tile_pivot_y,
                     );
 
-                    commands
-                        .entity(layer_entity)
-                        .insert(tilemap_bundle)
-                        .insert(Transform::from_translation(
-                            (bottom_left_pixel
-                                + centering_adjustment
-                                + pivot_adjustment
-                                + layer_offset)
-                                .extend(layer_z as f32),
-                        ))
-                        .insert(Visibility::default())
-                        .insert(LayerMetadata::from(layer_instance))
-                        .insert(Name::new(layer_instance.identifier.to_owned()));
-
-                    commands.entity(ldtk_entity).add_child(layer_entity);
+                    tilemap_bundle.transform = Transform::from_translation(
+                        (bottom_left_pixel
+                            + centering_adjustment
+                            + pivot_adjustment
+                            + layer_offset)
+                            .extend(layer_z as f32),
+                    );
+                    commands.entity(layer_entity).insert((
+                        tilemap_bundle,
+                        LayerMetadata::from(layer_instance),
+                        Name::new(layer_instance.identifier.to_owned()),
+                        ChildOf(ldtk_entity),
+                    ));
 
                     layer_z += 1;
                 }

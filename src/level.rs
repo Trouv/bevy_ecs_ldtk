@@ -155,8 +155,14 @@ fn insert_spatial_bundle_for_layer_tiles(
             if let Some(tile_entity) = tile_entity {
                 let spatial_bundle = spatial_bundle_for_tiles(tile_pos.into(), grid_size);
 
-                commands.entity(tile_entity).insert(spatial_bundle);
-                commands.entity(tilemap_id.0).add_child(tile_entity);
+                commands
+                    .entity(tile_entity)
+                    .insert(spatial_bundle)
+                    // Note: At this point, the tilemap entity does not have a Transform, so adding
+                    // ChildOf would warn in the logs that the tile_entity's parent doesn't have
+                    // GlobalTransform. Separating out these inserts prevents the warning. We attach
+                    // the GlobalTransform later.
+                    .insert(ChildOf(tilemap_id.0));
             }
         }
     }

@@ -1,7 +1,7 @@
 //! Provides [LdtkPlugin] and its scheduling-related dependencies.
 use crate::{app, assets, components, resources, systems};
 use bevy::{
-    app::MainScheduleOrder, ecs::schedule::ScheduleLabel, prelude::*, transform::TransformSystems,
+    app::MainScheduleOrder, ecs::schedule::ScheduleLabel, prelude::*, 
 };
 
 /// Schedule for processing this plugin's ECS API, inserted after [Update].
@@ -49,7 +49,7 @@ impl Plugin for LdtkPlugin {
             .init_non_send_resource::<app::LdtkEntityMap>()
             .init_non_send_resource::<app::LdtkIntCellMap>()
             .init_resource::<resources::LdtkSettings>()
-            .add_event::<resources::LevelEvent>()
+            .add_message::<resources::LevelEvent>()
             .add_systems(
                 PreUpdate,
                 (systems::process_ldtk_assets, systems::process_ldtk_levels),

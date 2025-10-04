@@ -22,7 +22,7 @@ use std::collections::{HashMap, HashSet};
 #[allow(clippy::too_many_arguments)]
 pub fn process_ldtk_assets(
     mut commands: Commands,
-    mut ldtk_project_events: EventReader<AssetEvent<LdtkProject>>,
+    mut ldtk_project_events: MessageReader<AssetEvent<LdtkProject>>,
     ldtk_world_query: Query<(Entity, &LdtkProjectHandle)>,
     #[cfg(feature = "render")] ldtk_settings: Res<LdtkSettings>,
     #[cfg(feature = "render")] mut clear_color: ResMut<ClearColor>,
@@ -130,7 +130,7 @@ pub fn apply_level_set(
     ldtk_project_assets: Res<Assets<LdtkProject>>,
     ldtk_settings: Res<LdtkSettings>,
     asset_server: Res<AssetServer>,
-    mut level_events: EventWriter<LevelEvent>,
+    mut level_events: MessageWriter<LevelEvent>,
 ) {
     for (world_entity, level_set, children, ldtk_asset_handle, respawn) in ldtk_world_query.iter() {
         // Only apply level set if the asset has finished loading
@@ -232,7 +232,7 @@ pub fn process_ldtk_levels(
         Or<(Added<LevelIid>, With<Respawn>)>,
     >,
     worldly_query: Query<&Worldly>,
-    mut level_events: EventWriter<LevelEvent>,
+    mut level_events: MessageWriter<LevelEvent>,
     ldtk_settings: Res<LdtkSettings>,
 ) {
     for (ldtk_entity, level_iid, child_of, respawn, children) in level_query.iter() {
@@ -339,7 +339,7 @@ pub fn clean_respawn_entities(world: &mut World) {
         Query<(Entity, &LevelIid), With<Respawn>>,
         Query<&LevelIid, Without<Respawn>>,
         Query<Entity, With<Worldly>>,
-        EventWriter<LevelEvent>,
+        MessageWriter<LevelEvent>,
     )> = SystemState::new(world);
 
     let mut entities_to_despawn_recursively = Vec::new();
@@ -407,7 +407,7 @@ pub fn worldly_adoption(
 /// Returns the `iid`s of levels that have spawned in this update.
 ///
 /// Mean to be used in a chain with [fire_level_transformed_events].
-pub fn detect_level_spawned_events(mut reader: EventReader<LevelEvent>) -> Vec<LevelIid> {
+pub fn detect_level_spawned_events(mut reader: MessageReader<LevelEvent>) -> Vec<LevelIid> {
     let mut spawned_ids = Vec::new();
     for event in reader.read() {
         if let LevelEvent::Spawned(id) = event {
@@ -423,7 +423,7 @@ pub fn detect_level_spawned_events(mut reader: EventReader<LevelEvent>) -> Vec<L
 /// Meant to be used in a chain with [detect_level_spawned_events].
 pub fn fire_level_transformed_events(
     In(spawned_ids): In<Vec<LevelIid>>,
-    mut writer: EventWriter<LevelEvent>,
+    mut writer: MessageWriter<LevelEvent>,
 ) {
     for id in spawned_ids {
         writer.write(LevelEvent::Transformed(id));

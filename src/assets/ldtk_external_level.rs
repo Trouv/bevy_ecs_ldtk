@@ -31,7 +31,7 @@ impl LdtkExternalLevel {
     }
 
     /// Internal LDtk level data as a [`LoadedLevel`].
-    pub fn data(&self) -> LoadedLevel {
+    pub fn data(&self) -> LoadedLevel<'_> {
         LoadedLevel::try_from(&self.data)
             .expect("construction of LdtkExternalLevel should guarantee that the level is loaded.")
     }

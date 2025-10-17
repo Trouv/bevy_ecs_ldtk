@@ -1,10 +1,8 @@
 use crate::ldtk::{Definitions, Type};
 use bevy::{
-    prelude::*,
-    render::{
-        render_resource::{Extent3d, TextureDimension, TextureFormat},
-    },
     asset::RenderAssetUsages,
+    prelude::*,
+    render::render_resource::{Extent3d, TextureDimension, TextureFormat},
 };
 
 impl Definitions {

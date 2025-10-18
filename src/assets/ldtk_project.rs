@@ -311,6 +311,8 @@ impl AssetLoader for LdtkProjectLoader {
 
 #[cfg(test)]
 mod tests {
+    use std::marker::PhantomData;
+
     use super::*;
     use derive_more::Constructor;
     use fake::{uuid::UUIDv4, Dummy, Fake};
@@ -335,22 +337,13 @@ mod tests {
                 .defs
                 .tilesets
                 .iter()
-                .map(|tileset| {
-                    (
-                        tileset.uid,
-                        Handle::Weak(AssetId::Uuid {
-                            uuid: UUIDv4.fake(),
-                        }),
-                    )
-                })
+                .map(|tileset| (tileset.uid, Handle::Uuid(UUIDv4.fake(), PhantomData)))
                 .collect();
 
             LdtkProject {
                 data,
                 tileset_map,
-                int_grid_image_handle: Some(Handle::Weak(AssetId::Uuid {
-                    uuid: UUIDv4.fake(),
-                })),
+                int_grid_image_handle: Some(Handle::Uuid(UUIDv4.fake(), PhantomData)),
             }
         }
     }

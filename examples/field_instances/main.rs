@@ -42,7 +42,7 @@ fn main() {
         .init_resource::<level_title::LevelTitle>()
         .add_systems(
             Update,
-            level_title::set_level_title_to_current_level.run_if(on_event::<LevelEvent>),
+            level_title::set_level_title_to_current_level.run_if(on_message::<LevelEvent>),
         )
         .register_ldtk_entity::<enemy::EnemyBundle>("Enemy")
         // The rest of this is bevy_inspector_egui boilerplate

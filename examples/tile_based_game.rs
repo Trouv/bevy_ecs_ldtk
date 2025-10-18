@@ -130,12 +130,12 @@ fn translate_grid_coords_entities(
 
 fn cache_wall_locations(
     mut level_walls: ResMut<LevelWalls>,
-    mut level_events: EventReader<LevelEvent>,
+    mut level_messages: MessageReader<LevelEvent>,
     walls: Query<&GridCoords, With<Wall>>,
     ldtk_project_entities: Query<&LdtkProjectHandle>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
 ) -> Result {
-    for level_event in level_events.read() {
+    for level_event in level_messages.read() {
         if let LevelEvent::Spawned(level_iid) = level_event {
             let ldtk_project = ldtk_project_assets
                 .get(ldtk_project_entities.single()?)

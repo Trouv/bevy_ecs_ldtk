@@ -33,7 +33,7 @@ bevy = "0.17"
 bevy_rapier2d = { git = "https://github.com/lukasfri/bevy_rapier.git", rev = "a5c82f08c86f9fd44430081e7d6ea1a5bb296e8b" }
 fake = { version = "4.4", features = ["uuid"] }
 rand = "0.9"
-bevy-inspector-egui = "0.33.1"
+bevy-inspector-egui = "0.34.0"
 
 [features]
 default = ["derive", "render", "internal_levels"]

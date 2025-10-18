@@ -46,9 +46,7 @@ fn main() {
         )
         .register_ldtk_entity::<enemy::EnemyBundle>("Enemy")
         // The rest of this is bevy_inspector_egui boilerplate
-        .add_plugins(EguiPlugin {
-            enable_multipass_for_primary_context: true,
-        })
+        .add_plugins(EguiPlugin::default())
         .add_plugins(WorldInspectorPlugin::new())
         .register_type::<health::Health>()
         .register_type::<equipment::EquipmentDrops>()

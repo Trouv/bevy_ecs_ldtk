@@ -325,13 +325,14 @@ pub fn spawn_level(
                             if !worldly_set.contains(&predicted_worldly) {
                                 let default_ldtk_entity: Box<dyn PhantomLdtkEntityTrait> =
                                     Box::new(PhantomLdtkEntity::<EntityInstanceBundle>::new());
-                                let mut entity_commands = commands.spawn_empty();
 
-                                // insert Name before evaluating LdtkEntitys so that user-provided
-                                // names aren't overwritten
-                                entity_commands.insert((
+                                let mut entity_commands = commands.spawn((
+                                    // insert Name before evaluating LdtkEntitys so that user-provided
+                                    // names aren't overwritten
                                     EntityIid::new(entity_instance.iid.to_owned()),
                                     Name::new(entity_instance.identifier.to_owned()),
+                                    // add transform so external plugin hooks relying on `Transform` work.
+                                    transform,
                                 ));
 
                                 ldtk_map_get_or_default(
@@ -350,6 +351,7 @@ pub fn spawn_level(
                                     texture_atlases,
                                 );
 
+                                // this prevents registered bundles from overwriting transform.
                                 entity_commands.insert(transform);
                             }
                         }

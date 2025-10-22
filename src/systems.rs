@@ -76,40 +76,43 @@ pub fn apply_level_selection(
     mut level_set_query: Query<(&LdtkProjectHandle, &mut LevelSet)>,
     #[cfg(feature = "render")] mut clear_color: ResMut<ClearColor>,
 ) {
-    if let Some(level_selection) = level_selection {
-        for (ldtk_handle, mut level_set) in level_set_query.iter_mut() {
-            if let Some(project) = &ldtk_project_assets.get(ldtk_handle) {
-                if let Some(level) = project.find_raw_level_by_level_selection(&level_selection) {
-                    let new_level_set = {
-                        let mut iids = HashSet::new();
-                        iids.insert(LevelIid::new(level.iid.clone()));
+    let Some(level_selection) = level_selection else {
+        return;
+    };
+    for (ldtk_handle, mut level_set) in level_set_query.iter_mut() {
+        let Some(project) = &ldtk_project_assets.get(ldtk_handle) else {
+            continue;
+        };
+        let Some(level) = project.find_raw_level_by_level_selection(&level_selection) else {
+            continue;
+        };
+        let new_level_set = {
+            let mut iids = HashSet::new();
+            iids.insert(LevelIid::new(level.iid.clone()));
 
-                        if let LevelSpawnBehavior::UseWorldTranslation {
-                            load_level_neighbors,
-                        } = ldtk_settings.level_spawn_behavior
-                        {
-                            if load_level_neighbors {
-                                iids.extend(
-                                    level
-                                        .neighbours
-                                        .iter()
-                                        .map(|n| LevelIid::new(n.level_iid.clone())),
-                                );
-                            }
-                        }
-
-                        LevelSet { iids }
-                    };
-
-                    if *level_set != new_level_set {
-                        *level_set = new_level_set;
-
-                        #[cfg(feature = "render")]
-                        if ldtk_settings.set_clear_color == SetClearColor::FromLevelBackground {
-                            clear_color.0 = level.bg_color;
-                        }
-                    }
+            if let LevelSpawnBehavior::UseWorldTranslation {
+                load_level_neighbors,
+            } = ldtk_settings.level_spawn_behavior
+            {
+                if load_level_neighbors {
+                    iids.extend(
+                        level
+                            .neighbours
+                            .iter()
+                            .map(|n| LevelIid::new(n.level_iid.clone())),
+                    );
                 }
+            }
+
+            LevelSet { iids }
+        };
+
+        if *level_set != new_level_set {
+            *level_set = new_level_set;
+
+            #[cfg(feature = "render")]
+            if ldtk_settings.set_clear_color == SetClearColor::FromLevelBackground {
+                clear_color.0 = level.bg_color;
             }
         }
     }
@@ -134,56 +137,56 @@ pub fn apply_level_set(
 ) {
     for (world_entity, level_set, children, ldtk_asset_handle, respawn) in ldtk_world_query.iter() {
         // Only apply level set if the asset has finished loading
-        if let Some(project) = ldtk_project_assets.get(ldtk_asset_handle) {
-            if let Some(load_state) =
-                asset_server.get_recursive_dependency_load_state(ldtk_asset_handle)
-            {
-                if !load_state.is_loaded() {
-                    continue;
-                }
+        let Some(project) = ldtk_project_assets.get(ldtk_asset_handle) else {
+            continue;
+        };
+        if let Some(load_state) =
+            asset_server.get_recursive_dependency_load_state(ldtk_asset_handle)
+        {
+            if !load_state.is_loaded() {
+                continue;
             }
-            // Determine what levels are currently spawned
-            let previous_level_maps = children
-                .into_iter()
-                .flat_map(|iterator| iterator.iter())
-                .filter_map(|child_entity| ldtk_level_query.get(child_entity).ok())
-                .map(|(level_iid, entity)| (level_iid.clone(), entity))
-                .collect::<HashMap<_, _>>();
+        }
+        // Determine what levels are currently spawned
+        let previous_level_maps = children
+            .into_iter()
+            .flat_map(|iterator| iterator.iter())
+            .filter_map(|child_entity| ldtk_level_query.get(child_entity).ok())
+            .map(|(level_iid, entity)| (level_iid.clone(), entity))
+            .collect::<HashMap<_, _>>();
 
-            let previous_iids: HashSet<&LevelIid> = previous_level_maps.keys().collect();
+        let previous_iids: HashSet<&LevelIid> = previous_level_maps.keys().collect();
 
-            let level_set_as_ref = level_set.iids.iter().collect::<HashSet<_>>();
+        let level_set_as_ref = level_set.iids.iter().collect::<HashSet<_>>();
 
-            // Spawn levels that should be spawned but aren't
-            let spawned_levels = level_set_as_ref
-                .difference(&previous_iids)
-                .filter_map(|&iid| project.get_raw_level_by_iid(iid.get()))
-                .map(|level| {
-                    level_events
-                        .write(LevelEvent::SpawnTriggered(LevelIid::new(level.iid.clone())));
-                    pre_spawn_level(&mut commands, level, &ldtk_settings)
-                })
-                .collect::<Vec<_>>();
+        // Spawn levels that should be spawned but aren't
+        let spawned_levels = level_set_as_ref
+            .difference(&previous_iids)
+            .filter_map(|&iid| project.get_raw_level_by_iid(iid.get()))
+            .map(|level| {
+                level_events.write(LevelEvent::SpawnTriggered(LevelIid::new(level.iid.clone())));
+                pre_spawn_level(&mut commands, level, &ldtk_settings)
+            })
+            .collect::<Vec<_>>();
 
-            commands.entity(world_entity).add_children(&spawned_levels);
+        commands.entity(world_entity).add_children(&spawned_levels);
 
-            // Despawn levels that shouldn't be spawned but are
-            for &iid in previous_iids.difference(&level_set_as_ref) {
-                let map_entity = previous_level_maps.get(iid).expect(
+        // Despawn levels that shouldn't be spawned but are
+        for &iid in previous_iids.difference(&level_set_as_ref) {
+            let map_entity = previous_level_maps.get(iid).expect(
                 "The set of previous_iids and the keys in previous_level_maps should be the same.",
             );
-                commands.entity(*map_entity).despawn();
-                level_events.write(LevelEvent::Despawned(iid.clone()));
-            }
+            commands.entity(*map_entity).despawn();
+            level_events.write(LevelEvent::Despawned(iid.clone()));
+        }
 
-            // If the world was empty before but has now been populated, and this world was
-            // supposed to respawn, then this run of the system must have completed the "spawning"
-            // portion of said respawn.
-            // In that case, the respawn component needs to be removed so that the cleanup system
-            // doesn't start the process over again.
-            if previous_iids.is_empty() && !spawned_levels.is_empty() && respawn.is_some() {
-                commands.entity(world_entity).remove::<Respawn>();
-            }
+        // If the world was empty before but has now been populated, and this world was
+        // supposed to respawn, then this run of the system must have completed the "spawning"
+        // portion of said respawn.
+        // In that case, the respawn component needs to be removed so that the cleanup system
+        // doesn't start the process over again.
+        if previous_iids.is_empty() && !spawned_levels.is_empty() && respawn.is_some() {
+            commands.entity(world_entity).remove::<Respawn>();
         }
     }
 }
@@ -245,84 +248,89 @@ pub fn process_ldtk_levels(
         // be processed again.
         // In the case of respawning levels, the level entity will have its descendants *despawned*
         // first, by a separate system.
-        let already_processed = matches!(children, Some(children) if !children.is_empty());
+        if matches!(children, Some(children) if !children.is_empty()) {
+            continue;
+        }
 
-        if !already_processed {
-            if let Ok(ldtk_handle) = ldtk_query.get(child_of.parent()) {
-                if let Some(ldtk_project) = ldtk_project_assets.get(ldtk_handle) {
-                    // Commence the spawning
-                    let tileset_definition_map: HashMap<i32, &TilesetDefinition> = ldtk_project
-                        .json_data()
-                        .defs
-                        .tilesets
-                        .iter()
-                        .map(|t| (t.uid, t))
-                        .collect();
+        // Ensure the project is loaded.
+        let Ok(ldtk_handle) = ldtk_query.get(child_of.parent()) else {
+            continue;
+        };
+        let Some(ldtk_project) = ldtk_project_assets.get(ldtk_handle) else {
+            continue;
+        };
 
-                    let entity_definition_map =
-                        create_entity_definition_map(&ldtk_project.json_data().defs.entities);
+        // Commence the spawning
+        let tileset_definition_map: HashMap<i32, &TilesetDefinition> = ldtk_project
+            .json_data()
+            .defs
+            .tilesets
+            .iter()
+            .map(|t| (t.uid, t))
+            .collect();
 
-                    let layer_definition_map =
-                        create_layer_definition_map(&ldtk_project.json_data().defs.layers);
+        let entity_definition_map =
+            create_entity_definition_map(&ldtk_project.json_data().defs.entities);
 
-                    let int_grid_image_handle = &ldtk_project.int_grid_image_handle();
+        let layer_definition_map =
+            create_layer_definition_map(&ldtk_project.json_data().defs.layers);
 
-                    let worldly_set = worldly_query.iter().cloned().collect();
+        let int_grid_image_handle = &ldtk_project.int_grid_image_handle();
 
-                    let maybe_level_data = match ldtk_project.data() {
-                        #[cfg(feature = "internal_levels")]
-                        LdtkProjectData::Standalone(project) => project
-                            .level_map()
-                            .get(level_iid.get())
-                            .and_then(|level_metadata| {
-                                let loaded_level = project
-                                    .get_loaded_level_at_indices(level_metadata.indices())?;
+        let worldly_set = worldly_query.iter().cloned().collect();
 
-                                Some((level_metadata, loaded_level))
-                            }),
-                        #[cfg(feature = "external_levels")]
-                        LdtkProjectData::Parent(project) => project
-                            .level_map()
-                            .get(level_iid.get())
-                            .and_then(|level_metadata| {
-                                let loaded_level = project.get_external_level_at_indices(
-                                    &level_assets,
-                                    level_metadata.metadata().indices(),
-                                )?;
+        let maybe_level_data =
+            match ldtk_project.data() {
+                #[cfg(feature = "internal_levels")]
+                LdtkProjectData::Standalone(project) => project
+                    .level_map()
+                    .get(level_iid.get())
+                    .and_then(|level_metadata| {
+                        let loaded_level =
+                            project.get_loaded_level_at_indices(level_metadata.indices())?;
 
-                                Some((level_metadata.metadata(), loaded_level))
-                            }),
-                    };
+                        Some((level_metadata, loaded_level))
+                    }),
+                #[cfg(feature = "external_levels")]
+                LdtkProjectData::Parent(project) => project
+                    .level_map()
+                    .get(level_iid.get())
+                    .and_then(|level_metadata| {
+                        let loaded_level = project.get_external_level_at_indices(
+                            &level_assets,
+                            level_metadata.metadata().indices(),
+                        )?;
 
-                    if let Some((level_metadata, loaded_level)) = maybe_level_data {
-                        spawn_level(
-                            loaded_level,
-                            level_metadata.bg_image(),
-                            &mut commands,
-                            &asset_server,
-                            &images,
-                            &mut texture_atlases,
-                            &ldtk_entity_map,
-                            &ldtk_int_cell_map,
-                            &entity_definition_map,
-                            &layer_definition_map,
-                            ldtk_project.tileset_map(),
-                            &tileset_definition_map,
-                            int_grid_image_handle,
-                            worldly_set,
-                            ldtk_entity,
-                            &ldtk_settings,
-                        );
-                        level_events.write(LevelEvent::Spawned(LevelIid::new(
-                            loaded_level.iid().clone(),
-                        )));
-                    }
+                        Some((level_metadata.metadata(), loaded_level))
+                    }),
+            };
 
-                    if respawn.is_some() {
-                        commands.entity(ldtk_entity).remove::<Respawn>();
-                    }
-                }
-            }
+        if let Some((level_metadata, loaded_level)) = maybe_level_data {
+            spawn_level(
+                loaded_level,
+                level_metadata.bg_image(),
+                &mut commands,
+                &asset_server,
+                &images,
+                &mut texture_atlases,
+                &ldtk_entity_map,
+                &ldtk_int_cell_map,
+                &entity_definition_map,
+                &layer_definition_map,
+                ldtk_project.tileset_map(),
+                &tileset_definition_map,
+                int_grid_image_handle,
+                worldly_set,
+                ldtk_entity,
+                &ldtk_settings,
+            );
+            level_events.write(LevelEvent::Spawned(LevelIid::new(
+                loaded_level.iid().clone(),
+            )));
+        }
+
+        if respawn.is_some() {
+            commands.entity(ldtk_entity).remove::<Respawn>();
         }
     }
 }

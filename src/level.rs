@@ -478,8 +478,49 @@ pub fn spawn_level(
                 {
                     let layer_entity = commands.spawn_empty().id();
 
-                    let mut tilemap_bundle = if layer_instance.layer_instance_type == Type::IntGrid
-                    {
+                    let LayerDefinition {
+                        tile_pivot_x,
+                        tile_pivot_y,
+                        ..
+                    } = &layer_definition_map
+                        .get(&layer_instance.layer_def_uid)
+                        .expect("Encountered layer without definition");
+
+                    // The math for determining the x/y of a tilemap layer depends heavily on
+                    // both the layer's grid size and the tileset's tile size.
+                    // In particular, we care about their difference for properly reversing y
+                    // direction and for tile pivot calculations.
+                    let grid_tile_size_difference = grid_size - tile_size;
+
+                    // It is useful to determine what we should treat as the desired "origin" of
+                    // the tilemap in bevy space.
+                    // This will be the bottom left pixel of the tilemap.
+                    // The y value is affected when there is a difference between the grid size and
+                    // tile size - it sinks below 0 when the grid size is greater.
+                    let bottom_left_pixel = Vec2::new(0., grid_tile_size_difference);
+
+                    // Tiles in bevy_ecs_tilemap are anchored to the center of the tile.
+                    // We need to cancel out this anchoring so that layers of different sizes will
+                    // stack on top of eachother as they do in LDtk.
+                    let centering_adjustment = Vec2::splat(tile_size / 2.);
+
+                    // Layers in LDtk can have a pivot value that acts like an anchor.
+                    // The amount that a tile is translated by this pivot is simply the difference
+                    // between grid_size and tile_size again.
+                    let pivot_adjustment = Vec2::new(
+                        grid_tile_size_difference * tile_pivot_x,
+                        -grid_tile_size_difference * tile_pivot_y,
+                    );
+
+                    let tilemap_transform = Transform::from_translation(
+                        (bottom_left_pixel
+                            + centering_adjustment
+                            + pivot_adjustment
+                            + layer_offset)
+                            .extend(layer_z as f32),
+                    );
+
+                    let tilemap_bundle = if layer_instance.layer_instance_type == Type::IntGrid {
                         // The current spawning of IntGrid layers doesn't allow using
                         // LayerBuilder::new_batch().
                         // So, the actual LayerBuilder usage diverges greatly here
@@ -602,6 +643,7 @@ pub fn spawn_level(
                         }
 
                         TilemapBundle {
+                            transform: tilemap_transform,
                             grid_size: tilemap_grid_size,
                             size,
                             spacing,
@@ -648,6 +690,7 @@ pub fn spawn_level(
                         }
 
                         TilemapBundle {
+                            transform: tilemap_transform,
                             grid_size: tilemap_grid_size,
                             size,
                             spacing,
@@ -666,47 +709,6 @@ pub fn spawn_level(
                         TilemapId(layer_entity),
                     );
 
-                    let LayerDefinition {
-                        tile_pivot_x,
-                        tile_pivot_y,
-                        ..
-                    } = &layer_definition_map
-                        .get(&layer_instance.layer_def_uid)
-                        .expect("Encountered layer without definition");
-
-                    // The math for determining the x/y of a tilemap layer depends heavily on
-                    // both the layer's grid size and the tileset's tile size.
-                    // In particular, we care about their difference for properly reversing y
-                    // direction and for tile pivot calculations.
-                    let grid_tile_size_difference = grid_size - tile_size;
-
-                    // It is useful to determine what we should treat as the desired "origin" of
-                    // the tilemap in bevy space.
-                    // This will be the bottom left pixel of the tilemap.
-                    // The y value is affected when there is a difference between the grid size and
-                    // tile size - it sinks below 0 when the grid size is greater.
-                    let bottom_left_pixel = Vec2::new(0., grid_tile_size_difference);
-
-                    // Tiles in bevy_ecs_tilemap are anchored to the center of the tile.
-                    // We need to cancel out this anchoring so that layers of different sizes will
-                    // stack on top of eachother as they do in LDtk.
-                    let centering_adjustment = Vec2::splat(tile_size / 2.);
-
-                    // Layers in LDtk can have a pivot value that acts like an anchor.
-                    // The amount that a tile is translated by this pivot is simply the difference
-                    // between grid_size and tile_size again.
-                    let pivot_adjustment = Vec2::new(
-                        grid_tile_size_difference * tile_pivot_x,
-                        -grid_tile_size_difference * tile_pivot_y,
-                    );
-
-                    tilemap_bundle.transform = Transform::from_translation(
-                        (bottom_left_pixel
-                            + centering_adjustment
-                            + pivot_adjustment
-                            + layer_offset)
-                            .extend(layer_z as f32),
-                    );
                     commands.entity(layer_entity).insert((
                         tilemap_bundle,
                         LayerMetadata::from(layer_instance),

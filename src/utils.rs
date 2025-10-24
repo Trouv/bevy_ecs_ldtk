@@ -250,8 +250,10 @@ pub(crate) fn set_all_tiles_with_func(
     for x in 0..size.x {
         for y in 0..size.y {
             let tile_pos = TilePos { x, y };
-            let tile_entity = func(tile_pos)
-                .map(|tile_bundle| commands.spawn(tile_bundle).insert(tilemap_id).id());
+            let tile_entity = func(tile_pos).map(|mut tile_bundle| {
+                tile_bundle.tile_bundle.tilemap_id = tilemap_id;
+                commands.spawn(tile_bundle).id()
+            });
             match tile_entity {
                 Some(tile_entity) => storage.set(&tile_pos, tile_entity),
                 None => {

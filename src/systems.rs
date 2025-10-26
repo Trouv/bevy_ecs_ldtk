@@ -240,6 +240,7 @@ pub fn process_ldtk_levels(
     mut level_events: EventWriter<LevelEvent>,
     ldtk_settings: Res<LdtkSettings>,
 ) {
+    let mut worldly_set = None;
     for (ldtk_entity, level_iid, child_of, respawn, children) in level_query.iter() {
         // Checking if the level has any children is an okay method of checking whether it has
         // already been processed.
@@ -279,8 +280,6 @@ pub fn process_ldtk_levels(
 
         let int_grid_image_handle = &ldtk_project.int_grid_image_handle();
 
-        let worldly_set = worldly_query.iter().cloned().collect();
-
         let maybe_level_data =
             match ldtk_project.data() {
                 #[cfg(feature = "internal_levels")]
@@ -308,6 +307,8 @@ pub fn process_ldtk_levels(
             };
 
         if let Some((level_metadata, loaded_level)) = maybe_level_data {
+            let worldly_set =
+                worldly_set.get_or_insert_with(|| worldly_query.iter().cloned().collect());
             spawn_level(
                 loaded_level,
                 level_metadata.bg_image(),

@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.12.1](https://github.com/Trouv/bevy_ecs_ldtk/compare/v0.12.0...v0.12.1) (2025-10-26)
+
+
+### Bug Fixes
+
+* address lifetime lints and use Level lifetimes in LoadedLevel methods ([#364](https://github.com/Trouv/bevy_ecs_ldtk/issues/364)) ([7af1c03](https://github.com/Trouv/bevy_ecs_ldtk/commit/7af1c0393e5b100c5ac80b7f34215234b40fe5b0))
+* only generate the worldly_set once per frame and only when spawning. ([#367](https://github.com/Trouv/bevy_ecs_ldtk/issues/367)) ([ac3b05e](https://github.com/Trouv/bevy_ecs_ldtk/commit/ac3b05e18526d32a199d5b89b4f6e87320ce3406))
+* reduce the number of commands issued when inserting/spawning ([#366](https://github.com/Trouv/bevy_ecs_ldtk/issues/366)) ([392d9f5](https://github.com/Trouv/bevy_ecs_ldtk/commit/392d9f5106a1150b6e4c2b17754b5d1cd1675d4f))
+
 ## [0.12.0](https://github.com/Trouv/bevy_ecs_ldtk/compare/v0.11.0...v0.12.0) (2025-05-25)
 
 

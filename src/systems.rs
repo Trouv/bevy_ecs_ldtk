@@ -209,6 +209,7 @@ fn pre_spawn_level(commands: &mut Commands, level: &Level, ldtk_settings: &LdtkS
             Transform::from_translation(translation),
             Visibility::default(),
             Name::new(level.identifier.clone()),
+            Respawn,
         ))
         .id()
 }
@@ -226,35 +227,13 @@ pub fn process_ldtk_levels(
     ldtk_entity_map: NonSend<LdtkEntityMap>,
     ldtk_int_cell_map: NonSend<LdtkIntCellMap>,
     ldtk_query: Query<&LdtkProjectHandle>,
-    level_query: Query<
-        (
-            Entity,
-            &LevelIid,
-            &ChildOf,
-            Option<&Respawn>,
-            Option<&Children>,
-        ),
-        Or<(Added<LevelIid>, With<Respawn>)>,
-    >,
+    level_query: Query<(Entity, &LevelIid, &ChildOf), With<Respawn>>,
     worldly_query: Query<&Worldly>,
     mut level_events: EventWriter<LevelEvent>,
     ldtk_settings: Res<LdtkSettings>,
 ) {
     let mut worldly_set = None;
-    for (ldtk_entity, level_iid, child_of, respawn, children) in level_query.iter() {
-        // Checking if the level has any children is an okay method of checking whether it has
-        // already been processed.
-        // Users will most likely not be adding children to the level entity betwen its creation
-        // and its processing.
-        //
-        // Furthermore, there are no circumstances where an already-processed level entity needs to
-        // be processed again.
-        // In the case of respawning levels, the level entity will have its descendants *despawned*
-        // first, by a separate system.
-        if matches!(children, Some(children) if !children.is_empty()) {
-            continue;
-        }
-
+    for (ldtk_entity, level_iid, child_of) in level_query.iter() {
         // Ensure the project is loaded.
         let Ok(ldtk_handle) = ldtk_query.get(child_of.parent()) else {
             continue;
@@ -332,9 +311,7 @@ pub fn process_ldtk_levels(
             )));
         }
 
-        if respawn.is_some() {
-            commands.entity(ldtk_entity).remove::<Respawn>();
-        }
+        commands.entity(ldtk_entity).remove::<Respawn>();
     }
 }
 

@@ -7,10 +7,7 @@ const ASPECT_RATIO: f32 = 16. / 9.;
 
 #[allow(clippy::type_complexity)]
 pub fn camera_fit_inside_current_level(
-    mut camera_query: Query<
-        (&mut bevy::render::camera::Projection, &mut Transform),
-        Without<Player>,
-    >,
+    mut camera_query: Query<(&mut bevy::camera::Projection, &mut Transform), Without<Player>>,
     player_query: Query<&Transform, With<Player>>,
     level_query: Query<(&Transform, &LevelIid), (Without<Projection>, Without<Player>)>,
     ldtk_projects: Query<&LdtkProjectHandle>,
@@ -50,7 +47,7 @@ pub fn camera_fit_inside_current_level(
                 let height = (level.px_hei as f32 / 9.).round() * 9.;
                 let width = height * ASPECT_RATIO;
                 orthographic_projection.scaling_mode =
-                    bevy::render::camera::ScalingMode::Fixed { width, height };
+                    bevy::camera::ScalingMode::Fixed { width, height };
                 camera_transform.translation.x =
                     (player_translation.x - level_transform.translation.x - width / 2.)
                         .clamp(0., level.px_wid as f32 - width);
@@ -60,7 +57,7 @@ pub fn camera_fit_inside_current_level(
                 let width = (level.px_wid as f32 / 16.).round() * 16.;
                 let height = width / ASPECT_RATIO;
                 orthographic_projection.scaling_mode =
-                    bevy::render::camera::ScalingMode::Fixed { width, height };
+                    bevy::camera::ScalingMode::Fixed { width, height };
                 camera_transform.translation.y =
                     (player_translation.y - level_transform.translation.y - height / 2.)
                         .clamp(0., level.px_hei as f32 - height);

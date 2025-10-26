@@ -10,7 +10,7 @@ use bevy_ecs_ldtk::prelude::*;
 pub struct LevelTitle(String);
 
 pub fn set_level_title_to_current_level(
-    mut level_events: EventReader<LevelEvent>,
+    mut level_events: MessageReader<LevelEvent>,
     levels: Query<&LevelIid>,
     projects: Query<&LdtkProjectHandle>,
     project_assets: Res<Assets<LdtkProject>>,

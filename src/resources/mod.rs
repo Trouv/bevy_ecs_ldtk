@@ -13,21 +13,16 @@ mod level_event;
 pub use level_event::LevelEvent;
 
 /// Option in [LdtkSettings] that determines clear color behavior.
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+#[derive(Copy, Clone, Default, Eq, PartialEq, Debug)]
 pub enum SetClearColor {
     /// Don't update the clear color at all
+    #[default]
     No,
     /// Update the clear color to use the background color of the current level
     /// (determined by [`LevelSelection`])
     FromLevelBackground,
     /// Update the clear color to use the entire editor's background color
     FromEditorBackground,
-}
-
-impl Default for SetClearColor {
-    fn default() -> Self {
-        Self::No
-    }
 }
 
 /// Option in [LdtkSettings] that determines level spawn behavior.

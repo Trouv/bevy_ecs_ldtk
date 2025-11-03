@@ -49,7 +49,7 @@ pub fn spawn_ground_sensor(
 
 pub fn ground_detection(
     mut ground_sensors: Query<&mut GroundSensor>,
-    mut collisions: EventReader<CollisionEvent>,
+    mut collisions: MessageReader<CollisionEvent>,
     collidables: Query<Entity, (With<Collider>, Without<Sensor>)>,
 ) {
     for collision_event in collisions.read() {

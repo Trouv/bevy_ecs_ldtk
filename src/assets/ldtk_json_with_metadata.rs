@@ -447,6 +447,8 @@ pub mod tests {
 
     #[cfg(feature = "external_levels")]
     mod external_levels {
+        use std::marker::PhantomData;
+
         use super::*;
         use crate::{
             assets::{
@@ -478,9 +480,7 @@ pub mod tests {
                             level.iid.clone(),
                             ExternalLevelMetadata::new(
                                 LevelMetadata::new(None, LevelIndices::in_root(i)),
-                                Handle::Weak(AssetId::Uuid {
-                                    uuid: UUIDv4.fake(),
-                                }),
+                                Handle::Uuid(UUIDv4.fake(), PhantomData),
                             ),
                         )
                     })

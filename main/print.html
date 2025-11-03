@@ -639,12 +639,12 @@ It will also need access to the <code>LdtkProject</code> data to find the curren
 
 fn cache_wall_locations(
     mut level_walls: ResMut&lt;LevelWalls&gt;,
-    mut level_events: EventReader&lt;LevelEvent&gt;,
+    mut level_messages: MessageReader&lt;LevelEvent&gt;,
     walls: Query&lt;&amp;GridCoords, With&lt;Wall&gt;&gt;,
     ldtk_project_entities: Query&lt;&amp;LdtkProjectHandle&gt;,
     ldtk_project_assets: Res&lt;Assets&lt;LdtkProject&gt;&gt;,
 ) -&gt; Result {
-    for level_event in level_events.read() {
+    for level_event in level_messages.read() {
         if let LevelEvent::Spawned(level_iid) = level_event {
             let ldtk_project = ldtk_project_assets
                 .get(ldtk_project_entities.single()?)

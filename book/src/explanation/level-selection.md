@@ -10,6 +10,19 @@ Once this resource is added or changed, levels will be spawned/despawned in orde
 One additional feature worth pointing out is loading level neighbors.
 You can enable this with the settings resource [`LdtkSettings`](https://docs.rs/bevy_ecs_ldtk/0.13.0/bevy_ecs_ldtk/prelude/struct.LdtkSettings.html): <!-- x-release-please-version -->
 
+```rust
+fn main() {
+    assert_eq!(1 + 2, 4);
+}
+```
+
+
+```rust
+fn main() -> Result<(), String> {
+    Err("HELP".to_string())
+}
+```
+
 ```rust,no_run
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
@@ -17,7 +30,7 @@ use bevy_ecs_ldtk::prelude::*;
 fn main() {
     App::new()
         // other App builders
-        .insert_resource(LevelSelection::index(0))
+        .insert_resource(LevelSelection::index(0));
         .insert_resource(LdtkSettings {
             level_spawn_behavior: LevelSpawnBehavior::UseWorldTranslation {
                 load_level_neighbors: true

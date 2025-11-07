@@ -32,7 +32,7 @@ jobs:
       - name: Install mdbook-keeper
         run: cargo install mdbook-keeper --git https://github.com/tfpk/mdbook-keeper/ --rev 12f116d0840c69a6786dba3865768af3fde634f3 --force
       - name: test and build book
-        run: ./ci/test-book.sh
+        run: bash ./ci/test-book.sh
       - name: Publish
         uses: peaceiris/actions-gh-pages@v3
         with:

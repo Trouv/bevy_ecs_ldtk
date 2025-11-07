@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 CARGO_MANIFEST_DIR=. mdbook build book 2>&1 | tee test-book-err
 

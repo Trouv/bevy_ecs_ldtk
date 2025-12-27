@@ -13,6 +13,7 @@
 - [Anatomy of the World](explanation/anatomy-of-the-world.md)
 - [Plugin Schedule]()
 - [Asset Model]()
+- [Limitations](explanation/limitations.md)
 # How-To Guides
 - [Register Bundles for Intgrid Tiles and LDtk Entities]()
 - [Process Entities Further with Blueprints]()

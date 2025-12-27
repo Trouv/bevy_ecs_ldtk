@@ -36,6 +36,7 @@ Then, get the raw level data for every spawned level using the level entity's `L
 {{ #include ../../../examples/collectathon/player.rs:59:74 }}
         }
     }
+    Ok(())
 }
 ```
 
@@ -57,5 +58,5 @@ The full system should look something like this:
 # use bevy_ecs_ldtk::prelude::*;
 # #[derive(Component)]
 # struct Player;
-{{ #include ../../../examples/collectathon/player.rs:59:92 }}
+{{ #include ../../../examples/collectathon/player.rs:59:93 }}
 ```

@@ -1,5 +1,5 @@
 # Respawn Levels and Worlds
-Internally, `bevy_ecs_ldtk` uses a [`Respawn`](https://docs.rs/bevy_ecs_ldtk/0.11.0/bevy_ecs_ldtk/prelude/struct.Respawn.html) component on worlds and levels to assist in the spawning process. <!-- x-release-please-version -->
+Internally, `bevy_ecs_ldtk` uses a [`Respawn`](https://docs.rs/bevy_ecs_ldtk/0.13.0/bevy_ecs_ldtk/prelude/struct.Respawn.html) component on worlds and levels to assist in the spawning process. <!-- x-release-please-version -->
 This can be leveraged by users to implement a simple level restart feature, or an even more heavy-handed world restart feature.
 
 This code is from the `collectathon` cargo example.
@@ -10,7 +10,7 @@ This is especially easy if, like most users, you only have one world in your gam
 ```rust,no_run
 # use bevy::prelude::*;
 # use bevy_ecs_ldtk::prelude::*;
-{{ #include ../../../examples/collectathon/respawn.rs:33:41 }}
+{{ #include ../../../examples/collectathon/respawn.rs:33:42 }}
 ```
 
 Note that this *will* respawn [worldly](../explanation/anatomy-of-the-world.html#worldly-entities) entities too.
@@ -28,10 +28,11 @@ fn respawn_only_level(
     mut commands: Commands,
     levels: Query<Entity, With<LevelIid>>,
     input: Res<ButtonInput<KeyCode>>
-) {
+) -> Result {
     if input.just_pressed(KeyCode::KeyL) {
-        commands.entity(levels.single()).insert(Respawn);
+        commands.entity(levels.single()?).insert(Respawn);
     }
+    Ok(())
 }
 ```
 
@@ -53,9 +54,9 @@ There is a method on `LdtkProject` to perform this search.
 {{ #include ../../../examples/collectathon/respawn.rs:13:17 }}
     ldtk_projects: Query<&LdtkProjectHandle>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
-) {
+) -> Result {
     if input.just_pressed(KeyCode::KeyL) {
-        if let Some(only_project) = ldtk_project_assets.get(ldtk_projects.single()) {
+        if let Some(only_project) = ldtk_project_assets.get(ldtk_projects.single()?) {
             let level_selection_iid = LevelIid::new(
                 only_project
                     .find_raw_level_by_level_selection(&level_selection)
@@ -72,6 +73,7 @@ There is a method on `LdtkProject` to perform this search.
 
         }
     }
+    Ok(())
 }
 ```
 

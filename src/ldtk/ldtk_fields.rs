@@ -81,7 +81,7 @@ macro_rules! create_iter_plural_fields_method {
             /// - returns [`LdtkFieldsError::FieldNotFound`] if no field with the given identifier exists.
             #[doc = " - returns [`LdtkFieldsError::WrongFieldType`] if the field is not [`FieldValue::" $variant "`]."]
             /// - returns [`LdtkFieldsError::UnexpectedNull`] if **any** element of the field is null.
-            fn [< iter_ $variant:snake _field >](&self, identifier: &str) -> Result<AllSomeIter<$item>, LdtkFieldsError> {
+            fn [< iter_ $variant:snake _field >]<'a>(&'a self, identifier: &str) -> Result<AllSomeIter<'a, $item>, LdtkFieldsError> {
                 let [< $variant:snake >]= self.[< get_maybe_ $variant:snake _field >](identifier)?;
 
                 [< $variant:snake >].try_into().map_err(|_| LdtkFieldsError::UnexpectedNull { identifier: identifier.to_string() })

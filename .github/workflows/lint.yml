@@ -30,7 +30,7 @@ jobs:
       - name: Install stable toolchain
         uses: dtolnay/rust-toolchain@stable
       - name: Install Dependencies
-        run: sudo apt-get update; sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev
       - name: Run cargo check (minimal features, internal levels, exclude examples)
         run: cargo check --no-default-features --features internal_levels
       - name: Run cargo check (minimal features, external levels, exclude examples)
@@ -60,7 +60,7 @@ jobs:
       - name: Install stable toolchain
         uses: dtolnay/rust-toolchain@stable
       - name: Install Dependencies
-        run: sudo apt-get update; sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev
       - name: Run cargo test
         run: cargo test --all-features
 
@@ -86,7 +86,7 @@ jobs:
         with:
           components: clippy
       - name: Install Dependencies
-        run: sudo apt-get update; sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev
       - name: Run clippy
         run: cargo clippy --all-targets --all-features -- -D warnings
 
@@ -129,5 +129,5 @@ jobs:
           mdbook-version: '0.4.35'
       - name: Install mdbook-keeper
         run: cargo install mdbook-keeper --git https://github.com/tfpk/mdbook-keeper/ --rev 12f116d0840c69a6786dba3865768af3fde634f3 --force
-      - name: Run mdbook build (tests all code snippets)
-        run: CARGO_MANIFEST_DIR=. mdbook build book
+      - name: Test mdbook code snippets
+        run: bash ./ci/test-book.sh

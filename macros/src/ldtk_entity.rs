@@ -28,7 +28,7 @@ pub fn expand_ldtk_entity_derive(ast: syn::DeriveInput) -> proc_macro::TokenStre
         let sprite = field
             .attrs
             .iter()
-            .find(|a| *a.path.get_ident().as_ref().unwrap() == SPRITE_ATTRIBUTE_NAME);
+            .find(|a| *a.path().get_ident().as_ref().unwrap() == SPRITE_ATTRIBUTE_NAME);
         if let Some(attribute) = sprite {
             field_constructions.push(expand_sprite_attribute(attribute, field_name, field_type));
             continue;
@@ -37,7 +37,7 @@ pub fn expand_ldtk_entity_derive(ast: syn::DeriveInput) -> proc_macro::TokenStre
         let sprite_sheet = field
             .attrs
             .iter()
-            .find(|a| *a.path.get_ident().as_ref().unwrap() == SPRITE_SHEET_ATTRIBUTE_NAME);
+            .find(|a| *a.path().get_ident().as_ref().unwrap() == SPRITE_SHEET_ATTRIBUTE_NAME);
         if let Some(attribute) = sprite_sheet {
             field_constructions.push(expand_sprite_sheet_attribute(
                 attribute, field_name, field_type,
@@ -48,7 +48,7 @@ pub fn expand_ldtk_entity_derive(ast: syn::DeriveInput) -> proc_macro::TokenStre
         let worldly = field
             .attrs
             .iter()
-            .find(|a| *a.path.get_ident().as_ref().unwrap() == WORLDLY_ATTRIBUTE_NAME);
+            .find(|a| *a.path().get_ident().as_ref().unwrap() == WORLDLY_ATTRIBUTE_NAME);
         if let Some(attribute) = worldly {
             field_constructions.push(expand_worldly_attribute(attribute, field_name, field_type));
             continue;
@@ -57,7 +57,7 @@ pub fn expand_ldtk_entity_derive(ast: syn::DeriveInput) -> proc_macro::TokenStre
         let grid_coords = field
             .attrs
             .iter()
-            .find(|a| *a.path.get_ident().as_ref().unwrap() == GRID_COORDS_ATTRIBUTE_NAME);
+            .find(|a| *a.path().get_ident().as_ref().unwrap() == GRID_COORDS_ATTRIBUTE_NAME);
         if let Some(attribute) = grid_coords {
             field_constructions.push(expand_grid_coords_attribute(
                 attribute, field_name, field_type,
@@ -68,7 +68,7 @@ pub fn expand_ldtk_entity_derive(ast: syn::DeriveInput) -> proc_macro::TokenStre
         let ldtk_entity = field
             .attrs
             .iter()
-            .find(|a| *a.path.get_ident().as_ref().unwrap() == LDTK_ENTITY_ATTRIBUTE_NAME);
+            .find(|a| *a.path().get_ident().as_ref().unwrap() == LDTK_ENTITY_ATTRIBUTE_NAME);
         if let Some(attribute) = ldtk_entity {
             field_constructions.push(expand_ldtk_entity_attribute(
                 attribute, field_name, field_type,
@@ -76,10 +76,9 @@ pub fn expand_ldtk_entity_derive(ast: syn::DeriveInput) -> proc_macro::TokenStre
             continue;
         }
 
-        let from_entity_instance = field
-            .attrs
-            .iter()
-            .find(|a| *a.path.get_ident().as_ref().unwrap() == FROM_ENTITY_INSTANCE_ATTRIBUTE_NAME);
+        let from_entity_instance = field.attrs.iter().find(|a| {
+            *a.path().get_ident().as_ref().unwrap() == FROM_ENTITY_INSTANCE_ATTRIBUTE_NAME
+        });
         if let Some(attribute) = from_entity_instance {
             field_constructions.push(expand_from_entity_instance_attribute(
                 attribute, field_name, field_type,
@@ -90,7 +89,7 @@ pub fn expand_ldtk_entity_derive(ast: syn::DeriveInput) -> proc_macro::TokenStre
         let with = field
             .attrs
             .iter()
-            .find(|a| *a.path.get_ident().as_ref().unwrap() == WITH_ATTRIBUTE_NAME);
+            .find(|a| *a.path().get_ident().as_ref().unwrap() == WITH_ATTRIBUTE_NAME);
         if let Some(attribute) = with {
             field_constructions.push(expand_with_attribute(attribute, field_name, field_type));
             continue;
@@ -99,7 +98,7 @@ pub fn expand_ldtk_entity_derive(ast: syn::DeriveInput) -> proc_macro::TokenStre
         let default = field
             .attrs
             .iter()
-            .find(|a| *a.path.get_ident().as_ref().unwrap() == DEFAULT_ATTRIBUTE_NAME);
+            .find(|a| *a.path().get_ident().as_ref().unwrap() == DEFAULT_ATTRIBUTE_NAME);
         if let Some(attribute) = default {
             field_constructions.push(expand_default_attribute(attribute, field_name, field_type));
             continue;
@@ -156,20 +155,13 @@ fn expand_sprite_attribute(
     }
 
     match attribute
-        .parse_meta()
-        .expect("Cannot parse #[sprite...] attribute")
+        .meta
     {
-        syn::Meta::List(syn::MetaList { nested, .. }) if nested.len() == 1 => {
-            match nested.first().unwrap() {
-                syn::NestedMeta::Lit(syn::Lit::Str(asset)) => {
-                    let asset_path = &asset.value();
-
-                    quote! {
-                        #field_name: bevy::prelude::Sprite::from_image(
-                            asset_server.load(#asset_path)),
-                    }
-                },
-                _ => panic!("Expected asset path as the only argument of #[sprite(...)]"),
+        syn::Meta::List(syn::MetaList { .. }) => {
+            let asset_litstr = attribute.parse_args::<syn::LitStr>().expect("Expected asset path as the only argument of #[sprite(...)]");
+            let asset_path = asset_litstr.value();
+            quote! {
+                #field_name: bevy::prelude::Sprite::from_image(asset_server.load(#asset_path)),
             }
         },
         syn::Meta::Path(_) => {
@@ -178,6 +170,76 @@ fn expand_sprite_attribute(
             }
         },
         _ => panic!("#[sprite...] attribute should take the form #[sprite(\"asset/path.png\")] or #[sprite]"),
+    }
+}
+
+struct SpriteSheetAttributeLong {
+    path: String,
+    tile_width: u32,
+    tile_height: u32,
+    columns: u32,
+    rows: u32,
+    padding: u32,
+    offset: u32,
+    index: usize,
+}
+
+impl syn::parse::Parse for SpriteSheetAttributeLong {
+    fn parse(mut input: syn::parse::ParseStream) -> syn::Result<Self> {
+        let comma = |input: &mut syn::parse::ParseStream, nth: &str| {
+            input
+                .parse::<syn::Token![,]>()
+                .unwrap_or_else(|_| panic!("Expected comma after {nth} argument"))
+        };
+        let path = input
+            .parse::<syn::LitStr>()
+            .expect("First argument of #[sprite_sheet(...)] should be a string")
+            .value();
+        comma(&mut input, "first");
+        let tile_width = input
+            .parse::<syn::LitInt>()
+            .and_then(|int| int.base10_parse())
+            .expect("Second argument of #[sprite_sheet(...)] should be an int (u32)");
+        comma(&mut input, "second");
+        let tile_height = input
+            .parse::<syn::LitInt>()
+            .and_then(|int| int.base10_parse())
+            .expect("Third argument of #[sprite_sheet(...)] should be an int (u32)");
+        comma(&mut input, "third");
+        let columns = input
+            .parse::<syn::LitInt>()
+            .and_then(|int| int.base10_parse())
+            .expect("Fourth argument of #[sprite_sheet(...)] should be an int (u32)");
+        comma(&mut input, "fourth");
+        let rows = input
+            .parse::<syn::LitInt>()
+            .and_then(|int| int.base10_parse())
+            .expect("Fifth argument of #[sprite_sheet(...)] should be an int (u32)");
+        comma(&mut input, "fifth");
+        let padding = input
+            .parse::<syn::LitInt>()
+            .and_then(|int| int.base10_parse())
+            .expect("Sixth argument of #[sprite_sheet(...)] should be an int (u32)");
+        comma(&mut input, "sixth");
+        let offset = input
+            .parse::<syn::LitInt>()
+            .and_then(|int| int.base10_parse())
+            .expect("Seventh argument of #[sprite_sheet(...)] should be an int (u32)");
+        comma(&mut input, "seventh");
+        let index = input
+            .parse::<syn::LitInt>()
+            .and_then(|int| int.base10_parse())
+            .expect("Seventh argument of #[sprite_sheet(...)] should be an int (usize)");
+        Ok(SpriteSheetAttributeLong {
+            path,
+            tile_width,
+            tile_height,
+            columns,
+            rows,
+            padding,
+            offset,
+            index,
+        })
     }
 }
 
@@ -204,45 +266,31 @@ fn expand_sprite_sheet_attribute(
     }
 
     match attribute
-        .parse_meta()
-        .expect("Cannot parse #[sprite_sheet...] attribute")
+        .meta
     {
-        syn::Meta::List(syn::MetaList { nested, .. }) if nested.len() == 8 => {
-            let mut nested_iter = nested.iter();
-
-            let asset_path = &match nested_iter.next() {
-                Some(syn::NestedMeta::Lit(syn::Lit::Str(asset))) => asset.value(),
-                _ => panic!("First argument of #[sprite_sheet(...)] should be a string")
-            };
-            let tile_width = match nested_iter.next() {
-                Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_parse::<u32>().unwrap(),
-                _ => panic!("Second argument of #[sprite_sheet(...)] should be an int")
-            };
-            let tile_height = match nested_iter.next() {
-                Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_parse::<u32>().unwrap(),
-                _ => panic!("Third argument of #[sprite_sheet(...)] should be an int")
-            };
-            let columns = match nested_iter.next() {
-                Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_parse::<u32>().unwrap(),
-                _ => panic!("Fourth argument of #[sprite_sheet(...)] should be an int")
-            };
-            let rows = match nested_iter.next() {
-                Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_parse::<u32>().unwrap(),
-                _ => panic!("Fifth argument of #[sprite_sheet(...)] should be an int")
-            };
-            let padding = match nested_iter.next() {
-                Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_parse::<u32>().unwrap(),
-                _ => panic!("Sixth argument of #[sprite_sheet(...)] should be an int")
-            };
-            let offset = match nested_iter.next() {
-                Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_parse::<u32>().unwrap(),
-                _ => panic!("Seventh argument of #[sprite_sheet(...)] should be an int")
-            };
-            let index = match nested_iter.next() {
-                Some(syn::NestedMeta::Lit(syn::Lit::Int(asset))) => asset.base10_parse::<usize>().unwrap(),
-                _ => panic!("Eighth argument of #[sprite_sheet(...)] should be an int")
-            };
-
+        syn::Meta::List(ref metalist @ syn::MetaList { .. }) if metalist.tokens.to_string() == "no_grid" => {
+            quote! {
+                #field_name: bevy_ecs_ldtk::utils::sprite_sheet_from_entity_info(entity_instance, tileset, tileset_definition, texture_atlases, false),
+            }
+        },
+        syn::Meta::List(ref metalist @ syn::MetaList { .. }) => {
+            if !metalist.tokens.to_string().contains(",") {
+                // Hack to prevent typos like #[spreadsheet(no_grd)]
+                // The missing comma will trigger this branch and user will get valid forms error 
+                // instead of getting error about "the first argument is not a string".
+                // Can maybe? be removed if error handling implemented.
+                panic!("#[sprite_sheet...] attribute should take the form #[sprite_sheet(\"asset/path.png\", tile_width, tile_height, columns, rows, padding, offset, index)], #[sprite_sheet(no_grid)] or #[sprite_sheet]");
+            }
+            let SpriteSheetAttributeLong {
+                path: asset_path,
+                tile_width,
+                tile_height,
+                columns,
+                rows,
+                padding,
+                offset,
+                index,
+            } = attribute.parse_args::<SpriteSheetAttributeLong>().expect("Valid format given");
             quote! {
                 #field_name: bevy::prelude::Sprite::from_atlas_image(
                     asset_server.load(#asset_path),
@@ -256,18 +304,6 @@ fn expand_sprite_sheet_attribute(
                         index: #index
                     },
                 ),
-            }
-        },
-        syn::Meta::List(syn::MetaList { nested, .. }) if nested.len() == 1 => {
-            let mut nested_iter = nested.iter();
-
-            match nested_iter.next() {
-                Some(syn::NestedMeta::Meta(syn::Meta::Path(path))) if path.is_ident("no_grid") => {},
-                _ => panic!("Argument of #[sprite_sheet(...)] should be no_grid")
-            };
-
-            quote! {
-                #field_name: bevy_ecs_ldtk::utils::sprite_sheet_from_entity_info(entity_instance, tileset, tileset_definition, texture_atlases, false),
             }
         },
         syn::Meta::Path(_) => {
@@ -284,10 +320,7 @@ fn expand_worldly_attribute(
     field_name: &syn::Ident,
     _: &syn::Type,
 ) -> proc_macro2::TokenStream {
-    match attribute
-        .parse_meta()
-        .expect("Cannot parse #[worldly] attribute")
-    {
+    match attribute.meta {
         syn::Meta::Path(_) => {
             quote! {
                 #field_name: bevy_ecs_ldtk::prelude::Worldly::from_entity_info(entity_instance),
@@ -302,10 +335,7 @@ fn expand_grid_coords_attribute(
     field_name: &syn::Ident,
     _: &syn::Type,
 ) -> proc_macro2::TokenStream {
-    match attribute
-        .parse_meta()
-        .expect("Cannot parse #[grid_coords] attribute")
-    {
+    match attribute.meta {
         syn::Meta::Path(_) => {
             quote! {
                 #field_name: bevy_ecs_ldtk::prelude::GridCoords::from_entity_info(entity_instance, layer_instance),
@@ -320,10 +350,7 @@ fn expand_ldtk_entity_attribute(
     field_name: &syn::Ident,
     field_type: &syn::Type,
 ) -> proc_macro2::TokenStream {
-    match attribute
-        .parse_meta()
-        .expect("Cannot parse #[ldtk_entity] attribute")
-    {
+    match attribute.meta {
         syn::Meta::Path(_) => {
             quote! {
                 #field_name: <#field_type as bevy_ecs_ldtk::prelude::LdtkEntity>::bundle_entity(entity_instance, layer_instance, tileset, tileset_definition, asset_server, texture_atlases),
@@ -338,10 +365,7 @@ fn expand_from_entity_instance_attribute(
     field_name: &syn::Ident,
     field_type: &syn::Type,
 ) -> proc_macro2::TokenStream {
-    match attribute
-        .parse_meta()
-        .expect("Cannot parse #[from_entity_instance] attribute")
-    {
+    match attribute.meta {
         syn::Meta::Path(_) => {
             quote! {
                 #field_name: <#field_type as From<&bevy_ecs_ldtk::prelude::EntityInstance>>::from(entity_instance),
@@ -358,24 +382,14 @@ fn expand_with_attribute(
     field_name: &syn::Ident,
     _: &syn::Type,
 ) -> proc_macro2::TokenStream {
-    match attribute
-        .parse_meta()
-        .expect("Cannot parse #[with...] attribute")
-    {
-        syn::Meta::List(syn::MetaList { nested, .. }) if nested.len() == 1 => {
-            match nested.first().unwrap() {
-                syn::NestedMeta::Meta(syn::Meta::Path(path)) => {
-                    quote! {
-                        #field_name: #path(entity_instance),
-                    }
-                }
-                _ => panic!("Expected function as the only argument of #[with(...)]"),
-            }
+    if let syn::Meta::List(syn::MetaList { ref tokens, .. }) = attribute.meta {
+        if let Ok(path) = syn::parse2::<syn::Path>(tokens.clone()) {
+            return quote! {
+                #field_name: #path(entity_instance),
+            };
         }
-        _ => {
-            panic!("#[with...] attribute should take the form #[with(function_name)]")
-        }
-    }
+    };
+    panic!("#[with...] attribute should take the form #[with(function_name)]")
 }
 
 fn expand_default_attribute(
@@ -383,10 +397,7 @@ fn expand_default_attribute(
     field_name: &syn::Ident,
     _: &syn::Type,
 ) -> proc_macro2::TokenStream {
-    match attribute
-        .parse_meta()
-        .expect("Cannot parse #[default] attribute")
-    {
+    match attribute.meta {
         syn::Meta::Path(_) => {
             quote! {
                 #field_name: Default::default(),

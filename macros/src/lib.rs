@@ -2,6 +2,7 @@ use proc_macro::TokenStream;
 
 mod ldtk_entity;
 mod ldtk_int_cell;
+mod long_spritesheet;
 
 #[proc_macro_derive(
     LdtkEntity,

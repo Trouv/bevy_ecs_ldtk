@@ -207,7 +207,7 @@ fn load_external_level_metadata(
     let level_metadata = load_level_metadata(load_context, level_indices, level, false)?;
 
     let external_level_path = ldtk_path_to_asset_path(
-        load_context.path(),
+        load_context.path().path(),
         level
             .external_rel_path
             .as_ref()

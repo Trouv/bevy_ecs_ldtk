@@ -174,7 +174,7 @@ pub enum LdtkProjectLoaderError {
 }
 
 /// AssetLoader for [`LdtkProject`].
-#[derive(Default)]
+#[derive(Default, TypePath)]
 pub struct LdtkProjectLoader;
 
 fn load_level_metadata(
@@ -184,7 +184,7 @@ fn load_level_metadata(
     expect_level_loaded: bool,
 ) -> Result<LevelMetadata, LdtkProjectLoaderError> {
     let bg_image = level.bg_rel_path.as_ref().map(|rel_path| {
-        let asset_path = ldtk_path_to_asset_path(load_context.path(), rel_path);
+        let asset_path = ldtk_path_to_asset_path(load_context.path().path(), rel_path);
 
         load_context.load(asset_path)
     });
@@ -237,7 +237,7 @@ impl AssetLoader for LdtkProjectLoader {
         let mut tileset_map: HashMap<i32, Handle<Image>> = HashMap::new();
         for tileset in &data.defs.tilesets {
             if let Some(tileset_path) = &tileset.rel_path {
-                let asset_path = ldtk_path_to_asset_path(load_context.path(), tileset_path);
+                let asset_path = ldtk_path_to_asset_path(load_context.path().path(), tileset_path);
 
                 tileset_map.insert(tileset.uid, load_context.load(asset_path));
             } else if tileset.embed_atlas.is_some() {

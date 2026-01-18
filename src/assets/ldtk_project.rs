@@ -1,4 +1,4 @@
-use std::{io, path::Path};
+use std::io;
 
 use crate::{
     assets::{
@@ -7,13 +7,12 @@ use crate::{
     ldtk::{raw_level_accessor::RawLevelAccessor, LdtkJson, Level},
 };
 use bevy::{
-    asset::{io::Reader, AssetLoader, AssetPath, LoadContext},
+    asset::{io::Reader, AssetLoader, AssetPath, LoadContext, ParseAssetPathError},
     prelude::*,
     reflect::Reflect,
 };
 use derive_getters::Getters;
 use derive_more::From;
-use path_clean::PathClean;
 use std::collections::HashMap;
 use thiserror::Error;
 
@@ -23,13 +22,11 @@ use crate::assets::InternalLevels;
 #[cfg(feature = "external_levels")]
 use crate::assets::{ExternalLevelMetadata, ExternalLevels};
 
-fn ldtk_path_to_asset_path<'b>(ldtk_path: &Path, rel_path: &str) -> AssetPath<'b> {
-    ldtk_path
-        .parent()
-        .unwrap()
-        .join(Path::new(rel_path))
-        .clean()
-        .into()
+fn ldtk_path_to_asset_path<'b>(
+    ldtk_path: &AssetPath<'b>,
+    rel_path: &str,
+) -> Result<AssetPath<'b>, ParseAssetPathError> {
+    ldtk_path.resolve_embed(rel_path)
 }
 
 /// Main asset for loading LDtk project data.
@@ -171,6 +168,9 @@ pub enum LdtkProjectLoaderError {
     /// LDtk project uses external levels, but some level's `external_rel_path` is null.
     #[error("LDtk project uses external levels, but some level's external_rel_path is null")]
     ExternalLevelWithNullPath,
+    /// Unable to parse relative path in LDtk file.
+    #[error("unable to parse relative path in LDtk file: {0}")]
+    ParseRelativePath(#[from] ParseAssetPathError),
 }
 
 /// AssetLoader for [`LdtkProject`].
@@ -183,11 +183,14 @@ fn load_level_metadata(
     level: &Level,
     expect_level_loaded: bool,
 ) -> Result<LevelMetadata, LdtkProjectLoaderError> {
-    let bg_image = level.bg_rel_path.as_ref().map(|rel_path| {
-        let asset_path = ldtk_path_to_asset_path(load_context.path().path(), rel_path);
-
-        load_context.load(asset_path)
-    });
+    let bg_image = level
+        .bg_rel_path
+        .as_ref()
+        .map(|rel_path| {
+            ldtk_path_to_asset_path(load_context.path(), rel_path)
+                .map(|asset_path| load_context.load(asset_path))
+        })
+        .transpose()?;
 
     if expect_level_loaded && level.layer_instances.is_none() {
         Err(LdtkProjectLoaderError::InternalLevelWithNullLayers)?;
@@ -207,12 +210,12 @@ fn load_external_level_metadata(
     let level_metadata = load_level_metadata(load_context, level_indices, level, false)?;
 
     let external_level_path = ldtk_path_to_asset_path(
-        load_context.path().path(),
+        load_context.path(),
         level
             .external_rel_path
             .as_ref()
             .ok_or(LdtkProjectLoaderError::ExternalLevelWithNullPath)?,
-    );
+    )?;
 
     let external_handle = load_context.load(external_level_path.clone());
 
@@ -237,7 +240,7 @@ impl AssetLoader for LdtkProjectLoader {
         let mut tileset_map: HashMap<i32, Handle<Image>> = HashMap::new();
         for tileset in &data.defs.tilesets {
             if let Some(tileset_path) = &tileset.rel_path {
-                let asset_path = ldtk_path_to_asset_path(load_context.path().path(), tileset_path);
+                let asset_path = ldtk_path_to_asset_path(load_context.path(), tileset_path)?;
 
                 tileset_map.insert(tileset.uid, load_context.load(asset_path));
             } else if tileset.embed_atlas.is_some() {
@@ -350,8 +353,8 @@ mod tests {
 
     #[test]
     fn normalizes_asset_paths() {
-        let resolve_path = |project_path, rel_path| {
-            let asset_path = ldtk_path_to_asset_path(Path::new(project_path), rel_path);
+        let resolve_path = |project_path: &'static str, rel_path| {
+            let asset_path = ldtk_path_to_asset_path(&project_path.into(), rel_path).unwrap();
             asset_path.path().to_owned()
         };
 
@@ -372,8 +375,8 @@ mod tests {
     #[cfg(target_os = "windows")]
     #[test]
     fn normalizes_windows_asset_paths() {
-        let resolve_path = |project_path, rel_path| {
-            let asset_path = ldtk_path_to_asset_path(Path::new(project_path), rel_path);
+        let resolve_path = |project_path: &'static str, rel_path| {
+            let asset_path = ldtk_path_to_asset_path(&project_path.into(), rel_path).unwrap();
             asset_path.path().to_owned()
         };
 

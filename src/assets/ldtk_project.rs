@@ -315,6 +315,7 @@ impl AssetLoader for LdtkProjectLoader {
 #[cfg(test)]
 mod tests {
     use std::marker::PhantomData;
+    use std::path::Path;
 
     use super::*;
     use derive_more::Constructor;

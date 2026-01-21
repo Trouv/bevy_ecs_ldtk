@@ -29,7 +29,7 @@ derive_more = "0.99.20"
 
 [dev-dependencies]
 bevy = "0.18"
-#bevy_rapier2d = { git = "https://github.com/lukasfri/bevy_rapier.git", rev = "a5c82f08c86f9fd44430081e7d6ea1a5bb296e8b" }
+bevy_rapier2d = { git = "https://github.com/buncys/bevy_rapier.git", rev = "8c25504d336c8c9fc7a3c765422d56845cc36075" }
 fake = { version = "4.4", features = ["uuid"] }
 rand = "0.9"
 bevy-inspector-egui = "0.36.0"
@@ -48,7 +48,6 @@ all-features = true
 [[example]]
 name = "platformer"
 path = "examples/platformer/main.rs"
-test = false
 
 [[example]]
 name = "field_instances"

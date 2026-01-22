@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.14.0](https://github.com/Trouv/bevy_ecs_ldtk/compare/v0.13.0...v0.14.0) (2026-01-22)
+
+
+### ⚠ BREAKING CHANGES
+
+* upgrade to bevy 0.18 ([#396](https://github.com/Trouv/bevy_ecs_ldtk/issues/396))
+
+### Features
+
+* upgrade to bevy 0.18 ([#396](https://github.com/Trouv/bevy_ecs_ldtk/issues/396)) ([f268eea](https://github.com/Trouv/bevy_ecs_ldtk/commit/f268eea48d07cb6dc1db6ee96d726d732d70c8fa))
+
+
+### Documentation Changes
+
+* update compatibility chart for bevy_ecs_ldtk 0.14 ([#398](https://github.com/Trouv/bevy_ecs_ldtk/issues/398)) ([7cc1497](https://github.com/Trouv/bevy_ecs_ldtk/commit/7cc149723f6d22fa8348645bddbb86df1af738f5))
+
 ## [0.13.0](https://github.com/Trouv/bevy_ecs_ldtk/compare/v0.12.0...v0.13.0) (2025-11-03)
 
 

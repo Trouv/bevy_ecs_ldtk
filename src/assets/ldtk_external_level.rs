@@ -52,7 +52,7 @@ pub enum LdtkExternalLevelLoaderError {
 }
 
 /// AssetLoader for [`LdtkExternalLevel`]
-#[derive(Default)]
+#[derive(Default, TypePath)]
 pub struct LdtkExternalLevelLoader;
 
 impl AssetLoader for LdtkExternalLevelLoader {

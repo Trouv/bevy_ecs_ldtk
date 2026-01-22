@@ -15,8 +15,8 @@ members = ["macros"]
 
 [dependencies]
 bevy_ecs_ldtk_macros = { version = "0.13.0", optional = true, path = "macros" }
-bevy_ecs_tilemap = { version = "0.17.0", default-features = false }
-bevy = { version = "0.17", default-features = false, features = [
+bevy_ecs_tilemap = { version = "0.18.0", default-features = false }
+bevy = { version = "0.18", default-features = false, features = [
     "bevy_sprite",
 ] }
 derive-getters = "0.5.0"
@@ -26,14 +26,13 @@ regex = "1"
 thiserror = "1.0"
 paste = "1.0"
 derive_more = "0.99.20"
-path-clean = "1.0.1"
 
 [dev-dependencies]
-bevy = "0.17"
-bevy_rapier2d = { git = "https://github.com/lukasfri/bevy_rapier.git", rev = "a5c82f08c86f9fd44430081e7d6ea1a5bb296e8b" }
+bevy = "0.18"
+bevy_rapier2d = { git = "https://github.com/buncys/bevy_rapier.git", rev = "8c25504d336c8c9fc7a3c765422d56845cc36075" }
 fake = { version = "4.4", features = ["uuid"] }
 rand = "0.9"
-bevy-inspector-egui = "0.34.0"
+bevy-inspector-egui = "0.36.0"
 
 [features]
 default = ["derive", "render", "internal_levels"]

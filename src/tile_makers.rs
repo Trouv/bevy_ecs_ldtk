@@ -123,6 +123,7 @@ pub(crate) fn tile_pos_to_tile_maker(
                         y: flip_y,
                         ..default()
                     },
+                    color: TileColor(Color::WHITE.with_alpha(tile_instance.a)),
                     ..default()
                 })
             }
@@ -307,6 +308,45 @@ mod tests {
             tile_maker(TilePos { x: 1, y: 1 }).unwrap().texture_index.0,
             4
         );
+    }
+
+    #[test]
+    fn test_tile_pos_to_tile_maker_with_alpha() {
+        const GRID_SIZE: i32 = 32;
+        let test_data = vec![0.0, 0.5, 1.0];
+
+        let grid_tiles = test_data
+            .iter()
+            .cloned()
+            .enumerate()
+            .map(|(i, alpha)| TileInstance {
+                px: IVec2::new(i as i32 * GRID_SIZE, 0),
+                a: alpha,
+                ..Default::default()
+            })
+            .collect::<Vec<_>>();
+
+        let mut tile_maker = tile_pos_to_tile_maker(&grid_tiles, 1, GRID_SIZE);
+
+        test_data
+            .iter()
+            .cloned()
+            .enumerate()
+            .for_each(|(i, alpha)| {
+                let tile = tile_maker(TilePos { x: i as u32, y: 0 }); // TilePos use grid coordinates, so we use i as x
+                if let Some(tile_bundle) = tile {
+                    let expect = Color::WHITE.with_alpha(alpha);
+                    let color = tile_bundle.color.0;
+                    assert!(
+                        expect == color,
+                        "test {i} failed, expect color {:?}, got {:?}",
+                        expect,
+                        color
+                    );
+                } else {
+                    panic!("test {i} failed, no tile found at ({i},0)");
+                }
+            });
     }
 
     #[test]

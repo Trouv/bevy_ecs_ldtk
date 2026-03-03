@@ -313,7 +313,7 @@ mod tests {
     #[test]
     fn test_tile_pos_to_tile_maker_with_alpha() {
         const GRID_SIZE: i32 = 32;
-        let test_data = vec![0.0, 0.5, 1.0];
+        let test_data = [0.0, 0.5, 1.0];
 
         let grid_tiles = test_data
             .iter()

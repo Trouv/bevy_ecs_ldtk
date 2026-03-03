@@ -228,7 +228,7 @@ pub(crate) fn tile_pos_to_transparent_tile_maker(
     move |tile_pos: TilePos| -> Option<TileBundle> {
         if alpha < 1. {
             tile_maker(tile_pos).map(|mut tile| {
-                tile.color.0.set_alpha(alpha);
+                tile.color.0.set_alpha(alpha * tile.color.0.alpha());
                 tile
             })
         } else {
@@ -509,5 +509,42 @@ mod tests {
             tile_maker(TilePos { x: 1, y: 1 }).unwrap().color.0,
             css::RED.into()
         );
+    }
+
+    #[test]
+    fn test_tile_pos_to_transparent_tile_maker() {
+        let tile_alpha = [0.0, 0.5, 1.0];
+        let layer_alpha = [0.0, 0.5, 1.0];
+        // let mut expect_alpha_iter = tile_alpha
+        //     .iter()
+        //     .flat_map(|&ta| layer_alpha.iter().map(move |&la| ta * la));
+        let mut expect_alpha_iter = [
+            0.0, 0.0, 0.0, // tile alpha is 0.0
+            0.0, 0.25, 0.5, // tile alpha is 0.5
+            0.0, 0.5, 1.0, // tile alpha is 1.0
+        ]
+        .into_iter();
+
+        tile_alpha.iter().for_each(|&ta| {
+            layer_alpha.iter().for_each(|&la| {
+                let dummy_maker = |_: TilePos| -> Option<TileBundle> {
+                    Some(TileBundle {
+                        color: TileColor(Color::WHITE.with_alpha(ta)),
+                        ..Default::default()
+                    })
+                };
+
+                let mut tile_maker = tile_pos_to_transparent_tile_maker(dummy_maker, la);
+                let tile = tile_maker(TilePos::default()).unwrap();
+                let expect_alpha = expect_alpha_iter.next().unwrap();
+                let actual_alpha = tile.color.0.alpha();
+
+                assert_eq!(
+                    expect_alpha,
+                    actual_alpha,
+                    "tile's alpha is {ta:.01} and layer's alpha is {la:.01}, the expectation is {expect_alpha:.01}, not {actual_alpha:.01}"
+                );
+            });
+        });
     }
 }

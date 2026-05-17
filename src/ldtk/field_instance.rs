@@ -132,7 +132,7 @@ impl<'de> Deserialize<'de> for FieldInstance {
 
                 FieldValue::Colors(helpers.iter().map(|h| h.0).collect())
             }
-            "Array<FilePath>" => FieldValue::Strings(
+            "Array<FilePath>" => FieldValue::FilePaths(
                 Vec::<Option<String>>::deserialize(helper.value).map_err(de::Error::custom)?,
             ),
             "Array<Tile>" => FieldValue::Tiles(

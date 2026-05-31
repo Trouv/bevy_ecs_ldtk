@@ -49,7 +49,8 @@ fn process_my_entity(
 
                 commands
                     .entity(entity)
-                    .insert((Sprite::from_atlas_image(texture, atlas), *transform)); // TODO: ldtk_pivot_to_anchor(entity_instance.pivot) - should be easy here
+                    .insert((*transform, Sprite::from_atlas_image(texture, atlas), 
+                        ldtk_pivot_to_anchor(entity_instance.pivot)));
             }
         }
     }

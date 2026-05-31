@@ -3,15 +3,15 @@ use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::dynamics::Velocity;
 
 use crate::{climbing::Climber, inventory::Inventory};
-use crate::physics::{ColliderBundle, GroundDetection};
+use crate::{colliders::ColliderBundle, ground_detection::GroundDetection};
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Component)]
 pub struct Player;
 
 #[derive(Clone, Default, Bundle, LdtkEntity)]
 pub struct PlayerBundle {
-    #[sprite_bundle("player.png")]
-    pub sprite_bundle: SpriteBundle,
+    #[sprite("player.png")]
+    pub sprite: Sprite,
     #[from_entity_instance]
     pub collider_bundle: ColliderBundle,
     pub player: Player,
@@ -59,14 +59,11 @@ pub fn player_movement(
     }
 }
 
-
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app
-        .add_systems(Update, player_movement)
-        .register_ldtk_entity::<PlayerBundle>("Player")
-        ;
+        app.add_systems(Update, player_movement)
+            .register_ldtk_entity::<PlayerBundle>("Player");
     }
 }

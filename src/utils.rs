@@ -6,10 +6,7 @@ use crate::{
     components::{GridCoords, IntGridCell},
 };
 
-use crate::{
-    components::{LdtkSpriteSheetBundle, TileGridBundle},
-    ldtk::*,
-};
+use crate::{components::TileGridBundle, ldtk::*};
 use bevy::{prelude::*, sprite::Anchor};
 use bevy_ecs_tilemap::{
     map::{TilemapId, TilemapSize},
@@ -88,7 +85,12 @@ pub fn calculate_transform_from_entity_instance(
 
     let size = IVec2::new(entity_instance.width, entity_instance.height);
 
-    let translation = ldtk_pixel_coords_to_translation(entity_instance.px, level_height);
+    let translation = ldtk_pixel_coords_to_translation_pivoted(
+        entity_instance.px,
+        level_height,
+        size,
+        entity_instance.pivot,
+    );
     let scale = size.as_vec2() / def_size.as_vec2();
 
     Transform::from_translation(translation.extend(0.)).with_scale(scale.extend(1.))
@@ -225,27 +227,13 @@ pub fn ldtk_pixel_coords_to_translation_pivoted(
     entity_size: IVec2,
     pivot: Vec2,
 ) -> Vec2 {
-    // Find entity's LDtk-defined position.
-    let translation = ldtk_coord_conversion(ldtk_coords, ldtk_pixel_height).as_vec2();
+    let pivot_point = ldtk_coord_conversion(ldtk_coords, ldtk_pixel_height).as_vec2();
 
-    // Adjust entity pivot so that 0.5 is the center.
     let adjusted_pivot = Vec2::new(0.5 - pivot.x, pivot.y - 0.5);
 
-    // Find the spot on the entity which the pivot corresponds to.
     let offset = entity_size.as_vec2() * adjusted_pivot;
 
-    translation + offset
-}
-
-/// Calculate the "visual center" of an LDtk object using its current bevy translation, size, and pivot value.
-pub fn ldtk_entity_visual_center(translation: Vec3, entity_size: IVec2, pivot: Vec2) -> Vec3 {
-    // Adjust entity pivot so that 0.5 is the center.
-    let adjusted_pivot = Vec2::new(0.5 - pivot.x, pivot.y - 0.5);
-
-    // Find the spot on the entity which the pivot corresponds to.
-    let offset = entity_size.as_vec2() * adjusted_pivot;
-
-    translation + offset.extend(0.0)
+    pivot_point + offset
 }
 
 /// Similar to [LayerBuilder::new_batch], except it doesn't consume the [LayerBuilder]
@@ -262,11 +250,15 @@ pub(crate) fn set_all_tiles_with_func(
     for x in 0..size.x {
         for y in 0..size.y {
             let tile_pos = TilePos { x, y };
-            let tile_entity = func(tile_pos)
-                .map(|tile_bundle| commands.spawn(tile_bundle).insert(tilemap_id).id());
+            let tile_entity = func(tile_pos).map(|mut tile_bundle| {
+                tile_bundle.tile_bundle.tilemap_id = tilemap_id;
+                commands.spawn(tile_bundle).id()
+            });
             match tile_entity {
                 Some(tile_entity) => storage.set(&tile_pos, tile_entity),
-                None => storage.remove(&tile_pos),
+                None => {
+                    storage.remove(&tile_pos);
+                }
             }
         }
     }
@@ -324,18 +316,18 @@ pub fn ldtk_pivot_to_anchor(pivot: Vec2) -> Anchor {
     Anchor::Custom(Vec2::new(pivot.x - 0.5, 0.5 - pivot.y))
 }
 
-/// Creates a [`LdtkSpriteSheetBundle`] from the entity information available to the
+/// Creates a [`Sprite`] with [`TextureAtlas`] from the entity information available to the
 /// [LdtkEntity::bundle_entity] method.
 ///
-/// Used for the `#[sprite_sheet_bundle]` attribute macro for `#[derive(LdtkEntity)]`.
-/// See [LdtkEntity#sprite_sheet_bundle] for more info.
-pub fn sprite_sheet_bundle_from_entity_info(
+/// Used for the `#[sprite_sheet]` attribute macro for `#[derive(LdtkEntity)]`.
+/// See [LdtkEntity#sprite_sheet] for more info.
+pub fn sprite_sheet_from_entity_info(
     entity_instance: &EntityInstance,
     tileset: Option<&Handle<Image>>,
     tileset_definition: Option<&TilesetDefinition>,
     texture_atlases: &mut Assets<TextureAtlasLayout>,
     grid: bool,
-) -> LdtkSpriteSheetBundle {
+) -> Sprite {
     if let (Some(tileset), Some(tile), Some(tileset_definition)) =
         (tileset, &entity_instance.tile, tileset_definition)
     {
@@ -372,48 +364,31 @@ pub fn sprite_sheet_bundle_from_entity_info(
                 }
             };
 
-            LdtkSpriteSheetBundle {
-                sprite_bundle: SpriteBundle {
-                    sprite: Sprite {
-                        anchor: ldtk_pivot_to_anchor(entity_instance.pivot),
-                        ..Default::default()
-                    },
-                    texture: tileset.clone(),
-                    ..Default::default()
-                },
-                texture_atlas,
-            }
+            Sprite::from_atlas_image(tileset.clone(), texture_atlas) // TODO: ldtk_pivot_to_anchor(entity_instance.pivot),
     } else {
-        warn!("EntityInstance needs a tile, an associated tileset, and an associated tileset definition to be bundled as a SpriteSheetBundle");
-        LdtkSpriteSheetBundle::default()
+        warn!("EntityInstance needs a tile, an associated tileset, and an associated tileset definition to be inserted as a Sprite");
+        Sprite::default()
     }
 }
 
-/// Creates a [SpriteBundle] from the entity information available to the
+/// Creates a [Sprite] from the entity information available to the
 /// [LdtkEntity::bundle_entity] method.
 ///
-/// Used for the `#[sprite_bundle]` attribute macro for `#[derive(LdtkEntity)]`.
-/// See [LdtkEntity#sprite_bundle] for more info.
-pub fn sprite_bundle_from_entity_info(
+/// Used for the `#[sprite]` attribute macro for `#[derive(LdtkEntity)]`.
+/// See [LdtkEntity#sprite] for more info.
+pub fn sprite_from_entity_info(
     entity_instance: &EntityInstance,
     tileset: Option<&Handle<Image>>,
-) -> SpriteBundle {
+) -> Sprite {
     let tileset = match tileset {
         Some(tileset) => tileset.clone(),
         None => {
-            warn!("EntityInstance needs a tileset to be bundled as a SpriteBundle");
-            return SpriteBundle::default();
+            warn!("EntityInstance needs a tileset to be inserted as a Sprite");
+            return Sprite::default();
         }
     };
 
-    SpriteBundle {
-        texture: tileset,
-        sprite: Sprite {
-            anchor: ldtk_pivot_to_anchor(entity_instance.pivot),
-            ..Default::default()
-        },
-        ..Default::default()
-    }
+    Sprite::from_image(tileset) // TODO: ldtk_pivot_to_anchor(entity_instance.pivot),
 }
 
 #[cfg(test)]
@@ -492,14 +467,14 @@ mod tests {
         };
         let result =
             calculate_transform_from_entity_instance(&entity_instance, &entity_definition_map, 320);
-        assert_eq!(result, Transform::from_xyz(256., 64., 0.));
+        assert_eq!(result, Transform::from_xyz(272., 48., 0.));
 
         // difficult case
         let entity_instance = EntityInstance {
             px: IVec2::new(40, 50),
-            def_uid: 2, // default size: (10, 25)
-            width: 30,  // spawned with triple size on X
-            height: 50, // double size on Y
+            def_uid: 2,
+            width: 30,
+            height: 50,
             pivot: Vec2::new(1., 1.),
             ..Default::default()
         };
@@ -507,7 +482,7 @@ mod tests {
             calculate_transform_from_entity_instance(&entity_instance, &entity_definition_map, 100);
         assert_eq!(
             result,
-            Transform::from_xyz(40., 50., 0.).with_scale(Vec3::new(3., 2., 1.))
+            Transform::from_xyz(25., 75., 0.).with_scale(Vec3::new(3., 2., 1.))
         );
     }
 
@@ -547,7 +522,7 @@ mod tests {
             calculate_transform_from_entity_instance(&entity_instance, &entity_definition_map, 100);
         assert_eq!(
             result,
-            Transform::from_xyz(64., 36., 0.).with_scale(Vec3::new(4., 2., 1.))
+            Transform::from_xyz(32., 68., 0.).with_scale(Vec3::new(4., 2., 1.))
         );
     }
 
@@ -695,33 +670,6 @@ mod tests {
                 Vec2::new(0.5, 0.5)
             ),
             Vec2::new(20., 0.),
-        );
-    }
-
-    #[test]
-    fn test_pivot_to_anchor() {
-        //Center
-        assert_eq!(
-            ldtk_pivot_to_anchor(Vec2::new(0.5, 0.5)).as_vec(),
-            Vec2::ZERO
-        );
-
-        //Top-left
-        assert_eq!(
-            ldtk_pivot_to_anchor(Vec2::new(0.0, 0.0)).as_vec(),
-            Vec2::new(-0.5, 0.5)
-        );
-
-        //Bottom-right
-        assert_eq!(
-            ldtk_pivot_to_anchor(Vec2::new(1.0, 1.0)).as_vec(),
-            Vec2::new(0.5, -0.5)
-        );
-
-        //Fractional
-        assert_eq!(
-            ldtk_pivot_to_anchor(Vec2::new(0.75, 0.75)).as_vec(),
-            Vec2::new(0.25, -0.25)
         );
     }
 

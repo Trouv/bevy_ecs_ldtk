@@ -36,7 +36,7 @@ fn main() {
         .run();
 }
 
-{{#include ../../../../examples/tile_based_game.rs:29:40}}
+{{#include ../../../../examples/tile_based_game.rs:29:43}}
 ```
 
 Finally, insert the `LevelSelection` resource to tell the plugin to spawn the first level.
@@ -54,15 +54,17 @@ fn main() {
 
 Now, run the game with `$ cargo run --release` to see your first level spawning in Bevy!
 
+Is the rendered level different than shown in LDtk? See the [known limitations section](../../explanation/limitations.md)
+
 ![bevy-setup](images/bevy-setup.png)
 
 ## Spawn sprites for your LDtk entities
 You may have noticed that the Player and Goal are not rendered here.
 They are there, but they require a little more work to become visible.
 
-Create a `PlayerBundle` and `GoalBundle`, each with an `LdtkSpriteSheetBundle` field.
+Create a `PlayerBundle` and `GoalBundle`, each with an `sprite_sheet` field.
 You will develop these bundles a little bit more in the next chapter, but for now they will be similar.
-Derive `LdtkEntity` for these bundles, and give the field a `#[sprite_sheet_bundle]` attribute.
+Derive `LdtkEntity` for these bundles, and give the field a `#[sprite_sheet]` attribute.
 This trait implementation defines how these bundles should be spawned by the plugin.
 More specifically - they should be spawned as sprites identical to the entity's editor visual.
 ```rust,no_run
@@ -70,14 +72,14 @@ More specifically - they should be spawned as sprites identical to the entity's 
 # use bevy_ecs_ldtk::prelude::*;
 #[derive(Default, Bundle, LdtkEntity)]
 struct PlayerBundle {
-    #[sprite_sheet_bundle]
-    sprite_sheet_bundle: LdtkSpriteSheetBundle,
+    #[sprite_sheet]
+    sprite_sheet: Sprite,
 }
 
 #[derive(Default, Bundle, LdtkEntity)]
 struct GoalBundle {
-    #[sprite_sheet_bundle]
-    sprite_sheet_bundle: LdtkSpriteSheetBundle,
+    #[sprite_sheet]
+    sprite_sheet: Sprite,
 }
 ```
 
@@ -94,13 +96,13 @@ fn main() {
 }
 # #[derive(Default, Bundle, LdtkEntity)]
 # struct PlayerBundle {
-#     #[sprite_sheet_bundle]
-#     sprite_sheet_bundle: LdtkSpriteSheetBundle,
+#     #[sprite_sheet]
+#     sprite_sheet: Sprite,
 # }
 # #[derive(Default, Bundle, LdtkEntity)]
 # struct GoalBundle {
-#     #[sprite_sheet_bundle]
-#     sprite_sheet_bundle: LdtkSpriteSheetBundle,
+#     #[sprite_sheet]
+#     sprite_sheet: Sprite,
 # }
 ```
 

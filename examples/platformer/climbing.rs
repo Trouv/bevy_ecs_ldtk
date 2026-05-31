@@ -1,8 +1,8 @@
-use bevy::{prelude::*, utils::HashSet};
+use bevy::{platform::collections::HashSet, prelude::*};
 use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::physics::SensorBundle;
+use crate::colliders::SensorBundle;
 
 #[derive(Clone, Eq, PartialEq, Debug, Default, Component)]
 pub struct Climber {
@@ -20,11 +20,10 @@ pub struct LadderBundle {
     pub climbable: Climbable,
 }
 
-
 pub fn detect_climb_range(
     mut climbers: Query<&mut Climber>,
     climbables: Query<Entity, With<Climbable>>,
-    mut collisions: EventReader<CollisionEvent>,
+    mut collisions: MessageReader<CollisionEvent>,
 ) {
     for collision in collisions.read() {
         match collision {
@@ -69,14 +68,12 @@ pub fn ignore_gravity_if_climbing(
     }
 }
 
-
 pub struct ClimbingPlugin;
 
 impl Plugin for ClimbingPlugin {
-	fn build(&self, app: &mut App) {
-		app
-        .add_systems(Update, detect_climb_range)
-        .add_systems(Update, ignore_gravity_if_climbing)
-		;
-	}
+    fn build(&self, app: &mut App) {
+        app.add_systems(Update, detect_climb_range)
+            .add_systems(Update, ignore_gravity_if_climbing)
+            .register_ldtk_int_cell::<LadderBundle>(2);
+    }
 }

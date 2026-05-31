@@ -1,41 +1,118 @@
 # Migrate from 0.10 to 0.11
 
-## Entity translations now respect pivot
-Entities now spawn with a translation matching their actual location, rather than their "visual center".
+## Bevy upgrade
+`bevy_ecs_ldtk` has upgraded to Bevy and `bevy_ecs_tilemap` version `0.15`.
+A Bevy `0.15` migration guide is available on [Bevy's website](https://bevyengine.org/learn/migration-guides/0-14-to-0-15/).
 
-![Diagram showing an entity with a dot representing its location in three cases: in the LDtk editor; loaded in version 0.9; and loaded in 0.10. In LDtk, the dot is at the upper-left corner. Loaded in 0.10, the dot is at the same place, but in 0.9, the dot is instead at the entity's center.](images/pivot-0-9-to-0-10.png)
-
-For `LdtkEntity` bundles with a `#[sprite_sheet_bundle(...)]`, the macro calculates the sprite's `Anchor` from the pivot, so they should appear the same,
-but gameplay logic will need to be rewritten to account for the differences,
-as will systems that add sprite bundles manually. In the latter case,
-`utils::ldtk_pivot_to_anchor` can be used to find the correct `Anchor`.
-
-If the entity's center point is still wanted, it can be found using `utils::ldtk_entity_visual_center`:
+## `LdtkSpriteSheetBundle` replaced with `Sprite`
+Since the `Sprite` struct in Bevy `0.15` can now store `TextureAtlas` information on its own, the use of `LdtkSpriteSheetBundle` has been replaced by a simple use of `Sprite`. The macro has changed as well, and is now named `#[sprite_sheet]`.
 ```rust,ignore
-//0.9
-fn shoot_laser_from_center (
-	mut query: Query<(&mut Transform, &FiringLaser), With<EntityInstance>>
-) {
-	for (mut transform, laser) in &mut query {
-		let center = transform.translation();
-
-		//do laser shooting stuff
-	}
+// 0.10
+# use bevy_ecs_ldtk::prelude::*;
+# use bevy::prelude::*;
+#[derive(Default, Bundle, LdtkEntity)]
+struct PlayerBundle {
+    #[sprite_sheet_bundle]
+    sprite_bundle: LdtkSpriteSheetBundle,
+    #[grid_coords]
+    grid_coords: GridCoords,
 }
 ```
 ```rust,ignore
-//0.10
-fn shoot_laser_from_center (
-	mut query: Query<(&EntityInstance, &mut Transform, &FiringLaser)>
-) {
-	for (instance, mut transform, laser) in &mut query {
-		let object_center = bevy_ecs_ldtk::utils::ldtk_entity_visual_center(
-			transform.translation(),
-			IVec2::new(entity.width, entity.height),
-			entity.pivot
-		);
-
-		//do laser shooting stuff
-	}
+// 0.11
+# use bevy_ecs_ldtk::prelude::*;
+# use bevy::prelude::*;
+#[derive(Default, Bundle, LdtkEntity)]
+struct PlayerBundle {
+    #[sprite_sheet]
+    sprite_sheet: Sprite,
+    #[grid_coords]
+    grid_coords: GridCoords,
 }
 ```
+
+## `SpriteBundle` also replaced with `Sprite`
+When using a `SpriteBundle` with the `#[sprite_bundle]` macro, use a `Sprite` instead. The macro is now named `#[sprite]`.
+```rust,ignore
+// 0.10
+# use bevy_ecs_ldtk::prelude::*;
+# use bevy::prelude::*;
+#[derive(Bundle, LdtkEntity, Default)]
+pub struct Player {
+    player: PlayerComponent,
+    health: Health,
+    #[sprite_bundle]
+    sprite_bundle: SpriteBundle,
+}
+```
+```rust,ignore
+// 0.11
+# use bevy_ecs_ldtk::prelude::*;
+# use bevy::prelude::*;
+#[derive(Bundle, LdtkEntity, Default)]
+pub struct Player {
+    player: PlayerComponent,
+    health: Health,
+    #[sprite]
+    sprite: Sprite,
+}
+```
+
+## `Handle<LdtkProject>` replaced with `LdtkProjectHandle`
+Handles cannot be used as components in Bevy `0.15` onward. This has two changes.
+### Call `.into()` when loading a project
+First, you must call `.into()` when loading the world.
+```rust,ignore
+// 0.10
+# use bevy_ecs_ldtk::prelude::*;
+# use bevy::prelude::*;
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands.spawn(LdtkWorldBundle {
+        ldtk_handle: asset_server.load("my_project.ldtk"),
+        ..Default::default()
+    });
+}
+```
+```rust,ignore
+// 0.11
+# use bevy_ecs_ldtk::prelude::*;
+# use bevy::prelude::*;
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands.spawn(LdtkWorldBundle {
+        ldtk_handle: asset_server.load("my_project.ldtk").into(),
+        ..Default::default()
+    });
+}
+```
+### Replace usages of `Handle<LdtkProject>`
+Second, uses of `Handle<LdtkProject>` in queries must be replaced with `LdtkProjectHandle`. It is enough to replace the type in the signature, as the `LdtkProjectHandle` type is a drop-in replacement for the handle.
+
+```rust,ignore
+// 0.10
+# use bevy_ecs_ldtk::prelude::*;
+# use bevy::prelude::*;
+fn respawn_world(
+    mut commands: Commands,
+    ldtk_projects: Query<Entity, With<Handle<LdtkProject>>>,
+    input: Res<ButtonInput<KeyCode>>,
+) {
+    if input.just_pressed(KeyCode::KeyR) {
+        commands.entity(ldtk_projects.single()).insert(Respawn);
+    }
+}
+```
+```rust,ignore
+// 0.11
+# use bevy_ecs_ldtk::prelude::*;
+# use bevy::prelude::*;
+fn respawn_world(
+    mut commands: Commands,
+    ldtk_projects: Query<Entity, With<LdtkProjectHandle>>,
+    input: Res<ButtonInput<KeyCode>>,
+) {
+    if input.just_pressed(KeyCode::KeyR) {
+        commands.entity(ldtk_projects.single()).insert(Respawn);
+    }
+}
+```
+

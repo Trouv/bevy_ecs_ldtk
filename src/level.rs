@@ -38,14 +38,14 @@ enum BackgroundImageError {
     ImageNotLoaded,
 }
 
-fn background_image_sprite_sheet_bundle(
+fn background_image_sprite_sheet(
     images: &Assets<Image>,
     texture_atlases: &mut Assets<TextureAtlasLayout>,
     background_image_handle: &Handle<Image>,
     background_position: &LevelBackgroundPosition,
     level_height: i32,
     transform_z: f32,
-) -> Result<LdtkSpriteSheetBundle, BackgroundImageError> {
+) -> Result<(Sprite, Transform), BackgroundImageError> {
     if let Some(background_image) = images.get(background_image_handle) {
         // We need to use a texture atlas to apply the correct crop to the image
         let tile_size = UVec2::new(
@@ -80,18 +80,17 @@ fn background_image_sprite_sheet_bundle(
         let center_translation =
             top_left_translation + (Vec2::new(scaled_size.x, -scaled_size.y) / 2.);
 
-        Ok(LdtkSpriteSheetBundle {
-            sprite_bundle: SpriteBundle {
-                texture: background_image_handle.clone(),
-                transform: Transform::from_translation(center_translation.extend(transform_z))
-                    .with_scale(scale.extend(1.)),
-                ..Default::default()
-            },
-            texture_atlas: TextureAtlas {
-                index,
-                layout: texture_atlases.add(texture_atlas_layout),
-            },
-        })
+        Ok((
+            Sprite::from_atlas_image(
+                background_image_handle.clone(),
+                TextureAtlas {
+                    index,
+                    layout: texture_atlases.add(texture_atlas_layout),
+                },
+            ),
+            Transform::from_translation(center_translation.extend(transform_z))
+                .with_scale(scale.extend(1.)),
+        ))
     } else {
         Err(BackgroundImageError::ImageNotLoaded)
     }
@@ -133,12 +132,12 @@ fn insert_metadata_to_tile(
     metadata_inserted
 }
 
-fn spatial_bundle_for_tiles(grid_coords: GridCoords, grid_size: i32) -> SpatialBundle {
+fn spatial_bundle_for_tiles(grid_coords: GridCoords, grid_size: i32) -> Transform {
     let translation =
         grid_coords_to_translation_relative_to_tile_layer(grid_coords, IVec2::splat(grid_size))
             .extend(0.);
 
-    SpatialBundle::from_transform(Transform::from_translation(translation))
+    Transform::from_translation(translation)
 }
 
 fn insert_spatial_bundle_for_layer_tiles(
@@ -156,8 +155,14 @@ fn insert_spatial_bundle_for_layer_tiles(
             if let Some(tile_entity) = tile_entity {
                 let spatial_bundle = spatial_bundle_for_tiles(tile_pos.into(), grid_size);
 
-                commands.entity(tile_entity).insert(spatial_bundle);
-                commands.entity(tilemap_id.0).add_child(tile_entity);
+                commands
+                    .entity(tile_entity)
+                    .insert(spatial_bundle)
+                    // Note: At this point, the tilemap entity does not have a Transform, so adding
+                    // ChildOf would warn in the logs that the tile_entity's parent doesn't have
+                    // GlobalTransform. Separating out these inserts prevents the warning. We attach
+                    // the GlobalTransform later.
+                    .insert(ChildOf(tilemap_id.0));
             }
         }
     }
@@ -222,7 +227,7 @@ pub fn spawn_level(
     tileset_map: &HashMap<i32, Handle<Image>>,
     tileset_definition_map: &HashMap<i32, &TilesetDefinition>,
     int_grid_image_handle: &Option<Handle<Image>>,
-    worldly_set: HashSet<Worldly>,
+    worldly_set: &HashSet<Worldly>,
     ldtk_entity: Entity,
     ldtk_settings: &LdtkSettings,
 ) {
@@ -234,15 +239,14 @@ pub fn spawn_level(
         let translation = Vec3::new(*level.px_wid() as f32, *level.px_hei() as f32, 0.) / 2.;
 
         let background_entity = commands
-            .spawn(SpriteBundle {
-                sprite: Sprite {
+            .spawn((
+                Sprite {
                     color: *level.bg_color(),
                     custom_size: Some(Vec2::new(*level.px_wid() as f32, *level.px_hei() as f32)),
                     ..default()
                 },
-                transform: Transform::from_translation(translation),
-                ..default()
-            })
+                Transform::from_translation(translation),
+            ))
             .id();
 
         commands.entity(ldtk_entity).add_child(background_entity);
@@ -253,7 +257,7 @@ pub fn spawn_level(
         if let (Some(background_image_handle), Some(background_position)) =
             (background_image, level.bg_pos())
         {
-            match background_image_sprite_sheet_bundle(
+            match background_image_sprite_sheet(
                 images,
                 texture_atlases,
                 background_image_handle,
@@ -261,9 +265,9 @@ pub fn spawn_level(
                 *level.px_hei(),
                 layer_z as f32,
             ) {
-                Ok(sprite_sheet_bundle) => {
+                Ok(sprite_sheet) => {
                     commands.entity(ldtk_entity).with_children(|parent| {
-                        parent.spawn(sprite_sheet_bundle);
+                        parent.spawn(sprite_sheet);
                     });
 
                     layer_z += 1;
@@ -291,11 +295,12 @@ pub fn spawn_level(
         match layer_instance.layer_instance_type {
             Type::Entities => {
                 let layer_entity = commands
-                    .spawn(SpatialBundle::from_transform(Transform::from_translation(
-                        layer_offset.extend(layer_z as f32),
-                    )))
-                    .insert(LayerMetadata::from(layer_instance))
-                    .insert(Name::new(layer_instance.identifier.to_owned()))
+                    .spawn((
+                        Transform::from_translation(layer_offset.extend(layer_z as f32)),
+                        Visibility::default(),
+                        LayerMetadata::from(layer_instance),
+                        Name::new(layer_instance.identifier.to_owned()),
+                    ))
                     .with_children(|commands| {
                         for entity_instance in &layer_instance.entity_instances {
                             let transform = calculate_transform_from_entity_instance(
@@ -326,11 +331,9 @@ pub fn spawn_level(
                             if !worldly_set.contains(&predicted_worldly) {
                                 let default_ldtk_entity: Box<dyn PhantomLdtkEntityTrait> =
                                     Box::new(PhantomLdtkEntity::<EntityInstanceBundle>::new());
-                                let mut entity_commands = commands.spawn_empty();
-
                                 // insert Name before evaluating LdtkEntitys so that user-provided
                                 // names aren't overwritten
-                                entity_commands.insert((
+                                let mut entity_commands = commands.spawn((
                                     EntityIid::new(entity_instance.iid.to_owned()),
                                     Name::new(entity_instance.identifier.to_owned()),
                                 ));
@@ -351,10 +354,7 @@ pub fn spawn_level(
                                     texture_atlases,
                                 );
 
-                                entity_commands.insert(SpatialBundle {
-                                    transform,
-                                    ..default()
-                                });
+                                entity_commands.insert(transform);
                             }
                         }
                     })
@@ -477,6 +477,48 @@ pub fn spawn_level(
                     .enumerate()
                 {
                     let layer_entity = commands.spawn_empty().id();
+
+                    let LayerDefinition {
+                        tile_pivot_x,
+                        tile_pivot_y,
+                        ..
+                    } = &layer_definition_map
+                        .get(&layer_instance.layer_def_uid)
+                        .expect("Encountered layer without definition");
+
+                    // The math for determining the x/y of a tilemap layer depends heavily on
+                    // both the layer's grid size and the tileset's tile size.
+                    // In particular, we care about their difference for properly reversing y
+                    // direction and for tile pivot calculations.
+                    let grid_tile_size_difference = grid_size - tile_size;
+
+                    // It is useful to determine what we should treat as the desired "origin" of
+                    // the tilemap in bevy space.
+                    // This will be the bottom left pixel of the tilemap.
+                    // The y value is affected when there is a difference between the grid size and
+                    // tile size - it sinks below 0 when the grid size is greater.
+                    let bottom_left_pixel = Vec2::new(0., grid_tile_size_difference);
+
+                    // Tiles in bevy_ecs_tilemap are anchored to the center of the tile.
+                    // We need to cancel out this anchoring so that layers of different sizes will
+                    // stack on top of eachother as they do in LDtk.
+                    let centering_adjustment = Vec2::splat(tile_size / 2.);
+
+                    // Layers in LDtk can have a pivot value that acts like an anchor.
+                    // The amount that a tile is translated by this pivot is simply the difference
+                    // between grid_size and tile_size again.
+                    let pivot_adjustment = Vec2::new(
+                        grid_tile_size_difference * tile_pivot_x,
+                        -grid_tile_size_difference * tile_pivot_y,
+                    );
+
+                    let tilemap_transform = Transform::from_translation(
+                        (bottom_left_pixel
+                            + centering_adjustment
+                            + pivot_adjustment
+                            + layer_offset)
+                            .extend(layer_z as f32),
+                    );
 
                     let tilemap_bundle = if layer_instance.layer_instance_type == Type::IntGrid {
                         // The current spawning of IntGrid layers doesn't allow using
@@ -601,6 +643,7 @@ pub fn spawn_level(
                         }
 
                         TilemapBundle {
+                            transform: tilemap_transform,
                             grid_size: tilemap_grid_size,
                             size,
                             spacing,
@@ -647,6 +690,7 @@ pub fn spawn_level(
                         }
 
                         TilemapBundle {
+                            transform: tilemap_transform,
                             grid_size: tilemap_grid_size,
                             size,
                             spacing,
@@ -665,54 +709,12 @@ pub fn spawn_level(
                         TilemapId(layer_entity),
                     );
 
-                    let LayerDefinition {
-                        tile_pivot_x,
-                        tile_pivot_y,
-                        ..
-                    } = &layer_definition_map
-                        .get(&layer_instance.layer_def_uid)
-                        .expect("Encountered layer without definition");
-
-                    // The math for determining the x/y of a tilemap layer depends heavily on
-                    // both the layer's grid size and the tileset's tile size.
-                    // In particular, we care about their difference for properly reversing y
-                    // direction and for tile pivot calculations.
-                    let grid_tile_size_difference = grid_size - tile_size;
-
-                    // It is useful to determine what we should treat as the desired "origin" of
-                    // the tilemap in bevy space.
-                    // This will be the bottom left pixel of the tilemap.
-                    // The y value is affected when there is a difference between the grid size and
-                    // tile size - it sinks below 0 when the grid size is greater.
-                    let bottom_left_pixel = Vec2::new(0., grid_tile_size_difference);
-
-                    // Tiles in bevy_ecs_tilemap are anchored to the center of the tile.
-                    // We need to cancel out this anchoring so that layers of different sizes will
-                    // stack on top of eachother as they do in LDtk.
-                    let centering_adjustment = Vec2::splat(tile_size / 2.);
-
-                    // Layers in LDtk can have a pivot value that acts like an anchor.
-                    // The amount that a tile is translated by this pivot is simply the difference
-                    // between grid_size and tile_size again.
-                    let pivot_adjustment = Vec2::new(
-                        grid_tile_size_difference * tile_pivot_x,
-                        -grid_tile_size_difference * tile_pivot_y,
-                    );
-
-                    commands
-                        .entity(layer_entity)
-                        .insert(tilemap_bundle)
-                        .insert(SpatialBundle::from_transform(Transform::from_translation(
-                            (bottom_left_pixel
-                                + centering_adjustment
-                                + pivot_adjustment
-                                + layer_offset)
-                                .extend(layer_z as f32),
-                        )))
-                        .insert(LayerMetadata::from(layer_instance))
-                        .insert(Name::new(layer_instance.identifier.to_owned()));
-
-                    commands.entity(ldtk_entity).add_child(layer_entity);
+                    commands.entity(layer_entity).insert((
+                        tilemap_bundle,
+                        LayerMetadata::from(layer_instance),
+                        Name::new(layer_instance.identifier.to_owned()),
+                        ChildOf(ldtk_entity),
+                    ));
 
                     layer_z += 1;
                 }

@@ -2,15 +2,15 @@ use bevy::prelude::*;
 use bevy_ecs_ldtk::{prelude::*, utils::ldtk_pixel_coords_to_translation_pivoted};
 use bevy_rapier2d::dynamics::Velocity;
 
-use crate::physics::ColliderBundle;
+use crate::colliders::ColliderBundle;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Component)]
 pub struct Enemy;
 
 #[derive(Clone, Default, Bundle, LdtkEntity)]
 pub struct MobBundle {
-    #[sprite_sheet_bundle]
-    pub sprite_sheet_bundle: LdtkSpriteSheetBundle,
+    #[sprite_sheet]
+    pub sprite_sheet: Sprite,
     #[from_entity_instance]
     pub collider_bundle: ColliderBundle,
     pub enemy: Enemy,
@@ -104,14 +104,11 @@ pub fn patrol(mut query: Query<(&mut Transform, &mut Velocity, &mut Patrol)>) {
     }
 }
 
-
 pub struct EnemyPlugin;
 
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
-        app
-        .add_systems(Update, patrol)
-        .register_ldtk_entity::<MobBundle>("Mob")
-        ;
+        app.add_systems(Update, patrol)
+            .register_ldtk_entity::<MobBundle>("Mob");
     }
 }

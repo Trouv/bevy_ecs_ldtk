@@ -5,7 +5,7 @@ use crate::LevelIid;
 /// Events fired by the plugin related to level spawning/despawning.
 ///
 /// Each variant stores the level's `iid` in LDtk.
-#[derive(Clone, Eq, PartialEq, Debug, Hash, Event)]
+#[derive(Clone, Eq, PartialEq, Debug, Hash, Message)]
 pub enum LevelEvent {
     /// Indicates that a level has been triggered to spawn, but hasn't been spawned yet.
     SpawnTriggered(LevelIid),

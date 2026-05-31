@@ -25,7 +25,7 @@ Use the transforms of the spawned levels and width/height info from the level's 
 
 
 To access the level asset data, you first need to access the project asset data.
-Assuming you only have one project, query for the only `Handle<LdtkProject>` entity and look up its asset data in the `LdtkProject` asset store.
+Assuming you only have one project, query for the only `LdtkProjectHandle` entity and look up its asset data in the `LdtkProject` asset store.
 Then, get the raw level data for every spawned level using the level entity's `LevelIid` component (there is a provided method for this).
 
 ```rust,no_run
@@ -36,6 +36,7 @@ Then, get the raw level data for every spawned level using the level entity's `L
 {{ #include ../../../examples/collectathon/player.rs:59:74 }}
         }
     }
+    Ok(())
 }
 ```
 
@@ -57,5 +58,5 @@ The full system should look something like this:
 # use bevy_ecs_ldtk::prelude::*;
 # #[derive(Component)]
 # struct Player;
-{{ #include ../../../examples/collectathon/player.rs:59:92 }}
+{{ #include ../../../examples/collectathon/player.rs:59:93 }}
 ```

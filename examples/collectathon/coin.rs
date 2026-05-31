@@ -18,8 +18,8 @@ struct Coin;
 #[derive(Default, Bundle, LdtkEntity)]
 struct CoinBundle {
     coin: Coin,
-    #[sprite_sheet_bundle]
-    sprite_sheet: LdtkSpriteSheetBundle,
+    #[sprite_sheet]
+    sprite_sheet: Sprite,
 }
 
 /// Component for entities that can collect coins.
@@ -52,7 +52,7 @@ fn collect(
                 wallet.coins += 1;
                 println!("Coins: {}", wallet.coins);
 
-                commands.entity(coin_entity).despawn_recursive();
+                commands.entity(coin_entity).despawn();
             }
         }
     }

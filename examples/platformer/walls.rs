@@ -1,10 +1,9 @@
 use std::collections::HashSet;
 
-use bevy::{prelude::*, utils::HashMap};
+use bevy::{platform::collections::HashMap, prelude::*};
 use bevy_ecs_ldtk::prelude::*;
 
 use bevy_rapier2d::prelude::*;
-
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Component)]
 pub struct Wall;
@@ -32,10 +31,10 @@ pub struct WallBundle {
 /// 4. spawn colliders for each rectangle
 pub fn spawn_wall_collision(
     mut commands: Commands,
-    wall_query: Query<(&GridCoords, &Parent), Added<Wall>>,
-    parent_query: Query<&Parent, Without<Wall>>,
+    wall_query: Query<(&GridCoords, &ChildOf), Added<Wall>>,
+    parent_query: Query<&ChildOf, Without<Wall>>,
     level_query: Query<(Entity, &LevelIid)>,
-    ldtk_projects: Query<&Handle<LdtkProject>>,
+    ldtk_projects: Query<&LdtkProjectHandle>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
 ) {
     /// Represents a wide wall that is 1 tile tall
@@ -63,13 +62,13 @@ pub fn spawn_wall_collision(
     // 2. it lets us easily add the collision entities as children of the appropriate level entity
     let mut level_to_wall_locations: HashMap<Entity, HashSet<GridCoords>> = HashMap::new();
 
-    wall_query.iter().for_each(|(&grid_coords, parent)| {
+    wall_query.iter().for_each(|(&grid_coords, child_of)| {
         // An intgrid tile's direct parent will be a layer entity, not the level entity
         // To get the level entity, you need the tile's grandparent.
         // This is where parent_query comes in.
-        if let Ok(grandparent) = parent_query.get(parent.get()) {
+        if let Ok(parent_child_of) = parent_query.get(child_of.parent()) {
             level_to_wall_locations
-                .entry(grandparent.get())
+                .entry(parent_child_of.parent())
                 .or_default()
                 .insert(grid_coords);
         }
@@ -79,7 +78,7 @@ pub fn spawn_wall_collision(
         level_query.iter().for_each(|(level_entity, level_iid)| {
             if let Some(level_walls) = level_to_wall_locations.get(&level_entity) {
                 let ldtk_project = ldtk_project_assets
-                    .get(ldtk_projects.single())
+                    .get(ldtk_projects.single().unwrap())
                     .expect("Project should be loaded if level has spawned");
 
                 let level = ldtk_project
@@ -180,5 +179,19 @@ pub fn spawn_wall_collision(
                 });
             }
         });
+    }
+}
+
+/// Plugin which spawns walls on appropriate LDtk int cells,
+/// then merges them together to reduce physics load.
+///
+/// Walls are hardcoded as int cell values 1 (dirt) and 3 (stone).
+pub struct WallPlugin;
+
+impl Plugin for WallPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(Update, spawn_wall_collision)
+            .register_ldtk_int_cell::<WallBundle>(1) //dirt
+            .register_ldtk_int_cell::<WallBundle>(3); //stone
     }
 }

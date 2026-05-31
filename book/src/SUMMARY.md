@@ -13,6 +13,7 @@
 - [Anatomy of the World](explanation/anatomy-of-the-world.md)
 - [Plugin Schedule]()
 - [Asset Model]()
+- [Limitations](explanation/limitations.md)
 # How-To Guides
 - [Register Bundles for Intgrid Tiles and LDtk Entities]()
 - [Process Entities Further with Blueprints]()
@@ -32,5 +33,6 @@
 - [Migration Guides](how-to-guides/migration-guides/README.md)
   - [Migrate from 0.8 to 0.9](how-to-guides/migration-guides/migrate-from-0.8-to-0.9.md)
   - [Migrate from 0.9 to 0.10](how-to-guides/migration-guides/migrate-from-0.9-to-0.10.md)
+  - [Migrate from 0.10 to 0.11](how-to-guides/migration-guides/migrate-from-0.10-to-0.11.md)
 ---
 [API Reference](api-reference.md).

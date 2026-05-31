@@ -18,7 +18,7 @@ Derive `Default` for this component.
 ```rust,no_run
 # use bevy::prelude::*;
 # use bevy_ecs_ldtk::prelude::*;
-{{#include ../../../../examples/tile_based_game.rs:42:52}}
+{{#include ../../../../examples/tile_based_game.rs:45:55}}
 ```
 
 ## Implement tile-based movement
@@ -38,8 +38,8 @@ fn main() {
         .run();
 }
 
-{{#include ../../../../examples/tile_based_game.rs:91:93}}
-{{#include ../../../../examples/tile_based_game.rs:95:109}}
+{{#include ../../../../examples/tile_based_game.rs:94:96}}
+{{#include ../../../../examples/tile_based_game.rs:98:112}}
         *player_grid_coords = destination;
     }
 }
@@ -67,7 +67,7 @@ fn main() {
         .run();
 }
 
-{{#include ../../../../examples/tile_based_game.rs:116:126}}
+{{#include ../../../../examples/tile_based_game.rs:119:129}}
 ```
 
 ## Prevent tile-based movement into walls
@@ -88,7 +88,7 @@ fn main() {
         .run();
 }
 
-{{#include ../../../../examples/tile_based_game.rs:66:72}}
+{{#include ../../../../examples/tile_based_game.rs:69:75}}
 ```
 
 There are a lot of ways to go about implementing the collision systems.
@@ -111,12 +111,12 @@ fn main() {
         .run();
 }
 
-{{#include ../../../../examples/tile_based_game.rs:74:89}}
+{{#include ../../../../examples/tile_based_game.rs:77:92}}
 ```
 
 Now, add a system that listens for `LevelEvent::Spawned` and populates this resource.
 It will need access to all of the wall locations to populate the `HashSet` (`Query<&GridCoords, With<Wall>>`).
-It will also need access to the `LdtkProject` data to find the current level's width/height (`Query<&Handle<LdtkProject>>` and `Res<Assets<LdtkProject>>`).
+It will also need access to the `LdtkProject` data to find the current level's width/height (`Query<&LdtkProjectHandle>` and `Res<Assets<LdtkProject>>`).
 ```rust,no_run
 # use bevy::prelude::*;
 # use bevy_ecs_ldtk::prelude::*;
@@ -150,7 +150,7 @@ fn main() {
         .run();
 }
 
-{{#include ../../../../examples/tile_based_game.rs:128:155}}
+{{#include ../../../../examples/tile_based_game.rs:131:159}}
 ```
 
 Finally, update the `move_player_from_input` system to access the `LevelWalls` resource and check whether or not the player's destination is in a wall.
@@ -175,7 +175,7 @@ Finally, update the `move_player_from_input` system to access the `LevelWalls` r
 #             || self.wall_locations.contains(grid_coords)
 #     }
 # }
-{{#include ../../../../examples/tile_based_game.rs:91:114}}
+{{#include ../../../../examples/tile_based_game.rs:94:117}}
 ```
 
 With this check in place, the player should now be unable to move into walls!
@@ -188,7 +188,7 @@ Similar to the `PlayerBundle`, give the `GoalBundle` its own marker component an
 ```rust,no_run
 # use bevy::prelude::*;
 # use bevy_ecs_ldtk::prelude::*;
-{{#include ../../../../examples/tile_based_game.rs:54:64}}
+{{#include ../../../../examples/tile_based_game.rs:57:67}}
 ```
 
 Then, write a system that checks if the player's `GridCoords` and the goal's `GridCoords` match.
@@ -212,7 +212,7 @@ fn main() {
         .run();
 }
 
-{{#include ../../../../examples/tile_based_game.rs:157::}}
+{{#include ../../../../examples/tile_based_game.rs:160::}}
 ```
 
 With this, the simple tile-based game is complete.

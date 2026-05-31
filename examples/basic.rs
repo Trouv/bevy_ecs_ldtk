@@ -14,10 +14,10 @@ fn main() {
 }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2d);
 
     commands.spawn(LdtkWorldBundle {
-        ldtk_handle: asset_server.load("my_project.ldtk"),
+        ldtk_handle: asset_server.load("my_project.ldtk").into(),
         ..Default::default()
     });
 }
@@ -32,6 +32,6 @@ struct ComponentB;
 pub struct MyBundle {
     a: ComponentA,
     b: ComponentB,
-    #[sprite_sheet_bundle]
-    sprite_bundle: LdtkSpriteSheetBundle,
+    #[sprite_sheet]
+    sprite_sheet: Sprite,
 }

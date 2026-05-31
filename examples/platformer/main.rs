@@ -6,16 +6,18 @@ use bevy_ecs_ldtk::prelude::*;
 
 use bevy_rapier2d::prelude::*;
 
+mod camera;
+mod climbing;
+/// Bundles for auto-loading Rapier colliders as part of the level
+mod colliders;
+mod enemy;
 /// Handles initialization and switching levels
 mod game_flow;
-mod camera;
-mod walls;
-mod physics;
-mod player;
+mod ground_detection;
 mod inventory;
-mod climbing;
-mod enemy;
 mod misc_objects;
+mod player;
+mod walls;
 
 fn main() {
     App::new()
@@ -24,18 +26,6 @@ fn main() {
             LdtkPlugin,
             RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0),
         ))
-        .insert_resource(RapierConfiguration {
-            gravity: Vec2::new(0.0, -2000.0),
-            physics_pipeline_active: true,
-            query_pipeline_active: true,
-            timestep_mode: TimestepMode::Variable {
-                max_dt: 1.0 / 60.0,
-                time_scale: 1.0,
-                substeps: 1,
-            },
-            scaled_shape_subdivision: 10,
-            force_update_from_transform_changes: false,
-        })
         .insert_resource(LevelSelection::Uid(0))
         .insert_resource(LdtkSettings {
             level_spawn_behavior: LevelSpawnBehavior::UseWorldTranslation {
@@ -45,16 +35,13 @@ fn main() {
             ..Default::default()
         })
         .add_plugins(game_flow::GameFlowPlugin)
-        .add_systems(Update, walls::spawn_wall_collision)
-        .add_plugins(physics::PhysicsPlugin)
+        .add_plugins(walls::WallPlugin)
+        .add_plugins(ground_detection::GroundDetectionPlugin)
         .add_plugins(climbing::ClimbingPlugin)
         .add_plugins(player::PlayerPlugin)
         .add_plugins(enemy::EnemyPlugin)
         .add_systems(Update, inventory::dbg_print_inventory)
         .add_systems(Update, camera::camera_fit_inside_current_level)
         .add_plugins(misc_objects::MiscObjectsPlugin)
-        .register_ldtk_int_cell::<walls::WallBundle>(1)
-        .register_ldtk_int_cell::<climbing::LadderBundle>(2)
-        .register_ldtk_int_cell::<walls::WallBundle>(3)
         .run();
 }

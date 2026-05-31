@@ -1,28 +1,37 @@
 use crate::player::Player;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
+use bevy_rapier2d::prelude::*;
 
-pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let camera = Camera2dBundle::default();
-    commands.spawn(camera);
+pub fn setup(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut rapier_config: Query<&mut RapierConfiguration>,
+) -> Result {
+    commands.spawn(Camera2d);
 
-    let ldtk_handle = asset_server.load("Typical_2D_platformer_example.ldtk");
+    rapier_config.single_mut()?.gravity = Vec2::new(0.0, -2000.0);
+
+    let ldtk_handle = asset_server
+        .load("Typical_2D_platformer_example.ldtk")
+        .into();
     commands.spawn(LdtkWorldBundle {
         ldtk_handle,
         ..Default::default()
     });
+    Ok(())
 }
 
 pub fn update_level_selection(
     level_query: Query<(&LevelIid, &Transform), Without<Player>>,
     player_query: Query<&Transform, With<Player>>,
     mut level_selection: ResMut<LevelSelection>,
-    ldtk_projects: Query<&Handle<LdtkProject>>,
+    ldtk_projects: Query<&LdtkProjectHandle>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
-) {
+) -> Result {
     for (level_iid, level_transform) in &level_query {
         let ldtk_project = ldtk_project_assets
-            .get(ldtk_projects.single())
+            .get(ldtk_projects.single()?)
             .expect("Project should be loaded if level has spawned");
 
         let level = ldtk_project
@@ -48,6 +57,7 @@ pub fn update_level_selection(
             }
         }
     }
+    Ok(())
 }
 
 pub fn restart_level(
@@ -62,15 +72,12 @@ pub fn restart_level(
     }
 }
 
-
 pub struct GameFlowPlugin;
 
 impl Plugin for GameFlowPlugin {
     fn build(&self, app: &mut App) {
-        app
-        .add_systems(Startup, setup)
-        .add_systems(Update, update_level_selection)
-        .add_systems(Update, restart_level)
-        ;
+        app.add_systems(Startup, setup)
+            .add_systems(Update, update_level_selection)
+            .add_systems(Update, restart_level);
     }
 }

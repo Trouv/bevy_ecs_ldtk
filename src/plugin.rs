@@ -53,6 +53,10 @@ impl Plugin for LdtkPlugin {
                 (systems::process_ldtk_assets, systems::process_ldtk_levels),
             )
             .add_systems(
+                PreUpdate,
+                app::set_sprite_anchor.after(systems::process_ldtk_levels)
+            )
+            .add_systems(
                 ProcessLdtkApi,
                 (systems::apply_level_selection, systems::apply_level_set)
                     .chain()

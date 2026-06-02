@@ -324,7 +324,7 @@ where
 ///
 /// Used when adding sprite bundles to spawned entity instances.
 pub fn ldtk_pivot_to_anchor(pivot: Vec2) -> Anchor {
-    Anchor::Custom(Vec2::new(pivot.x - 0.5, 0.5 - pivot.y))
+    Anchor(Vec2::new(pivot.x - 0.5, 0.5 - pivot.y))
 }
 
 /// Creates a [`Sprite`] with [`TextureAtlas`] from the entity information available to the
@@ -375,7 +375,7 @@ pub fn sprite_sheet_from_entity_info(
                 }
             };
 
-            Sprite::from_atlas_image(tileset.clone(), texture_atlas) // TODO: ldtk_pivot_to_anchor(entity_instance.pivot),
+            Sprite::from_atlas_image(tileset.clone(), texture_atlas)
     } else {
         warn!("EntityInstance needs a tile, an associated tileset, and an associated tileset definition to be inserted as a Sprite");
         Sprite::default()
@@ -388,7 +388,6 @@ pub fn sprite_sheet_from_entity_info(
 /// Used for the `#[sprite]` attribute macro for `#[derive(LdtkEntity)]`.
 /// See [LdtkEntity#sprite] for more info.
 pub fn sprite_from_entity_info(
-    entity_instance: &EntityInstance,
     tileset: Option<&Handle<Image>>,
 ) -> Sprite {
     let tileset = match tileset {
@@ -399,7 +398,7 @@ pub fn sprite_from_entity_info(
         }
     };
 
-    Sprite::from_image(tileset) // TODO: ldtk_pivot_to_anchor(entity_instance.pivot),
+    Sprite::from_image(tileset)
 }
 
 #[cfg(test)]

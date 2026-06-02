@@ -236,6 +236,17 @@ pub fn ldtk_pixel_coords_to_translation_pivoted(
     pivot_point + offset
 }
 
+/// Calculate the "visual center" of an LDtk object using its current bevy translation, size, and pivot value.
+pub fn ldtk_entity_visual_center(translation: Vec3, entity_size: IVec2, pivot: Vec2) -> Vec3 {
+    // Adjust entity pivot so that 0.5 is the center.
+    let adjusted_pivot = Vec2::new(0.5 - pivot.x, pivot.y - 0.5);
+
+    // Find the spot on the entity which the pivot corresponds to.
+    let offset = entity_size.as_vec2() * adjusted_pivot;
+
+    translation + offset.extend(0.0)
+}
+
 /// Similar to [LayerBuilder::new_batch], except it doesn't consume the [LayerBuilder]
 ///
 /// This allows for more methods to be performed on the [LayerBuilder] before building it.
@@ -670,6 +681,33 @@ mod tests {
                 Vec2::new(0.5, 0.5)
             ),
             Vec2::new(20., 0.),
+        );
+    }
+
+    #[test]
+    fn test_pivot_to_anchor() {
+        //Center
+        assert_eq!(
+            ldtk_pivot_to_anchor(Vec2::new(0.5, 0.5)).as_vec(),
+            Vec2::ZERO
+        );
+
+        //Top-left
+        assert_eq!(
+            ldtk_pivot_to_anchor(Vec2::new(0.0, 0.0)).as_vec(),
+            Vec2::new(-0.5, 0.5)
+        );
+
+        //Bottom-right
+        assert_eq!(
+            ldtk_pivot_to_anchor(Vec2::new(1.0, 1.0)).as_vec(),
+            Vec2::new(0.5, -0.5)
+        );
+
+        //Fractional
+        assert_eq!(
+            ldtk_pivot_to_anchor(Vec2::new(0.75, 0.75)).as_vec(),
+            Vec2::new(0.25, -0.25)
         );
     }
 

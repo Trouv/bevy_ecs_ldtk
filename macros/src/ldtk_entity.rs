@@ -167,7 +167,7 @@ fn expand_sprite_attribute(
         },
         syn::Meta::Path(_) => {
             quote! {
-                #field_name: bevy_ecs_ldtk::utils::sprite_from_entity_info(entity_instance, tileset),
+                #field_name: bevy_ecs_ldtk::utils::sprite_from_entity_info(tileset),
             }
         },
         _ => panic!("#[sprite...] attribute should take the form #[sprite(\"asset/path.png\")] or #[sprite]"),

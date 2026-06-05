@@ -3,7 +3,7 @@ use crate::{
     ldtk::{EntityInstance, LayerInstance, TilesetDefinition},
     utils,
 };
-use bevy::{ecs::system::EntityCommands, prelude::*, sprite::Anchor};
+use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::{collections::HashMap, marker::PhantomData};
 
 /// [LdtkEntityAppExt]: super::LdtkEntityAppExt
@@ -357,18 +357,6 @@ impl LdtkEntity for Sprite {
         _: &mut Assets<TextureAtlasLayout>,
     ) -> Self {
         utils::sprite_from_entity_info(tileset)
-    }
-}
-
-pub fn set_sprite_anchor(mut query: Query<(&EntityInstance, &mut Anchor), Added<Anchor>>) {
-    for (entity_instance, mut anchor) in &mut query {
-        // Read anchor from the entity IF the anchor is default.
-        // This should preserve most manually-created anchors,
-        // as in theory the main reason to manually create an anchor
-        // is to replace the default value.
-        if *anchor != Anchor::default() {
-            *anchor = utils::ldtk_pivot_to_anchor(entity_instance.pivot);
-        }
     }
 }
 

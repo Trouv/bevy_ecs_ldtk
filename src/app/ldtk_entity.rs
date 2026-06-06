@@ -310,6 +310,9 @@ use std::{collections::HashMap, marker::PhantomData};
 /// }
 /// ```
 pub trait LdtkEntity {
+    /// [Transform]: bevy::prelude::Transform
+    /// [Anchor]: bevy::sprite::Anchor
+    ///
     /// The constructor used by the plugin when spawning entities from an LDtk file.
     /// Has access to resources/assets most commonly used for spawning 2d objects.
     /// If you need access to more of the [World](bevy::prelude::World), you can create a system that queries for
@@ -319,9 +322,9 @@ pub trait LdtkEntity {
     /// registered to the app.
     ///
     /// Note: whether or not the entity is registered to the app, the plugin will insert a
-    /// [SpatialBundle](bevy::prelude::SpatialBundle) to the entity **after** this bundle is
-    /// inserted.
-    /// So, any custom implementations of these components within this trait will be overwritten.
+    /// [Transform] and an [Anchor] to the entity.
+    /// [Anchor] is inserted before this bundle, so its value can be overwritten by including an [Anchor] in
+    /// the bundle. [Transform] is inserted **after** this bundle, so custom [Transform]s will be overwritten.
     fn bundle_entity(
         entity_instance: &EntityInstance,
         layer_instance: &LayerInstance,

@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use bevy::prelude::*;
 
-use bevy_rapier2d::prelude::*;
+use avian2d::prelude::*;
 
 #[derive(Component)]
 pub struct GroundSensor {
@@ -20,20 +20,20 @@ pub fn spawn_ground_sensor(
     detect_ground_for: Query<(Entity, &Collider), Added<GroundDetection>>,
 ) {
     for (entity, shape) in &detect_ground_for {
-        if let Some(cuboid) = shape.as_cuboid() {
+        if let Some(cuboid) = shape.shape().as_cuboid() {
             let Vec2 {
                 x: half_extents_x,
                 y: half_extents_y,
-            } = cuboid.half_extents();
+            } = cuboid.half_extents;
 
-            let detector_shape = Collider::cuboid(half_extents_x / 2.0, 2.);
+            let detector_shape = Collider::rectangle(half_extents_x, 4.);
 
             let sensor_translation = Vec3::new(0., -half_extents_y, 0.);
 
             commands.entity(entity).with_children(|builder| {
                 builder
                     .spawn_empty()
-                    .insert(ActiveEvents::COLLISION_EVENTS)
+                    .insert(CollisionEventsEnabled)
                     .insert(detector_shape)
                     .insert(Sensor)
                     .insert(Transform::from_translation(sensor_translation))
@@ -49,32 +49,40 @@ pub fn spawn_ground_sensor(
 
 pub fn ground_detection(
     mut ground_sensors: Query<&mut GroundSensor>,
-    mut collisions: MessageReader<CollisionEvent>,
+    mut collision_starts: MessageReader<CollisionStart>,
+    mut collision_ends: MessageReader<CollisionEnd>,
     collidables: Query<Entity, (With<Collider>, Without<Sensor>)>,
 ) {
-    for collision_event in collisions.read() {
-        match collision_event {
-            CollisionEvent::Started(e1, e2, _) => {
-                if collidables.contains(*e1) {
-                    if let Ok(mut sensor) = ground_sensors.get_mut(*e2) {
-                        sensor.intersecting_ground_entities.insert(*e1);
-                    }
-                } else if collidables.contains(*e2) {
-                    if let Ok(mut sensor) = ground_sensors.get_mut(*e1) {
-                        sensor.intersecting_ground_entities.insert(*e2);
-                    }
-                }
+    for CollisionStart {
+        collider1,
+        collider2,
+        ..
+    } in collision_starts.read()
+    {
+        if collidables.contains(*collider1) {
+            if let Ok(mut sensor) = ground_sensors.get_mut(*collider2) {
+                sensor.intersecting_ground_entities.insert(*collider1);
             }
-            CollisionEvent::Stopped(e1, e2, _) => {
-                if collidables.contains(*e1) {
-                    if let Ok(mut sensor) = ground_sensors.get_mut(*e2) {
-                        sensor.intersecting_ground_entities.remove(e1);
-                    }
-                } else if collidables.contains(*e2) {
-                    if let Ok(mut sensor) = ground_sensors.get_mut(*e1) {
-                        sensor.intersecting_ground_entities.remove(e2);
-                    }
-                }
+        } else if collidables.contains(*collider2) {
+            if let Ok(mut sensor) = ground_sensors.get_mut(*collider1) {
+                sensor.intersecting_ground_entities.insert(*collider2);
+            }
+        }
+    }
+
+    for CollisionEnd {
+        collider1,
+        collider2,
+        ..
+    } in collision_ends.read()
+    {
+        if collidables.contains(*collider1) {
+            if let Ok(mut sensor) = ground_sensors.get_mut(*collider2) {
+                sensor.intersecting_ground_entities.remove(collider1);
+            }
+        } else if collidables.contains(*collider2) {
+            if let Ok(mut sensor) = ground_sensors.get_mut(*collider1) {
+                sensor.intersecting_ground_entities.remove(collider2);
             }
         }
     }

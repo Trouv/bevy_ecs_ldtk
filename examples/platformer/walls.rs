@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use bevy::{platform::collections::HashMap, prelude::*};
 use bevy_ecs_ldtk::prelude::*;
 
-use bevy_rapier2d::prelude::*;
+use avian2d::prelude::*;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Component)]
 pub struct Wall;
@@ -157,15 +157,13 @@ pub fn spawn_wall_collision(
                     for wall_rect in wall_rects {
                         level
                             .spawn_empty()
-                            .insert(Collider::cuboid(
+                            .insert(Collider::rectangle(
                                 (wall_rect.right as f32 - wall_rect.left as f32 + 1.)
-                                    * grid_size as f32
-                                    / 2.,
+                                    * grid_size as f32,
                                 (wall_rect.top as f32 - wall_rect.bottom as f32 + 1.)
-                                    * grid_size as f32
-                                    / 2.,
+                                    * grid_size as f32,
                             ))
-                            .insert(RigidBody::Fixed)
+                            .insert(RigidBody::Static)
                             .insert(Friction::new(1.0))
                             .insert(Transform::from_xyz(
                                 (wall_rect.left + wall_rect.right + 1) as f32 * grid_size as f32

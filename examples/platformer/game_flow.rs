@@ -1,16 +1,19 @@
 use crate::player::Player;
+use avian2d::prelude::*;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
-use bevy_rapier2d::prelude::*;
 
 pub fn setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    mut rapier_config: Query<&mut RapierConfiguration>,
-) -> Result {
+    mut physics_time: ResMut<Time<Physics>>,
+) {
     commands.spawn(Camera2d);
 
-    rapier_config.single_mut()?.gravity = Vec2::new(0.0, -2000.0);
+    // The wall colliders spawn one frame later than the player and other
+    // entities. Only start the physics simulation after that (in
+    // [start_physics]), so they don't end up in the ground.
+    physics_time.pause();
 
     let ldtk_handle = asset_server
         .load("Typical_2D_platformer_example.ldtk")
@@ -19,7 +22,17 @@ pub fn setup(
         ldtk_handle,
         ..Default::default()
     });
-    Ok(())
+}
+
+fn start_physics(
+    mut level_events: MessageReader<LevelEvent>,
+    mut physics_time: ResMut<Time<Physics>>,
+) {
+    for event in level_events.read() {
+        if let LevelEvent::Transformed(_) = event {
+            physics_time.unpause();
+        }
+    }
 }
 
 pub fn update_level_selection(
@@ -77,6 +90,7 @@ pub struct GameFlowPlugin;
 impl Plugin for GameFlowPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup)
+            .add_systems(Update, start_physics)
             .add_systems(Update, update_level_selection)
             .add_systems(Update, restart_level);
     }

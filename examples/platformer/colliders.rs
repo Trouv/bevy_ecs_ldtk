@@ -1,17 +1,17 @@
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 
-use bevy_rapier2d::prelude::*;
+use avian2d::prelude::*;
 
 #[derive(Clone, Default, Bundle, LdtkIntCell)]
 pub struct ColliderBundle {
     pub collider: Collider,
     pub rigid_body: RigidBody,
-    pub velocity: Velocity,
+    pub velocity: LinearVelocity,
     pub rotation_constraints: LockedAxes,
     pub gravity_scale: GravityScale,
     pub friction: Friction,
-    pub density: ColliderMassProperties,
+    pub density: ColliderDensity,
 }
 
 impl From<&EntityInstance> for ColliderBundle {
@@ -20,28 +20,29 @@ impl From<&EntityInstance> for ColliderBundle {
 
         match entity_instance.identifier.as_ref() {
             "Player" => ColliderBundle {
-                collider: Collider::cuboid(6., 14.),
+                collider: Collider::rectangle(12., 28.),
                 rigid_body: RigidBody::Dynamic,
                 friction: Friction {
-                    coefficient: 0.0,
-                    combine_rule: CoefficientCombineRule::Min,
+                    dynamic_coefficient: 0.0,
+                    static_coefficient: 0.0,
+                    combine_rule: CoefficientCombine::Min,
                 },
                 rotation_constraints,
                 ..Default::default()
             },
             "Mob" => ColliderBundle {
-                collider: Collider::cuboid(5., 5.),
-                rigid_body: RigidBody::KinematicVelocityBased,
+                collider: Collider::rectangle(10., 10.),
+                rigid_body: RigidBody::Kinematic,
                 rotation_constraints,
                 ..Default::default()
             },
             "Chest" => ColliderBundle {
-                collider: Collider::cuboid(8., 8.),
+                collider: Collider::rectangle(16., 16.),
                 rigid_body: RigidBody::Dynamic,
                 rotation_constraints,
                 gravity_scale: GravityScale(1.0),
                 friction: Friction::new(0.5),
-                density: ColliderMassProperties::Density(15.0),
+                density: ColliderDensity(15.0),
                 ..Default::default()
             },
             _ => ColliderBundle::default(),
@@ -53,7 +54,7 @@ impl From<&EntityInstance> for ColliderBundle {
 pub struct SensorBundle {
     pub collider: Collider,
     pub sensor: Sensor,
-    pub active_events: ActiveEvents,
+    pub collision_events: CollisionEventsEnabled,
     pub rotation_constraints: LockedAxes,
 }
 
@@ -64,10 +65,10 @@ impl From<IntGridCell> for SensorBundle {
         // ladder
         if int_grid_cell.value == 2 {
             SensorBundle {
-                collider: Collider::cuboid(8., 8.),
+                collider: Collider::rectangle(16., 16.),
                 sensor: Sensor,
                 rotation_constraints,
-                active_events: ActiveEvents::COLLISION_EVENTS,
+                collision_events: CollisionEventsEnabled,
             }
         } else {
             SensorBundle::default()

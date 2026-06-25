@@ -1,6 +1,6 @@
+use avian2d::prelude::*;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::{prelude::*, utils::ldtk_pixel_coords_to_translation_pivoted};
-use bevy_rapier2d::dynamics::Velocity;
 
 use crate::colliders::ColliderBundle;
 
@@ -71,7 +71,7 @@ impl LdtkEntity for Patrol {
     }
 }
 
-pub fn patrol(mut query: Query<(&mut Transform, &mut Velocity, &mut Patrol)>) {
+pub fn patrol(mut query: Query<(&mut Transform, &mut LinearVelocity, &mut Patrol)>) {
     for (mut transform, mut velocity, mut patrol) in &mut query {
         if patrol.points.len() <= 1 {
             continue;
@@ -80,7 +80,7 @@ pub fn patrol(mut query: Query<(&mut Transform, &mut Velocity, &mut Patrol)>) {
         let mut new_velocity =
             (patrol.points[patrol.index] - transform.translation.truncate()).normalize() * 75.;
 
-        if new_velocity.dot(velocity.linvel) < 0. {
+        if new_velocity.dot(**velocity) < 0. {
             if patrol.index == 0 {
                 patrol.forward = true;
             } else if patrol.index == patrol.points.len() - 1 {
@@ -100,7 +100,7 @@ pub fn patrol(mut query: Query<(&mut Transform, &mut Velocity, &mut Patrol)>) {
                 (patrol.points[patrol.index] - transform.translation.truncate()).normalize() * 75.;
         }
 
-        velocity.linvel = new_velocity;
+        **velocity = new_velocity;
     }
 }
 

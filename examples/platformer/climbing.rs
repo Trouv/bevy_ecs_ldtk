@@ -1,6 +1,6 @@
+use avian2d::prelude::*;
 use bevy::{platform::collections::HashSet, prelude::*};
 use bevy_ecs_ldtk::prelude::*;
-use bevy_rapier2d::prelude::*;
 
 use crate::colliders::SensorBundle;
 
@@ -23,35 +23,43 @@ pub struct LadderBundle {
 pub fn detect_climb_range(
     mut climbers: Query<&mut Climber>,
     climbables: Query<Entity, With<Climbable>>,
-    mut collisions: MessageReader<CollisionEvent>,
+    mut collision_starts: MessageReader<CollisionStart>,
+    mut collision_ends: MessageReader<CollisionEnd>,
 ) {
-    for collision in collisions.read() {
-        match collision {
-            CollisionEvent::Started(collider_a, collider_b, _) => {
-                if let (Ok(mut climber), Ok(climbable)) =
-                    (climbers.get_mut(*collider_a), climbables.get(*collider_b))
-                {
-                    climber.intersecting_climbables.insert(climbable);
-                }
-                if let (Ok(mut climber), Ok(climbable)) =
-                    (climbers.get_mut(*collider_b), climbables.get(*collider_a))
-                {
-                    climber.intersecting_climbables.insert(climbable);
-                };
-            }
-            CollisionEvent::Stopped(collider_a, collider_b, _) => {
-                if let (Ok(mut climber), Ok(climbable)) =
-                    (climbers.get_mut(*collider_a), climbables.get(*collider_b))
-                {
-                    climber.intersecting_climbables.remove(&climbable);
-                }
+    for CollisionStart {
+        collider1,
+        collider2,
+        ..
+    } in collision_starts.read()
+    {
+        if let (Ok(mut climber), Ok(climbable)) =
+            (climbers.get_mut(*collider1), climbables.get(*collider2))
+        {
+            climber.intersecting_climbables.insert(climbable);
+        }
+        if let (Ok(mut climber), Ok(climbable)) =
+            (climbers.get_mut(*collider2), climbables.get(*collider1))
+        {
+            climber.intersecting_climbables.insert(climbable);
+        };
+    }
 
-                if let (Ok(mut climber), Ok(climbable)) =
-                    (climbers.get_mut(*collider_b), climbables.get(*collider_a))
-                {
-                    climber.intersecting_climbables.remove(&climbable);
-                }
-            }
+    for CollisionEnd {
+        collider1,
+        collider2,
+        ..
+    } in collision_ends.read()
+    {
+        if let (Ok(mut climber), Ok(climbable)) =
+            (climbers.get_mut(*collider1), climbables.get(*collider2))
+        {
+            climber.intersecting_climbables.remove(&climbable);
+        }
+
+        if let (Ok(mut climber), Ok(climbable)) =
+            (climbers.get_mut(*collider2), climbables.get(*collider1))
+        {
+            climber.intersecting_climbables.remove(&climbable);
         }
     }
 }

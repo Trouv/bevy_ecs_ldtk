@@ -1,6 +1,6 @@
+use avian2d::prelude::*;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
-use bevy_rapier2d::dynamics::Velocity;
 
 use crate::{climbing::Climber, inventory::Inventory};
 use crate::{colliders::ColliderBundle, ground_detection::GroundDetection};
@@ -31,13 +31,13 @@ pub struct PlayerBundle {
 
 pub fn player_movement(
     input: Res<ButtonInput<KeyCode>>,
-    mut query: Query<(&mut Velocity, &mut Climber, &GroundDetection), With<Player>>,
+    mut query: Query<(&mut LinearVelocity, &mut Climber, &GroundDetection), With<Player>>,
 ) {
     for (mut velocity, mut climber, ground_detection) in &mut query {
         let right = if input.pressed(KeyCode::KeyD) { 1. } else { 0. };
         let left = if input.pressed(KeyCode::KeyA) { 1. } else { 0. };
 
-        velocity.linvel.x = (right - left) * 200.;
+        velocity.x = (right - left) * 200.;
 
         if climber.intersecting_climbables.is_empty() {
             climber.climbing = false;
@@ -49,11 +49,11 @@ pub fn player_movement(
             let up = if input.pressed(KeyCode::KeyW) { 1. } else { 0. };
             let down = if input.pressed(KeyCode::KeyS) { 1. } else { 0. };
 
-            velocity.linvel.y = (up - down) * 200.;
+            velocity.y = (up - down) * 200.;
         }
 
         if input.just_pressed(KeyCode::Space) && (ground_detection.on_ground || climber.climbing) {
-            velocity.linvel.y = 500.;
+            velocity.y = 500.;
             climber.climbing = false;
         }
     }

@@ -4,7 +4,7 @@
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 
-use bevy_rapier2d::prelude::*;
+use avian2d::prelude::*;
 
 mod camera;
 mod climbing;
@@ -22,10 +22,8 @@ mod walls;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
-        .add_plugins((
-            LdtkPlugin,
-            RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0),
-        ))
+        .add_plugins((LdtkPlugin, PhysicsPlugins::default()))
+        .insert_resource(Gravity(Vec2::new(0.0, -2000.0)))
         .insert_resource(LevelSelection::Uid(0))
         .insert_resource(LdtkSettings {
             level_spawn_behavior: LevelSpawnBehavior::UseWorldTranslation {

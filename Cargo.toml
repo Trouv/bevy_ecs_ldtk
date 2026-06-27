@@ -29,7 +29,7 @@ derive_more = "0.99.20"
 
 [dev-dependencies]
 bevy = "0.18"
-bevy_rapier2d = { git = "https://github.com/buncys/bevy_rapier.git", rev = "8c25504d336c8c9fc7a3c765422d56845cc36075" }
+avian2d = "0.6"
 fake = { version = "4.4", features = ["uuid"] }
 rand = "0.9"
 bevy-inspector-egui = "0.36.0"

@@ -67,7 +67,7 @@ fn main() {
         .run();
 }
 
-{{#include ../../../../examples/tile_based_game.rs:119:129}}
+{{#include ../../../../examples/tile_based_game.rs:119:132}}
 ```
 
 ## Prevent tile-based movement into walls
@@ -150,7 +150,7 @@ fn main() {
         .run();
 }
 
-{{#include ../../../../examples/tile_based_game.rs:131:159}}
+{{#include ../../../../examples/tile_based_game.rs:134:162}}
 ```
 
 Finally, update the `move_player_from_input` system to access the `LevelWalls` resource and check whether or not the player's destination is in a wall.
@@ -212,7 +212,7 @@ fn main() {
         .run();
 }
 
-{{#include ../../../../examples/tile_based_game.rs:160::}}
+{{#include ../../../../examples/tile_based_game.rs:163::}}
 ```
 
 With this, the simple tile-based game is complete.

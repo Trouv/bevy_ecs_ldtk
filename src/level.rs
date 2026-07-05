@@ -338,6 +338,10 @@ pub fn spawn_level(
                                     Name::new(entity_instance.identifier.to_owned()),
                                 ));
 
+                                // Load sprite anchor from entity instance before user-provided Anchor
+                                // for the same reason.
+                                entity_commands.insert(ldtk_pivot_to_anchor(entity_instance.pivot));
+
                                 ldtk_map_get_or_default(
                                     layer_instance.identifier.clone(),
                                     entity_instance.identifier.clone(),

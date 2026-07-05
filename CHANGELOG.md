@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.15.0](https://github.com/Trouv/bevy_ecs_ldtk/compare/v0.14.0...v0.15.0) (2026-07-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* upgrade to bevy 0.19 ([#404](https://github.com/Trouv/bevy_ecs_ldtk/issues/404))
+
+### Features
+
+* set per-tile opacity in tile maker ([#400](https://github.com/Trouv/bevy_ecs_ldtk/issues/400)) ([351986c](https://github.com/Trouv/bevy_ecs_ldtk/commit/351986c9768742ddee3d7648163290a51494bbcb))
+* upgrade to bevy 0.19 ([#404](https://github.com/Trouv/bevy_ecs_ldtk/issues/404)) ([5c48dcb](https://github.com/Trouv/bevy_ecs_ldtk/commit/5c48dcb2eba51d379edea6c406f61d8ec3cf61a7))
+
+
+### Bug Fixes
+
+* map Array&lt;FilePath&gt; field to correct FieldValue variant ([#403](https://github.com/Trouv/bevy_ecs_ldtk/issues/403)) ([564dcb7](https://github.com/Trouv/bevy_ecs_ldtk/commit/564dcb77261013c09a83f8f8d94b3ea1c747f8f5))
+
+
+### Documentation Changes
+
+* add bevy_ecs_ldtk 0.15 to compatibility chart ([#407](https://github.com/Trouv/bevy_ecs_ldtk/issues/407)) ([8954fb5](https://github.com/Trouv/bevy_ecs_ldtk/commit/8954fb5fd8b2bf7bb2b019f46588af5ccf02a5ae))
+
+
+### Example Changes
+
+* port platformer example from bevy_rapier to avian ([#405](https://github.com/Trouv/bevy_ecs_ldtk/issues/405)) ([c34db11](https://github.com/Trouv/bevy_ecs_ldtk/commit/c34db11ada0671b456f9caa1be77a6c324a54122))
+
 ## [0.14.0](https://github.com/Trouv/bevy_ecs_ldtk/compare/v0.13.0...v0.14.0) (2026-01-22)
 
 

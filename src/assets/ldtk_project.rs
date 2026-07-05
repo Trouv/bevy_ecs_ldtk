@@ -26,7 +26,7 @@ fn ldtk_path_to_asset_path<'b>(
     ldtk_path: &AssetPath<'b>,
     rel_path: &str,
 ) -> Result<AssetPath<'b>, ParseAssetPathError> {
-    ldtk_path.resolve_embed(rel_path)
+    ldtk_path.resolve_embed_str(rel_path)
 }
 
 /// Main asset for loading LDtk project data.

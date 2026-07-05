@@ -23,15 +23,15 @@ derive-getters = "0.5.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 regex = "1"
-thiserror = "1.0"
+thiserror = "2.0"
 paste = "1.0"
-derive_more = "0.99.20"
+derive_more = { version = "2.1.1", features = ["constructor", "try_into"] }
 
 [dev-dependencies]
 bevy = "0.19"
 avian2d = "0.7"
-fake = { version = "4.4", features = ["uuid"] }
-rand = "0.9"
+fake = { version = "5.1", features = ["uuid"] }
+rand = "0.10"
 bevy-inspector-egui = "0.37.0"
 
 [features]

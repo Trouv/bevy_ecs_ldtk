@@ -331,6 +331,14 @@ pub(crate) struct EntityInstanceBundle {
 /// [*Anatomy of the World*](https://trouv.github.io/bevy_ecs_ldtk/v0.15.0/explanation/anatomy-of-the-world.html) <!-- x-release-please-version -->
 /// chapter of the `bevy_ecs_ldtk` book.
 #[derive(Debug, Default, Clone, Component, Reflect, Deref, DerefMut)]
+#[require(
+    LevelSet,
+    Transform,
+    GlobalTransform,
+    Visibility,
+    InheritedVisibility,
+    ViewVisibility
+)]
 #[reflect(Component)]
 pub struct LdtkProjectHandle {
     pub handle: Handle<LdtkProject>,

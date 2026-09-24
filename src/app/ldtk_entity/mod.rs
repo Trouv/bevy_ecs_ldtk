@@ -6,6 +6,9 @@ use crate::{
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::{collections::HashMap, marker::PhantomData};
 
+#[cfg(feature = "scene")]
+pub mod scene;
+
 /// [LdtkEntityAppExt]: super::LdtkEntityAppExt
 /// [Bundle]: bevy::prelude::Bundle
 /// [App]: bevy::prelude::App

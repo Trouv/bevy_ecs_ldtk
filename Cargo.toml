@@ -41,6 +41,7 @@ atlas = ["bevy_ecs_tilemap/atlas"]
 render = ["bevy_ecs_tilemap/render"]
 internal_levels = []
 external_levels = []
+scene = ["bevy/bevy_scene"]
 
 [package.metadata.docs.rs]
 all-features = true

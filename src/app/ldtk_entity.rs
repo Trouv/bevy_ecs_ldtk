@@ -437,3 +437,22 @@ impl<B: LdtkEntity + Bundle> PhantomLdtkEntityTrait for PhantomLdtkEntity<B> {
 
 /// Used by [LdtkEntityAppExt](super::LdtkEntityAppExt) to associate Ldtk entity identifiers with [LdtkEntity]s.
 pub type LdtkEntityMap = HashMap<(Option<String>, Option<String>), Box<dyn PhantomLdtkEntityTrait>>;
+
+#[cfg(feature = "scene")]
+pub struct LdtkEntityScene<F>(pub F);
+
+#[cfg(feature = "scene")]
+impl<S: bevy::scene::Scene, F: Fn() -> S> PhantomLdtkEntityTrait for LdtkEntityScene<F> {
+    fn evaluate<'a, 'b>(
+        &self,
+        entity_commands: &'b mut EntityCommands<'a>,
+        _: &EntityInstance,
+        _: &LayerInstance,
+        _: Option<&Handle<Image>>,
+        _: Option<&TilesetDefinition>,
+        _: &AssetServer,
+        _: &mut Assets<TextureAtlasLayout>,
+    ) -> &'b mut EntityCommands<'a> {
+        bevy::scene::EntityCommandsSceneExt::apply_scene(entity_commands, (self.0)())
+    }
+}

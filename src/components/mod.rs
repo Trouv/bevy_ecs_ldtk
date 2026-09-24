@@ -8,6 +8,11 @@ pub use level_iid::LevelIid;
 mod level_set;
 pub use level_set::LevelSet;
 
+#[cfg(feature = "scene")]
+mod scene;
+#[cfg(feature = "scene")]
+pub use scene::UseLdtkSprite;
+
 pub use crate::ldtk::EntityInstance;
 use crate::{
     ldtk::{LayerInstance, Type},

@@ -6,6 +6,9 @@ use crate::{
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::{collections::HashMap, marker::PhantomData};
 
+#[cfg(feature = "scene")]
+pub mod scene;
+
 /// [LdtkEntityAppExt]: super::LdtkEntityAppExt
 /// [Bundle]: bevy::prelude::Bundle
 /// [App]: bevy::prelude::App
@@ -437,32 +440,3 @@ impl<B: LdtkEntity + Bundle> PhantomLdtkEntityTrait for PhantomLdtkEntity<B> {
 
 /// Used by [LdtkEntityAppExt](super::LdtkEntityAppExt) to associate Ldtk entity identifiers with [LdtkEntity]s.
 pub type LdtkEntityMap = HashMap<(Option<String>, Option<String>), Box<dyn PhantomLdtkEntityTrait>>;
-
-#[cfg(feature = "scene")]
-pub struct LdtkEntityScene<F>(pub F);
-
-#[cfg(feature = "scene")]
-impl<S: bevy::scene::Scene, F: Fn() -> S> PhantomLdtkEntityTrait for LdtkEntityScene<F> {
-    fn evaluate<'a, 'b>(
-        &self,
-        entity_commands: &'b mut EntityCommands<'a>,
-        entity_instance: &EntityInstance,
-        _: &LayerInstance,
-        tileset: Option<&Handle<Image>>,
-        tileset_definition: Option<&TilesetDefinition>,
-        _: &AssetServer,
-        _: &mut Assets<TextureAtlasLayout>,
-    ) -> &'b mut EntityCommands<'a> {
-        let ctx = super::scene::LdtkSceneContext {
-            entity_instance: entity_instance.clone(),
-            tileset: tileset.cloned(),
-            tileset_definition: tileset_definition.cloned(),
-        };
-
-        bevy::scene::EntityCommandsSceneExt::apply_scene(entity_commands, (self.0)());
-
-        entity_commands.queue(move |mut entity: EntityWorldMut| {
-            super::scene::fill::<super::scene::UseLdtkSprite>(&mut entity, &ctx);
-        })
-    }
-}

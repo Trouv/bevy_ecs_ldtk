@@ -1,22 +1,6 @@
-use crate::{
-    app::scene::{LdtkSceneContext, LdtkSceneMarker},
-    utils,
-};
-use bevy::{
-    ecs::{template::OptionTemplate, VariantDefaults},
-    image::TextureAtlasTemplate,
-    prelude::*,
-    scene::Scene,
-};
-
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Hash, Component, Reflect, VariantDefaults)]
-#[reflect(Component)]
-pub enum UseLdtkSprite {
-    #[default]
-    Sheet,
-    SheetNoGrid,
-    Image,
-}
+use super::LdtkSceneMarker;
+use crate::{app::scene::LdtkSceneContext, components::UseLdtkSprite, utils};
+use bevy::{ecs::template::OptionTemplate, image::TextureAtlasTemplate, prelude::*, scene::Scene};
 
 impl LdtkSceneMarker for UseLdtkSprite {
     fn scene(&self, ctx: &LdtkSceneContext, world: &mut World) -> impl Scene + use<> {

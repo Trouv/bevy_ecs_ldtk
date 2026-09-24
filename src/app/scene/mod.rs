@@ -13,3 +13,13 @@ pub trait LdtkSceneMarker: Component + Clone {
 
 mod marker;
 pub use marker::*;
+
+pub(super) fn fill<M: LdtkSceneMarker>(entity: &mut EntityWorldMut, ctx: &LdtkSceneContext) {
+    if let Some(marker) = entity.get::<M>().cloned() {
+        let scene = entity.world_scope(|world| marker.scene(ctx, world));
+        entity.remove::<M>();
+        if let Err(err) = bevy::scene::EntityWorldMutSceneExt::apply_scene(entity, scene) {
+            error!("failed to apply LDtk scene marker: {err}");
+        }
+    }
+}

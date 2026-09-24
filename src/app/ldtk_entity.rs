@@ -446,13 +446,23 @@ impl<S: bevy::scene::Scene, F: Fn() -> S> PhantomLdtkEntityTrait for LdtkEntityS
     fn evaluate<'a, 'b>(
         &self,
         entity_commands: &'b mut EntityCommands<'a>,
-        _: &EntityInstance,
+        entity_instance: &EntityInstance,
         _: &LayerInstance,
-        _: Option<&Handle<Image>>,
-        _: Option<&TilesetDefinition>,
+        tileset: Option<&Handle<Image>>,
+        tileset_definition: Option<&TilesetDefinition>,
         _: &AssetServer,
         _: &mut Assets<TextureAtlasLayout>,
     ) -> &'b mut EntityCommands<'a> {
-        bevy::scene::EntityCommandsSceneExt::apply_scene(entity_commands, (self.0)())
+        let ctx = super::scene::LdtkSceneContext {
+            entity_instance: entity_instance.clone(),
+            tileset: tileset.cloned(),
+            tileset_definition: tileset_definition.cloned(),
+        };
+
+        bevy::scene::EntityCommandsSceneExt::apply_scene(entity_commands, (self.0)());
+
+        entity_commands.queue(move |mut entity: EntityWorldMut| {
+            super::scene::fill::<super::scene::UseLdtkSprite>(&mut entity, &ctx);
+        })
     }
 }

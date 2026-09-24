@@ -57,3 +57,7 @@ path = "examples/field_instances/main.rs"
 [[example]]
 name = "collectathon"
 path = "examples/collectathon/main.rs"
+
+[[example]]
+name = "scene"
+required-features = ["scene"]

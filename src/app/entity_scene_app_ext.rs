@@ -1,4 +1,4 @@
-use crate::app::ldtk_entity::*;
+use crate::app::ldtk_entity::{scene::LdtkEntityScene, *};
 use bevy::{prelude::*, scene::Scene};
 
 pub trait LdtkEntitySceneAppExt {

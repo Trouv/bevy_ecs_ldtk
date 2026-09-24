@@ -10,3 +10,6 @@ pub struct LdtkSceneContext {
 pub trait LdtkSceneMarker: Component + Clone {
     fn scene(&self, ctx: &LdtkSceneContext, world: &mut World) -> impl Scene + use<Self>;
 }
+
+mod marker;
+pub use marker::*;

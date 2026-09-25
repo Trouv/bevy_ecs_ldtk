@@ -8,19 +8,17 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
         .add_plugins(LdtkPlugin)
-        .add_systems(Startup, setup)
+        .add_systems(Startup, scene.spawn())
         .add_systems(Update, process_my_entity)
         .insert_resource(LevelSelection::index(0))
         .run();
 }
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn(Camera2d);
-
-    commands.spawn(LdtkWorldBundle {
-        ldtk_handle: asset_server.load("my_project.ldtk").into(),
-        ..Default::default()
-    });
+fn scene() -> impl Scene {
+    bsn! {
+        Camera2d
+        LdtkProjectHandle { handle: "my_project.ldtk" }
+    }
 }
 
 fn process_my_entity(

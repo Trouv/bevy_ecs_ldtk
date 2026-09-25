@@ -7,19 +7,17 @@ fn main() {
             DefaultPlugins.set(ImagePlugin::default_nearest()), // prevents blurry sprites
         )
         .add_plugins(LdtkPlugin)
-        .add_systems(Startup, setup)
+        .add_systems(Startup, scene.spawn())
         .insert_resource(LevelSelection::index(0))
         .register_ldtk_entity::<MyBundle>("MyEntityIdentifier")
         .run();
 }
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn(Camera2d);
-
-    commands.spawn(LdtkWorldBundle {
-        ldtk_handle: asset_server.load("my_project.ldtk").into(),
-        ..Default::default()
-    });
+fn scene() -> impl Scene {
+    bsn! {
+        Camera2d
+        LdtkProjectHandle { handle: "my_project.ldtk" }
+    }
 }
 
 #[derive(Default, Component)]

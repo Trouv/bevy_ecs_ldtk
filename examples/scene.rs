@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_ecs_ldtk::{prelude::*, UseLdtkSprite};
+use bevy_ecs_ldtk::prelude::*;
 
 fn main() {
     App::new()
@@ -26,9 +26,11 @@ struct ComponentA;
 #[derive(Component, Default, Clone)]
 struct ComponentB;
 
-fn scene() -> impl Scene {
+fn scene(ctx: &EntityInstanceContext) -> impl Scene {
+    let name = ctx.entity_instance.identifier.clone();
     bsn! {
         ComponentA
         ComponentB
+        Name({name})
     }
 }

@@ -78,7 +78,7 @@ pub mod prelude {
     pub use crate::{LdtkEntity, LdtkIntCell};
 
     #[cfg(feature = "scene")]
-    pub use crate::app::LdtkEntitySceneAppExt;
+    pub use crate::app::{EntityInstanceContext, LdtkEntitySceneAppExt};
 
     #[cfg(feature = "external_levels")]
     pub use crate::assets::LdtkExternalLevel;

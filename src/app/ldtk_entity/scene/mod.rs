@@ -1,35 +1,34 @@
 use super::PhantomLdtkEntityTrait;
-use crate::{
-    components::UseLdtkSprite,
-    ldtk::{EntityInstance, LayerInstance, TilesetDefinition},
-};
+use crate::ldtk::{EntityInstance, LayerInstance, TilesetDefinition};
 use bevy::{ecs::system::EntityCommands, prelude::*, scene::Scene};
 
-pub struct LdtkSceneContext {
-    pub entity_instance: EntityInstance,
-    pub tileset: Option<Handle<Image>>,
-    pub tileset_definition: Option<TilesetDefinition>,
+pub struct EntityInstanceContext<'a> {
+    pub entity_instance: &'a EntityInstance,
+    pub layer_instance: &'a LayerInstance,
+    pub tileset: Option<&'a Handle<Image>>,
+    pub tileset_definition: Option<&'a TilesetDefinition>,
 }
 
 pub struct LdtkEntityScene<F>(pub F);
 
-impl<S: Scene, F: Fn() -> S> PhantomLdtkEntityTrait for LdtkEntityScene<F> {
+impl<S: Scene, F: Fn(&EntityInstanceContext) -> S> PhantomLdtkEntityTrait for LdtkEntityScene<F> {
     fn evaluate<'a, 'b>(
         &self,
         entity_commands: &'b mut EntityCommands<'a>,
         entity_instance: &EntityInstance,
-        _: &LayerInstance,
+        layer_instance: &LayerInstance,
         tileset: Option<&Handle<Image>>,
         tileset_definition: Option<&TilesetDefinition>,
         _: &AssetServer,
         _: &mut Assets<TextureAtlasLayout>,
     ) -> &'b mut EntityCommands<'a> {
-        let ctx = LdtkSceneContext {
-            entity_instance: entity_instance.clone(),
-            tileset: tileset.cloned(),
-            tileset_definition: tileset_definition.cloned(),
+        let ctx = EntityInstanceContext {
+            entity_instance,
+            layer_instance,
+            tileset,
+            tileset_definition,
         };
 
-        bevy::scene::EntityCommandsSceneExt::apply_scene(entity_commands, (self.0)());
+        bevy::scene::EntityCommandsSceneExt::apply_scene(entity_commands, (self.0)(&ctx))
     }
 }

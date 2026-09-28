@@ -30,6 +30,5 @@ fn scene() -> impl Scene {
     bsn! {
         ComponentA
         ComponentB
-        UseLdtkSprite::Sheet
     }
 }

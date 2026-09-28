@@ -7,7 +7,8 @@ fn main() {
         .add_plugins(LdtkPlugin)
         .add_systems(Startup, setup)
         .insert_resource(LevelSelection::index(0))
-        .register_ldtk_entity_scene("MyEntityIdentifier", scene)
+        .register_ldtk_entity_scene("MyContextualIdentifier", scene_with_entity_context)
+        .register_ldtk_entity_scene("MyBareIdentifier", bare_scene)
         .run();
 }
 
@@ -26,11 +27,18 @@ struct ComponentA;
 #[derive(Component, Default, Clone)]
 struct ComponentB;
 
-fn scene(ctx: &EntityInstanceContext) -> impl Scene {
+fn scene_with_entity_context(ctx: &EntityInstanceContext) -> impl Scene {
     let name = ctx.entity_instance.identifier.clone();
     bsn! {
         ComponentA
         ComponentB
         Name({name})
+    }
+}
+
+fn bare_scene() -> impl Scene {
+    bsn! {
+        ComponentA
+        ComponentB
     }
 }

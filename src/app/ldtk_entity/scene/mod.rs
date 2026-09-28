@@ -1,6 +1,10 @@
 use super::PhantomLdtkEntityTrait;
-use crate::ldtk::{EntityInstance, LayerInstance, TilesetDefinition};
-use bevy::{ecs::system::EntityCommands, prelude::*, scene::Scene};
+use crate::{
+    app::EntitySceneFn,
+    ldtk::{EntityInstance, LayerInstance, TilesetDefinition},
+};
+use bevy::{ecs::system::EntityCommands, prelude::*};
+use std::marker::PhantomData;
 
 pub struct EntityInstanceContext<'a> {
     pub entity_instance: &'a EntityInstance,
@@ -9,9 +13,9 @@ pub struct EntityInstanceContext<'a> {
     pub tileset_definition: Option<&'a TilesetDefinition>,
 }
 
-pub struct LdtkEntityScene<F>(pub F);
+pub struct LdtkEntityScene<F, M>(pub F, pub PhantomData<M>);
 
-impl<S: Scene, F: Fn(&EntityInstanceContext) -> S> PhantomLdtkEntityTrait for LdtkEntityScene<F> {
+impl<M: 'static, F: EntitySceneFn<M>> PhantomLdtkEntityTrait for LdtkEntityScene<F, M> {
     fn evaluate<'a, 'b>(
         &self,
         entity_commands: &'b mut EntityCommands<'a>,
@@ -29,6 +33,6 @@ impl<S: Scene, F: Fn(&EntityInstanceContext) -> S> PhantomLdtkEntityTrait for Ld
             tileset_definition,
         };
 
-        bevy::scene::EntityCommandsSceneExt::apply_scene(entity_commands, (self.0)(&ctx))
+        EntityCommandsSceneExt::apply_scene(entity_commands, self.0.call(&ctx))
     }
 }

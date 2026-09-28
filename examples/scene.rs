@@ -7,8 +7,7 @@ fn main() {
         .add_plugins(LdtkPlugin)
         .add_systems(Startup, setup)
         .insert_resource(LevelSelection::index(0))
-        .register_ldtk_entity_scene("MyContextualIdentifier", scene_with_entity_context)
-        .register_ldtk_entity_scene("MyBareIdentifier", bare_scene)
+        .register_ldtk_entity_scene("MyEntityIdentifier", scene)
         .run();
 }
 
@@ -21,24 +20,19 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
 }
 
-#[derive(Component, Default, Clone)]
-struct ComponentA;
+fn scene(ctx: &EntityInstanceContext) -> impl Scene {
+    let image = ctx.tileset.cloned().unwrap_or_default();
 
-#[derive(Component, Default, Clone)]
-struct ComponentB;
+    let rect = ctx.entity_instance.tile.as_ref().map(|tile| {
+        Rect::new(
+            tile.x as f32,
+            tile.y as f32,
+            (tile.x + tile.w) as f32,
+            (tile.y + tile.h) as f32,
+        )
+    });
 
-fn scene_with_entity_context(ctx: &EntityInstanceContext) -> impl Scene {
-    let name = ctx.entity_instance.identifier.clone();
     bsn! {
-        ComponentA
-        ComponentB
-        Name({name})
-    }
-}
-
-fn bare_scene() -> impl Scene {
-    bsn! {
-        ComponentA
-        ComponentB
+        Sprite { image: {image}, rect: {rect} }
     }
 }

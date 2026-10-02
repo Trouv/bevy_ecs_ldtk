@@ -13,7 +13,13 @@ pub struct EntityInstanceContext<'a> {
     pub tileset_definition: Option<&'a TilesetDefinition>,
 }
 
-pub struct LdtkEntityScene<F, M>(pub F, pub PhantomData<M>);
+pub(crate) struct LdtkEntityScene<F, M>(F, PhantomData<M>);
+
+impl<F, M> LdtkEntityScene<F, M> {
+    pub(crate) fn new(scene: F) -> Self {
+        Self(scene, PhantomData)
+    }
+}
 
 impl<M: 'static, F: EntitySceneFn<M>> PhantomLdtkEntityTrait for LdtkEntityScene<F, M> {
     fn evaluate<'a, 'b>(

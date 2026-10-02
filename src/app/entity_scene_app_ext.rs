@@ -1,7 +1,6 @@
 //! Provides [LdtkEntitySceneAppExt] for registering scenes to spawn for given LDtk Entity identifiers.
 use crate::app::ldtk_entity::{scene::LdtkEntityScene, *};
 use bevy::prelude::*;
-use std::marker::PhantomData;
 
 pub use crate::app::ldtk_entity::scene::EntityInstanceContext;
 
@@ -122,7 +121,7 @@ fn insert_scene<M: 'static, F: EntitySceneFn<M>>(
         layer_identifier.map(str::to_owned),
         Some(entity_identifier.to_owned()),
     );
-    let new_entry = Box::new(LdtkEntityScene(scene, PhantomData));
+    let new_entry = Box::new(LdtkEntityScene::new(scene));
     match app.world_mut().get_non_send_mut::<LdtkEntityMap>() {
         Some(mut entries) => {
             entries.insert(key, new_entry);

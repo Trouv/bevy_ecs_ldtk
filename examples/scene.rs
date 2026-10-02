@@ -31,6 +31,6 @@ fn entity_scene(ctx: &EntityInstanceContext) -> impl Scene {
     });
 
     bsn! {
-        Sprite { image: {image}, rect: {rect} }
+        Sprite { image, rect }
     }
 }

@@ -1,5 +1,6 @@
+//! Provides [LdtkEntitySceneAppExt] for registering scenes to spawn for given LDtk Entity identifiers.
 use crate::app::ldtk_entity::{scene::LdtkEntityScene, *};
-use bevy::{prelude::*, scene::Scene};
+use bevy::prelude::*;
 use std::marker::PhantomData;
 
 pub use crate::app::ldtk_entity::scene::EntityInstanceContext;
@@ -34,45 +35,102 @@ impl<C: Component + Clone + Default + Unpin> EntitySceneFn<ComponentEntitySceneF
     }
 }
 
+/// Provides functions for registering [Scene]s (or things can can be represented as a [Scene]) that
+/// should be spawned for specific LDtk entities.
 pub trait LdtkEntitySceneAppExt {
-    fn register_ldtk_entity_scene_for_layer_optional<M: 'static, F: EntitySceneFn<M>>(
+    /// Similar to [LdtkEntitySceneAppExt::register_ldtk_entity_scene], except that it can be scoped
+    /// to only entities on a specific layer in LDtk.
+    fn register_ldtk_entity_scene_for_layer<M: 'static, F: EntitySceneFn<M>>(
         &mut self,
-        layer_identifier: Option<String>,
-        entity_identifier: Option<String>,
+        layer_identifier: &str,
+        entity_identifier: &str,
         scene: F,
     ) -> &mut Self;
+
+    /// Register a [EntitySceneFn] that the plugin should spawn for LDtk entities that match the given
+    /// LDtk entity identifier.
+    ///
+    /// [EntitySceneFn] has a few builtin implemenations, shown belown.
+    ///
+    /// ```no_run
+    /// use bevy::prelude::*;
+    /// use bevy_ecs_ldtk::prelude::*;
+    ///
+    /// fn main() {
+    ///     App::empty()
+    ///         .add_plugins(LdtkPlugin)
+    ///         // Register a scene-compatible component.
+    ///         .register_ldtk_entity_scene("component_entity", ComponentA)
+    ///         // Register a function that returns a scene.
+    ///         .register_ldtk_entity_scene("scene_entity", scene)
+    ///         // Register a scene function with access to the full context of the
+    ///         // entity instance as it lives in LDtk.
+    ///         .register_ldtk_entity_scene("custom_scene_entity", scene_with_context)
+    ///         .run();
+    /// }
+    ///
+    /// #[derive(Component, Default, Clone)]
+    /// struct ComponentA;
+    ///
+    /// fn scene() -> impl Scene {
+    ///     bsn! { ComponentA }
+    /// }
+    ///
+    /// fn scene_with_context(ctx: &EntityInstanceContext) -> impl Scene {
+    ///     let name = ctx.entity_instance.identifier.clone();
+    ///     bsn! {
+    ///         Name(name)
+    ///         ComponentA
+    ///     }
+    /// }
+    /// ```
+    fn register_ldtk_entity_scene<M: 'static, F: EntitySceneFn<M>>(
+        &mut self,
+        entity_identifier: &str,
+        scene: F,
+    ) -> &mut Self;
+}
+
+impl LdtkEntitySceneAppExt for App {
+    fn register_ldtk_entity_scene_for_layer<M: 'static, F: EntitySceneFn<M>>(
+        &mut self,
+        layer_identifier: &str,
+        entity_identifier: &str,
+        scene: F,
+    ) -> &mut Self {
+        insert_scene(self, Some(layer_identifier), entity_identifier, scene);
+        self
+    }
 
     fn register_ldtk_entity_scene<M: 'static, F: EntitySceneFn<M>>(
         &mut self,
         entity_identifier: &str,
         scene: F,
     ) -> &mut Self {
-        self.register_ldtk_entity_scene_for_layer_optional(
-            None,
-            Some(entity_identifier.to_string()),
-            scene,
-        )
+        insert_scene(self, None, entity_identifier, scene);
+        self
     }
 }
 
-impl LdtkEntitySceneAppExt for App {
-    fn register_ldtk_entity_scene_for_layer_optional<M: 'static, F: EntitySceneFn<M>>(
-        &mut self,
-        layer_identifier: Option<String>,
-        entity_identifier: Option<String>,
-        scene: F,
-    ) -> &mut Self {
-        let new_entry = Box::new(LdtkEntityScene(scene, PhantomData));
-        match self.world_mut().get_non_send_mut::<LdtkEntityMap>() {
-            Some(mut entries) => {
-                entries.insert((layer_identifier, entity_identifier), new_entry);
-            }
-            None => {
-                let mut scene_map = LdtkEntityMap::new();
-                scene_map.insert((layer_identifier, entity_identifier), new_entry);
-                self.world_mut().insert_non_send::<LdtkEntityMap>(scene_map);
-            }
+fn insert_scene<M: 'static, F: EntitySceneFn<M>>(
+    app: &mut App,
+    layer_identifier: Option<&str>,
+    entity_identifier: &str,
+    scene: F,
+) {
+    let key = (
+        layer_identifier.map(str::to_owned),
+        Some(entity_identifier.to_owned()),
+    );
+    let new_entry = Box::new(LdtkEntityScene(scene, PhantomData));
+    match app.world_mut().get_non_send_mut::<LdtkEntityMap>() {
+        Some(mut entries) => {
+            entries.insert(key, new_entry);
         }
-        self
+        None => {
+            let mut scene_map = LdtkEntityMap::new();
+            scene_map.insert(key, new_entry);
+            app.world_mut().insert_non_send::<LdtkEntityMap>(scene_map);
+        }
     }
 }

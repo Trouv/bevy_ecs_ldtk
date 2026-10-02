@@ -26,6 +26,14 @@ impl<S: Scene, F: Fn() -> S + 'static> EntitySceneFn<BareEntitySceneFn> for F {
     }
 }
 
+pub struct ComponentEntitySceneFn;
+
+impl<C: Component + Clone + Default + Unpin> EntitySceneFn<ComponentEntitySceneFn> for C {
+    fn call(&self, _: &EntityInstanceContext) -> impl Scene {
+        bsn! { C }
+    }
+}
+
 pub trait LdtkEntitySceneAppExt {
     fn register_ldtk_entity_scene_for_layer_optional<M: 'static, F: EntitySceneFn<M>>(
         &mut self,

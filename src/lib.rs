@@ -26,6 +26,9 @@
 //! to run in headless mode.
 //! - `atlas`: Enables the `atlas` feature of [bevy_ecs_tilemap]. This is required for WASM support
 //! and also for tile spacing to work on Tile and AutoTile layers.
+//! - `scene`: Enables the registration of [Scene]s and [Component]s in addition to [Bundle]s.
+//! This feature is still a work in progress, and does not yet have feature parity with [Bundle]
+//! registration.
 //!
 //! The `derive`, `render`, and `internal_levels` features are enabled by default.
 //! Furthermore, one or both of `internal_levels` and `external_levels` must be enabled.
@@ -34,6 +37,9 @@
 //! [LdtkEntity]: app::LdtkEntity
 //! [LdtkIntCell]: app::LdtkEntity
 //! [bevy_ecs_tilemap]: https://docs.rs/bevy_ecs_tilemap
+//! [Scene]: bevy::prelude::Scene
+//! [Bundle]: bevy::prelude::Bundle
+//! [Component]: bevy::prelude::Component
 
 pub mod app;
 pub mod assets;

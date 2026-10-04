@@ -7,9 +7,12 @@ fn main() {
         .add_plugins(LdtkPlugin)
         .add_systems(Startup, base_scene.spawn())
         .insert_resource(LevelSelection::index(0))
-        .register_ldtk_entity_scene("MyEntityIdentifier", entity_scene)
+        .register_ldtk_entity_scene("MyEntityIdentifier", player_scene)
         .run();
 }
+
+#[derive(Component, Default, Clone)]
+struct Player;
 
 fn base_scene() -> impl Scene {
     bsn! {
@@ -18,7 +21,15 @@ fn base_scene() -> impl Scene {
     }
 }
 
-fn entity_scene(ctx: &EntityInstanceContext) -> impl Scene {
+// Scenes are composable. Complex entity/component trees can be built.
+fn player_scene(ctx: &EntityInstanceContext) -> impl Scene {
+    bsn! {
+        Player
+        ldtk_sprite(ctx)
+    }
+}
+
+fn ldtk_sprite(ctx: &EntityInstanceContext) -> impl Scene {
     let image = ctx.tileset.cloned().unwrap_or_default();
 
     let rect = ctx.entity_instance.tile.as_ref().map(|tile| {

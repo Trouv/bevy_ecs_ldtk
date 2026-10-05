@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.16.0](https://github.com/Trouv/bevy_ecs_ldtk/compare/v0.15.0...v0.16.0) (2026-10-05)
+
+
+### Features
+
+* add support for BSN to LdtkProjectHandle ([#408](https://github.com/Trouv/bevy_ecs_ldtk/issues/408)) ([f1475ef](https://github.com/Trouv/bevy_ecs_ldtk/commit/f1475ef5a7e64d4e81a00891bd046c5717476d90))
+
 ## [0.15.0](https://github.com/Trouv/bevy_ecs_ldtk/compare/v0.14.0...v0.15.0) (2026-07-05)
 
 

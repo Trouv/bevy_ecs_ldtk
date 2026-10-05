@@ -27,18 +27,16 @@ jobs:
             ~/.cargo/git/db/
             target/
           key: ${{ runner.os }}-cargo-check-${{ hashFiles('**/Cargo.toml') }}
-      - name: Install stable toolchain
-        uses: dtolnay/rust-toolchain@stable
-      - name: Install Dependencies
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
       - name: Run cargo check (minimal features, internal levels, exclude examples)
-        run: cargo check --no-default-features --features internal_levels
+        run: nix develop --command cargo check --no-default-features --features internal_levels
       - name: Run cargo check (minimal features, external levels, exclude examples)
-        run: cargo check --no-default-features --features external_levels
+        run: nix develop --command cargo check --no-default-features --features external_levels
       - name: Run cargo check (default features)
-        run: cargo check --all-targets
+        run: nix develop --command cargo check --all-targets
       - name: Run cargo check (all features)
-        run: cargo check --all-targets --all-features
+        run: nix develop --command cargo check --all-targets --all-features
 
   # Run cargo test --all-features
   test:
@@ -57,12 +55,10 @@ jobs:
             ~/.cargo/git/db/
             target/
           key: ${{ runner.os }}-cargo-test-${{ hashFiles('**/Cargo.toml') }}
-      - name: Install stable toolchain
-        uses: dtolnay/rust-toolchain@stable
-      - name: Install Dependencies
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
       - name: Run cargo test
-        run: cargo test --all-features
+        run: nix develop --command cargo test --all-features
 
   # Run cargo clippy --all-targets --all-features -- -D warnings
   clippy:
@@ -81,14 +77,10 @@ jobs:
             ~/.cargo/git/db/
             target/
           key: ${{ runner.os }}-cargo-clippy-${{ hashFiles('**/Cargo.toml') }}
-      - name: Install stable toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          components: clippy
-      - name: Install Dependencies
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
       - name: Run clippy
-        run: cargo clippy --all-targets --all-features -- -D warnings
+        run: nix develop --command cargo clippy --all-targets --all-features -- -D warnings
 
   # Run cargo fmt --all -- --check
   format:
@@ -102,7 +94,7 @@ jobs:
         with:
           components: rustfmt
       - name: Run cargo fmt
-        run: cargo fmt --all -- --check
+        run: nix develop --command cargo fmt --all -- --check
 
   # Run mdbook build (tests all code snippets)
   build-test-book:
@@ -121,13 +113,7 @@ jobs:
             ~/.cargo/git/db/
             target/
           key: ${{ runner.os }}-mdbook-build-${{ hashFiles('**/Cargo.toml') }}
-      - name: Install stable toolchain
-        uses: dtolnay/rust-toolchain@stable
-      - name: Install mdbook
-        uses: peaceiris/actions-mdbook@v1
-        with:
-          mdbook-version: '0.4.35'
-      - name: Install mdbook-keeper
-        run: cargo install mdbook-keeper --git https://github.com/tfpk/mdbook-keeper/ --rev 12f116d0840c69a6786dba3865768af3fde634f3 --force
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
       - name: Test mdbook code snippets
-        run: bash ./ci/test-book.sh
+        run: nix develop --command bash ./ci/test-book.sh

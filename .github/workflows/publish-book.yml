@@ -23,16 +23,10 @@ jobs:
             ~/.cargo/git/db/
             target/
           key: ${{ runner.os }}-mdbook-publish-${{ hashFiles('**/Cargo.toml') }}
-      - name: Install stable toolchain
-        uses: dtolnay/rust-toolchain@stable
-      - name: Install mdbook
-        uses: peaceiris/actions-mdbook@v1
-        with:
-          mdbook-version: '0.4.35'
-      - name: Install mdbook-keeper
-        run: cargo install mdbook-keeper --git https://github.com/tfpk/mdbook-keeper/ --rev 12f116d0840c69a6786dba3865768af3fde634f3 --force
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
       - name: test and build book
-        run: bash ./ci/test-book.sh
+        run: nix develop --command bash ./ci/test-book.sh
       - name: Publish
         uses: peaceiris/actions-gh-pages@v3
         with:

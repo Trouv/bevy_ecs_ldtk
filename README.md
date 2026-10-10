@@ -46,6 +46,7 @@ $ cargo run --example example-name
 ## Compatibility
 | bevy | bevy_ecs_tilemap | LDtk | bevy_ecs_ldtk |
 | --- | --- | --- | --- |
+| 0.20 | local migration | 1.5.3 | `main` (unreleased) |
 | 0.19 | 0.19 | 1.5.3 | 0.15 |
 | 0.18 | 0.18 | 1.5.3 | 0.14 |
 | 0.17 | 0.17 | 1.5.3 | 0.13 |
@@ -66,3 +67,32 @@ $ cargo run --example example-name
 - [SunnyLand](https://ansimuz.itch.io/sunny-land-pixel-game-art), a texture pack by Ansimuz, licensed under [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)
 - [PIXEL FANTASY RPG ICONS](https://cazwolf.itch.io/caz-pixel-free), an icon pack by Caz, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 - [Nuclear Blaze](https://github.com/deepnight/ldtk/blob/master/app/extraFiles/samples/atlas/NuclearBlaze_by_deepnight.aseprite), a tileset by Deepnight, licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Tileset was exported from aseprite to png, but no other modifications were made.
+
+## Bevy 0.20 migration
+
+This development branch uses Bevy 0.20.0 and the tilemap migration checkout at
+`../bevy_ecs_tilemap`. Keep the repositories beside each other for local work.
+Before upstream submission/publication, replace this path with the accepted
+compatible tilemap Git revision or release. Package and macro versions remain
+unchanged until the upstream release process runs.
+
+The platformer and field-instance examples temporarily pin the Bevy 0.20
+migration revisions of [Avian PR #1070](https://github.com/avianphysics/avian/pull/1070)
+and [inspector PR #324](https://github.com/jakobhellermann/bevy-inspector-egui/pull/324).
+The inspector revision also pins its compatible bevy_egui dependency. These are
+unreleased development dependencies; replace them when compatible releases land.
+
+Library loading was exercised with embedded and external levels in a consuming
+game. Validation of this complete upstream checkout and its examples is pending.
+Suggested checks, matching the existing CI feature matrix:
+
+```sh
+cargo fmt --all --check
+cargo check --no-default-features --features internal_levels
+cargo check --no-default-features --features external_levels
+cargo check --all-targets
+cargo check --all-targets --all-features
+cargo test --all-features
+cargo run --example platformer --release
+cargo run --example field_instances
+```

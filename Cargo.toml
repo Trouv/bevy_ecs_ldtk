@@ -15,8 +15,8 @@ members = ["macros"]
 
 [dependencies]
 bevy_ecs_ldtk_macros = { version = "0.15.0", optional = true, path = "macros" }
-bevy_ecs_tilemap = { version = "0.19.0", default-features = false }
-bevy = { version = "0.19", default-features = false, features = [
+bevy_ecs_tilemap = { path = "../bevy_ecs_tilemap", version = "0.19.0", default-features = false }
+bevy = { version = "0.20.0", default-features = false, features = [
     "bevy_sprite",
 ] }
 derive-getters = "0.5.0"
@@ -28,11 +28,13 @@ paste = "1.0"
 derive_more = { version = "2.1.1", features = ["constructor", "try_into"] }
 
 [dev-dependencies]
-bevy = "0.19"
-avian2d = "0.7"
+bevy = "0.20.0"
+# Bevy 0.20 migration: https://github.com/avianphysics/avian/pull/1070
+avian2d = { git = "https://github.com/avianphysics/avian", rev = "34c9b008d2f40638a953d9218db48d54f661365d" }
 fake = { version = "5.1", features = ["uuid"] }
 rand = "0.10"
-bevy-inspector-egui = "0.37.0"
+# Bevy 0.20 migration: https://github.com/jakobhellermann/bevy-inspector-egui/pull/324
+bevy-inspector-egui = { git = "https://github.com/taboky-dev/bevy-inspector-egui", rev = "6c4689637f289647ecad5897da35c29032fcc086" }
 
 [features]
 default = ["derive", "render", "internal_levels"]

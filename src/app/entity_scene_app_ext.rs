@@ -36,6 +36,8 @@ impl<C: Component + Clone + Default + Unpin> EntitySceneFn<ComponentEntitySceneF
 
 /// Provides functions for registering [Scene]s (or things can can be represented as a [Scene]) that
 /// should be spawned for specific LDtk entities.
+///
+/// _Requires the `scene` feature to use._
 pub trait LdtkEntitySceneAppExt {
     /// Similar to [LdtkEntitySceneAppExt::register_ldtk_entity_scene], except that it can be scoped
     /// to only entities on a specific layer in LDtk.

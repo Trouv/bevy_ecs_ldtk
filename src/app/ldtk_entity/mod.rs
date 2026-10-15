@@ -3,3 +3,5 @@ mod ldtk_entity_trait;
 pub(crate) mod scene;
 
 pub use ldtk_entity_trait::*;
+#[cfg(feature = "scene")]
+pub use scene::EntityInstanceContext;

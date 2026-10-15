@@ -2,12 +2,13 @@
 use crate::app::ldtk_entity::{scene::LdtkEntityScene, *};
 use bevy::prelude::*;
 
-pub use crate::app::ldtk_entity::scene::EntityInstanceContext;
-
+/// Our primary trait for building a [`Scene`] from an LDtk entity.
 pub trait EntitySceneFn<Marker>: 'static {
     fn call(&self, ctx: &EntityInstanceContext) -> impl Scene;
 }
 
+/// Marker struct to facilitate implementing [`EntitySceneFn`] over a function
+/// that builds a [`Scene`] from an [`EntityInstanceContext`].
 pub struct ContextualEntitySceneFn;
 
 impl<S: Scene, F: Fn(&EntityInstanceContext) -> S + 'static> EntitySceneFn<ContextualEntitySceneFn>
@@ -18,6 +19,9 @@ impl<S: Scene, F: Fn(&EntityInstanceContext) -> S + 'static> EntitySceneFn<Conte
     }
 }
 
+/// Marker struct to facilitate implementing [`EntitySceneFn`] over a "bare"
+/// function that builds a [`Scene`] (that is, that doesn't require any data
+/// from the entity in LDtk).
 pub struct BareEntitySceneFn;
 
 impl<S: Scene, F: Fn() -> S + 'static> EntitySceneFn<BareEntitySceneFn> for F {
@@ -26,6 +30,8 @@ impl<S: Scene, F: Fn() -> S + 'static> EntitySceneFn<BareEntitySceneFn> for F {
     }
 }
 
+/// Marker struct to facilitate implementing [`EntitySceneFn`] such that we can
+/// build a [`Scene`] comprised of only the given [`Component`].
 pub struct ComponentEntitySceneFn;
 
 impl<C: Component + Clone + Default + Unpin> EntitySceneFn<ComponentEntitySceneFn> for C {

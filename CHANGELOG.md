@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.16.0](https://github.com/Trouv/bevy_ecs_ldtk/compare/v0.15.0...v0.16.0) (2026-10-17)
+
+
+### Features
+
+* add support for BSN to LdtkProjectHandle ([#408](https://github.com/Trouv/bevy_ecs_ldtk/issues/408)) ([f1475ef](https://github.com/Trouv/bevy_ecs_ldtk/commit/f1475ef5a7e64d4e81a00891bd046c5717476d90))
+* add support for scene registration ([#410](https://github.com/Trouv/bevy_ecs_ldtk/issues/410)) ([567eef3](https://github.com/Trouv/bevy_ecs_ldtk/commit/567eef3707337dd340d69402173ccc1a4d65897b))
+
 ## [0.15.0](https://github.com/Trouv/bevy_ecs_ldtk/compare/v0.14.0...v0.15.0) (2026-07-05)
 
 

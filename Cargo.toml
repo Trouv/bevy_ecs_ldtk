@@ -15,7 +15,7 @@ members = ["macros"]
 
 [dependencies]
 bevy_ecs_ldtk_macros = { version = "0.15.0", optional = true, path = "macros" }
-bevy_ecs_tilemap = { path = "../bevy_ecs_tilemap", version = "0.19.0", default-features = false }
+bevy_ecs_tilemap = { version = "0.20.0", default-features = false }
 bevy = { version = "0.20.0", default-features = false, features = [
     "bevy_sprite",
 ] }

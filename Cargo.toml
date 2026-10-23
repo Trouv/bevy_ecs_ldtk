@@ -29,12 +29,10 @@ derive_more = { version = "2.1.1", features = ["constructor", "try_into"] }
 
 [dev-dependencies]
 bevy = "0.20.0"
-# Bevy 0.20 migration: https://github.com/avianphysics/avian/pull/1070
-avian2d = { git = "https://github.com/avianphysics/avian", rev = "34c9b008d2f40638a953d9218db48d54f661365d" }
+avian2d = { version="0.8.0" }
 fake = { version = "5.1", features = ["uuid"] }
 rand = "0.10"
-# Bevy 0.20 migration: https://github.com/jakobhellermann/bevy-inspector-egui/pull/324
-bevy-inspector-egui = { git = "https://github.com/taboky-dev/bevy-inspector-egui", rev = "6c4689637f289647ecad5897da35c29032fcc086" }
+bevy-inspector-egui = { version="0.38.0" }
 
 [features]
 default = ["derive", "render", "internal_levels"]

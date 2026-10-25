@@ -25,7 +25,7 @@ fn base_scene() -> impl Scene {
 fn player_scene(ctx: &EntityInstanceContext) -> impl Scene {
     bsn! {
         Player
-        ldtk_sprite(ctx)
+        @ldtk_sprite(ctx)
     }
 }
 

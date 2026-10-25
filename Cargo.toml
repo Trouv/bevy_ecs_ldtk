@@ -15,8 +15,8 @@ members = ["macros"]
 
 [dependencies]
 bevy_ecs_ldtk_macros = { version = "0.15.0", optional = true, path = "macros" }
-bevy_ecs_tilemap = { version = "0.19.0", default-features = false }
-bevy = { version = "0.19", default-features = false, features = [
+bevy_ecs_tilemap = { version = "0.20.0", default-features = false }
+bevy = { version = "0.20.0", default-features = false, features = [
     "bevy_sprite",
 ] }
 derive-getters = "0.5.0"
@@ -28,11 +28,11 @@ paste = "1.0"
 derive_more = { version = "2.1.1", features = ["constructor", "try_into"] }
 
 [dev-dependencies]
-bevy = "0.19"
-avian2d = "0.7"
+bevy = "0.20.0"
+avian2d = { version="0.8.0" }
 fake = { version = "5.1", features = ["uuid"] }
 rand = "0.10"
-bevy-inspector-egui = "0.37.0"
+bevy-inspector-egui = { version="0.38.0" }
 
 [features]
 default = ["derive", "render", "internal_levels"]

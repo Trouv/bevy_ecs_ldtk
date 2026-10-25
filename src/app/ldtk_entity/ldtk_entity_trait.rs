@@ -6,7 +6,7 @@ use crate::{
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::{collections::HashMap, marker::PhantomData};
 
-/// [LdtkEntityAppExt]: super::LdtkEntityAppExt
+/// [LdtkEntityAppExt]: crate::app::LdtkEntityAppExt
 /// [Bundle]: bevy::prelude::Bundle
 /// [App]: bevy::prelude::App
 /// [Component]: bevy::prelude::Component
@@ -435,5 +435,5 @@ impl<B: LdtkEntity + Bundle> PhantomLdtkEntityTrait for PhantomLdtkEntity<B> {
     }
 }
 
-/// Used by [LdtkEntityAppExt](super::LdtkEntityAppExt) to associate Ldtk entity identifiers with [LdtkEntity]s.
+/// Used by [LdtkEntityAppExt](crate::app::LdtkEntityAppExt) to associate Ldtk entity identifiers with [LdtkEntity]s.
 pub type LdtkEntityMap = HashMap<(Option<String>, Option<String>), Box<dyn PhantomLdtkEntityTrait>>;
